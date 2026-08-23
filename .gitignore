@@ -1,7 +1,39 @@
+# Credentials -- never commit. .env holds a live Anthropic API key.
 .env
+.env.*
+!.env.example
+
+# Cached SEC responses and model extractions (regenerated on demand)
 .cache/
-__pycache__/
-*.pyc
-results.csv
-results.json
+*.cache
+
+# Run outputs
+*.out
+results*.csv
+results*.json
+free*.csv
+free*.json
+auto*.csv
+auto*.json
+sample30_*.csv
+sample30_*.json
+top50*.csv.out
+top50*.json
+fixcheck*.csv
+fixcheck*.json
 universe_*.csv
+*.html
+!templates/*.html
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

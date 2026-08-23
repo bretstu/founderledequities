@@ -1,17 +1,27 @@
-# CEO Ownership Pipeline
+# Founder Led Equities
 
-Builds a validated dataset of **what percent of a company its CEO actually owns**, from SEC filings.
+**CEO ownership pipeline** — measures what share of each US public company its
+chief executive beneficially owns, from SEC filings only. No third-party data
+providers.
 
 ```
-pct_comparable = common shares beneficially owned by the CEO
-                 (direct + indirect, disclaimed excluded, derivatives excluded)
+pct_comparable = shares beneficially owned by the CEO under Rule 13d-3
                  ÷ total shares outstanding, all classes
 ```
+
+Rule 13d-3 counts securities over which the person holds voting or investment
+power, plus anything acquirable within 60 days. It is one legal standard, so
+it means the same thing at every company — unlike "shares owned", which no
+filing reports and every filer constructs differently.
 
 ## Quick start
 
 ```bash
+git clone https://github.com/bretstu/founderledequities.git
+cd founderledequities
 pip install -r requirements.txt
+
+cp .env.example .env      # then fill in your two values
 
 # See the whole thing work with no credentials and no network:
 python3 demo.py
@@ -21,7 +31,8 @@ python3 -m unittest discover -s tests
 export OWNERSHIP_UA="Your Name your@email.com"   # SEC requires this
 export ANTHROPIC_API_KEY="sk-ant-..."
 
-python3 -m ceo_ownership.cli run --tickers AAPL,META,TSLA,BRK-B --out results.csv
+python3 -m ceo_ownership.cli run --from-csv top50.csv --llm-mode never \
+    --out results.csv --json results.json --html dashboard.html
 python3 -m ceo_ownership.cli run --tickers META --as-of 2019-06-30   # point-in-time
 python3 -m ceo_ownership.cli universe --year 2019 --out universe_2019.csv
 ```
@@ -121,3 +132,44 @@ tests/            26 offline tests
 ```
 
 Every number carries `source_url`, `filing_date`, `as_of_date`, `confidence`, and `flags`. On a public dashboard, publish the confidence state — 4,500 verified rows plus 500 marked "unverified, see filing" is more credible than 5,000 rows at unstated quality.
+
+
+## How a CEO is identified
+
+Not by job title. Section 302 of Sarbanes-Oxley requires the principal
+executive officer to personally certify every 10-K and 10-Q, and Item
+601(b)(31) prescribes the exact wording — the SEC issues comment letters when
+filers alter it. So the signature on Exhibit 31.1 identifies the PEO as a
+matter of law, quarterly, back to 2002, with no filer exemptions.
+
+Fallbacks, in order: the proxy's tagged `ecd:PeoName` (2023+ only), then
+Form 4 `officerTitle` heuristics, which are always flagged. Title matching
+alone once picked Microsoft's *CEO of Commercial Business* over Satya
+Nadella — a confident, plausible, wrong answer.
+
+## Verification
+
+| Check | Confirms | Runs on |
+|---|---|---|
+| `identity_match` | Proxy row matches the §302 signature | every row |
+| `pct_reconciliation` | Share count and denominator are mutually consistent | rows printing a real percentage |
+| `yoy_continuity` | Holding is continuous with last year's proxy | rows with a comparable prior year |
+
+HIGH requires identity **plus** a numeric confirmation. `group_bound` alone
+does not qualify — CEO ≤ group survives almost any misparse.
+
+The reconciliation gap is also a measurement, not just a test: because Rule
+13d-3(d)(1)(i) puts a holder's own 60-day options into their denominator
+alone, `shares / pct − outstanding` recovers those options. Tesla's implied
+297.7M against a footnoted 303,960,630.
+
+## Known limits
+
+- Proxies that report only voting classes (Alphabet omits Class C) fall back
+  to Form 4, which reports under Section 16's pecuniary-interest test rather
+  than 13d-3. Capped at MEDIUM and flagged.
+- Roughly 20% of DEF 14A filers are funds and trusts, not operating
+  companies. Flagged, never silently dropped.
+- Co-CEOs return one person. Oracle reports Magouyrk; Ellison's ~40% sits
+  outside the metric because he is Chairman/CTO.
+- A CEO's first year has no continuity baseline.
