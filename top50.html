@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CEO ownership - 50 largest US companies</title>
+<style>
+:root{
+  --ink:#12161c; --paper:#fbfaf7; --rule:#e2ded5; --dim:#6c7076;
+  --high:#1f6f4a; --med:#8a6d18; --low:#9c3024; --accent:#2b4a7d;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; padding:2.5rem 1.5rem 4rem; background:var(--paper); color:var(--ink);
+  font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  max-width:1180px; margin-inline:auto;
+}
+.eyebrow{
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--dim); margin:0 0 .5rem;
+}
+h1{font-size:2rem; margin:0 0 .35rem; letter-spacing:-.02em; font-weight:650}
+.sub{margin:0 0 1.5rem; color:var(--dim); max-width:56ch}
+.note{
+  margin:1rem 0 0; padding:.6rem .8rem; background:#fff6e5;
+  border-left:3px solid var(--med); font-size:13.5px;
+}
+.stats{display:flex; flex-wrap:wrap; gap:0; margin:0; border-top:1px solid var(--rule)}
+.stats div{padding:.7rem 1.6rem .7rem 0; margin-right:1.6rem; border-right:1px solid var(--rule)}
+.stats div:last-child{border-right:0}
+dt{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim)}
+dd{margin:.15rem 0 0; font-size:1.5rem; font-weight:600;
+   font-variant-numeric:tabular-nums}
+.c-high{color:var(--high)} .c-med{color:var(--med)}
+.c-low,.c-err{color:var(--low)}
+.filters{display:flex; gap:.4rem; margin:1.75rem 0 .75rem; flex-wrap:wrap}
+.filters button{
+  font:inherit; font-size:13px; padding:.35rem .8rem; cursor:pointer;
+  background:transparent; border:1px solid var(--rule); border-radius:99px;
+  color:var(--dim);
+}
+.filters button.on{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+table{width:100%; border-collapse:collapse; font-size:14px}
+th{
+  text-align:left; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--dim); font-weight:600; padding:.5rem .6rem; border-bottom:1px solid var(--ink);
+  white-space:nowrap;
+}
+td{padding:.6rem; border-bottom:1px solid var(--rule); vertical-align:top}
+.num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+.pct{position:relative; font-weight:600; min-width:8.5rem; padding-right:.6rem}
+.bar{
+  display:block; height:3px; background:var(--accent); opacity:.28;
+  margin-top:.3rem; margin-left:auto; border-radius:2px;
+}
+.co a{color:var(--ink); text-decoration:none; border-bottom:1px solid var(--rule)}
+.co a:hover{border-bottom-color:var(--accent); color:var(--accent)}
+.tick{display:block; font-size:11.5px; color:var(--dim); margin-top:.15rem}
+.src{font-size:13px; color:var(--dim)}
+.conf{font-size:11px; letter-spacing:.06em; font-weight:700}
+.c-high{color:var(--high)} .c-medium{color:var(--med)} .c-low{color:var(--low)}
+.notes{max-width:22rem}
+.chip{
+  display:inline-block; font-size:11px; padding:.1rem .45rem; margin:0 .25rem .25rem 0;
+  border:1px solid var(--rule); border-radius:3px; color:var(--dim);
+}
+.chip.warn{border-color:#e5c9a2; background:#fdf4e5; color:#7a5a12}
+.chip.quiet{border-style:dashed}
+h2{font-size:1.05rem; margin:2.5rem 0 .5rem; font-weight:650}
+.errs td{font-size:13px}
+.errs .why{color:var(--low)}
+footer{margin-top:3rem; padding-top:1.25rem; border-top:1px solid var(--rule);
+       color:var(--dim); font-size:13px; max-width:70ch}
+footer p{margin:0 0 .7rem}
+.stamp{font-size:11.5px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+@media (max-width:760px){
+  body{padding:1.5rem 1rem 3rem}
+  .src,.notes{display:none}
+  .stats div{padding-right:1rem; margin-right:1rem}
+}
+</style></head><body>
+
+<header>
+  <p class="eyebrow">Rule 13d-3 beneficial ownership &middot; SEC proxy statements</p>
+  <h1>CEO ownership - 50 largest US companies</h1>
+  <p class="sub">What share of each company its chief executive beneficially owns.
+     Every figure links to the filing it came from.</p>
+  <dl class="stats">
+    <div><dt>Companies</dt><dd>50</dd></div>
+    <div><dt>High confidence</dt><dd class="c-high">35</dd></div>
+    <div><dt>Medium</dt><dd class="c-med">4</dd></div>
+    <div><dt>Low</dt><dd class="c-low">4</dd></div>
+    <div><dt>Could not read</dt><dd class="c-err">7</dd></div>
+    <div><dt>No API call needed</dt><dd>42</dd></div>
+  </dl>
+  
+</header>
+
+<nav class="filters">
+  <button data-filter="all" class="on">All</button>
+  <button data-filter="HIGH">High confidence</button>
+  <button data-filter="review">Needs review</button>
+  <button data-filter="flagged">Flagged</button>
+</nav>
+
+<table>
+  <thead>
+    <tr>
+      <th class="num">%</th>
+      <th>Company</th>
+      <th>Chief executive</th>
+      <th class="num">Shares</th>
+      <th>Read from</th>
+      <th>Confidence</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">21.573%<span class="bar" style="width:100.0%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1318605/000110465925090866/tm252289-12_def14a.htm" target="_blank" rel="noopener">Tesla, Inc.</a>
+          <span class="tick">TSLA</span></td>
+      <td>Elon Musk<span class="tick">§302 cert</span></td>
+      <td class="num">717,323,438</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+0.3% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">13.491%<span class="bar" style="width:79.1%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1326801/000162828026025532/meta-20260416.htm" target="_blank" rel="noopener">Meta Platforms, Inc.</a>
+          <span class="tick">META</span></td>
+      <td>Mark Zuckerberg<span class="tick">§302 cert</span></td>
+      <td class="num">342,463,325</td>
+      <td class="src">proxy<span class="tick">2xclass</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">-0.1% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH flagged">
+      <td class="num pct">3.599%<span class="bar" style="width:40.8%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/886982/000119312526117433/gs-20260319.htm" target="_blank" rel="noopener">GOLDMAN SACHS GROUP INC</a>
+          <span class="tick">GS</span></td>
+      <td>David Solomon (c)<span class="tick">§302 cert</span></td>
+      <td class="num">143,146</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip warn">ambiguous_table_location</span><span class="chip">combined_certification_multiple_signers</span><span class="chip quiet">+5.9% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">3.581%<span class="bar" style="width:40.7%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1045810/000104581026000036/nvda-20260512.htm" target="_blank" rel="noopener">NVIDIA CORP</a>
+          <span class="tick">NVDA</span></td>
+      <td>Jen-Hsun Huang<span class="tick">§302 cert</span></td>
+      <td class="num">870,604,104</td>
+      <td class="src">proxy<span class="tick">total_beneficial</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">-5.7% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH flagged">
+      <td class="num pct">2.786%<span class="bar" style="width:35.9%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1108524/000110852426000085/crm-20260416.htm" target="_blank" rel="noopener">Salesforce, Inc.</a>
+          <span class="tick">CRM</span></td>
+      <td>Marc Benioff<span class="tick">§302 cert</span></td>
+      <td class="num">22,791,882</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip warn">ambiguous_table_location</span><span class="chip quiet">-0.0% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.264%<span class="bar" style="width:11.1%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/2488/000119312526129057/d85856ddef14a.htm" target="_blank" rel="noopener">ADVANCED MICRO DEVICES INC</a>
+          <span class="tick">AMD</span></td>
+      <td>Lisa T. Su<span class="tick">§302 cert</span></td>
+      <td class="num">4,305,973</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">-9.1% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.232%<span class="bar" style="width:10.4%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/19617/000001961726000096/jpm-20260402.htm" target="_blank" rel="noopener">JPMORGAN CHASE &amp; CO</a>
+          <span class="tick">JPM</span></td>
+      <td>James Dimon<span class="tick">§302 cert</span></td>
+      <td class="num">6,266,647</td>
+      <td class="src">proxy<span class="tick">total_beneficial</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">-3.1% y/y</span></td>
+    </tr>
+
+    <tr class="conf-LOW review flagged">
+      <td class="num pct">0.214%<span class="bar" style="width:9.9%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1373715/000137371526000039/now-20260406.htm" target="_blank" rel="noopener">ServiceNow, Inc.</a>
+          <span class="tick">NOW</span></td>
+      <td>William R. McDermott<span class="tick">§302 cert</span></td>
+      <td class="num">2,212,904</td>
+      <td class="src">proxy<span class="tick">unknown</span></td>
+      <td><span class="conf c-low">LOW</span></td>
+      <td class="notes"><span class="chip warn">yoy_discontinuity</span><span class="chip quiet">+430.0% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH flagged">
+      <td class="num pct">0.160%<span class="bar" style="width:8.6%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/318154/000119312526145588/d13946ddef14a.htm" target="_blank" rel="noopener">AMGEN INC</a>
+          <span class="tick">AMGN</span></td>
+      <td>Robert A. Bradway<span class="tick">§302 cert</span></td>
+      <td class="num">861,765</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip">combined_certification_multiple_signers</span><span class="chip quiet">+2.5% y/y</span></td>
+    </tr>
+
+    <tr class="conf-MEDIUM review flagged">
+      <td class="num pct">0.147%<span class="bar" style="width:8.3%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/731766/000110465926046125/tm261387-6_def14a.htm" target="_blank" rel="noopener">UNITEDHEALTH GROUP INC</a>
+          <span class="tick">UNH</span></td>
+      <td>Stephen Hemsley<span class="tick">§302 cert</span></td>
+      <td class="num">1,335,742</td>
+      <td class="src">proxy<span class="tick">2xclass</span></td>
+      <td><span class="conf c-medium">MEDIUM</span></td>
+      <td class="notes"><span class="chip">combined_certification_multiple_signers</span></td>
+    </tr>
+
+    <tr class="conf-LOW review flagged">
+      <td class="num pct">0.136%<span class="bar" style="width:7.9%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1065280/000119312526159286/d20613ddef14a.htm" target="_blank" rel="noopener">NETFLIX INC</a>
+          <span class="tick">NFLX</span></td>
+      <td>Ted Sarandos<span class="tick">§302 cert</span></td>
+      <td class="num">5,719,962</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-low">LOW</span></td>
+      <td class="notes"><span class="chip warn">peoname_overtagged_by_filer</span><span class="chip warn">yoy_discontinuity</span><span class="chip quiet">+926.4% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH flagged">
+      <td class="num pct">0.122%<span class="bar" style="width:7.5%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/63908/000119312526145548/mcd-20260407.htm" target="_blank" rel="noopener">MCDONALDS CORP</a>
+          <span class="tick">MCD</span></td>
+      <td>Christopher Kempczinski<span class="tick">§302 cert</span></td>
+      <td class="num">864,054</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip warn">ambiguous_table_location</span><span class="chip quiet">+10.8% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.118%<span class="bar" style="width:7.4%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/97745/000119312526144585/d66426ddef14a.htm" target="_blank" rel="noopener">THERMO FISHER SCIENTIFIC INC.</a>
+          <span class="tick">TMO</span></td>
+      <td>Marc N. Casper<span class="tick">§302 cert</span></td>
+      <td class="num">440,250</td>
+      <td class="src">proxy<span class="tick">common+options60d</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+7.1% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.117%<span class="bar" style="width:7.3%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1543151/000130817926000125/uber014597-def14a.htm" target="_blank" rel="noopener">Uber Technologies, Inc</a>
+          <span class="tick">UBER</span></td>
+      <td>Dara Khosrowshahi<span class="tick">§302 cert</span></td>
+      <td class="num">2,380,203</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+4.1% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.107%<span class="bar" style="width:7.0%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/796343/000079634326000043/adbe-20260227.htm" target="_blank" rel="noopener">ADOBE INC.</a>
+          <span class="tick">ADBE</span></td>
+      <td>Shantanu Narayen<span class="tick">§302 cert</span></td>
+      <td class="num">438,975</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+13.1% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.102%<span class="bar" style="width:6.9%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/896878/000089687825000057/intu-20251126.htm" target="_blank" rel="noopener">INTUIT INC.</a>
+          <span class="tick">INTU</span></td>
+      <td>Sasan K. Goodarzi<span class="tick">§302 cert</span></td>
+      <td class="num">284,112</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">-27.4% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.086%<span class="bar" style="width:6.3%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/59478/000005947826000029/lly-20260317.htm" target="_blank" rel="noopener">ELI LILLY &amp; Co</a>
+          <span class="tick">LLY</span></td>
+      <td>David Ricks<span class="tick">§302 cert</span></td>
+      <td class="num">815,535</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+7.7% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.084%<span class="bar" style="width:6.2%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/97476/000009747626000078/txn-20260303.htm" target="_blank" rel="noopener">TEXAS INSTRUMENTS INC</a>
+          <span class="tick">TXN</span></td>
+      <td>Haviv Ilan<span class="tick">§302 cert</span></td>
+      <td class="num">760,717</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+29.4% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH flagged">
+      <td class="num pct">0.075%<span class="bar" style="width:5.9%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1707925/000119312526192209/lin-20260429.htm" target="_blank" rel="noopener">LINDE PLC</a>
+          <span class="tick">LIN</span></td>
+      <td>Sanjiv Lamba<span class="tick">§302 cert</span></td>
+      <td class="num">347,060</td>
+      <td class="src">proxy<span class="tick">common+options60d</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip">ceo_transition_in_period</span><span class="chip quiet">+23.1% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.061%<span class="bar" style="width:5.3%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/93410/000119312526145617/d77994ddef14a.htm" target="_blank" rel="noopener">CHEVRON CORP</a>
+          <span class="tick">CVX</span></td>
+      <td>Michael K. Wirth<span class="tick">§302 cert</span></td>
+      <td class="num">1,207,619</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">-36.4% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.050%<span class="bar" style="width:4.8%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/310158/000119312526147704/d85708ddef14a.htm" target="_blank" rel="noopener">Merck &amp; Co., Inc.</a>
+          <span class="tick">MRK</span></td>
+      <td>Robert M. Davis<span class="tick">§302 cert</span></td>
+      <td class="num">1,226,775</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+20.9% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.049%<span class="bar" style="width:4.8%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1403161/000130817925000635/v-20251208.htm" target="_blank" rel="noopener">VISA INC.</a>
+          <span class="tick">V</span></td>
+      <td>Ryan McInerney<span class="tick">§302 cert</span></td>
+      <td class="num">823,086</td>
+      <td class="src">proxy<span class="tick">2xclass</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+0.1% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.045%<span class="bar" style="width:4.5%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/51143/000005114326000025/ibm-20260306.htm" target="_blank" rel="noopener">INTERNATIONAL BUSINESS MACHINES CORP</a>
+          <span class="tick">IBM</span></td>
+      <td>Arvind Krishna<span class="tick">§302 cert</span></td>
+      <td class="num">418,689</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+5.6% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.039%<span class="bar" style="width:4.3%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/70858/000119312526118929/d43888ddef14a.htm" target="_blank" rel="noopener">BANK OF AMERICA CORP /DE/</a>
+          <span class="tick">BAC</span></td>
+      <td>Brian T. Moynihan<span class="tick">§302 cert</span></td>
+      <td class="num">2,803,195</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+0.3% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.036%<span class="bar" style="width:4.1%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/72971/000007297126000200/wfc-20260318.htm" target="_blank" rel="noopener">WELLS FARGO &amp; COMPANY/MN</a>
+          <span class="tick">WFC</span></td>
+      <td>Charles W. Scharf*<span class="tick">§302 cert</span></td>
+      <td class="num">1,118,702</td>
+      <td class="src">proxy<span class="tick">total_beneficial</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+21.7% y/y</span></td>
+    </tr>
+
+    <tr class="conf-MEDIUM review flagged">
+      <td class="num pct">0.030%<span class="bar" style="width:3.8%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/80424/000119312525191749/d875382ddef14a.htm" target="_blank" rel="noopener">PROCTER &amp; GAMBLE Co</a>
+          <span class="tick">PG</span></td>
+      <td>Shailesh Jejurikar<span class="tick">§302 cert</span></td>
+      <td class="num">711,583</td>
+      <td class="src">proxy<span class="tick">total</span></td>
+      <td><span class="conf c-medium">MEDIUM</span></td>
+      <td class="notes"><span class="chip warn">ambiguous_table_location</span><span class="chip">combined_certification_multiple_signers</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.025%<span class="bar" style="width:3.4%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/354950/000035495026000090/hd-20260406.htm" target="_blank" rel="noopener">HOME DEPOT, INC.</a>
+          <span class="tick">HD</span></td>
+      <td>Edward P. Decker<span class="tick">§302 cert</span></td>
+      <td class="num">252,779</td>
+      <td class="src">proxy<span class="tick">total_beneficial</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+1.7% y/y</span></td>
+    </tr>
+
+    <tr class="conf-MEDIUM review flagged">
+      <td class="num pct">0.025%<span class="bar" style="width:3.4%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1652044/000130817926000342/goog-20260424.htm" target="_blank" rel="noopener">Alphabet Inc.</a>
+          <span class="tick">GOOGL</span></td>
+      <td>Pichai Sundar<span class="tick">§302 cert</span></td>
+      <td class="num">3,006,750</td>
+      <td class="src">Form 4<span class="tick"></span></td>
+      <td><span class="conf c-medium">MEDIUM</span></td>
+      <td class="notes"><span class="chip warn">proxy_reports_voting_classes_only</span><span class="chip warn">shares_from_form4_not_proxy</span></td>
+    </tr>
+
+    <tr class="conf-HIGH flagged">
+      <td class="num pct">0.023%<span class="bar" style="width:3.3%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/77476/000130817926000169/pep015012_def14a.htm" target="_blank" rel="noopener">PEPSICO INC</a>
+          <span class="tick">PEP</span></td>
+      <td>Ramon L. Laguarta<span class="tick">§302 cert</span></td>
+      <td class="num">320,143</td>
+      <td class="src">proxy<span class="tick">2xclass</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip warn">ambiguous_table_location</span><span class="chip">combined_certification_multiple_signers</span><span class="chip quiet">-14.1% y/y</span></td>
+    </tr>
+
+    <tr class="conf-MEDIUM review">
+      <td class="num pct">0.023%<span class="bar" style="width:3.3%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/18230/000130817926000358/cat014496-def14a.htm" target="_blank" rel="noopener">CATERPILLAR INC</a>
+          <span class="tick">CAT</span></td>
+      <td>JOSEPH E. CREED<span class="tick">§302 cert</span></td>
+      <td class="num">105,138</td>
+      <td class="src">proxy<span class="tick">total</span></td>
+      <td><span class="conf c-medium">MEDIUM</span></td>
+      <td class="notes"></td>
+    </tr>
+
+    <tr class="conf-HIGH flagged">
+      <td class="num pct">0.022%<span class="bar" style="width:3.2%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/320193/000130817926000008/aapl014016-def14a.htm" target="_blank" rel="noopener">Apple Inc.</a>
+          <span class="tick">AAPL</span></td>
+      <td>Tim Cook<span class="tick">§302 cert</span></td>
+      <td class="num">3,280,295</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip warn">ceo_identity_sources_disagree</span><span class="chip warn">peoname_overtagged_by_filer</span><span class="chip quiet">+0.0% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH flagged">
+      <td class="num pct">0.022%<span class="bar" style="width:3.2%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1018724/000110465926041026/tm261382-1_def14a.htm" target="_blank" rel="noopener">AMAZON COM INC</a>
+          <span class="tick">AMZN</span></td>
+      <td>Andrew R. Jassy<span class="tick">§302 cert</span></td>
+      <td class="num">2,313,536</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip">ceo_transition_in_period</span><span class="chip quiet">+5.4% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.020%<span class="bar" style="width:3.1%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/804328/000110465926005781/tm2528704-1_def14a.htm" target="_blank" rel="noopener">QUALCOMM INC/DE</a>
+          <span class="tick">QCOM</span></td>
+      <td>Cristiano R. Amon<span class="tick">§302 cert</span></td>
+      <td class="num">217,483</td>
+      <td class="src">proxy<span class="tick">unknown</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">-27.3% y/y</span></td>
+    </tr>
+
+    <tr class="conf-LOW review flagged">
+      <td class="num pct">0.019%<span class="bar" style="width:3.0%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1730168/000119312526085691/d49254ddef14a.htm" target="_blank" rel="noopener">Broadcom Inc.</a>
+          <span class="tick">AVGO</span></td>
+      <td>Hock E. Tan<span class="tick">§302 cert</span></td>
+      <td class="num">908,474</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-low">LOW</span></td>
+      <td class="notes"><span class="chip warn">yoy_discontinuity</span><span class="chip quiet">-50.8% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.018%<span class="bar" style="width:2.9%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1141391/000114139126000021/ma-20260427.htm" target="_blank" rel="noopener">Mastercard Inc</a>
+          <span class="tick">MA</span></td>
+      <td>Michael Miebach<span class="tick">§302 cert</span></td>
+      <td class="num">157,126</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+22.3% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH flagged">
+      <td class="num pct">0.015%<span class="bar" style="width:2.6%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/21344/000110465926028215/ko-20260429xdef14a.htm" target="_blank" rel="noopener">COCA COLA CO</a>
+          <span class="tick">KO</span></td>
+      <td>Henrique Braun<span class="tick">§302 cert</span></td>
+      <td class="num">643,876</td>
+      <td class="src">proxy<span class="tick">first_numeric</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip warn">ceo_identity_sources_disagree</span><span class="chip quiet">+23.9% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct">0.012%<span class="bar" style="width:2.4%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/789019/000119312525245150/d908201ddef14a.htm" target="_blank" rel="noopener">MICROSOFT CORP</a>
+          <span class="tick">MSFT</span></td>
+      <td>Satya Nadella<span class="tick">§302 cert</span></td>
+      <td class="num">900,572</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">+3.8% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH flagged">
+      <td class="num pct">0.012%<span class="bar" style="width:2.3%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/909832/000090983225000159/cost-20251204.htm" target="_blank" rel="noopener">COSTCO WHOLESALE CORP /NEW</a>
+          <span class="tick">COST</span></td>
+      <td>Ron M. Vachris<span class="tick">§302 cert</span></td>
+      <td class="num">52,258</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip">combined_certification_multiple_signers</span><span class="chip">ceo_transition_in_period</span><span class="chip quiet">+17.0% y/y</span></td>
+    </tr>
+
+    <tr class="conf-LOW review flagged">
+      <td class="num pct">0.008%<span class="bar" style="width:1.9%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1341439/000119312525220801/d72066ddef14a.htm" target="_blank" rel="noopener">ORACLE CORP</a>
+          <span class="tick">ORCL</span></td>
+      <td>Clayton M. Magouyrk<span class="tick">§302 cert</span></td>
+      <td class="num">228,695</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-low">LOW</span></td>
+      <td class="notes"><span class="chip warn">ceo_identity_sources_disagree</span><span class="chip warn">yoy_discontinuity</span><span class="chip quiet">-97.3% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH flagged">
+      <td class="num pct">0.006%<span class="bar" style="width:1.7%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/104169/000119312526173673/wmt-20260423.htm" target="_blank" rel="noopener">Walmart Inc.</a>
+          <span class="tick">WMT</span></td>
+      <td>John Furner<span class="tick">§302 cert</span></td>
+      <td class="num">475,161</td>
+      <td class="src">proxy<span class="tick">total(sole+shared)</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip warn">ceo_identity_sources_disagree</span><span class="chip quiet">+9.7% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH">
+      <td class="num pct"><0.001%<span class="bar" style="width:0.7%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1467373/000130817925000651/acn-20251210.htm" target="_blank" rel="noopener">Accenture plc</a>
+          <span class="tick">ACN</span></td>
+      <td>Julie Sweet<span class="tick">§302 cert</span></td>
+      <td class="num">6,906</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip quiet">-28.4% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH flagged">
+      <td class="num pct"><0.001%<span class="bar" style="width:0.1%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1067983/000119312526106253/d882687ddef14a.htm" target="_blank" rel="noopener">BERKSHIRE HATHAWAY INC</a>
+          <span class="tick">BRK-B</span></td>
+      <td>Gregory E. Abel<span class="tick">§302 cert</span></td>
+      <td class="num">249</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip warn">ceo_identity_sources_disagree</span><span class="chip quiet">+9.2% y/y</span></td>
+    </tr>
+
+    <tr class="conf-HIGH flagged">
+      <td class="num pct"><0.001%<span class="bar" style="width:0.1%"></span></td>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/858877/000085887725000150/csco-20251027.htm" target="_blank" rel="noopener">CISCO SYSTEMS, INC.</a>
+          <span class="tick">CSCO</span></td>
+      <td>Charles H. Robbins<span class="tick">§302 cert</span></td>
+      <td class="num">526</td>
+      <td class="src">proxy<span class="tick">common</span></td>
+      <td><span class="conf c-high">HIGH</span></td>
+      <td class="notes"><span class="chip warn">ceo_identity_sources_disagree</span><span class="chip quiet">-10.4% y/y</span></td>
+    </tr>
+  </tbody>
+</table>
+<h2>Could not read</h2><table class="errs"><tbody>
+
+    <tr>
+      <td class="co">XOM</td>
+      <td class="why">proxy discovery failed: No proxy-type filing found for CIK 2115436</td>
+    </tr>
+
+    <tr>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/200406/000020040626000063/jnj-20260309.htm" target="_blank" rel="noopener">JOHNSON &amp; JOHNSON</a></td>
+      <td class="why">free path could not settle it -- CEO row not found: 16 candidates, best match 0.60 for &#x27;J. Duato&#x27;</td>
+    </tr>
+
+    <tr>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1551152/000110465926033387/abbv-20260508xdef14a.htm" target="_blank" rel="noopener">AbbVie Inc.</a></td>
+      <td class="why">free path could not settle it -- CEO row not found: 17 candidates, best match 0.60 for &#x27;R. Michael&#x27;</td>
+    </tr>
+
+    <tr>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1800/000130817926000064/abt-20260311.htm" target="_blank" rel="noopener">ABBOTT LABORATORIES</a></td>
+      <td class="why">free path could not settle it -- CEO row not found: 18 candidates, best match 0.60 for &#x27;R. B. Ford&#x27;</td>
+    </tr>
+
+    <tr>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/40545/000004054526000018/ge-20260312.htm" target="_blank" rel="noopener">GENERAL ELECTRIC CO</a></td>
+      <td class="why">free path could not settle it -- CEO row not found: 15 candidates, best match 0.60 for &#x27;Culp&#x27;</td>
+    </tr>
+
+    <tr>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/1744489/000174448926000013/dis-20260122.htm" target="_blank" rel="noopener">Walt Disney Co</a></td>
+      <td class="why">free path could not settle it -- CEO row not found: 15 candidates, best match 0.00 for &#x27;Mary T. Barra&#x27;</td>
+    </tr>
+
+    <tr>
+      <td class="co"><a href="https://www.sec.gov/Archives/edgar/data/732712/000130817926000210/vz014688_def14a.htm" target="_blank" rel="noopener">VERIZON COMMUNICATIONS INC</a></td>
+      <td class="why">free path could not settle it -- heuristic parse found no rows</td>
+    </tr>
+</tbody></table>
+
+<footer>
+  <p>Ownership is measured under Rule 13d-3: securities over which the person
+     holds voting or investment power, plus anything they may acquire within
+     60&nbsp;days. That includes options exercisable now, shares held through
+     trusts and controlled entities, and pledged shares. It excludes unvested
+     awards.</p>
+  <p>Percentages are computed against total shares outstanding across all
+     classes, so they are comparable between companies. A filer's own printed
+     percentage is not: Rule&nbsp;13d-3(d)(1)(i) puts each holder's options
+     into their own denominator alone.</p>
+  <p class="stamp">Generated 2026-08-22 16:47 UTC</p>
+</footer>
+<script>
+const btns = document.querySelectorAll('.filters button');
+btns.forEach(b => b.addEventListener('click', () => {
+  btns.forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  const f = b.dataset.filter;
+  document.querySelectorAll('tbody tr').forEach(tr => {
+    tr.style.display = (f === 'all' || tr.classList.contains(f)) ? '' : 'none';
+  });
+}));
+</script>
+</body></html>
