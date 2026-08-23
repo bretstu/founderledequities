@@ -21,12 +21,16 @@ def _load_dotenv() -> None:
     for path in candidates:
         if not path.is_file():
             continue
-        for line in path.read_text(encoding="utf-8").splitlines():
+        # "utf-8-sig" strips a byte-order mark if present. Windows
+        # PowerShell 5.1's `Out-File -Encoding utf8` writes one, which would
+        # otherwise turn the first key into "\ufeffOWNERSHIP_UA" and silently
+        # drop it while every later line loaded fine.
+        for line in path.read_text(encoding="utf-8-sig").splitlines():
             line = line.strip()
             if not line or line.startswith("#") or "=" not in line:
                 continue
             key, _, value = line.partition("=")
-            key = key.strip()
+            key = key.strip().lstrip("\ufeff")
             value = value.strip().strip("'\"")
             if key and key not in os.environ:
                 os.environ[key] = value
