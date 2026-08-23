@@ -460,6 +460,136 @@ class TestThirteenDThreeSelection(unittest.TestCase):
         self.assertEqual(r.pct_reported, 19.8)
 
 
+class TestPanelCheckpoint(unittest.TestCase):
+    """A long run will be interrupted; the checkpoint must survive it."""
+
+    def setUp(self):
+        import tempfile, os
+        self.dir = tempfile.mkdtemp()
+        self.path = os.path.join(self.dir, "panel.jsonl")
+
+    def test_roundtrip(self):
+        from ceo_ownership.panel import append_record, load_completed
+        append_record(self.path, {"cik": 320193, "shares_13d3": 3280295})
+        append_record(self.path, {"cik": 1326801, "shares_13d3": 342463325})
+        done = load_completed(self.path)
+        self.assertEqual(sorted(done), [320193, 1326801])
+
+    def test_truncated_final_line_discarded(self):
+        """A hard kill mid-write must cost at most one row, not the file."""
+        from ceo_ownership.panel import append_record, load_completed
+        append_record(self.path, {"cik": 1, "shares_13d3": 10})
+        append_record(self.path, {"cik": 2, "shares_13d3": 20})
+        with open(self.path, "a", encoding="utf-8") as fh:
+            fh.write('{"cik": 3, "compa')
+        done = load_completed(self.path)
+        self.assertEqual(sorted(done), [1, 2])
+
+    def test_missing_file_is_empty_not_an_error(self):
+        from ceo_ownership.panel import load_completed
+        self.assertEqual(load_completed("/no/such/file.jsonl"), {})
+
+
+class TestFilerClassification(unittest.TestCase):
+    """Classification must never exclude an equity by mistake."""
+
+    class _FakeClient:
+        def __init__(self, forms):
+            self.forms = forms
+
+        def submissions(self, cik):
+            return {"_filings": [{"form": f} for f in self.forms]}
+
+    def _kind(self, forms):
+        from ceo_ownership.panel import classify_filer
+        return classify_filer(self._FakeClient(forms), 1)[0]
+
+    def test_operating_company(self):
+        self.assertEqual(self._kind(["10-K", "10-Q", "8-K"]), "operating")
+
+    def test_bdc_files_both_and_counts_as_operating(self):
+        """A business development company files a 10-K AND an N-2, and has a
+        real chief executive. Testing fund forms first would misclassify it."""
+        self.assertEqual(self._kind(["10-K", "N-2", "N-54A"]), "operating")
+
+    def test_foreign_private_issuer_kept(self):
+        """FPIs file 20-F instead of a 10-K. Treating a missing 10-K as
+        disqualifying would drop every ADR."""
+        self.assertEqual(self._kind(["20-F", "6-K"]), "foreign_private_issuer")
+        self.assertEqual(self._kind(["40-F"]), "foreign_private_issuer")
+
+    def test_older_small_business_forms_kept(self):
+        self.assertEqual(self._kind(["10-KSB", "10-QSB"]), "operating")
+
+    def test_registered_investment_company(self):
+        self.assertEqual(self._kind(["N-CSR", "N-CEN", "DEF 14A"]),
+                         "investment_company")
+
+    def test_absence_is_unknown_not_excluded(self):
+        """Absence of a 10-K has innocent causes: a proxy filed before the
+        first annual report, a Reg A+ issuer, a truncated filing history."""
+        self.assertEqual(self._kind(["DEF 14A", "8-K"]), "unknown")
+        self.assertEqual(self._kind([]), "unknown")
+
+    def test_skip_is_off_by_default(self):
+        import inspect as _inspect
+        from ceo_ownership.panel import build_panel
+        sig = _inspect.signature(build_panel)
+        self.assertIs(sig.parameters["skip_non_operating"].default, False)
+
+    def test_hms_formatting(self):
+        from ceo_ownership.panel import _hms
+        self.assertEqual(_hms(0), "0:00:00")
+        self.assertEqual(_hms(3661), "1:01:01")
+
+
+class TestVerificationSampling(unittest.TestCase):
+    """The sample is aimed at what the automatic checks could not establish."""
+
+    def _rec(self, cik, conf, recon, cont, pct=0.5, flags=None, err=None):
+        return {"cik": cik, "company": f"Co {cik}", "ceo_name": "Jane Doe",
+                "shares_13d3": 1000, "pct_comparable": pct,
+                "confidence": conf, "flags": flags or [], "error": err,
+                "validation": {"checks": [
+                    {"name": "pct_reconciliation", "passed": recon},
+                    {"name": "yoy_continuity", "passed": cont}]}}
+
+    def test_reconciled_rows_identified(self):
+        from ceo_ownership.verify import assign_stratum
+        self.assertEqual(
+            assign_stratum(self._rec(1, "HIGH", True, True)), "reconciled")
+
+    def test_continuity_only_is_the_blind_spot(self):
+        """No printed percentage means the share count was never checked
+        against an independent statement of it."""
+        from ceo_ownership.verify import assign_stratum
+        self.assertEqual(
+            assign_stratum(self._rec(2, "HIGH", None, True)), "continuity_only")
+
+    def test_errors_and_low_go_to_failed(self):
+        from ceo_ownership.verify import assign_stratum
+        self.assertEqual(
+            assign_stratum(self._rec(3, "LOW", None, None)), "failed")
+        self.assertEqual(
+            assign_stratum(self._rec(4, "HIGH", True, True, err="x")), "failed")
+
+    def test_top_holdings_always_included(self):
+        from ceo_ownership.verify import build_sample
+        records = [self._rec(i, "HIGH", True, True, pct=0.01) for i in range(1, 60)]
+        records.append(self._rec(999, "HIGH", True, True, pct=42.0))
+        rows = build_sample(records)
+        top = [r for r in rows if r["stratum"] == "top_ownership"]
+        self.assertIn(999, [int(r["cik"]) for r in top])
+
+    def test_no_company_sampled_twice(self):
+        from ceo_ownership.verify import build_sample
+        records = ([self._rec(i, "HIGH", None, True, pct=i / 10)
+                    for i in range(1, 200)])
+        rows = build_sample(records)
+        ciks = [r["cik"] for r in rows]
+        self.assertEqual(len(ciks), len(set(ciks)))
+
+
 class TestContinuityBands(unittest.TestCase):
     """Thresholds are asymmetric: holdings can double, they cannot evaporate."""
 

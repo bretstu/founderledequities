@@ -12,6 +12,8 @@ from datetime import date
 from .edgar import EdgarClient
 from .dashboard import load_records, write_dashboard
 from .inspect import inspect_ticker
+from .panel import build_panel, panel_records, load_completed
+from .verify import build_sample, write_worksheet, score_worksheet, format_score
 from .pipeline import run_tickers, OwnershipRecord
 from .universe import proxy_filers, find_exits
 
@@ -151,6 +153,69 @@ def cmd_inspect(args) -> int:
     return 0
 
 
+def cmd_panel(args) -> int:
+    ciks: list[int] = []
+    with open(args.universe, newline="", encoding="utf-8") as fh:
+        seen = set()
+        for row in csv.DictReader(fh):
+            if not row.get("cik"):
+                continue
+            c = int(row["cik"])
+            if c not in seen:
+                seen.add(c)
+                ciks.append(c)
+    if args.limit:
+        ciks = ciks[: args.limit]
+
+    print(f"Universe: {len(ciks)} companies -> {args.checkpoint}")
+    prog = build_panel(
+        ciks, checkpoint=args.checkpoint, user_agent=args.user_agent,
+        as_of=args.as_of, llm_mode=args.llm_mode, model=args.model,
+        continuity=not args.no_continuity,
+        skip_non_operating=args.skip_funds,
+    )
+    records = panel_records(args.checkpoint)
+    if args.out:
+        _write_csv_dicts(records, args.out)
+        print(f"Wrote panel      -> {args.out}")
+    if args.html:
+        write_dashboard(records, args.html, args.title)
+        print(f"Wrote dashboard  -> {args.html}")
+    print(f"\nDone: {prog.ok} with a figure, {prog.errored} without.")
+    return 0
+
+
+def cmd_verify(args) -> int:
+    if args.score:
+        print(format_score(score_worksheet(args.score, tolerance=args.tolerance)))
+        return 0
+
+    records = (panel_records(args.checkpoint) if args.checkpoint
+               else load_records(args.json))
+    rows = build_sample(records)
+    write_worksheet(rows, args.out)
+
+    from collections import Counter
+    tally = Counter(r["stratum"] for r in rows)
+    print(f"Wrote worksheet -> {args.out}  ({len(rows)} companies to check)")
+    for name, n in tally.most_common():
+        print(f"  {n:>3}  {name}")
+    print("\nOpen each source_url, find the ownership table, and fill in")
+    print("actual_ceo_name and actual_shares. Then:")
+    print(f"  python -m ceo_ownership.cli verify --score {args.out}")
+    return 0
+
+
+def _write_csv_dicts(records: list[dict], path: str) -> None:
+    with open(path, "w", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, fieldnames=CSV_COLUMNS, extrasaction="ignore")
+        w.writeheader()
+        for r in records:
+            r = dict(r)
+            r["flags"] = "|".join(r.get("flags") or [])
+            w.writerow(r)
+
+
 def cmd_dashboard(args) -> int:
     records = load_records(args.json)
     write_dashboard(records, args.out, args.title)
@@ -262,6 +327,37 @@ def main(argv=None) -> int:
                    help="Write output to this file as UTF-8 (avoids Windows "
                         "console encoding errors from shell redirection)")
     i.set_defaults(func=cmd_inspect)
+
+    pa = sub.add_parser("panel", help="Run the pipeline across a universe, resumably")
+    pa.add_argument("--universe", required=True,
+                    help="CSV with a 'cik' column (from the universe command)")
+    pa.add_argument("--checkpoint", default="panel.jsonl",
+                    help="Append-as-you-go results file; rerun to resume")
+    pa.add_argument("--limit", type=int, default=None)
+    pa.add_argument("--as-of", default=None)
+    pa.add_argument("--llm-mode", default="never",
+                    choices=["auto", "always", "never"])
+    pa.add_argument("--model", default=None)
+    pa.add_argument("--no-continuity", action="store_true")
+    pa.add_argument("--skip-funds", action="store_true",
+                    help="Skip filers positively identified as registered "
+                         "investment companies (N-CSR/N-CEN). Off by default: "
+                         "every filer is processed and classified with a "
+                         "filer_kind flag, so nothing is excluded unseen.")
+    pa.add_argument("--out", default=None, help="CSV of the panel so far")
+    pa.add_argument("--html", default=None)
+    pa.add_argument("--title", default="CEO ownership panel")
+    pa.set_defaults(func=cmd_panel)
+
+    v = sub.add_parser("verify", help="Stratified hand-check worksheet, and scoring")
+    v.add_argument("--checkpoint", default=None, help="A panel .jsonl file")
+    v.add_argument("--json", default=None, help="Or a --json file from a run")
+    v.add_argument("--out", default="verification_worksheet.csv")
+    v.add_argument("--score", default=None,
+                   help="Score a filled-in worksheet instead of sampling")
+    v.add_argument("--tolerance", type=float, default=0.005,
+                   help="Relative difference treated as a match (default 0.5%%)")
+    v.set_defaults(func=cmd_verify)
 
     d = sub.add_parser("dashboard", help="Build the HTML page from a saved JSON")
     d.add_argument("--json", required=True, help="A --json file from a run")
