@@ -101,9 +101,19 @@ def extract_names_from_certification(text: str) -> list[str]:
 
 
 # Exhibit filenames vary wildly: "ex311.htm", "ex-31_1.htm",
-# "a10-kexhibit311.htm", "d908201dex311.htm". Search anywhere in the name
-# rather than anchoring at the start.
-EX31_NAME_RE = re.compile(r"ex(?:hibit)?[-_ ]?31", re.I)
+# "a10-kexhibit311.htm", "d908201dex311.htm", "citi-exh3101x6302026.htm".
+# Search anywhere in the name rather than anchoring at the start.
+#
+# The abbreviation is the part that varies: "ex", "exh", "exhibit". An
+# earlier pattern accepted only "ex" and "exhibit", so Citigroup's "exh3101"
+# never matched -- the certification was sitting in the filing directory
+# unrecognised, and the company was reported as having none.
+EX31_NAME_RE = re.compile(r"ex(?:h|hibit)?[^a-z0-9]{0,2}31", re.I)
+
+# XBRL viewer fragments. Large filers emit dozens of these -- Citigroup's
+# 10-Q has 177 documents -- and being tiny they sort to the front of a
+# size-ordered list and crowd out the real exhibits.
+VIEWER_FRAGMENT_RE = re.compile(r"^R\d+\.html?$", re.I)
 EX31_1_HINT_RE = re.compile(r"31[._\-]?0?1\b|31[._\-]?0?1[^0-9]", re.I)
 EX31_2_HINT_RE = re.compile(r"31[._\-]?0?2", re.I)
 
@@ -128,12 +138,24 @@ def _small_documents(index: dict, already: set[str]) -> list[tuple[str, str]]:
             continue
         if not name.lower().endswith((".htm", ".html", ".txt")):
             continue
+        if VIEWER_FRAGMENT_RE.match(name):
+            continue
+        # Index pages and the full-submission text file are not exhibits.
+        if re.search(r"-index(-headers)?\.html?$|^\d{10}-\d\d-\d{6}\.txt$",
+                     name, re.I):
+            continue
         try:
             size = int(it.get("size") or 0)
         except (TypeError, ValueError):
             size = 0
-        if 0 < size <= MAX_CERT_BYTES:
-            out.append((size, name, it.get("type") or ""))
+        if size > MAX_CERT_BYTES:
+            continue
+        # An UNKNOWN size must not mean "excluded". The previous test was
+        # `0 < size <= MAX`, so any filing whose index omits sizes returned no
+        # candidates at all and the fallback never ran. Unknown sizes are kept
+        # and sorted last, behind documents known to be small.
+        rank = size if size > 0 else MAX_CERT_BYTES + 1
+        out.append((rank, name, it.get("type") or ""))
     out.sort()
     return [(n, t) for _, n, t in out]
 
@@ -202,8 +224,9 @@ def peo_from_certification(
         named = _pick_exhibits(index)[:4]
         tried = {n for n, _ in named}
         # Widen only if the named candidates fail, so the common case stays
-        # cheap: most filings resolve on the first document tried.
-        candidates = named + _small_documents(index, tried)[:6]
+        # cheap: most filings resolve on the first document tried. The cap is
+        # generous because large filers bury exhibits among many documents.
+        candidates = named + _small_documents(index, tried)[:12]
 
         for doc_name, doc_type in candidates:
             hit = _read_certification(client, cik, acc, doc_name)

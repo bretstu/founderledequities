@@ -164,6 +164,10 @@ class Settings:
     )
     # Model used for ownership-table extraction. Override per-run if needed.
     extraction_model: str = os.environ.get("OWNERSHIP_MODEL", "claude-sonnet-5")
+    # Deciding what a number means in one sentence is a small task, so the
+    # cheapest current model is the right tool and keeps this near-free.
+    classifier_model: str = os.environ.get(
+        "OWNERSHIP_CLASSIFIER_MODEL", "claude-haiku-4-5-20251001")
     anthropic_api_key: str | None = field(
         default_factory=lambda: os.environ.get("ANTHROPIC_API_KEY")
     )

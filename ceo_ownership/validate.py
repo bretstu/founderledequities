@@ -62,15 +62,37 @@ NICKNAMES = {
 SUFFIXES = {"jr", "sr", "ii", "iii", "iv", "v", "phd", "md", "cpa", "esq"}
 
 
+SMART_PUNCT = str.maketrans({
+    "\u2019": "'", "\u2018": "'", "\u02bc": "'",   # curly apostrophes
+    "\u201c": '"', "\u201d": '"',
+    "\u2010": "-", "\u2011": "-", "\u2012": "-",
+    "\u2013": "-", "\u2014": "-",
+})
+
+
 def normalize_name(raw: str) -> list[str]:
     """-> ordered list of lowercase name tokens, suffixes and initials dropped."""
-    name = re.sub(r"\([^)]*\)", " ", raw or "")
+    # Typographic punctuation first. Filings set apostrophes as U+2019, and a
+    # curly one falls outside the allowed characters below and becomes a
+    # SPACE -- so Gilead's "Daniel P. O\u2019Day" tokenised as ["o", "day"]
+    # while the certification's straight-quoted "O'Day" gave ["oday"], and
+    # the CEO was never found in his own ownership table.
+    name = (raw or "").translate(SMART_PUNCT)
+    name = re.sub(r"\([^)]*\)", " ", name)
     name = re.sub(r"[^A-Za-z,\s'\-]", " ", name)
     if "," in name:  # "Iger, Robert A." -> "Robert A. Iger"
         last, _, rest = name.partition(",")
         name = f"{rest} {last}"
-    tokens = [t.strip(".'-").lower() for t in name.split()]
-    return [t for t in tokens if t and t not in SUFFIXES and len(t) > 1]
+    # Apostrophes are removed, not merely trimmed: EDGAR writes "DAmaro
+    # Joshua W" while the certification says "Josh D'Amaro", and an internal
+    # apostrophe made those different tokens. Same for O'Brien, O'Leary.
+    tokens = [t.strip(".'-").replace("'", "").lower() for t in name.split()]
+    # Single letters are KEPT. Proxy tables routinely abbreviate given names
+    # to an initial -- Johnson & Johnson lists "J. Duato" for Joaquin Duato --
+    # and dropping the initial collapsed the name to a lone surname, which
+    # scored 0.60 and fell just under the 0.70 accept threshold. Five
+    # companies failed that way, including J&J and GE.
+    return [t for t in tokens if t and t not in SUFFIXES]
 
 
 def _interpretations(tokens: list[str]) -> list[tuple[str, str]]:
@@ -130,7 +152,8 @@ def names_match(a: str, b: str) -> float:
     if not ta or not tb:
         return 0.0
     if len(ta) == 1 or len(tb) == 1:
-        # Only a single usable token; require it to appear on the other side.
+        # Genuinely only one usable token -- a surname alone. It can support
+        # the match but cannot confirm it, so this stays below the threshold.
         lone = ta[0] if len(ta) == 1 else tb[0]
         other = tb if len(ta) == 1 else ta
         return 0.6 if lone in other else 0.0
@@ -265,6 +288,49 @@ def reconcile_percentage(
     )
 
 
+def group_percentage_check(
+    group: OwnershipRow | None, outstanding: float | None
+) -> Check:
+    """Reconcile the GROUP row's percentage against shares outstanding.
+
+    Most CEOs hold under one percent, so their row prints an asterisk and the
+    individual reconciliation cannot run -- 89 of 98 rows in a 100-company
+    panel. But the "all directors and officers as a group" row often does
+    carry a real figure, because the aggregate clears one percent.
+
+    This cannot confirm the CEO's own holding. What it does confirm is the
+    denominator and that the table's numbers are being read correctly, which
+    are the two failures most likely to be silently wrong -- and it does so
+    on rows where nothing else could.
+    """
+    if group is None or group.pct_is_asterisk:
+        return Check("group_pct_reconciliation", None,
+                     "group row absent or shows an asterisk")
+    if group.pct_reported is None or group.shares_reported is None:
+        return Check("group_pct_reconciliation", None, "missing inputs")
+    if not outstanding:
+        return Check("group_pct_reconciliation", None, "no denominator")
+
+    computed = 100.0 * group.shares_reported / outstanding
+    delta = computed - group.pct_reported
+    # A positive gap is expected: the group's own 60-day options sit in their
+    # denominator. Only a NEGATIVE gap beyond rounding is a real problem.
+    if delta < -0.2:
+        return Check(
+            "group_pct_reconciliation", False,
+            f"group {group.shares_reported:,} is {computed:.3f}% of "
+            f"outstanding but the filing says {group.pct_reported:.3f}% -- "
+            f"denominator or share count is wrong",
+            value=delta,
+        )
+    return Check(
+        "group_pct_reconciliation", True,
+        f"group {group.shares_reported:,} -> {computed:.3f}% vs reported "
+        f"{group.pct_reported:.3f}%; denominator confirmed",
+        value=delta,
+    )
+
+
 def group_bound(ceo: OwnershipRow, group: OwnershipRow | None) -> Check:
     if group is None or group.shares_reported is None or ceo.shares_reported is None:
         return Check("group_bound", None, "no group row found")
@@ -329,7 +395,13 @@ def assign_confidence(report: ValidationReport, location_conf: str) -> str:
     # the person. Reconciliation does it where a percentage is printed;
     # continuity does it everywhere else. group_bound alone is too weak to
     # count -- CEO <= group is satisfied by almost any misparse.
-    numeric_ok = recon_ok or cont_ok
+    grp_pct_ok = (by_name.get("group_pct_reconciliation")
+                  and by_name["group_pct_reconciliation"].passed)
+    # An independent read of the same section is the only check that does
+    # not compare one of our readings against another of our readings.
+    readers_ok = (by_name.get("readers_agree")
+                  and by_name["readers_agree"].passed)
+    numeric_ok = recon_ok or cont_ok or grp_pct_ok or readers_ok
 
     # Identity is mandatory: reconciliation passes just as happily on the
     # wrong person's row, so it can never substitute for confirming the human.

@@ -32,7 +32,10 @@ from .peo import extract_peo
 from .certification import peo_from_certification
 from .continuity import check_continuity
 from .outstanding import (outstanding_as_of, shares_outstanding_from_proxy,
-                          implied_outstanding)
+                          implied_outstanding, denominator_is_credible,
+                          resolve_denominator)
+from .reader import read_with_model, compare_readings
+from .rollforward import roll_forward
 from .proxy import find_proxy_filing, load_proxy_html, locate_ownership_tables, location_confidence
 from .validate import (
     Check,
@@ -40,6 +43,7 @@ from .validate import (
     assign_confidence,
     cross_document,
     group_bound,
+    group_percentage_check,
     names_match,
     reconcile_percentage,
 )
@@ -50,7 +54,6 @@ class OwnershipRecord:
     cik: int
     ticker: str | None
     company: str | None
-    ceo_name: str | None
     ceo_source: str | None
 
     shares_13d3: float | None = None
@@ -67,6 +70,38 @@ class OwnershipRecord:
     shares_outstanding: float | None = None
     share_class_count: int | None = None
     denominator_source: str | None = None
+    denominator_as_of: str | None = None
+    denominator_confirmed_by: int = 0
+    denominator_record_date: str | None = None
+    denominator_gap_days: int | None = None
+    denominator_spread: float | None = None
+    denominator_disagreement: float | None = None
+    denominator_region: str | None = None
+    # --- rolled forward from the anchor -------------------------------
+    # Kept in their own fields. shares_13d3 stays the as-filed figure, so
+    # "this is what the proxy says, here is the link" remains true no matter
+    # what the roll-forward does.
+    rolled_shares: float | None = None
+    rolled_pct: float | None = None
+    rolled_net_delta: float | None = None
+    rolled_txn_count: int | None = None
+    numerator_as_of: str | None = None
+    rolled_denominator: float | None = None
+    rolled_denominator_as_of: str | None = None
+    rolled_gap_days: int | None = None
+    buyback_pace: float | None = None
+    parser_shares: float | None = None      # the parser's own figure, kept
+    parser_outstanding: float | None = None
+    llm_outstanding: float | None = None
+    # Second reader. The parsed figure stays the reported one; this records
+    # whether an independent read of the same section agrees.
+    model_shares: float | None = None
+    model_outstanding: float | None = None
+    model_column: str | None = None
+    model_components: str | None = None
+    model_note: str | None = None
+    agreement: str | None = None
+    agreement_detail: str | None = None
 
     pct_reported: float | None = None
     pct_comparable: float | None = None
@@ -83,6 +118,12 @@ class OwnershipRecord:
 
     sic: str | None = None
     sic_description: str | None = None
+    # The CEO as identified from the certification. Set as soon as identity
+    # resolves, so it survives a later failure to find their row.
+    ceo_name: str | None = None
+    # How that name is printed in the ownership table, which is often
+    # abbreviated -- "J. Duato" for Joaquin Duato.
+    ceo_name_in_table: str | None = None
     ceo_identity_source: str | None = None  # sox302_ex31 | ixbrl_peoname | form4_title
     ceo_identity_evidence: str | None = None
     peo_names: str | None = None
@@ -167,8 +208,10 @@ def build_record(
     llm_mode: str = "auto",
     with_form4: bool = False,
     continuity: bool = True,
+    second_reader: bool = False,
+    roll: bool = False,
 ) -> OwnershipRecord:
-    rec = OwnershipRecord(cik=cik, ticker=ticker, company=None, ceo_name=None, ceo_source=None)
+    rec = OwnershipRecord(cik=cik, ticker=ticker, company=None, ceo_source=None)
 
     # ---- 1. locate the proxy ------------------------------------------
     try:
@@ -235,8 +278,6 @@ def build_record(
     if loc_conf == "MEDIUM":
         rec.flags.append("ambiguous_table_location")
 
-    top = candidates[0]
-
     # ---- 3. WHO is the CEO? -------------------------------------------
     # Priority: the Section 302 certification signature, because the signer
     # IS the principal executive officer by statute -- quarterly, back to
@@ -282,13 +323,62 @@ def build_record(
             rec.flags.append("peoname_overtagged_by_filer")
 
     rec.peo_names = "|".join(candidate_names[:4]) or None
+    # Populate the headline name NOW. Previously it was written only when the
+    # table row was matched, so a company whose certification named its CEO
+    # perfectly still showed a blank ceo_name if table selection failed --
+    # which read as an identity failure when it was not one.
+    if candidate_names:
+        rec.ceo_name = candidate_names[0]
+
+    # ---- 3b. Pick the table that actually contains the CEO --------------
+    # Scoring alone cannot separate a company's several ownership tables.
+    # GE prints three -- 5% holders, directors, named executives -- and every
+    # structural signal treats them alike; Exxon's 5% table outranked the one
+    # holding Darren Woods. The discriminator is the CEO's own name, and it
+    # is already known by this point.
+    # Every candidate that contains the CEO, best-scoring first. Ordering
+    # rather than excluding: the model is the filter now, so the parser's job
+    # is to make sure the right table is IN the list, not to decide which one
+    # it is. Both remaining misses -- Coca-Cola and Verizon -- were tables
+    # that never reached the model because a penalty removed them, not tables
+    # the model judged wrongly.
+    ceo_tables: list = []
+    top = candidates[0]
+    if candidate_names:
+        # Containing the CEO's name is necessary but not sufficient: a
+        # compensation or option-grant table may also list them, and reading
+        # a grant figure as a holding would be silently wrong. Require a
+        # holdings column too, and only relax that if nothing else matches.
+        def _has_ceo(cand) -> bool:
+            rows = parse_table_heuristic(table_to_text(cand.html))
+            people = [r for r in rows if not r.is_group_row]
+            return any(names_match(r.name_raw, nm) >= 0.7
+                       for r in people for nm in candidate_names)
+
+        ceo_tables = [c for c in candidates if _has_ceo(c)]
+        # A holdings column still orders the list -- it is a good signal --
+        # but it no longer removes a table from consideration.
+        ceo_tables.sort(
+            key=lambda c: (any("no_holdings_column" in r for r in c.reasons),
+                           -c.score))
+        chosen = ceo_tables[0] if ceo_tables else None
+        if chosen is not None and any("no_holdings_column" in r
+                                      for r in chosen.reasons):
+            rec.flags.append("ceo_table_lacks_holdings_header")
+        if chosen is not None:
+            if chosen is not candidates[0]:
+                rec.flags.append("table_chosen_by_ceo_name")
+            top = chosen
+        else:
+            rec.flags.append("ceo_not_in_any_candidate_table")
 
     # Form 4 is opt-in. Section 16 reports under Rule 16a-1(a)(2) (pecuniary
     # interest), a DIFFERENT legal test from 13d-3, so it is not a like-for-
     # like check on the proxy figure. It is also the slowest step by far --
     # up to 250 filings scanned. Enable with --with-form4 to compare.
     f4 = None
-    if with_form4:
+    need_fallback = not candidate_names
+    if with_form4 or need_fallback:
         try:
             if candidate_names:
                 f4 = filing_for_person(client, cik, candidate_names, before=as_of)
@@ -298,6 +388,13 @@ def build_record(
                     rec.ceo_identity_source = "form4_title"
                     rec.ceo_identity_evidence = f"officerTitle {f4.officer_title!r}"
                     rec.flags.append("ceo_from_title_heuristic")
+                    # The fallback found a name; use it. Citigroup and Union
+                    # Pacific were both discarded as "could not identify the
+                    # CEO" while holding Jane Fraser's and Jim Vena's Form 4
+                    # in hand, because candidate_names was built only from the
+                    # certification and the PvP tag.
+                    if f4.owner_name:
+                        candidate_names.append(f4.owner_name)
         except Exception:  # noqa: BLE001
             pass
         if f4:
@@ -343,7 +440,7 @@ def build_record(
             if alt and alt.total_common:
                 rec.shares_13d3 = alt.total_common
                 rec.shares_source = "form4_all_classes"
-                rec.ceo_name = alt.owner_name
+                rec.ceo_name_in_table = alt.owner_name
                 rec.ceo_source = "form4_name_match"
                 rec.form4_common_shares = alt.total_common
                 rec.form4_filing_date = alt.filing_date
@@ -389,7 +486,22 @@ def build_record(
             extraction.rows, f4, candidate_names=candidate_names)
         rec.ceo_source = source
         if ceo_row is None:
-            rec.error = f"could not identify CEO row -- {diagnostic}"
+            # Distinguish a genuine parse failure from a CEO who simply was
+            # not in office when the proxy was written. Disney's January
+            # proxy lists Robert Iger; Josh D'Amaro was certified in August.
+            # There is no row to find, and no parser change would produce one.
+            cert_period = (cert.period_end or cert.filing_date) if cert else None
+            if (cert_period and rec.filing_date
+                    and cert_period > rec.filing_date):
+                rec.error = (
+                    f"CEO appointed after this proxy: "
+                    f"{candidate_names[0]!r} certified for a period ending "
+                    f"{cert_period}, proxy filed {rec.filing_date}. The "
+                    f"ownership table predates them."
+                )
+                rec.flags.append("ceo_appointed_after_proxy")
+            else:
+                rec.error = f"could not identify CEO row -- {diagnostic}"
             rec.confidence = "LOW"
             return rec
 
@@ -397,19 +509,15 @@ def build_record(
     # row to read. Finish the record here rather than falling through to code
     # that dereferences one.
     if voting_only_resolved and ceo_row is None:
-        scraped = shares_outstanding_from_proxy(html)
-        if scraped["total"]:
-            rec.shares_outstanding = scraped["total"]
-            rec.share_class_count = len(scraped["per_class"])
-            rec.denominator_source = "proxy_text"
-        else:
-            snap = outstanding_as_of(
-                client, cik, as_of=as_of or filing["filing_date"]
-            )
+        snap = outstanding_as_of(client, cik, as_of=as_of or filing["filing_date"])
+        den = resolve_denominator(html, snap, [], group_row=None)
+        if den.value:
+            rec.shares_outstanding = den.value
+            rec.denominator_source = den.source
+            rec.denominator_as_of = den.as_of
+            rec.denominator_confirmed_by = den.confirmed_by
             if snap:
-                rec.shares_outstanding = snap.total_shares
                 rec.share_class_count = snap.class_count
-                rec.denominator_source = f"companyfacts:{snap.tag_used}"
         if rec.shares_outstanding:
             rec.pct_comparable = 100.0 * rec.shares_13d3 / rec.shares_outstanding
         # MEDIUM, never HIGH: the figure comes from Form 4, which reports under
@@ -422,7 +530,9 @@ def build_record(
         }
         return rec
 
-    rec.ceo_name = ceo_row.name_raw
+    rec.ceo_name_in_table = ceo_row.name_raw
+    if not rec.ceo_name:
+        rec.ceo_name = ceo_row.name_raw
     rec.shares_13d3 = ceo_row.shares_reported
     rec.shares_source = "proxy_item403"
     rec.column_used = ceo_row.notes
@@ -439,38 +549,84 @@ def build_record(
 
     all_rows = extraction.rows if extraction else parse_table_heuristic(table_text)
 
+    # The group row is often in a DIFFERENT table from the CEO's. GE lays its
+    # ownership section out in four side-by-side tables -- directors, named
+    # executives, the officers-as-a-group total, and 5% holders -- so
+    # selecting the half containing the CEO left group_bound with nothing to
+    # check. It went from 4 skips to 12 the moment name-based selection
+    # landed. The row is still in the document; look across every candidate.
+    if _group_row(all_rows) is None:
+        for cand in candidates:
+            if cand is top:
+                continue
+            for r in parse_table_heuristic(table_to_text(cand.html)):
+                if r.is_group_row and r.shares_reported:
+                    all_rows = all_rows + [r]
+                    rec.flags.append("group_row_from_adjacent_table")
+                    break
+            if _group_row(all_rows) is not None:
+                break
+
     # ---- 6. denominator -------------------------------------------------
     # The proxy states the record-date count in prose, on the SAME date as the
     # ownership table. Preferred over companyfacts, which drops the class
     # dimension and so returns nothing at all for multi-class issuers.
-    scraped = shares_outstanding_from_proxy(html)
-    if scraped["total"]:
-        rec.shares_outstanding = scraped["total"]
-        rec.share_class_count = len(scraped["per_class"])
-        rec.denominator_source = "proxy_text"
-    else:
-        snap = outstanding_as_of(client, cik, as_of=as_of or filing["filing_date"])
+    # No source gives shares outstanding at the proxy record date in
+    # structured form: Schedule 14A Item 6(a) mandates that the proxy state
+    # it, but not how. So take agreement between independent sources instead
+    # of trusting any one -- the tagged cover-page figure, the proxy's own
+    # prose, and the denominator implied by the filer's printed percentages.
+    snap = outstanding_as_of(client, cik, as_of=as_of or filing["filing_date"])
+    den = resolve_denominator(
+        html, snap, all_rows, group_row=_group_row(all_rows),
+        # Search the table's own neighbourhood first. Filers state the count
+        # where they need it -- in the paragraph introducing the table or in
+        # its footnotes -- and the rest of the document is where the wrong
+        # answers live.
+        classify=second_reader,
+        preceding=top.preceding_context if top else None,
+        table_context=top.text[:6000] if top else None,
+        footnotes=top.trailing_context if top else None,
+    )
+
+    if den.value:
+        rec.shares_outstanding = den.value
+        rec.denominator_source = den.source
+        rec.denominator_as_of = den.as_of
+        rec.denominator_confirmed_by = den.confirmed_by
+        rec.denominator_spread = den.spread
+        rec.denominator_record_date = den.record_date
+        rec.denominator_gap_days = den.gap_days
+        rec.denominator_disagreement = den.disagreement
+        rec.denominator_region = den.region
+        rec.parser_outstanding = den.parser_value
+        rec.llm_outstanding = den.model_value
+        if den.region == "whole_document":
+            # Found only by scanning everything, which is the weakest case
+            # and the one that produced both silent errors so far.
+            rec.flags.append("denominator_from_whole_document")
+        # The proxy's figure is always what gets reported, so a disagreement
+        # has to be loud enough to notice.
+        if den.disagreement is not None and den.disagreement > 0.05:
+            rec.flags.append("denominator_disagrees_over_5pct")
+        # A stale denominator is tolerable; an unmeasured one is not.
+        if den.gap_days is not None and den.gap_days > 120:
+            rec.flags.append("denominator_over_4_months_stale")
+        if den.confirmed_by == 0 and len(den.candidates) > 1:
+            rec.flags.append("denominator_sources_disagree")
+        elif den.confirmed_by == 0:
+            rec.flags.append("denominator_unconfirmed")
+        if den.spread and den.spread > 0.05:
+            rec.flags.append("denominator_spread_over_5pct")
+        if any("rejected" in n for n in den.notes):
+            rec.flags.append("denominator_candidate_rejected")
+        if any("classifier rejected" in n for n in den.notes):
+            rec.flags.append("classifier_rejected_candidate")
+        rec.escalation_reason = "; ".join(den.notes)[:300] or rec.escalation_reason
         if snap:
-            rec.shares_outstanding = snap.total_shares
             rec.share_class_count = snap.class_count
-            rec.denominator_source = f"companyfacts:{snap.tag_used}"
-        else:
-            # Last resort: back it out of the filer's own arithmetic. Any row
-            # stating both a share count and a real percentage implies the
-            # denominator, and it needs no external source at all.
-            implied = None
-            for r in all_rows:
-                implied = implied_outstanding(
-                    r.shares_reported, r.pct_reported, None
-                )
-                if implied:
-                    break
-            if implied:
-                rec.shares_outstanding = implied
-                rec.denominator_source = "implied_from_table"
-                rec.flags.append("denominator_implied")
-            else:
-                rec.flags.append("no_shares_outstanding")
+    else:
+        rec.flags.append("no_shares_outstanding")
 
     if rec.shares_13d3 is not None and rec.shares_outstanding:
         rec.pct_comparable = 100.0 * rec.shares_13d3 / rec.shares_outstanding
@@ -504,6 +660,10 @@ def build_record(
     if recon.passed and recon.value:
         rec.options_60d_implied = recon.value
     report.add(group_bound(ceo_row, _group_row(all_rows)))
+    # Recovers numeric coverage on the rows where the CEO's own percentage is
+    # an asterisk, which is most of them.
+    grp_pct = group_percentage_check(_group_row(all_rows), rec.shares_outstanding)
+    report.add(grp_pct)
 
     # Identity: does the table row match the name on the Section 302
     # certification? That is the check that confirms the right human, and it
@@ -540,6 +700,118 @@ def build_record(
         rec.flags.append("verified_but_no_percentage")
     report.flags = rec.flags
     rec.confidence = report.confidence
+    # ---- the model reads the table ---------------------------------------
+    # Primary, not a check. On a hundred companies the two readers disagreed
+    # 16 times, and on inspection the model was right in at least ten of them
+    # while the parser was clearly right in none. The parser's recurring
+    # failure was reporting ONE COLUMN as the whole figure -- Caterpillar's
+    # options without its common stock, Stryker's acquirable without its
+    # owned, BlackRock's units without its common -- which no amount of
+    # column-role tuning has fixed across a year of filings.
+    #
+    # The denominator was moved to the model two rounds earlier and
+    # corroboration rose from 31 rows confirmed by two sources to 74. This
+    # applies the same finding to the numerator.
+    #
+    # What does NOT change: the parser still locates the table and the
+    # regions, which it does well; it still produces its own figure as a free
+    # cross-check; and every arithmetic check still applies to whatever
+    # number is reported. The model errs too -- it read Blackstone's
+    # partnership units as common stock -- so making it primary without the
+    # checks would only relocate the silent failure.
+    if second_reader and candidate_names:
+        # If the model says the CEO's beneficial ownership is not in the
+        # table it was given, that is evidence about the TABLE, not just a
+        # missing answer -- and it was being thrown away.
+        #
+        # Altria's CEO holds 510,538 and the parser reported 4,816,743, a
+        # figure absent from the ownership table entirely. Bank of America's
+        # holds 2,803,195 and the parser reported 0. Both were flagged
+        # "several ownership tables; picked by name", both had the model
+        # correctly decline, and both then published the parser's number.
+        #
+        # So try the next candidate table when the model declines. Bounded
+        # to three attempts: beyond that the problem is not which table.
+        reading = None
+        # The section first, when one qualified: it holds every table in the
+        # ownership discussion, so the model is not limited to whichever one
+        # the parser scored highest.
+        attempts = [("table", c) for c in ceo_tables[:3]]
+        for attempt, (kind, cand) in enumerate(attempts):
+            text_for_model = (table_text if cand is top
+                              else table_to_text(cand.html))
+            reading = read_with_model(
+                candidate_names[0],
+                text_for_model,
+                introduction=getattr(cand, "preceding_context", ""),
+                footnotes=getattr(cand, "trailing_context", ""),
+                model=model,
+            )
+            if reading.shares or reading.error:
+                if attempt and reading.shares:
+                    rec.flags.append("table_rechosen_after_model_declined")
+                    top = cand
+                    ceo_row = None
+                break
+            if attempt == 0:
+                rec.flags.append("model_declined_first_table")
+        rec.model_shares = reading.shares
+        rec.model_outstanding = reading.shares_outstanding
+        rec.model_column = reading.column_used
+        rec.model_components = reading.components
+        rec.model_note = reading.note or reading.error
+        agr = compare_readings(rec.shares_13d3, rec.shares_outstanding, reading)
+        rec.agreement = agr.verdict
+        rec.agreement_detail = agr.detail
+
+        # The model's figure becomes the reported one; the parser's is kept
+        # beside it. Provenance is recorded either way, so any published
+        # number traces to a named column in a named filing.
+        rec.parser_shares = rec.shares_13d3
+        if reading.shares and not reading.error:
+            rec.shares_13d3 = reading.shares
+            rec.shares_source = "llm_table_read"
+            rec.column_used = (f"column={reading.column_used}"
+                               if reading.column_used else rec.column_used)
+            if rec.shares_outstanding:
+                rec.pct_comparable = (
+                    100.0 * rec.shares_13d3 / rec.shares_outstanding)
+        elif reading.error:
+            rec.flags.append("model_read_failed_using_parser")
+        report.add(Check(
+            "readers_agree",
+            {"agree": True, "disagree": False, "model_only": False,
+             "parser_only": None, "neither": None,
+             "not_compared": None}[agr.verdict],
+            agr.detail,
+        ))
+        if agr.verdict == "disagree":
+            rec.flags.append("readers_disagree")
+        elif agr.verdict == "model_only":
+            rec.flags.append("only_model_found_a_figure")
+
+    # ---- roll the anchor forward ----------------------------------------
+    if roll and rec.shares_13d3 is not None and rec.filing_date:
+        rf = roll_forward(
+            client, cik, rec.shares_13d3, rec.filing_date,
+            owner_cik=None, as_of=as_of,
+        )
+        rec.rolled_shares = rf.rolled_shares
+        rec.rolled_pct = rf.pct_current
+        rec.rolled_net_delta = rf.net_delta
+        rec.rolled_txn_count = len(rf.transactions)
+        rec.numerator_as_of = rf.numerator_as_of
+        rec.rolled_denominator = rf.denominator
+        rec.rolled_denominator_as_of = rf.denominator_as_of
+        rec.rolled_gap_days = rf.gap_days
+        rec.buyback_pace = rf.buyback_pace
+        if rf.net_delta:
+            rec.flags.append("rolled_forward")
+        if rf.skipped_codes:
+            rec.flags.append("rolled_neutral_codes_present")
+        if rf.gap_days and rf.gap_days > 120:
+            rec.flags.append("rolled_denominator_over_4_months_behind")
+
     rec.validation = report.as_dict()
     return rec
 
@@ -567,7 +839,7 @@ def run_tickers(
             except KeyError as exc:
                 out.append(
                     OwnershipRecord(
-                        cik=0, ticker=ticker, company=None, ceo_name=None,
+                        cik=0, ticker=ticker, company=None,
                         ceo_source=None, error=str(exc), confidence="LOW",
                     )
                 )
@@ -579,7 +851,7 @@ def run_tickers(
             )
         except Exception as exc:  # noqa: BLE001
             rec = OwnershipRecord(
-                cik=cik, ticker=ticker, company=None, ceo_name=None,
+                cik=cik, ticker=ticker, company=None,
                 ceo_source=None, error=f"unhandled: {exc}", confidence="LOW",
             )
         out.append(rec)

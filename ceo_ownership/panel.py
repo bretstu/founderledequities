@@ -152,13 +152,26 @@ def build_panel(
     model: str | None = None,
     continuity: bool = True,
     with_form4: bool = False,
+    second_reader: bool = False,
+    roll: bool = False,
     skip_non_operating: bool = False,
+    redo: str = "none",          # none | failed | all
     progress_every: int = 10,
     on_progress=None,
 ) -> PanelProgress:
     """Run the pipeline over `ciks`, appending to `checkpoint` as it goes."""
     client = EdgarClient(user_agent=user_agent)
     completed = load_completed(checkpoint)
+
+    # After fixing a bug you want the affected companies reprocessed, but the
+    # checkpoint would otherwise skip them and the run would appear to change
+    # nothing. `load_completed` keeps the LAST entry per CIK, so re-running
+    # simply appends a newer row that supersedes the old one -- no rewrite of
+    # the file is needed.
+    if redo == "all":
+        completed = {}
+    elif redo == "failed":
+        completed = {k: v for k, v in completed.items() if not v.get("error")}
 
     todo = [c for c in ciks if c not in completed]
     prog = PanelProgress(
@@ -198,7 +211,7 @@ def build_panel(
         kind, why = classify_filer(client, cik)
         if skip_non_operating and kind == "investment_company":
             record = OwnershipRecord(
-                cik=cik, ticker=None, company=None, ceo_name=None,
+                cik=cik, ticker=None, company=None,
                 ceo_source=None, confidence="LOW",
                 error=f"skipped by --skip-funds: {why}",
                 flags=[f"filer_kind:{kind}", "prefilter_skipped"],
@@ -212,6 +225,7 @@ def build_panel(
             rec = build_record(
                 client, cik, as_of=as_of, model=model, llm_mode=llm_mode,
                 with_form4=with_form4, continuity=continuity,
+                second_reader=second_reader, roll=roll,
             )
             record = rec.as_dict()
             record.setdefault("flags", []).append(f"filer_kind:{kind}")
@@ -219,7 +233,7 @@ def build_panel(
             raise
         except Exception as exc:  # noqa: BLE001
             record = OwnershipRecord(
-                cik=cik, ticker=None, company=None, ceo_name=None,
+                cik=cik, ticker=None, company=None,
                 ceo_source=None, confidence="LOW",
                 error=f"unhandled: {type(exc).__name__}: {exc}",
             ).as_dict()

@@ -12,7 +12,8 @@ from .extract import extract_ownership, table_to_text
 from .form4 import latest_ceo_filing, filing_for_person
 from .peo import extract_peo
 from .certification import peo_from_certification
-from .outstanding import outstanding_as_of, shares_outstanding_from_proxy
+from .outstanding import (outstanding_as_of, shares_outstanding_from_proxy,
+                          resolve_denominator, denominator_regions)
 from .proxy import (
     find_proxy_filing,
     load_proxy_html,
@@ -23,7 +24,8 @@ from .validate import names_match
 
 
 def inspect_ticker(
-    ticker: str,
+    ticker: str | None = None,
+    cik: int | None = None,
     as_of: str | None = None,
     user_agent: str | None = None,
     use_llm: bool = True,
@@ -33,8 +35,12 @@ def inspect_ticker(
     show_form4: bool = False,
 ) -> None:
     client = EdgarClient(user_agent=user_agent)
-    cik = client.resolve_cik(ticker)
-    print(f"\n{'=' * 70}\n{ticker}  (CIK {cik})\n{'=' * 70}")
+    if cik is None:
+        if not ticker:
+            raise ValueError("pass either a ticker or a cik")
+        cik = client.resolve_cik(ticker)
+    label = ticker or f"CIK {cik}"
+    print(f"\n{'=' * 70}\n{label}  (CIK {cik})\n{'=' * 70}")
 
     filing = find_proxy_filing(client, cik, before=as_of)
     print(f"\n1. PROXY")
@@ -73,21 +79,40 @@ def inspect_ticker(
         candidate_names.append(cert.name)
     else:
         print("   [PRIMARY] SOX 302 certification: NOT FOUND")
-        # Show why, so the failure is debuggable without guessing.
-        from .certification import _pick_exhibits, PERIODIC_FORMS
+        # Show the filing's actual contents. Reporting "0 candidates" only
+        # says the matcher found nothing -- it does not say what was there,
+        # which is the thing needed to fix it.
+        from .certification import (_pick_exhibits, _small_documents,
+                                    _read_certification, PERIODIC_FORMS)
         subs = client.submissions(cik)
         recent = [x for x in subs.get("_filings", [])
                   if x.get("form") in PERIODIC_FORMS]
         recent.sort(key=lambda x: x.get("filingDate", ""), reverse=True)
+        if not recent:
+            print("     no 10-K/10-Q filings at all -- not an operating company?")
         for x in recent[:2]:
+            acc = x["accessionNumber"]
+            print(f"     {x['form']} {x['filingDate']}  acc {acc}")
             try:
-                idx = client.filing_index(cik, x["accessionNumber"])
+                idx = client.filing_index(cik, acc)
             except Exception as exc:  # noqa: BLE001
-                print(f"     {x['form']} {x['filingDate']}: index error {exc}")
+                print(f"       index fetch FAILED: {exc}")
                 continue
-            cands = _pick_exhibits(idx)
-            print(f"     {x['form']} {x['filingDate']}: "
-                  f"{len(cands)} ex-31 candidate(s) {[c[0] for c in cands[:4]]}")
+            items = idx.get("directory", {}).get("item", [])
+            print(f"       {len(items)} documents in the filing:")
+            for it in items[:18]:
+                print(f"         {(it.get('name') or '')[:46]:<46} "
+                      f"type={(it.get('type') or '-')[:12]:<12} "
+                      f"size={it.get('size') or '-'}")
+            named = _pick_exhibits(idx)
+            small = _small_documents(idx, {n for n, _ in named})
+            print(f"       ex-31 by name/type : {[n for n, _ in named][:4]}")
+            print(f"       small-doc fallback : {[n for n, _ in small][:6]}")
+            for doc, _t in (named + small)[:5]:
+                hit = _read_certification(client, cik, acc, doc)
+                verdict = f"signers {hit[0]}" if hit else "no certification found"
+                print(f"         read {doc[:40]:<40} -> {verdict}")
+            print(f"       primaryDocument    : {x.get('primaryDocument')}")
 
     peo = extract_peo(html)
     if peo.names:
@@ -165,50 +190,43 @@ def inspect_ticker(
             print()
 
     print(f"\n5. DENOMINATOR")
-    scraped = shares_outstanding_from_proxy(html)
-    if scraped["total"]:
-        print(f"   from proxy text: {scraped['total']:,.0f}")
-        for k, v in scraped["per_class"].items():
-            print(f"     {k:<10} {v:,.0f}")
-        for m in scraped["matches"][:3]:
-            print(f"     matched: ...{m}...")
+    top_cand = cands[table_index] if cands else None
+    den = resolve_denominator(
+        html, outstanding_as_of(client, cik, as_of=as_of or filing["filing_date"]),
+        [], group_row=None,
+        preceding=top_cand.preceding_context if top_cand else None,
+        footnotes=top_cand.trailing_context if top_cand else None,
+    )
+    if den.value:
+        print(f"   CHOSEN  {den.value:>18,.0f}  via {den.source}"
+              f"  region={den.region}")
+        print(f"   record date {den.record_date}   gap {den.gap_days}d   "
+              f"confirmed by {den.confirmed_by}")
     else:
-        print("   proxy text: no match, falling back to companyfacts")
-    snap = outstanding_as_of(client, cik, as_of=as_of or filing["filing_date"])
-    if snap:
-        print(f"   companyfacts: {snap.total_shares:,.0f} across {snap.class_count} class(es)"
-              f"  [{snap.tag_used}, end {snap.end_date}, filed {snap.filed_date}]")
-        if snap.class_count > 1:
-            print(f"   per class    {[f'{v:,.0f}' for v in snap.per_class]}")
-    else:
-        print("   NOT FOUND -- listing available share-count tags:")
-        try:
-            facts = client.company_facts(cik)
-            for tax in ("dei", "us-gaap"):
-                for tag, body in facts.get("facts", {}).get(tax, {}).items():
-                    if "shares" not in tag.lower() and "Shares" not in tag:
-                        continue
-                    units = list(body.get("units", {}).keys())
-                    n = sum(len(v) for v in body.get("units", {}).values())
-                    print(f"     {tax}:{tag}  units={units} facts={n}")
-        except Exception as exc:  # noqa: BLE001
-            print(f"     could not list tags: {exc}")
+        print("   no denominator resolved")
+    print("   candidates:")
+    for c in den.candidates:
+        print(f"      {c.source:<24} {c.value:>18,.0f}  {c.note[:52]}")
+    for n in den.notes:
+        print(f"      note: {n[:96]}")
 
-    if show_table:
-        cand = cands[table_index]
-        text = table_to_text(cand.html)
-        print(f"\n{'=' * 70}")
-        print(f"TABLE [{table_index}] AS THE EXTRACTOR SEES IT  "
-              f"({len(text):,} chars)")
-        print("=" * 70)
-        print(text[:12000])
-        if len(text) > 12000:
-            print(f"\n... truncated, {len(text) - 12000:,} more chars ...")
-        print(f"\n{'-' * 70}")
-        print(f"FOOTNOTE CONTEXT (first {footnote_chars:,} chars)")
-        print("-" * 70)
-        print(cand.trailing_context[:footnote_chars])
-        print()
+    # Which region answers, and what each one yields -- the question the
+    # previous diagnostic could not settle.
+    print("\n   region-by-region:")
+    for name, text in denominator_regions(
+            html,
+            None,
+            top_cand.trailing_context if top_cand else None,
+            top_cand.preceding_context if top_cand else None):
+        found = shares_outstanding_from_proxy(text, window=None)
+        if found["total"]:
+            classes = ", ".join(f"{k}={v:,.0f}"
+                                for k, v in found["per_class"].items())
+            print(f"      {name:<26} {found['total']:>18,.0f}   [{classes}]")
+            if found["matches"]:
+                print(f"         matched: ...{found['matches'][0][:150]}...")
+        else:
+            print(f"      {name:<26} {'-':>18}")
 
     if not use_llm:
         print("\n6. EXTRACTION  (skipped, --no-llm)\n")

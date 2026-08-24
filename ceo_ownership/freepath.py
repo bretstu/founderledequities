@@ -32,7 +32,11 @@ from .validate import names_match
 SHARES_RE = re.compile(r"^([\d,]{1,3}(?:,\d{3})*(?:\.\d+)?)((?:\s*\(\d+\))*)\s*$")
 PCT_RE = re.compile(r"^(\*|\u2014|-|<?\s*[\d.]+\s*%?)$")
 FOOTNOTE_REF_RE = re.compile(r"\((\d+)\)")
-FOOTNOTE_CELL_RE = re.compile(r"^\(?\d{1,2}\)?$")
+# Footnote markers start at 1. A bare "0" is a real holding -- Johnson &
+# Johnson's CEO has zero deferred share units -- and deleting it shifted
+# every column after it left, so his total column was read as options and
+# added to his common shares: 1,763,964 instead of 1,407,667.
+FOOTNOTE_CELL_RE = re.compile(r"^\(?[1-9]\d?\)?$")
 DASH_RE = re.compile(r"^[\u2014\u2013-]$")
 
 SUBHEADER_TOKEN_RE = re.compile(r"^(shares?|%|percent|number|amount|#)$", re.I)
@@ -45,13 +49,23 @@ VOTING_ONLY_RE = re.compile(
 COLUMN_ROLES: list[tuple[str, str]] = [
     # An explicit total IS the 13d-3 figure -- JPMorgan prints common stock and
     # SARs separately, then totals them.
-    ("total_beneficial", r"total beneficial|aggregate (?:amount )?beneficial|"
+    # Allow words between "total" and "beneficially owned": Johnson &
+    # Johnson heads its column "Total number of shares beneficially owned",
+    # which the stricter pattern missed. The column was then read as options
+    # and ADDED to the common column, reporting Duato at 1,763,964 instead of
+    # 1,407,667 -- the total counted twice over.
+    ("total_beneficial", r"total\s+(?:\w+\s+){0,3}beneficially owned|"
+                         r"total beneficial|aggregate (?:amount )?beneficial|"
                          r"total (?:shares )?beneficially owned"),
     # Acquirable within 60 days: part of 13d-3, so ADDED, never chosen between.
-    ("options", r"option|\bsar\b|sars|exercisab\w+ within|right to (?:buy|acquire)"),
+    # "Stock that May Be Acquired within 60 Days" is Capital One's wording
+    # for the 60-day column and matched none of these before.
+    ("options", r"option|\bsar\b|sars|exercisab\w+ within|"
+                r"right to (?:buy|acquire)|may be acquired|acquirable"),
     # Explicitly NOT beneficially owned -- filers say so in the footnotes.
     ("units", r"additional underlying|underlying (?:shares|stock)|"
-              r"(?:stock|share) units?|unvested|deferred (?:stock|share)"),
+              r"(?:stock|share) units?|unvested|deferred (?:stock|share)|"
+              r"\brsus?\b|settled rsus?|restricted stock units?"),
     ("percent", r"percent|%|\bpct\b"),
     ("voting_power", r"(?:%|percent).{0,20}voting|voting power"),
     ("sole", r"sole voting|sole .{0,20}dispositive"),
@@ -59,7 +73,8 @@ COLUMN_ROLES: list[tuple[str, str]] = [
     ("total", r"^total\b|^total\s*\(#\)"),
     ("common", r"common stock|common shares?|shares beneficially owned|"
                r"amount and nature|beneficially owned|shares owned|"
-               r"^shares?\b|^common\b|ordinary shares?"),
+               r"number of shares|total number of shares|shares held|"
+               r"aggregate beneficial|^shares?\b|^common\b|ordinary shares?"),
 ]
 
 
@@ -117,6 +132,80 @@ def classify_header(header_cells: list[str]) -> list[str]:
                     break
         roles.append(role)
     return roles
+
+
+def _data_width(lines: list[str]) -> int:
+    """Cell count of the table's data rows, by majority vote."""
+    from collections import Counter
+    widths = Counter()
+    for ln in lines:
+        cells = _cells(ln)
+        if any("," in c and _to_number(c) is not None for c in cells):
+            widths[len(cells)] += 1
+    return widths.most_common(1)[0][0] if widths else 0
+
+
+def _role_quality(roles: list[str]) -> int:
+    """How many columns a role assignment actually identifies."""
+    strong = {"common", "options", "total_beneficial", "total", "percent",
+              "units", "sole", "shared", "voting_power"}
+    return sum(1 for r in roles if r in strong)
+
+
+def parse_spanning_header(lines: list[str]) -> tuple[list[str], int] | None:
+    """Rebuild a header split across two rows by a spanning cell.
+
+    Capital One's ownership table reads:
+
+        Name | Amount and Nature of Beneficial Ownership | Stock-Settled RSUs | Total
+        Common Stock | Stock that May Be Acquired within 60 Days | Total Beneficial Ownership | Percent of Class
+        Richard D. Fairbank | 3,732,088 | 323,166 | 4,055,254 | * | 153,351 | 4,208,605
+
+    Four cells, four cells, seven data cells: "Amount and Nature of Beneficial
+    Ownership" spans the four columns the second row names. Reading only the
+    first row mapped that category label onto the first data cell and
+    returned 3,732,088 -- common stock alone -- when the 13d-3 figure,
+    4,055,254, sat in a column whose name we never read.
+
+    The arithmetic locates the span: len(row0) - 1 + len(row1) == data_width.
+    Each insertion point is tried and the one identifying the most columns
+    wins.
+    """
+    width = _data_width(lines)
+    if width < 3:
+        return None
+
+    header_rows = []
+    for i, ln in enumerate(lines[:4]):
+        cells = _cells(ln)
+        if not cells:
+            continue
+        if any("," in c and _to_number(c) is not None for c in cells):
+            break          # reached the data
+        header_rows.append((i, cells))
+    if len(header_rows) < 2:
+        return None
+
+    (i0, row0), (i1, row1) = header_rows[0], header_rows[1]
+    if len(row0) - 1 + len(row1) != width:
+        return None
+
+    best: tuple[int, list[str], int] | None = None
+    for pos in range(1, len(row0)):        # never replace the name column
+        # The spanning label qualifies the columns beneath it, so carry it
+        # down: ServiceNow's sub-columns are bare "Number" and "Percent",
+        # meaningless alone but clear as "Shares Beneficially Owned Number".
+        span_label = row0[pos]
+        qualified = [f"{span_label} {c}".strip() for c in row1]
+        merged = row0[:pos] + qualified + row0[pos + 1:]
+        if len(merged) != width:
+            continue
+        roles = classify_header(merged)
+        quality = _role_quality(roles)
+        if best is None or quality > best[0]:
+            best = (quality, roles, i1)
+
+    return (best[1], best[2]) if best else None
 
 
 def parse_multirow_header(lines: list[str]) -> tuple[list[str], int] | None:
@@ -179,7 +268,7 @@ def _to_number(cell: str) -> float | None:
         return None
 
 
-def strip_footnote_cells(cells: list[str]) -> list[str]:
+def strip_footnote_cells(cells: list[str], expected: int | None = None) -> list[str]:
     """Drop cells that are bare footnote superscripts.
 
     Rendering turns "900,572(12)" into two cells: "900,572" and "12". Only
@@ -187,6 +276,13 @@ def strip_footnote_cells(cells: list[str]) -> list[str]:
     number -- otherwise a genuine tiny holding (JPMorgan lists a director with
     5 shares) would be discarded.
     """
+    # Only strip when the row genuinely has more cells than the header
+    # describes. Without that check the stripper is free to delete a real
+    # value from a well-formed row, which is how a legitimate zero became a
+    # column shift.
+    if expected is not None and len(cells) <= expected:
+        return cells
+
     out: list[str] = []
     prev_was_number = False
     for cell in cells:
@@ -272,7 +368,7 @@ def parse_table_heuristic(table_text: str) -> list[OwnershipRow]:
 
     roles: list[str] = []
     header_idx = 0
-    multi = parse_multirow_header(lines)
+    multi = parse_multirow_header(lines) or parse_spanning_header(lines)
     if multi:
         roles, header_idx = multi
     else:
@@ -296,7 +392,7 @@ def parse_table_heuristic(table_text: str) -> list[OwnershipRow]:
         if not re.search(r"[A-Za-z]{2}", name):
             continue
 
-        cells = strip_footnote_cells(raw_cells)
+        cells = strip_footnote_cells(raw_cells, len(roles) if roles else None)
         refs = FOOTNOTE_REF_RE.findall(line)
         clean_name = FOOTNOTE_REF_RE.sub("", name)
         clean_name = re.sub(r"\s+\d{1,2}$", "", clean_name).strip(" .,")

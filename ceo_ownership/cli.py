@@ -9,19 +9,31 @@ import json
 import sys
 from datetime import date
 
+from .config import SEC_BASE
 from .edgar import EdgarClient
 from .dashboard import load_records, write_dashboard
+from .site import write_site
+from .triage import triage
 from .inspect import inspect_ticker
 from .panel import build_panel, panel_records, load_completed
-from .verify import build_sample, write_worksheet, score_worksheet, format_score
+from .verify import (build_sample, write_worksheet, score_worksheet,
+                     format_score, answer_counts, WorksheetOpenError,
+                     build_roll_worksheet, write_roll_worksheet)
 from .pipeline import run_tickers, OwnershipRecord
 from .universe import proxy_filers, find_exits
 
 CSV_COLUMNS = [
-    "ticker", "cik", "company", "sic_description", "ceo_name", "ceo_source", "ceo_identity_source", "ceo_identity_evidence", "peo_names",
+    "ticker", "cik", "company", "sic_description", "ceo_name", "ceo_name_in_table", "ceo_source", "ceo_identity_source", "ceo_identity_evidence", "peo_names",
     "resolution", "escalation_reason",
     "shares_13d3", "shares_source", "column_used", "options_60d", "options_60d_implied", "prior_year_shares", "yoy_change_pct",
     "shares_outstanding", "share_class_count", "denominator_source",
+    "denominator_region", "parser_shares", "model_shares", "model_note", "model_outstanding",
+    "parser_outstanding", "llm_outstanding",
+    "rolled_shares", "rolled_pct", "rolled_net_delta", "rolled_txn_count",
+    "numerator_as_of", "rolled_denominator", "rolled_denominator_as_of",
+    "rolled_gap_days", "buyback_pace",
+    "model_column", "agreement", "agreement_detail", "denominator_as_of", "denominator_record_date", "denominator_gap_days",
+    "denominator_confirmed_by", "denominator_disagreement", "denominator_spread",
     "pct_comparable", "pct_reported", "pct_voting_power",
     "as_of_date", "filing_date", "source_form", "confidence",
     "form4_common_shares", "form4_filing_date",
@@ -124,9 +136,13 @@ def cmd_run(args) -> int:
 
 
 def cmd_inspect(args) -> int:
+    if not args.ticker and not args.cik:
+        print("Pass --ticker or --cik")
+        return 1
     def _run():
         inspect_ticker(
-            args.ticker.strip().upper(),
+            ticker=args.ticker.strip().upper() if args.ticker else None,
+            cik=int(args.cik) if args.cik else None,
             as_of=args.as_of,
             user_agent=args.user_agent,
             use_llm=not args.no_llm,
@@ -154,50 +170,149 @@ def cmd_inspect(args) -> int:
 
 
 def cmd_panel(args) -> int:
+    """Run the pipeline across a universe. This is the only path.
+
+    The order of the universe file is the order of the run, unchanged. That
+    matters more than it sounds: the working set has to be the SAME hundred
+    companies every time, or a hand-checked answer from one run cannot be
+    compared with a figure from the next.
+
+    Ranking by market cap was tried and removed. Public float, the only
+    SEC-native size signal, is mandated and XBRL-tagged but unvalidated --
+    Cabot reports $4.4 quadrillion -- and a quote service brought in a
+    dependency whose answers change between runs for reasons unrelated to the
+    pipeline.
+    """
     ciks: list[int] = []
-    with open(args.universe, newline="", encoding="utf-8") as fh:
-        seen = set()
+    tickers: list[str] = []
+    seen: set[int] = set()
+    with open(args.universe, newline="", encoding="utf-8-sig") as fh:
         for row in csv.DictReader(fh):
-            if not row.get("cik"):
+            if row.get("cik"):
+                c = int(row["cik"])
+                if c not in seen:
+                    seen.add(c)
+                    ciks.append(c)
+            elif row.get("ticker"):
+                tickers.append(row["ticker"].strip().upper())
+
+    client = EdgarClient(user_agent=args.user_agent)
+
+    if tickers:
+        # Resolved through the SEC's own ticker file, so the same list always
+        # produces the same companies.
+        unresolved = []
+        for t in tickers:
+            try:
+                c = client.resolve_cik(t)
+            except KeyError:
+                unresolved.append(t)
                 continue
-            c = int(row["cik"])
             if c not in seen:
                 seen.add(c)
                 ciks.append(c)
-    if args.limit:
-        ciks = ciks[: args.limit]
+        if unresolved:
+            print(f"Could not resolve {len(unresolved)} ticker(s): "
+                  f"{', '.join(unresolved)}")
 
-    print(f"Universe: {len(ciks)} companies -> {args.checkpoint}")
+    if args.top:
+        ciks = ciks[: args.top]
+    if args.second_reader:
+        # A flag that silently does nothing is worse than one that stops. The
+        # reader failed quietly once already, because a missing key and a
+        # disabled reader look identical in the output.
+        from .config import SETTINGS
+        if not SETTINGS.anthropic_api_key:
+            print("--second-reader needs ANTHROPIC_API_KEY. Set it in .env "
+                  "or drop the flag.")
+            return 1
+        try:
+            import anthropic  # noqa: F401
+        except ImportError:
+            print("--second-reader needs the anthropic package: "
+                  "python -m pip install anthropic")
+            return 1
+        print("Second reader: on (model reads each ownership section and "
+              "each denominator region)")
+
+    print(f"Working set: {len(ciks)} companies from {args.universe}, "
+          f"in the order listed")
+    print(f"Checkpoint -> {args.checkpoint}")
+
     prog = build_panel(
         ciks, checkpoint=args.checkpoint, user_agent=args.user_agent,
         as_of=args.as_of, llm_mode=args.llm_mode, model=args.model,
         continuity=not args.no_continuity,
         skip_non_operating=args.skip_funds,
+        second_reader=args.second_reader,
+        roll=args.roll,
+        redo=args.redo,
     )
-    records = panel_records(args.checkpoint)
+    # Only the working set. The checkpoint accumulates every company ever
+    # processed against it, so writing all of it made a --top 10 run produce
+    # a hundred-row file -- and made a run look like it had done work it had
+    # not.
+    wanted = set(ciks)
+    records = [r for r in panel_records(args.checkpoint)
+               if int(r.get("cik") or 0) in wanted]
+    extra = len(panel_records(args.checkpoint)) - len(records)
+    if extra:
+        print(f"({extra} other companies are in {args.checkpoint} from earlier "
+              f"runs and are not in this output)")
     if args.out:
         _write_csv_dicts(records, args.out)
         print(f"Wrote panel      -> {args.out}")
     if args.html:
         write_dashboard(records, args.html, args.title)
         print(f"Wrote dashboard  -> {args.html}")
+    if args.site:
+        write_site(records, args.site, args.site_title)
+        print(f"Wrote site       -> {args.site}")
     print(f"\nDone: {prog.ok} with a figure, {prog.errored} without.")
     return 0
 
 
 def cmd_verify(args) -> int:
+    if args.roll:
+        records = (panel_records(args.checkpoint) if args.checkpoint
+                   else load_records(args.json))
+        rows = build_roll_worksheet(records)
+        write_roll_worksheet(rows, args.out)
+        flagged = sum(1 for r in rows if r["hint"])
+        moved = sum(1 for r in rows if r["net_delta"] not in ("0", ""))
+        print(f"Wrote roll-forward worksheet -> {args.out} "
+              f"({len(rows)} companies, {moved} moved since the proxy, "
+              f"{flagged} flagged)")
+        return 0
+
     if args.score:
         print(format_score(score_worksheet(args.score, tolerance=args.tolerance)))
         return 0
 
     records = (panel_records(args.checkpoint) if args.checkpoint
                else load_records(args.json))
-    rows = build_sample(records)
-    write_worksheet(rows, args.out)
+    rows = build_sample(records, include_all=not args.sample_only)
+    try:
+        preserved = write_worksheet(rows, args.out, force=args.force)
+    except WorksheetOpenError as exc:
+        print(f"\n{exc}\n")
+        return 1
 
     from collections import Counter
-    tally = Counter(r["stratum"] for r in rows)
-    print(f"Wrote worksheet -> {args.out}  ({len(rows)} companies to check)")
+    # The worksheet no longer carries a stratum column. What matters when
+    # you sit down to check is how many rows are flagged and why, since
+    # those are sorted to the top.
+    tally = Counter((r.get("hint") or "").split(";")[0].strip() or "no flag"
+                    for r in rows)
+    print(f"Wrote worksheet -> {args.out}  ({len(rows)} companies)")
+    if preserved:
+        print(f"Carried forward {preserved} row(s) you had already checked.")
+    counts = answer_counts(args.out)
+    if any(counts.values()):
+        print("Checked so far:")
+        for col, n in counts.items():
+            if n:
+                print(f"    {n:>4}  {col}")
     for name, n in tally.most_common():
         print(f"  {n:>3}  {name}")
     print("\nOpen each source_url, find the ownership table, and fill in")
@@ -214,6 +329,28 @@ def _write_csv_dicts(records: list[dict], path: str) -> None:
             r = dict(r)
             r["flags"] = "|".join(r.get("flags") or [])
             w.writerow(r)
+
+
+def cmd_triage(args) -> int:
+    records = (panel_records(args.checkpoint) if args.checkpoint
+               else load_records(args.json))
+    report = triage(records)
+    print(report)
+    if args.out:
+        with open(args.out, "w", encoding="utf-8") as fh:
+            fh.write(report)
+        print(f"Wrote triage -> {args.out}")
+    return 0
+
+
+def cmd_site(args) -> int:
+    records = (panel_records(args.checkpoint) if args.checkpoint
+               else load_records(args.json))
+    write_site(records, args.out, args.title)
+    usable = sum(1 for r in records
+                 if r.get("pct_comparable") and not r.get("error"))
+    print(f"Wrote site -> {args.out}  ({usable} companies with a figure)")
+    return 0
 
 
 def cmd_dashboard(args) -> int:
@@ -311,7 +448,9 @@ def main(argv=None) -> int:
     r.set_defaults(func=cmd_run)
 
     i = sub.add_parser("inspect", help="Debug one company: tables, Form 4, extraction")
-    i.add_argument("--ticker", required=True)
+    i.add_argument("--ticker", default=None)
+    i.add_argument("--cik", "--ciks", dest="cik", default=None,
+                   help="Inspect by CIK. Most panel rows have no ticker.")
     i.add_argument("--as-of", default=None)
     i.add_argument("--no-llm", action="store_true",
                    help="Skip extraction (free, no API call)")
@@ -330,15 +469,32 @@ def main(argv=None) -> int:
 
     pa = sub.add_parser("panel", help="Run the pipeline across a universe, resumably")
     pa.add_argument("--universe", required=True,
-                    help="CSV with a 'cik' column (from the universe command)")
+                    help="CSV with a 'cik' or 'ticker' column. Use "
+                         "working_set.csv for the fixed hundred, or the "
+                         "output of the universe command for everything.")
     pa.add_argument("--checkpoint", default="panel.jsonl",
                     help="Append-as-you-go results file; rerun to resume")
-    pa.add_argument("--limit", type=int, default=None)
+    pa.add_argument("--top", type=int, default=None,
+                    help="Process only the N largest companies. Omit to run "
+                         "the whole universe.")
+    pa.add_argument("--redo", default="none", choices=["none", "failed", "all"],
+                    help="Reprocess after a fix: 'failed' retries error rows, "
+                         "'all' ignores the checkpoint entirely")
     pa.add_argument("--as-of", default=None)
     pa.add_argument("--llm-mode", default="never",
                     choices=["auto", "always", "never"])
     pa.add_argument("--model", default=None)
     pa.add_argument("--no-continuity", action="store_true")
+    pa.add_argument("--second-reader", action="store_true",
+                    help="Have a model read the same ownership section "
+                         "independently and compare. Roughly a cent per "
+                         "company, cached by document, and the only check "
+                         "that is not our own reading checked against "
+                         "itself.")
+    pa.add_argument("--roll", action="store_true",
+                    help="Carry each proxy figure forward with Form 4 deltas "
+                         "and the latest cover-page share count. Both legs "
+                         "are structured data, so this costs nothing.")
     pa.add_argument("--skip-funds", action="store_true",
                     help="Skip filers positively identified as registered "
                          "investment companies (N-CSR/N-CEN). Off by default: "
@@ -347,17 +503,42 @@ def main(argv=None) -> int:
     pa.add_argument("--out", default=None, help="CSV of the panel so far")
     pa.add_argument("--html", default=None)
     pa.add_argument("--title", default="CEO ownership panel")
+    pa.add_argument("--site", default=None,
+                    help="Write the public-facing analytics page here")
+    pa.add_argument("--site-title", default="Skin in the Game")
     pa.set_defaults(func=cmd_panel)
 
     v = sub.add_parser("verify", help="Stratified hand-check worksheet, and scoring")
     v.add_argument("--checkpoint", default=None, help="A panel .jsonl file")
     v.add_argument("--json", default=None, help="Or a --json file from a run")
     v.add_argument("--out", default="verification_worksheet.csv")
+    v.add_argument("--roll", action="store_true",
+                   help="Build the roll-forward worksheet instead: anchor, "
+                        "delta and result, for checking that a CHANGE is real")
+    v.add_argument("--sample-only", action="store_true",
+                   help="Draw the stratified 100-row sample instead of "
+                        "listing every company")
+    v.add_argument("--force", action="store_true",
+                   help="Write even if the worksheet looks open in Excel, or "
+                        "if the new sheet would hold fewer answers")
     v.add_argument("--score", default=None,
                    help="Score a filled-in worksheet instead of sampling")
     v.add_argument("--tolerance", type=float, default=0.005,
                    help="Relative difference treated as a match (default 0.5%%)")
     v.set_defaults(func=cmd_verify)
+
+    tr = sub.add_parser("triage", help="Group a run's failures by signature")
+    tr.add_argument("--checkpoint", default=None, help="A panel .jsonl file")
+    tr.add_argument("--json", default=None, help="Or a --json file from a run")
+    tr.add_argument("--out", default="triage.txt")
+    tr.set_defaults(func=cmd_triage)
+
+    si = sub.add_parser("site", help="Build the public analytics page")
+    si.add_argument("--checkpoint", default=None, help="A panel .jsonl file")
+    si.add_argument("--json", default=None, help="Or a --json file from a run")
+    si.add_argument("--out", default="index.html")
+    si.add_argument("--title", default="Skin in the Game")
+    si.set_defaults(func=cmd_site)
 
     d = sub.add_parser("dashboard", help="Build the HTML page from a saved JSON")
     d.add_argument("--json", required=True, help="A --json file from a run")

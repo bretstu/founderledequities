@@ -20,24 +20,102 @@ filing reports and every filer constructs differently.
 git clone https://github.com/bretstu/founderledequities.git
 cd founderledequities
 pip install -r requirements.txt
-
 cp .env.example .env      # then fill in your two values
-
-# See the whole thing work with no credentials and no network:
-python3 demo.py
-python3 -m unittest discover -s tests
-
-# Then, for real data:
-export OWNERSHIP_UA="Your Name your@email.com"   # SEC requires this
-export ANTHROPIC_API_KEY="sk-ant-..."
-
-python3 -m ceo_ownership.cli run --from-csv top50.csv --llm-mode never \
-    --out results.csv --json results.json --html dashboard.html
-python3 -m ceo_ownership.cli run --tickers META --as-of 2019-06-30   # point-in-time
-python3 -m ceo_ownership.cli universe --year 2019 --out universe_2019.csv
 ```
 
-Start with 10–20 tickers, read the `flags` and `validation` columns, then scale.
+Check the install with no credentials and no network:
+
+```bash
+python -m unittest discover -s tests
+```
+
+## Running it
+
+Build the universe once — every company that filed a proxy that year, taken
+from EDGAR's own quarterly index, so companies that later failed or were
+acquired are still present:
+
+```bash
+python -m ceo_ownership.cli universe --year 2025 --out universe_2025.csv
+```
+
+Then run the panel. Companies are ordered largest first by market cap, so the
+most-viewed rows exist even if a run is cut short. Ranking is development
+scaffolding -- it decides which companies to look at, never what the dataset
+reports -- and is cached after the first run:
+
+```bash
+python -m ceo_ownership.cli panel --universe universe_2025.csv --top 100 \
+    --checkpoint panel.jsonl --out panel.csv --html panel.html
+```
+
+Raise `--top`, or drop it entirely for the full universe. Results append to
+the checkpoint as each company completes, so an interrupted run resumes where
+it stopped — rerun the same command.
+
+After fixing a parser bug, reprocess without redoing everything:
+
+```bash
+python -m ceo_ownership.cli panel --universe universe_2025.csv --top 100 \
+    --checkpoint panel.jsonl --redo failed --out panel.csv --html panel.html
+```
+
+## Finding problems
+
+A run of a hundred companies produces a hundred individual stories. What
+matters is which of them are the same story, so `triage` collapses failures
+into signatures, counts them, and prints the command to diagnose each:
+
+```bash
+python -m ceo_ownership.cli triage --checkpoint panel.jsonl --out triage.txt
+```
+
+Then look at one company from the largest group:
+
+```bash
+python -m ceo_ownership.cli inspect --ciks 84839 --no-llm --show-table \
+    --out diag_84839.txt
+```
+
+Fix, then reprocess only what failed:
+
+```bash
+python -m ceo_ownership.cli panel --universe universe_2025.csv --top 100 \
+    --checkpoint panel.jsonl --redo failed
+```
+
+## Verifying
+
+Two checks run automatically, but neither covers everything. Percentage
+reconciliation only works where the filer printed a real percentage, and most
+CEOs hold under 1% so their row shows an asterisk. Year-over-year continuity
+covers the rest, but proves *stability*, not correctness — a column misread
+the same way twice passes cleanly.
+
+That residual is invisible by construction, so it has to be measured by hand:
+
+```bash
+python -m ceo_ownership.cli verify --checkpoint panel.jsonl --out worksheet.csv
+```
+
+This draws 100 companies stratified by what their automatic checks could NOT
+establish — the largest allocation goes to rows that passed on continuity
+alone. Open each `source_url`, fill in `actual_ceo_name` and `actual_shares`,
+then:
+
+```bash
+python -m ceo_ownership.cli verify --score worksheet.csv
+```
+
+You get accuracy overall and per stratum. Scoring works on a partly filled
+worksheet, so you can check twenty and see whether a pattern is emerging.
+
+## Cost
+
+Nothing, by default. Exactly one module calls a model — `extract.py` — and
+only when the heuristic parser cannot read a table, which was 3 companies in
+30 on a random sample. `--llm-mode never` is the default for panel runs and
+uses no tokens at all.
 
 ## The two percentages
 

@@ -1,29 +1,27 @@
-# Credentials -- never commit. .env holds a live Anthropic API key.
+# Credentials -- never commit. .env holds a live API key.
 .env
 .env.*
 !.env.example
 
-# Cached SEC responses and model extractions (regenerated on demand)
+# Cached SEC responses. Regenerated on demand; hundreds of MB when warm.
 .cache/
-*.cache
 
-# Run outputs
+# Everything a run produces
+*.bak
+.worksheet_backups/
+roll_worksheet.csv
+*.jsonl
+*.html
 *.out
+panel*.csv
+universe_*.csv
+worksheet*.csv
+triage*.txt
+diag_*.txt
 results*.csv
 results*.json
-free*.csv
-free*.json
-auto*.csv
-auto*.json
-sample30_*.csv
-sample30_*.json
-top50*.csv.out
-top50*.json
-fixcheck*.csv
-fixcheck*.json
-universe_*.csv
-*.html
-!templates/*.html
+check*.csv
+check*.json
 
 # Python
 __pycache__/

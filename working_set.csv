@@ -1,0 +1,101 @@
+rank,ticker,structure
+1,NVDA,single class
+2,MSFT,single class
+3,AAPL,single class
+4,GOOGL,triple class; proxy table reports VOTING classes only
+5,AMZN,single class
+6,META,dual class; Class B reported as a derivative on Form 4
+7,AVGO,single class
+8,BRK-B,dual class; Class A ~1500x Class B
+9,TSLA,zero-width padding in table cells
+10,LLY,single class
+11,JPM,common + SARs + total beneficial columns
+12,WMT,split by sole/shared voting power
+13,V,triple class
+14,XOM,no percent column; prose-heavy proxy
+15,UNH,single class
+16,ORCL,co-CEOs; founder is Chairman not CEO
+17,MA,dual class
+18,COST,footnote says table includes RSUs
+19,NFLX,co-CEOs
+20,JNJ,table abbreviates given names to initials
+21,HD,single class
+22,PG,single class
+23,ABBV,single class
+24,BAC,single class
+25,KO,heuristic parse previously found no rows
+26,CVX,single class
+27,CRM,single class
+28,AMD,single class
+29,MRK,single class
+30,PEP,single class
+31,TMO,single class
+32,LIN,single class
+33,ADBE,single class
+34,CSCO,single class
+35,ACN,dual class
+36,MCD,single class
+37,ABT,single class
+38,GE,four side-by-side ownership tables
+39,WFC,single class
+40,DIS,CEO transition after the proxy record date
+41,QCOM,single class
+42,TXN,single class
+43,INTU,single class
+44,IBM,single class
+45,CAT,single class
+46,VZ,heuristic parse previously found no rows
+47,NOW,spanning header over Number/Percent
+48,AMGN,single class
+49,GS,single class
+50,UBER,single class
+51,PM,single class
+52,ISRG,single class
+53,MS,CEO transition in period
+54,RTX,single class
+55,SPGI,single class
+56,NEE,single class
+57,T,single class
+58,PFE,single class
+59,DHR,single class
+60,LOW,single class
+61,HON,single class
+62,BLK,single class
+63,UNP,certification exhibit naming
+64,AXP,single class
+65,PGR,single class
+66,ETN,single class
+67,BKNG,single class
+68,SYK,group percentage disagreed with denominator
+69,TJX,single class
+70,COP,single class
+71,C,certification named exh31 style
+72,VRTX,single class
+73,BSX,single class
+74,ADP,single class
+75,MU,single class
+76,LRCX,single class
+77,PLTR,triple class; count is in the voting Q&A
+78,MDT,single class
+79,GILD,single class
+80,ADI,single class
+81,AON,insurance brokerage; single class
+82,CB,single class
+83,DE,single class
+84,AMAT,single class
+85,SCHW,group row of 6 shares
+86,LMT,single class
+87,KLAC,single class
+88,SBUX,single class
+89,PANW,single class
+90,ANET,single class
+91,BX,single class
+92,MO,single class
+93,PLD,single class
+94,SO,single class
+95,INTC,single class
+96,CI,single class
+97,ELV,single class
+98,COF,spanning header; Total Beneficial Ownership column
+99,ICE,single class
+100,APH,single class
