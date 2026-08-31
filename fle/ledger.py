@@ -704,47 +704,67 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
         rest = [f for f in ordered if not (f.get("form") or "").startswith("3")]
         led.searched = len(threes)
 
-        best = (0.0, None, "")
-        runner = 0.0
-        tied: list = []
+        # COLLECT EVERY CANDIDATE, THEN DECIDE. The scan-and-pick loop this
+        # replaces settled on whoever crossed the line first -- and at
+        # W. R. Berkley, where father (chairman, CEO until 2015) and son
+        # (CEO since) normalise to the SAME name, "first" was the father,
+        # whose decade-old filings carry CEO titles too. What tells them
+        # apart is not whether a person EVER filed as chief executive but
+        # what their NEWEST filing says: the certification is dated today,
+        # and today's chief executive files today under today's title.
+        CEO_TITLE = re.compile(r"\bCEO\b|CHIEF EXEC|PRINCIPAL EXEC", re.I)
+        cands: dict = {}
         for f in threes + (rest if not max_search else rest[:max_search]):
             root = _parse(client, issuer_cik, f)
             if root is None:
                 continue
+            when = f.get("filingDate") or ""
+            settled_early = False
             for cik_, name_, _title, is_officer in _owners(root):
                 sc = names_match(owner_name, name_)
-                if sc < 0.7 or cik_ == best[1]:
+                if sc < 0.7:
                     continue
-                # An officer outranks a namesake vehicle outright: the
-                # certification names the person who signs as principal
-                # executive officer, and a trust never does.
-                sc = sc + 1.0 if is_officer else sc
-                # THE CERTIFIED ROLE BREAKS TIES BETWEEN NAMESAKES. With
-                # suffixes stripped, W. R. Berkley Jr (President and CEO)
-                # and W. R. Berkley (Executive Chairman) are the same name;
-                # only the filed title says which one the certification
-                # means. Small enough to never overturn a better name.
-                if _title and re.search(r"\bCEO\b|CHIEF EXEC|PRINCIPAL EXEC",
-                                        _title, re.I):
-                    sc += 0.05
-                if sc > best[0]:
-                    runner, best, tied = best[0], (sc, cik_, name_), []
-                elif sc == best[0] and cik_ != best[1]:
-                    # Two CIKs matching the certified name equally well. One
-                    # person with two EDGAR identifiers, or a namesake --
-                    # nothing in the filings says which, so it cannot be
-                    # settled by score.
-                    tied.append((cik_, name_))
-                    runner = sc
-                elif sc > runner:
-                    runner = sc
-            # Stop only on an exact-name OFFICER, which scores 2.0 and cannot
-            # be beaten. At 1.0 this stopped on a namesake TRUST -- perfect
-            # name, no officer bonus -- and never reached the person further
-            # down the list, manufacturing the very "lone non-officer match"
-            # the flag was added to catch.
-            if best[0] >= 2.0:
+                d = cands.setdefault(cik_, {"name": name_, "score": 0.0,
+                                            "officer": False,
+                                            "newest": "", "title": ""})
+                d["score"] = max(d["score"], sc)
+                d["officer"] = d["officer"] or is_officer
+                if when >= d["newest"]:
+                    d["newest"], d["title"], d["name"] = when, _title or "", name_
+                # An exact-name OFFICER whose title on a RECENT filing is
+                # the chief executive's cannot be beaten -- stop. All three
+                # conditions matter: at 1.0 alone this once stopped on a
+                # namesake trust; without the title it would stop on the
+                # father; without recency, on the father's 2014 filings.
+                if (sc >= 1.0 and is_officer and CEO_TITLE.search(_title or "")
+                        and when >= "2024"):
+                    settled_early = True
+            if settled_early:
                 break
+
+        def rank(d):
+            # An officer outranks a namesake vehicle outright: the
+            # certification names the person who signs as principal
+            # executive officer, and a trust never does. The newest-title
+            # nudge is small enough to never overturn a better name.
+            return (d["score"] + (1.0 if d["officer"] else 0.0)
+                    + (0.05 if CEO_TITLE.search(d["title"] or "") else 0.0))
+
+        best = (0.0, None, "")
+        runner = 0.0
+        tied: list = []
+        for cik_, d in cands.items():
+            sc = rank(d)
+            if sc > best[0]:
+                runner, best, tied = best[0], (sc, cik_, d["name"]), []
+            elif sc == best[0] and cik_ != best[1]:
+                # Two CIKs ranking equally. One person with two EDGAR
+                # identifiers, or namesakes nothing in the filings can
+                # tell apart -- it cannot be settled by score.
+                tied.append((cik_, d["name"]))
+                runner = sc
+            elif sc > runner:
+                runner = sc
         if not best[1]:
             # A LAST RESORT, and only when nothing matched on name at all.
             #

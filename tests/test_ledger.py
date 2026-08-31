@@ -158,8 +158,11 @@ def test_the_best_match_wins_not_the_first():
     from fle import ledger
     src = inspect.getsource(ledger.build_ledger)
     assert "if sc > best[0]:" in src
-    assert "runner, best, tied = best[0], (sc, cik_, name_), []" in src
-    assert "if best[0] >= 2.0:" in src        # only an exact-name OFFICER stops early
+    assert "COLLECT EVERY CANDIDATE, THEN DECIDE" in src
+    assert 'runner, best, tied = best[0], (sc, cik_, d["name"]), []' in src
+    # the stop demands an exact-name OFFICER with a chief executive's title
+    # on a RECENT filing -- each condition alone has picked the wrong person
+    assert "settled_early" in src and 'when >= "2024"' in src
 
 
 def test_a_narrow_win_is_reported():
@@ -232,7 +235,7 @@ def test_a_trust_named_after_the_ceo_is_not_the_ceo():
     import inspect
     from fle import ledger
     src = inspect.getsource(ledger.build_ledger)
-    assert "sc = sc + 1.0 if is_officer else sc" in src
+    assert '(1.0 if d["officer"] else 0.0)' in src
     assert "isOfficer" in inspect.getsource(ledger._owners)
 
 
@@ -305,7 +308,7 @@ def test_the_search_only_stops_on_an_officer():
     import inspect
     from fle import ledger
     src = inspect.getsource(ledger.build_ledger)
-    assert "if best[0] >= 2.0:" in src
+    assert "CEO_TITLE.search(_title" in src
     assert "if best[0] >= 1.0:" not in src
 
     from fle.names import names_match

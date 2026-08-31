@@ -1995,6 +1995,9 @@ def main(argv=None) -> int:
     pn.add_argument("--limit", type=int, default=None,
                     help="first N in ticker order -- the same N every time")
     pn.add_argument("--redo", default="none", choices=["none", "failed", "all"])
+    pn.add_argument("--workers", type=int, default=1,
+                    help="companies identified concurrently; the checkpoint "
+                         "is appended under a lock either way")
     pn.set_defaults(func=cmd_panel)
 
     r = sub.add_parser("run", help="companies end to end")
