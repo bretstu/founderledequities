@@ -101,3 +101,43 @@ def test_it_never_raises_confidence(tmp_path):
 def test_missing_files_are_survivable(tmp_path):
     assert edge_confidence(str(tmp_path / "nope.csv"),
                            str(tmp_path / "also-nope.csv")) == 0
+
+
+def test_a_throttled_client_waits_and_then_succeeds(tmp_path, monkeypatch):
+    """429 gets minute-scale patience (Retry-After honored), not 2-second
+    knocks -- and the block does not consume the retry budget."""
+    import fle.edgar as E
+    naps = []
+    monkeypatch.setattr(E.time, "sleep", lambda s: naps.append(s))
+
+    class Resp:
+        def __init__(self, code, body="ok"):
+            self.status_code, self.text, self.headers = code, body, {"Retry-After": "90"}
+        def raise_for_status(self): pass
+
+    class Sess:
+        def __init__(self): self.calls = 0
+        def get(self, url, timeout=30):
+            self.calls += 1
+            return Resp(429) if self.calls <= 2 else Resp(200, "the body")
+    c = E.EdgarClient(cache_dir=str(tmp_path))
+    c._session = Sess()
+    c._limiter._min_interval = 0
+    assert c.get("https://www.sec.gov/x", use_cache=False) == "the body"
+    assert len(naps) == 2 and all(n >= 90 for n in naps)
+
+
+def test_a_fetch_starved_certification_search_refuses_to_conclude():
+    """The eight false 'no certification' rows: every fetch failed inside
+    SEC's block and each was swallowed. Now the search errors instead."""
+    import pytest
+    from fle.identity import peo_from_certification
+
+    class Blocked:
+        def submissions(self, cik):
+            return {"_filings": [{"form": "10-Q", "accessionNumber": "a-1",
+                                  "filingDate": "2026-08-07"}]}
+        def filing_index(self, cik, acc):
+            raise RuntimeError("429 for https://www.sec.gov/...")
+    with pytest.raises(RuntimeError, match="refusing to conclude"):
+        peo_from_certification(Blocked(), 1520006)

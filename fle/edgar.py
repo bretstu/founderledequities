@@ -103,16 +103,32 @@ class EdgarClient:
                 return fh.read()
 
         last_err: Exception | None = None
-        for attempt in range(retries):
+        attempt = 0
+        throttled = 0
+        while attempt < retries:
             self._limiter.wait()
             try:
                 resp = self._session.get(url, timeout=30)
                 if resp.status_code == 404:
                     raise FileNotFoundError(f"404 for {url}")
                 if resp.status_code in (403, 429):
-                    # Fair-access throttle. Back off hard; do not hammer.
-                    time.sleep(2 ** (attempt + 1))
-                    last_err = RuntimeError(f"{resp.status_code} for {url}")
+                    # FAIR-ACCESS BLOCK, NOT A FAILED REQUEST. SEC's
+                    # Archives host blocks an IP for ~10 minutes after
+                    # heavy traffic; 2-4-8 second sleeps against that are
+                    # three knocks on a locked door, and the day this
+                    # shipped, eight companies were recorded as having no
+                    # certification because every fetch inside the block
+                    # "failed". Wait like you mean it -- Retry-After if
+                    # offered, else an escalating minute-scale pause --
+                    # and do not count patience against the retry budget.
+                    throttled += 1
+                    if throttled > 6:
+                        last_err = RuntimeError(f"{resp.status_code} for {url}")
+                        break
+                    ra = (resp.headers.get("Retry-After") or "").strip()
+                    wait = max(float(ra) if ra.isdigit() else 0.0,
+                               45.0 * throttled)
+                    time.sleep(wait)
                     continue
                 resp.raise_for_status()
                 text = resp.text
@@ -130,7 +146,8 @@ class EdgarClient:
                 raise
             except Exception as exc:  # noqa: BLE001
                 last_err = exc
-                time.sleep(1.5 * (attempt + 1))
+                attempt += 1
+                time.sleep(1.5 * attempt)
         raise RuntimeError(f"Failed to fetch {url}: {last_err}")
 
     def get_json(self, url: str, use_cache: bool = True) -> Any:

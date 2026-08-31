@@ -197,11 +197,13 @@ def peo_from_certification(
     ]
     filings.sort(key=lambda f: f.get("filingDate", ""), reverse=True)
 
+    fetch_failures = 0
     for skipped, f in enumerate(filings[:max_filings]):
         acc = f["accessionNumber"]
         try:
             index = client.filing_index(cik, acc)
         except Exception:  # noqa: BLE001
+            fetch_failures += 1
             continue
 
         named = _pick_exhibits(index)[:4]
@@ -212,7 +214,11 @@ def peo_from_certification(
         candidates = named + _small_documents(index, tried)[:12]
 
         for doc_name, doc_type in candidates:
-            hit = _read_certification(client, cik, acc, doc_name)
+            try:
+                hit = _read_certification(client, cik, acc, doc_name)
+            except Exception:  # noqa: BLE001
+                fetch_failures += 1
+                continue
             if hit is None:
                 continue
             names, _ = hit
@@ -237,6 +243,7 @@ def peo_from_certification(
         try:
             raw = client.primary_document(cik, acc, primary)
         except Exception:  # noqa: BLE001
+            fetch_failures += 1
             continue
         text = _plain_text(raw)
         idx = text.lower().find("certification")
@@ -261,6 +268,16 @@ def peo_from_certification(
                         )
             idx = text.lower().find("certification", idx + 1)
 
+    if fetch_failures:
+        # EIGHT COMPANIES WERE ONCE RECORDED AS HAVING NO CERTIFICATION
+        # because every fetch happened inside SEC's fair-access block and
+        # each failure was swallowed as "not found". A search that could
+        # not read the documents has not searched; it must error --
+        # retryable with --redo failed -- never answer.
+        raise RuntimeError(
+            f"certification search could not read {fetch_failures} "
+            f"document(s) (SEC throttling?); refusing to conclude "
+            f"'no certification'")
     return None
 
 def _plain_text(raw: str) -> str:
@@ -275,11 +292,12 @@ def _plain_text(raw: str) -> str:
 def _read_certification(
     client: EdgarClient, cik: int, acc: str, doc_name: str
 ) -> tuple[list[str], str] | None:
-    """Read one document and return its signers if it is a PEO certification."""
-    try:
-        raw = client.primary_document(cik, acc, doc_name)
-    except Exception:  # noqa: BLE001
-        return None
+    """Read one document and return its signers if it is a PEO certification.
+
+    Returns None only for a document that was READ and is not a
+    certification. A fetch failure raises: the caller counts those, and a
+    search that never truly looked must not conclude anything."""
+    raw = client.primary_document(cik, acc, doc_name)
     text = _plain_text(raw)
     if "certify" not in text.lower():
         return None
