@@ -12,7 +12,6 @@ import json
 import os
 import re
 import csv
-import datetime
 import shutil
 import sys
 import time
@@ -62,10 +61,6 @@ def cmd_ceo(args) -> int:
         return 1
     print(f"  {cert.name}")
     print(f"  from {cert.form} filed {cert.filing_date}, exhibit {cert.exhibit}")
-    if cert.filings_skipped:
-        print(f"  WARNING: {cert.filings_skipped} newer periodic filing(s) "
-              f"yielded no certification, so this name may predate a change "
-              f"of chief executive. Run again with --why to see them.")
     if cert.combined_certification:
         print("  note: one exhibit covered both officers; the PEO half was used")
     if cert.other_names_in_doc:
@@ -429,8 +424,6 @@ def cmd_run(args) -> int:
 def cmd_index(args) -> int:
     """Snapshot S&P 500 membership to a dated file."""
     client = _client(args)
-    if getattr(args, "min_cap", None):
-        return cmd_market_universe(args)
     if args.all:
         from .universe import fetch_all_tickers
         members = fetch_all_tickers(client)
@@ -670,8 +663,6 @@ def cmd_history(args) -> int:
                 exclude=excl.for_issuer(int(m.cik)), since=args.since,
                 on_step=lambda a, b: _say(f"filing {a}/{b}..."))
 
-            from .history import mark_restated
-            mark_restated(hist.snapshots)
             last = hist.snapshots[-1].shares if hist.snapshots else None
             ok = last is not None and abs(last - led.total) <= max(1.0, led.total * 0.001)
             agree, disagree = (agree + 1, disagree) if ok else (agree, disagree + 1)
@@ -692,7 +683,6 @@ def cmd_history(args) -> int:
                                     if abs(s_.unexplained) >= 1 else ""),
                     "codes": s_.codes, "groups": s_.groups,
                     "classes": s_.classes,
-                    "restated": "TRUE" if s_.restated else "",
                     "matches_panel": "TRUE" if ok else "",
                 })
         except Exception:  # noqa: BLE001
@@ -710,9 +700,7 @@ def cmd_history(args) -> int:
     cols = ["cik", "ticker", "ceo", "owner_cik", "date", "form", "accession",
             "shares", "shares_split_adjusted", "outstanding", "pct",
             "traded", "traded_value", "unpriced_rows", "unexplained",
-            "codes", "groups", "classes", "restated", "matches_panel"]
-    from .history import mark_restated_rows
-    mark_restated_rows(rows)          # every row, walked or reused
+            "codes", "groups", "classes", "matches_panel"]
     with open(args.out, "w", newline="", encoding="utf-8-sig") as fh:
         w = csv.DictWriter(fh, fieldnames=cols)
         w.writeheader()
@@ -721,85 +709,6 @@ def cmd_history(args) -> int:
     firms = len({r["ticker"] for r in rows})
     print(f"  {len(rows):,} snapshots across {firms} companies since {args.since}")
     print(f"  {agree} end on the panel's figure, {disagree} do not")
-    print(f"  wrote {args.out}")
-    return 0
-
-
-EVENT_COLUMNS = ["ticker", "cik", "ceo", "owner_cik", "filed", "traded",
-                 "code", "label", "shares", "value", "avg_price",
-                 "pct_of_holding", "net_change", "holding_after", "residue",
-                 "plan", "other_codes", "rows", "unpriced_rows", "securities",
-                 "direct", "form", "accession", "price_flag", "url"]
-
-
-def cmd_events(args) -> int:
-    """What each chief executive actually bought and sold, one row per trade.
-
-    The trade comes from the filing and the position comes from history, so
-    this runs AFTER history in the nightly and reads the file it wrote. Every
-    filing it needs is already cached by the panel, which makes it the
-    cheapest stage in the run.
-    """
-    import csv as _csv
-    from .events import build_events, flag_prices, load_history
-    from .exclusions import read_exclusions
-
-    client = _client(args)
-    excl = read_exclusions(getattr(args, "exclusions", None))
-    try:
-        history = load_history(args.history)
-    except FileNotFoundError:
-        history = {}
-        print(f"  no history at {args.history} -- position columns will be "
-              f"empty; run the history stage first")
-
-    with open(args.panel, encoding="utf-8-sig") as fh:
-        panel = [r for r in _csv.DictReader(fh)]
-    if args.tickers:
-        want = {t.strip().upper() for t in args.tickers.split(",") if t.strip()}
-        panel = [r for r in panel if (r.get("ticker") or "").upper() in want]
-
-    out, failed = [], 0
-    for i, r in enumerate(panel, 1):
-        cik = int(r.get("cik") or 0)
-        owner = (r.get("owner_cik") or "").strip()
-        if not cik or not owner:
-            continue
-        try:
-            out += build_events(
-                client, cik, owner, r.get("ticker") or "", r.get("ceo") or "",
-                since=args.since, history=history,
-                exclude=excl.for_issuer(cik))
-        except Exception as exc:  # noqa: BLE001
-            failed += 1
-            print(f"  {r.get('ticker')}: {type(exc).__name__}: {exc}"[:110])
-        if i % 50 == 0:
-            print(f"  {i}/{len(panel)}  {len(out):,} events", flush=True)
-
-    flag_prices(out)
-    out.sort(key=lambda e: (e.filed, e.ticker, e.traded), reverse=True)
-    with open(args.out, "w", newline="", encoding="utf-8") as fh:
-        w = _csv.writer(fh)
-        w.writerow(EVENT_COLUMNS)
-        for e in out:
-            w.writerow([
-                e.ticker, e.issuer_cik, e.ceo, e.owner_cik, e.filed, e.traded,
-                e.code, e.label, f"{e.shares:.0f}",
-                "" if e.value is None else f"{e.value:.2f}",
-                "" if e.avg_price is None else f"{e.avg_price:.4f}",
-                "" if e.pct_of_holding is None else f"{e.pct_of_holding:.4f}",
-                "" if e.net_change is None else f"{e.net_change:.0f}",
-                "" if e.holding_after is None else f"{e.holding_after:.0f}",
-                "" if e.residue is None else f"{e.residue:.0f}",
-                e.plan, e.other_codes, e.rows, e.unpriced_rows, e.securities,
-                e.direct, e.form, e.accession, e.price_flag, e.url])
-
-    buys = sum(1 for e in out if e.buy)
-    flagged = sum(1 for e in out if e.residue)
-    print(f"  {len(out):,} events across {len(panel)} companies"
-          f"  ({failed} failed)")
-    print(f"  {buys:,} purchases, {len(out) - buys:,} sales;"
-          f" {flagged:,} on days history could not fully explain")
     print(f"  wrote {args.out}")
     return 0
 
@@ -837,190 +746,6 @@ def cmd_prices(args) -> int:
         print(f"  no price for: {', '.join(got.missing[:12])}"
               + (f" and {len(got.missing)-12} more" if len(got.missing) > 12 else ""))
     print(f"  wrote {args.out}")
-    return 0
-
-
-def edge_confidence(panel_path: str, history_path: str,
-                    size: float = 0.5) -> int:
-    """Downgrade a company whose NEWEST filing does not reconcile.
-
-    THE ONE PLACE A READER COULD BE MISLED WITHOUT WARNING.
-
-    A partial filing -- lawful under Form 4's per-line rules, naming only
-    some of a person's vehicles -- understates the position until the next
-    filing completes it. Everywhere in the record this is caught: the
-    arithmetic leaves a residue in `unexplained`, mark_restated pairs the
-    drop with its reversal, and the site excludes marked rows from every
-    summary.
-
-    Everywhere except the trailing edge. The newest filing has no successor
-    yet, so nothing can distinguish "reported partially" from "genuinely
-    sold" -- mark_restated deliberately refuses to guess, and the headline
-    figure is published as filed. That is the honest choice for the NUMBER.
-    It is not, by itself, honest about the CONFIDENCE: the row was reading
-    `high` while its own arithmetic said a large balance change had no
-    transaction behind it.
-
-    So: a residue on the last snapshot worth at least `size` of the position
-    caps confidence at `medium` and says why, in the reader's language. A
-    row already `low` stays `low` -- this never raises anything.
-
-    Runs after the history stage and before the atomic publish, so the panel
-    and the history that judged it are published together or not at all.
-    """
-    try:
-        with open(history_path, encoding="utf-8-sig", newline="") as fh:
-            last = {}
-            for r in csv.DictReader(fh):
-                last[r["ticker"]] = r
-    except OSError:
-        return 0
-
-    flagged = {}
-    for tk, r in last.items():
-        try:
-            u = float(r.get("unexplained") or 0)
-            sh = float(r.get("shares") or 0)
-        except ValueError:
-            continue
-        # only a DROP misleads: an unreconciled rise overstates nothing the
-        # reader is being asked to trust, and reads as the award it usually is
-        if u < 0 and abs(u) >= size * max(sh + abs(u), 1.0):
-            flagged[tk] = abs(u)
-    if not flagged:
-        return 0
-
-    try:
-        with open(panel_path, encoding="utf-8-sig", newline="") as fh:
-            reader = csv.DictReader(fh)
-            cols = reader.fieldnames or []
-            rows = list(reader)
-    except OSError:
-        return 0
-
-    note = ("the newest filing reports a balance far below the last with no "
-            "transaction to explain it -- filings like this are usually "
-            "partial, naming only some vehicles; shown as filed")
-    hit = 0
-    for row in rows:
-        if row.get("ticker") not in flagged:
-            continue
-        hit += 1
-        if row.get("confidence") == "high":
-            row["confidence"] = "medium"
-        cautions = row.get("cautions") or ""
-        row["cautions"] = f"{cautions}|{note}" if cautions else note
-    if hit:
-        tmp = panel_path + ".tmp"
-        with open(tmp, "w", newline="", encoding="utf-8-sig") as fh:
-            w = csv.DictWriter(fh, fieldnames=cols)
-            w.writeheader()
-            w.writerows(rows)
-        os.replace(tmp, panel_path)
-    return hit
-
-
-def cmd_perf(args) -> int:
-    """Monthly closes for the founder cohort and SPY -> perf.csv.
-
-    The performance section draws an equal-weight founders line against the
-    benchmark. This stage only gathers the raw monthly closes; the chaining
-    is done in the page, beside the chart, where the method is inspectable.
-    """
-    from .perf import build_perf, write_perf
-
-    if not SETTINGS.polygon_api_key:
-        print("  no price API key; perf.csv not written")
-        return 0
-    founders = []
-    try:
-        with open(args.founders, encoding="utf-8-sig") as fh:
-            for row in csv.DictReader(fh):
-                if (row.get("founder") or "").lower() == "yes"                         and row.get("ticker"):
-                    founders.append(row["ticker"])
-    except OSError:
-        print(f"  {args.founders} missing; run the founders stage first")
-        return 1
-    if not founders:
-        print("  no founder-led companies in the file; nothing to chart")
-        return 0
-
-    client = _client(args)
-    def _p(i, n, tk):
-        sys.stdout.write(f"\r  prices {i}/{n} {tk}...      ")
-        sys.stdout.flush()
-    perf = build_perf(client, founders, SETTINGS.polygon_api_key, on_step=_p)
-    _clear()
-    # months already on disk outlive the plan's rolling window
-    stored = {}
-    try:
-        with open(args.out, encoding="utf-8-sig", newline="") as fh:
-            for row in csv.DictReader(fh):
-                stored.setdefault(row["ticker"], []).append(
-                    (row["month"], float(row["close"])))
-    except (OSError, ValueError, KeyError):
-        stored = {}
-    from .perf import merge_history
-    perf.series = merge_history(stored, perf.series)
-    rows = write_perf(perf, args.out)
-    print(f"  {len(perf.series)} tickers, {rows} monthly closes "
-          f"-> {args.out}")
-    if perf.missing:
-        print(f"  no history for: {', '.join(perf.missing[:12])}"
-              + (" ..." if len(perf.missing) > 12 else ""))
-    if perf.note:
-        print(f"  NOTE: {perf.note}")
-    return 0
-
-
-def cmd_market_universe(args) -> int:
-    """The market-cap universe: a dated snapshot by written rules.
-
-    Writes three files under universe/: the members list (same columns
-    as the S&P file, so every other stage runs on it unchanged), the
-    evidence for every registrant considered, and the review file -- the
-    disagree/unsized rows a human reads before the snapshot is trusted.
-    """
-    from .market_universe import (build_snapshot, load_prior,
-                                  write_snapshot)
-    client = _client(args)
-    today = datetime.date.today().isoformat()
-    stem = args.out or f"universe/universe-{today}.csv"
-    if not stem.endswith(".csv"):
-        stem += ".csv"
-    evidence = stem[:-4] + "-evidence.csv"
-    review = stem[:-4] + "-review.csv"
-    prior = load_prior(args.prior) if args.prior else {}
-    if args.prior:
-        print(f"  prior snapshot: {len(prior)} members from {args.prior}")
-    if not SETTINGS.polygon_api_key:
-        print("  no POLYGON_API_KEY: vendor market caps unavailable; "
-              "sizing will lean on SEC counts alone", file=sys.stderr)
-
-    def _p(i, n, tk):
-        if i % 100 == 0 or i == n:
-            sys.stdout.write(f"\r  universe {i:,}/{n:,} {tk:8}")
-            sys.stdout.flush()
-    snap = build_snapshot(client, SETTINGS.polygon_api_key,
-                          entry=args.min_cap, exit_=args.exit_cap,
-                          prior=prior, snapshot=today, limit=args.limit,
-                          on_step=_p)
-    print()
-    n_members, n_review = write_snapshot(snap, stem, evidence, review)
-    from .market_universe import write_page
-    page = write_page(stem, evidence, today, "about.html", "universe.html")
-    by = {}
-    for r in snap.rows:
-        by[r.status.split(":")[0]] = by.get(r.status.split(":")[0], 0) + 1
-    print(f"  {len(snap.rows):,} registrants considered: "
-          + ", ".join(f"{k} {v:,}" for k, v in sorted(by.items())))
-    print(f"  {n_members:,} members at >= ${args.min_cap:,.0f} "
-          f"(exit below ${args.exit_cap:,.0f} after two snapshots)")
-    print(f"  -> {stem}")
-    print(f"  -> {evidence}  (every registrant, with both measures)")
-    print(f"  -> {review}  ({n_review:,} rows for a human to read)")
-    if page:
-        print(f"  -> {page}  (the published list: every member and the rules)")
     return 0
 
 
@@ -1090,37 +815,6 @@ def cmd_refresh(args) -> int:
         base.update(kw)
         return argparse.Namespace(**base)
 
-    # 0 -- the universe, when the market-cap universe is in use.
-    # THE SNAPSHOT IS QUARTERLY; THE PIPELINE READS THE NEWEST. A universe/
-    # universe-<date>.csv present in the folder means the site runs on the
-    # market-cap rules (fle/market_universe.py) rather than the S&P list.
-    # When the newest snapshot is older than 90 days a fresh one is taken,
-    # with the previous evidence file as memory for hysteresis, and the
-    # published page is regenerated. The S&P site never enters this block:
-    # no universe-*.csv exists there until the expansion is promoted.
-    from .market_universe import newest_snapshot
-    snap = newest_snapshot(os.path.join(args.dir, "universe"))
-    if snap:
-        members_path, evidence_path, taken = snap
-        age = (datetime.date.today() - taken).days
-        if age >= 90:
-            log(f"universe: snapshot {taken} is {age} days old; taking a new one")
-            if run("universe", lambda: cmd_market_universe(ns(
-                    min_cap=1e9, exit_cap=8e8, prior=evidence_path,
-                    out=os.path.join(args.dir, "universe",
-                                     f"universe-{datetime.date.today()}.csv"),
-                    limit=None))):
-                return 1
-            members_path, evidence_path, taken = newest_snapshot(
-                os.path.join(args.dir, "universe"))
-        else:
-            log(f"universe: snapshot {taken}, {age} days old, {sum(1 for _ in open(members_path))-1} members")
-        args.universe = members_path
-        from .market_universe import write_page
-        write_page(members_path, evidence_path, taken.isoformat(),
-                   os.path.join(args.dir, "about.html"),
-                   path("universe.html"))
-
     # 1 -- the panel
     # Each stage gets exactly what its own command reads. These defaults
     # mirror the parser's; a stage that grew an option and was not added
@@ -1150,31 +844,11 @@ def cmd_refresh(args) -> int:
             state=os.path.join(live, "history-state.json")))):
         return 1
 
-    # 3.5 -- the trailing edge. History has just been rebuilt and the panel
-    # is still staged, so the two can be reconciled before either is live.
-    try:
-        n = edge_confidence(path("sp500.csv"), path("history.csv"))
-        if n:
-            log(f"capped confidence for {n} compan{'y' if n == 1 else 'ies'} "
-                f"whose newest filing does not reconcile")
-    except Exception as exc:  # noqa: BLE001 - never fail a run over a caveat
-        log(f"edge confidence skipped: {exc.__class__.__name__}")
-
     # 4 -- prices
     run("prices", lambda: cmd_prices(ns(
         panel=path("sp500.csv"), out=path("prices.csv"), date=None)))
 
-    # 5 -- events: the trade feed. Runs after history because the position
-    # columns are read from the file history just wrote, and it is the
-    # cheapest stage in the run -- every filing it needs is already in the
-    # cache the panel filled. Non-fatal for the same reason prices is: a
-    # site with yesterday's feed beats no site at all.
-    run("events", lambda: cmd_events(ns(
-        panel=path("sp500.csv"), history=path("history.csv"),
-        tickers=None, since=args.since, exclusions=args.exclusions,
-        out=path("events.csv"))))
-
-    # 6 -- founders, weekly
+    # 5 -- founders, weekly
     fpath = path("founders.csv", staged=False)
     age = (time.time() - os.path.getmtime(fpath)) / 86400 if os.path.exists(fpath) else 999
     if args.founders or age >= 7:
@@ -1187,100 +861,16 @@ def cmd_refresh(args) -> int:
         log(f"founders: {age:.1f} days old, skipping (weekly)")
         shutil.copyfile(fpath, path("founders.csv"))
 
-    # 6.2 -- performance, weekly: monthly closes move monthly
-    ppath = path("perf.csv", staged=False)
-    page = (time.time() - os.path.getmtime(ppath)) / 86400 \
-        if os.path.exists(ppath) else 999
-    if page >= 6:
-        run("perf", lambda: cmd_perf(ns(
-            founders=path("founders.csv"), out=path("perf.csv"))))
-    else:
-        log(f"perf: {page:.1f} days old, skipping (weekly)")
-        shutil.copyfile(ppath, path("perf.csv"))
-
-    # 6.5 -- free variants. The paywall is only as real as the files behind
-    # it: with everything at public URLs, a blur is an honour system. The
-    # rule for what a free file carries is exactly WHAT THE FREE PAGE SHOWS:
-    # every purchase (the standing promise), plus the last 90 days of sales
-    # -- not because free readers see sale rows (they don't; those are
-    # blurred) but because the Selling-down cards, the teaser, and the
-    # counts on the gated filter chips are all computed from them, and a
-    # tease of "Sold 0" would gut the free page. The decade archive, the
-    # thing Pro actually sells, deploys behind the gate.
-    free_cut = (datetime.date.today()
-                - datetime.timedelta(days=90)).isoformat()
-    _write_variant(path("events.csv"), path("events-free.csv"),
-                   lambda row: row.get("code") == "P"
-                   or (row.get("filed") or "") >= free_cut)
-    _write_variant(path("history.csv"), path("history-free.csv"),
-                   lambda row: row.get("ticker") in FREE_HISTORY_TICKERS)
-
-    # 7 -- publish, atomically
+    # 6 -- publish, atomically
     published = []
-    for name in ("sp500.csv", "history.csv", "prices.csv", "founders.csv",
-                 "events.csv", "events-free.csv", "history-free.csv",
-                 "universe.html"):
+    for name in ("sp500.csv", "history.csv", "prices.csv", "founders.csv"):
         src = path(name)
         if os.path.exists(src) and os.path.getsize(src) > 0:
             os.replace(src, os.path.join(live, name))
             published.append(name)
     log(f"published {', '.join(published)} in "
         f"{(time.time() - started) / 60:.1f} min")
-
-    # 8 -- hand off to the host, if a deploy command is configured.
-    # The mini PC is the builder, not the server: it assembles the site and
-    # pushes it to a CDN, so the site stays up when the box does not. The
-    # command lives in the environment rather than here, because it names
-    # accounts and projects this code should not know about.
-    deploy = os.environ.get("FLE_DEPLOY_CMD")
-    if deploy:
-        code = os.system(deploy)  # noqa: S605 - operator-configured, by design
-        if code:
-            log(f"FAILED deploy: exit {code}")
-            _heartbeat(log, ok=False)
-            return 1
-        log("deployed")
-
-    # 9 -- heartbeat. A nightly job that dies silently is only discovered by
-    # a reader looking at stale data, which is the worst possible monitor.
-    # Point FLE_HEARTBEAT_URL at a dead-man's-switch service and it will
-    # page YOU instead; the /fail suffix reports an explicit failure.
-    _heartbeat(log, ok=True)
     return 0
-
-
-FREE_HISTORY_TICKERS = {"META", "TSLA", "COIN"}
-
-
-def _write_variant(src: str, dst: str, keep) -> None:
-    """Filter one published CSV into its free-tier sibling, header intact."""
-    import csv as _csv
-    if not os.path.exists(src) or os.path.getsize(src) == 0:
-        return
-    with open(src, encoding="utf-8-sig", newline="") as fh:
-        reader = _csv.DictReader(fh)
-        rows = [r for r in reader if keep(r)]
-        fields = reader.fieldnames or []
-    if not fields:
-        return
-    tmp = dst + ".tmp"
-    with open(tmp, "w", encoding="utf-8", newline="") as fh:
-        writer = _csv.DictWriter(fh, fieldnames=fields)
-        writer.writeheader()
-        writer.writerows(rows)
-    os.replace(tmp, dst)
-
-
-def _heartbeat(log, ok: bool) -> None:
-    url = os.environ.get("FLE_HEARTBEAT_URL")
-    if not url:
-        return
-    try:
-        import urllib.request
-        urllib.request.urlopen(  # noqa: S310 - operator-configured URL
-            url if ok else url.rstrip("/") + "/fail", timeout=10)
-    except Exception as exc:  # noqa: BLE001 - monitoring must never kill the run
-        log(f"heartbeat failed: {exc.__class__.__name__}")
 
 
 def cmd_diff(args) -> int:
@@ -1852,28 +1442,11 @@ def main(argv=None) -> int:
                     help="where the newest accession per company is remembered")
     hi.set_defaults(func=cmd_history)
 
-    ev = sub.add_parser("events",
-                        help="every CEO buy/sell, one row per filing, code and day")
-    ev.add_argument("--panel", default="sp500.csv")
-    ev.add_argument("--history", default="history.csv",
-                    help="where the position columns come from")
-    ev.add_argument("--tickers", default=None)
-    ev.add_argument("--since", default="",
-                    help="emit nothing traded before this date")
-    ev.add_argument("--exclusions", default=None)
-    ev.add_argument("--out", default="events.csv")
-    ev.set_defaults(func=cmd_events)
-
     pr = sub.add_parser("prices",
                         help="closing prices for every panel ticker, one request")
     pr.add_argument("--panel", default="sp500.csv")
     pr.add_argument("--date", default=None,
                     help="trading day to price at (default: most recent)")
-    pf = sub.add_parser("perf",
-                        help="monthly closes for the founder cohort and SPY")
-    pf.add_argument("--founders", default="founders.csv")
-    pf.add_argument("--out", default="perf.csv")
-    pf.set_defaults(func=cmd_perf)
     pr.add_argument("--out", default="prices.csv")
     pr.set_defaults(func=cmd_prices)
 
@@ -1967,15 +1540,6 @@ def main(argv=None) -> int:
     ix.add_argument("--out", default=None, help="default: universe/sp500-<today>.csv")
     ix.add_argument("--all", action="store_true",
                     help="every SEC registrant with a ticker, not the S&P 500")
-    ix.add_argument("--min-cap", type=float, default=None,
-                    help="the market-cap universe: every domestic filer at or "
-                         "above this cap (e.g. 1e9), by written rules")
-    ix.add_argument("--exit-cap", type=float, default=8e8,
-                    help="a member leaves after two snapshots below this")
-    ix.add_argument("--prior", default=None,
-                    help="previous snapshot's -evidence.csv, for hysteresis")
-    ix.add_argument("--limit", type=int, default=None,
-                    help="cap registrants considered (trial runs)")
     ix.set_defaults(func=cmd_index)
 
     pn = sub.add_parser("panel", help="run a universe, resumably")

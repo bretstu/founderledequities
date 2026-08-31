@@ -101,3 +101,36 @@ def test_the_members_file_has_the_pipelines_columns(tmp_path):
     assert head == "cik,ticker,company,added"
     prior = load_prior(e)
     assert set(prior) == {10, 11} and prior[10] == ("2026-09-01", 0)
+
+
+def test_the_newest_snapshot_is_found_by_date(tmp_path):
+    from fle.market_universe import newest_snapshot
+    d = tmp_path / "universe"; d.mkdir()
+    assert newest_snapshot(str(d)) is None          # the S&P site: no snapshot
+    for day in ("2026-09-01", "2026-12-01", "2026-06-01"):
+        (d / f"universe-{day}.csv").write_text("cik,ticker,company,added\n")
+        (d / f"universe-{day}-evidence.csv").write_text("cik\n")
+    members, evidence, taken = newest_snapshot(str(d))
+    assert members.endswith("universe-2026-12-01.csv")
+    assert evidence.endswith("universe-2026-12-01-evidence.csv")
+    assert taken.isoformat() == "2026-12-01"
+
+
+def test_the_published_page_lists_every_member_and_the_rules(tmp_path):
+    from fle.market_universe import write_page
+    about = tmp_path / "about.html"
+    about.write_text("<html><head><title>About</title></head><body>"
+                     "<main><h1>old</h1></main><footer>f</footer></body></html>")
+    ev = tmp_path / "e.csv"
+    ev.write_text("cik,ticker,company,mcap_vendor,mcap_sec,status,decision,added\n"
+                  "1,AAA,Alpha Inc,2500000000,,sized,in,2026-09-01\n"
+                  "2,BBB,Beta Corp,1200000000,3000000000,disagree,in,2026-09-01\n"
+                  "3,CCC,Gamma,500000000,,sized,out,\n")
+    out = write_page(str(tmp_path / "u.csv"), str(ev), "2026-09-01",
+                     str(about), str(tmp_path / "universe.html"))
+    page = open(out).read()
+    assert "2 US public companies" in page and "2026-09-01" in page
+    assert "Alpha Inc" in page and "Beta Corp" in page and "Gamma" not in page
+    assert "$2.5B" in page and "flagged" in page
+    assert "two consecutive quarterly snapshots" in page      # the rules ship with the list
+    assert "<footer>f</footer>" in page                        # the site's own shell

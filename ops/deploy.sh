@@ -11,6 +11,7 @@ cd "$(dirname "$0")/.."
 rm -rf public && mkdir -p public/pro
 cp index.html about.html public/
 [ -f terms.html ] && cp terms.html public/
+[ -f universe.html ] && cp universe.html public/
 
 # free tier, at the root
 for f in sp500.csv prices.csv founders.csv perf.csv events-free.csv history-free.csv; do

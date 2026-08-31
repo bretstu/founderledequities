@@ -278,3 +278,133 @@ def write_snapshot(snap: Snapshot, members_path: str, evidence_path: str,
     dump(evidence_path, snap.rows)
     dump(review_path, sorted(snap.review, key=lambda r: -(r.mcap or 0)))
     return len(snap.members), len(snap.review)
+
+
+# ------------------------------------------------------------ the record
+
+def newest_snapshot(universe_dir: str):
+    """(members_path, evidence_path, taken) for the newest universe-<date>
+    snapshot in the folder, or None when the site runs on the S&P list."""
+    import glob
+    import os
+    paths = sorted(glob.glob(os.path.join(universe_dir, "universe-????-??-??.csv")))
+    if not paths:
+        return None
+    members = paths[-1]
+    stem = members[:-4]
+    try:
+        taken = dt.date.fromisoformat(os.path.basename(stem)[len("universe-"):])
+    except ValueError:
+        return None
+    return members, stem + "-evidence.csv", taken
+
+
+RULES_HTML = """
+<p><b>Who is in.</b> Every company in the SEC's own registry of tickered
+registrants that files a 10-K (a domestic filer), has at least one Form 3,
+4 or 5 on record, and had a market capitalization at or above <b>$1 billion</b>
+on the snapshot date. One row per company: a dual-class filer counts once.</p>
+<p><b>Who is out, and why.</b> Foreign private issuers file 20-Fs and their
+officers file no ownership forms; Section 16 does not reach them, so this site
+cannot measure them. Blank-check companies (SIC 6770) have no chief executive
+in the sense this site means. Companies the sizing rules could not place above
+the bar.</p>
+<p><b>How size is decided.</b> Two independent measures: the market cap
+published by the price vendor, and the company's own cover-page share count
+(from its most recently filed report) times the newest close. When they agree
+within 25%, the company is sized. When they disagree, it is admitted if either
+clears the bar and flagged for a human reading. When neither is available, a
+current member is kept and a newcomer waits: a counting failure never evicts
+and never admits.</p>
+<p><b>The edge does not flap.</b> A company enters at $1 billion and leaves
+only after two consecutive quarterly snapshots below $800 million. Otherwise
+names near the line would blink in and out, their histories appearing and
+vanishing.</p>
+<p><b>Snapshots are quarterly and dated.</b> This list is what the rules
+produced on the date shown, from the sources named. A company that crossed
+$1 billion after that date joins at the next snapshot. If you believe a
+company is missing in error, write to
+<a href="mailto:corrections@founderledequities.com">corrections@founderledequities.com</a>
+with the ticker; the evidence behind every decision is kept.</p>
+"""
+
+
+def write_page(members_path: str, evidence_path: str, taken: str,
+               about_path: str, out_path: str) -> str | None:
+    """The published universe: every member, and the rules, as a page in
+    the site's own dress. Built from about.html's head so it inherits the
+    fonts and styles without a second stylesheet to keep in step."""
+    import html
+    import os
+    import re
+    try:
+        shell = open(about_path, encoding="utf-8").read()
+    except OSError:
+        return None
+    m = re.search(r"<main>.*?</main>", shell, re.S)
+    if not m:
+        return None
+
+    rows = []
+    with open(evidence_path, encoding="utf-8-sig", newline="") as fh:
+        for r in csv.DictReader(fh):
+            if r.get("decision") in ("in", "kept"):
+                rows.append(r)
+    rows.sort(key=lambda r: -float(r.get("mcap_vendor") or r.get("mcap_sec") or 0))
+    n = len(rows)
+    flagged = sum(1 for r in rows if r.get("status") in ("disagree", "unsized"))
+
+    def money(v):
+        try:
+            v = float(v)
+        except (TypeError, ValueError):
+            return "—"
+        if v >= 1e12:
+            return f"${v/1e12:.2f}T"
+        if v >= 1e9:
+            return f"${v/1e9:.1f}B"
+        return f"${v/1e6:.0f}M"
+
+    trs = "\n".join(
+        f"<tr><td class=\"k\">{html.escape(r['ticker'])}</td>"
+        f"<td>{html.escape(r['company'])}</td>"
+        f"<td class=\"k\" style=\"text-align:right\">{money(r.get('mcap_vendor') or r.get('mcap_sec'))}</td>"
+        f"<td class=\"k\" style=\"color:var(--faint)\">{html.escape(r.get('added') or '')}"
+        + ("  ·  flagged" if r.get("status") in ("disagree", "unsized") else "")
+        + "</td></tr>"
+        for r in rows)
+
+    main = f"""<main>
+  <h1>Every company on the site.</h1>
+  <p class="standfirst">{n:,} US public companies with a market capitalization at or
+  above $1 billion on <b>{html.escape(taken)}</b>, chosen by the rules below.
+  {flagged:,} carried a flag for human review at that snapshot.</p>
+
+  <section id="rules">
+    <h2>The rules</h2>
+    {RULES_HTML}
+    <p>Sources: SEC EDGAR (company registry, filing histories, cover-page share
+    counts); Polygon (market capitalization and closing prices). The rules are
+    code, in <span class="k">fle/market_universe.py</span>, and this page is
+    regenerated from that code's evidence file at each snapshot.</p>
+  </section>
+
+  <section id="members">
+    <h2>The list</h2>
+    <p style="color:var(--faint);font-size:13px">Sorted by market capitalization on the snapshot date.
+    "Added" is the snapshot a company first entered.</p>
+    <table style="width:100%;border-collapse:collapse;font-size:13.5px">
+      <thead><tr style="text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--faint)">
+        <th style="padding:6px 0">TICKER</th><th>COMPANY</th><th style="text-align:right">MARKET CAP</th><th>ADDED</th></tr></thead>
+      <tbody>
+{trs}
+      </tbody>
+    </table>
+  </section>
+</main>"""
+    page = shell[:m.start()] + main + shell[m.end():]
+    page = page.replace("<title>", "<title>Every company · ", 1)
+    os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
+    with open(out_path, "w", encoding="utf-8") as fh:
+        fh.write(page)
+    return out_path
