@@ -1,0 +1,301 @@
+﻿cik,ticker,company,mcap_vendor,mcap_sec,shares_sec,close,status,decision,added,strikes,note
+1045810,NVDA,NVIDIA CORP,,,24100000000.0,,unsized,out,,0,counting failure; never a member
+320193,AAPL,Apple Inc.,,,14594180000.0,,unsized,out,,0,counting failure; never a member
+1652044,GOOGL,Alphabet Inc.,,,,,unsized,out,,0,counting failure; never a member
+789019,MSFT,MICROSOFT CORP,,,7425545491.0,,unsized,out,,0,counting failure; never a member
+1018724,AMZN,AMAZON COM INC,,,10786313572.0,,unsized,out,,0,counting failure; never a member
+1730168,AVGO,Broadcom Inc.,,,4757580198.0,,unsized,out,,0,counting failure; never a member
+1326801,META,"Meta Platforms, Inc.",,,,,unsized,out,,0,counting failure; never a member
+1318605,TSLA,"Tesla, Inc.",,,3949547394.0,,unsized,out,,0,counting failure; never a member
+59478,LLY,ELI LILLY & Co,,,941357065.0,,unsized,out,,0,counting failure; never a member
+1067983,BRK-B,BERKSHIRE HATHAWAY INC,,,941481.0,,unsized,out,,0,counting failure; never a member
+19617,JPM,JPMORGAN CHASE & CO,,,2658186195.0,,unsized,out,,0,counting failure; never a member
+104169,WMT,Walmart Inc.,,,7933746241.0,,unsized,out,,0,counting failure; never a member
+2488,AMD,ADVANCED MICRO DEVICES INC,,,1632475042.0,,unsized,out,,0,counting failure; never a member
+1403161,V,VISA INC.,,,469280842.0,,unsized,out,,0,counting failure; never a member
+937966,ASML,ASML HOLDING NV,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+2115436,XOM,ExxonMobil Holdings Corp,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+200406,JNJ,JOHNSON & JOHNSON,,,2409898597.0,,unsized,out,,0,counting failure; never a member
+1141391,MA,Mastercard Inc,,,122530193.0,,unsized,out,,0,counting failure; never a member
+1551152,ABBV,AbbVie Inc.,,,1767117285.0,,unsized,out,,0,counting failure; never a member
+50863,INTC,INTEL CORP,,,5044000000.0,,unsized,out,,0,counting failure; never a member
+70858,BAC,BANK OF AMERICA CORP /DE/,,,6992748365.0,,unsized,out,,0,counting failure; never a member
+858877,CSCO,"CISCO SYSTEMS, INC.",,,3941434665.0,,unsized,out,,0,counting failure; never a member
+909832,COST,COSTCO WHOLESALE CORP /NEW,,,443478804.0,,unsized,out,,0,counting failure; never a member
+1321655,PLTR,Palantir Technologies Inc.,,,,,unsized,out,,0,counting failure; never a member
+1341439,ORCL,ORACLE CORP,,,2880471000.0,,unsized,out,,0,counting failure; never a member
+93410,CVX,CHEVRON CORP,,,1975771274.0,,unsized,out,,0,counting failure; never a member
+21344,KO,COCA COLA CO,,,,,unsized,out,,0,counting failure; never a member
+707549,LRCX,LAM RESEARCH CORP,,,1251321000.0,,unsized,out,,0,counting failure; never a member
+6951,AMAT,APPLIED MATERIALS INC /DE,,,793597443.0,,unsized,out,,0,counting failure; never a member
+2070829,CYATY,"Contemporary Amperex Technology Co., Limited/ADR",,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+18230,CAT,CATERPILLAR INC,,,459674889.0,,unsized,out,,0,counting failure; never a member
+310158,MRK,"Merck & Co., Inc.",,,2467171638.0,,unsized,out,,0,counting failure; never a member
+731766,UNH,UNITEDHEALTH GROUP INC,,,897594847.0,,unsized,out,,0,counting failure; never a member
+1089113,HSBC,HSBC HOLDINGS PLC,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+40545,GE,GENERAL ELECTRIC CO,,,1037562513.0,,unsized,out,,0,counting failure; never a member
+80424,PG,PROCTER & GAMBLE Co,,,2324433060.0,,unsized,out,,0,counting failure; never a member
+895421,MS,MORGAN STANLEY,,,1570566292.0,,unsized,out,,0,counting failure; never a member
+1065280,NFLX,NETFLIX INC,,,4163939676.0,,unsized,out,,0,counting failure; never a member
+886982,GS,GOLDMAN SACHS GROUP INC,,,291171408.0,,unsized,out,,0,counting failure; never a member
+1114448,NVS,NOVARTIS AG,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1413329,PM,Philip Morris International Inc.,,,1558613439.0,,unsized,out,,0,counting failure; never a member
+1327567,PANW,Palo Alto Networks Inc,,,815000000.0,,unsized,out,,0,counting failure; never a member
+1577552,BABA,Alibaba Group Holding Ltd,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1000275,RY,ROYAL BANK OF CANADA,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+101829,RTX,RTX Corp,,,1347758144.0,,unsized,out,,0,counting failure; never a member
+1571996,DELL,Dell Technologies Inc.,,,,,unsized,out,,0,counting failure; never a member
+901832,AZN,ASTRAZENECA PLC,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1306965,SHEL,Shell plc,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+72971,WFC,WELLS FARGO & COMPANY/MN,,,3023999336.0,,unsized,out,,0,counting failure; never a member
+1973239,ARM,ARM HOLDINGS PLC /UK,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1000184,SAP,SAP SE,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1996810,GEV,GE Vernova Inc.,,,266333581.0,,unsized,out,,0,counting failure; never a member
+67088,MUFG,MITSUBISHI UFJ FINANCIAL GROUP INC,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+811809,BHP,BHP Group Ltd,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+318154,AMGN,AMGEN INC,,,540632005.0,,unsized,out,,0,counting failure; never a member
+319201,KLAC,KLA CORP,,,1306546783.0,,unsized,out,,0,counting failure; never a member
+97476,TXN,TEXAS INSTRUMENTS INC,,,913247686.0,,unsized,out,,0,counting failure; never a member
+1596532,ANET,"Arista Networks, Inc.",,,1261224648.0,,unsized,out,,0,counting failure; never a member
+97745,TMO,THERMO FISHER SCIENTIFIC INC.,,,369747286.0,,unsized,out,,0,counting failure; never a member
+1094517,TM,TOYOTA MOTOR CORP/,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+4962,AXP,AMERICAN EXPRESS CO,,,675309833.0,,unsized,out,,0,counting failure; never a member
+1707925,LIN,LINDE PLC,,,460980163.0,,unsized,out,,0,counting failure; never a member
+831001,C,CITIGROUP INC,,,1749319009.0,,unsized,out,,0,counting failure; never a member
+51143,IBM,INTERNATIONAL BUSINESS MACHINES CORP,,,942134390.0,,unsized,out,,0,counting failure; never a member
+2023554,SNDK,Sandisk Corp,,,146419001.0,,unsized,out,,0,counting failure; never a member
+891478,SAN,"Banco Santander, S.A.",,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+732712,VZ,VERIZON COMMUNICATIONS INC,,,4154775202.0,,unsized,out,,0,counting failure; never a member
+887028,RTNTF,RIO TINTO LTD,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1835632,MRVL,"Marvell Technology, Inc.",,,876900000.0,,unsized,out,,0,counting failure; never a member
+353278,NVO,NOVO NORDISK A S,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1800,ABT,ABBOTT LABORATORIES,,,,,unsized,out,,0,counting failure; never a member
+879764,TTE,TotalEnergies SE,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+77476,PEP,PEPSICO INC,,,1364891558.0,,unsized,out,,0,counting failure; never a member
+316709,SCHW,SCHWAB CHARLES CORP,,,1729335714.0,,unsized,out,,0,counting failure; never a member
+1283699,TMUS,"T-Mobile US, Inc.",,,1072671613.0,,unsized,out,,0,counting failure; never a member
+1535527,CRWD,"CrowdStrike Holdings, Inc.",,,1023934842.0,,unsized,out,,0,counting failure; never a member
+1594805,SHOP,SHOPIFY INC.,,,,,unsized,out,,0,counting failure; never a member
+63908,MCD,MCDONALDS CORP,,,707641531.0,,unsized,out,,0,counting failure; never a member
+947263,TD,TORONTO DOMINION BANK,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+820313,APH,AMPHENOL CORP /DE/,,,1232983457.0,,unsized,out,,0,counting failure; never a member
+1744489,DIS,Walt Disney Co,,,1726686902.0,,unsized,out,,0,counting failure; never a member
+2012383,BLK,"BlackRock, Inc.",,,154926181.0,,unsized,out,,0,counting failure; never a member
+100885,UNP,UNION PACIFIC CORP,,,594075498.0,,unsized,out,,0,counting failure; never a member
+1137789,STX,Seagate Technology Holdings plc,,,226644518.0,,unsized,out,,0,counting failure; never a member
+882095,GILD,"GILEAD SCIENCES, INC.",,,1239955155.0,,unsized,out,,0,counting failure; never a member
+1001838,SCCO,SOUTHERN COPPER CORP/,,,834331706.0,,unsized,out,,0,counting failure; never a member
+732717,T,AT&T INC.,,,6852385650.0,,unsized,out,,0,counting failure; never a member
+753308,NEE,NEXTERA ENERGY INC,,,2085341456.0,,unsized,out,,0,counting failure; never a member
+315189,DE,DEERE & CO,,,269625412.0,,unsized,out,,0,counting failure; never a member
+766704,WELL,WELLTOWER INC.,,,,,unsized,out,,0,counting failure; never a member
+2053383,KXIAY,Kioxia Holdings Corporation/ADR,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1393818,BX,Blackstone Inc.,,,750625114.0,,unsized,out,,0,counting failure; never a member
+863064,RIO,RIO TINTO PLC,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+804328,QCOM,QUALCOMM INC/DE,,,1050000000.0,,unsized,out,,0,counting failure; never a member
+12927,BA,BOEING CO,,,790370020.0,,unsized,out,,0,counting failure; never a member
+1610520,UBS,UBS Group AG,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+946770,DTEGY,DEUTSCHE TELEKOM AG,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+842180,BBVA,"BANCO BILBAO VIZCAYA ARGENTARIA, S.A.",,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1543151,UBER,"Uber Technologies, Inc",,,2042560121.0,,unsized,out,,0,counting failure; never a member
+1163165,COP,CONOCOPHILLIPS,,,1201337479.0,,unsized,out,,0,counting failure; never a member
+1075531,BKNG,Booking Holdings Inc.,,,751380500.0,,unsized,out,,0,counting failure; never a member
+78003,PFE,PFIZER INC,,,5699673589.0,,unsized,out,,0,counting failure; never a member
+1551182,ETN,Eaton Corp plc,,,388400000.0,,unsized,out,,0,counting failure; never a member
+1022837,SMFG,"SUMITOMO MITSUI FINANCIAL GROUP, INC.",,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1381197,IBKR,"Interactive Brokers Group, Inc.",,,42231651.0,,unsized,out,,0,counting failure; never a member
+106040,WDC,WESTERN DIGITAL CORP,,,360540944.0,,unsized,out,,0,counting failure; never a member
+1158838,ATEYY,ADVANTEST CORP,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1668717,BUD,Anheuser-Busch InBev SA/NV,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+109198,TJX,TJX COMPANIES INC /DE/,,,1099974061.0,,unsized,out,,0,counting failure; never a member
+313616,DHR,DANAHER CORP /DE/,,,702986054.0,,unsized,out,,0,counting failure; never a member
+47710,HTHIY,HITACHI LTD,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1830056,SMERY,Siemens Energy AG/ADR,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+313838,SONY,Sony Group Corp,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+217410,UL,UNILEVER PLC,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+875320,VRTX,VERTEX PHARMACEUTICALS INC / MA,,,253460924.0,,unsized,out,,0,counting failure; never a member
+1045609,PLD,"Prologis, Inc.",,,932338000.0,,unsized,out,,0,counting failure; never a member
+1164727,NEM,NEWMONT Corp /DE/,,,1053692271.0,,unsized,out,,0,counting failure; never a member
+14272,BMY,BRISTOL MYERS SQUIBB CO,,,2042714656.0,,unsized,out,,0,counting failure; never a member
+1035267,ISRG,INTUITIVE SURGICAL INC,,,353278038.0,,unsized,out,,0,counting failure; never a member
+896159,CB,Chubb Ltd,,,,,unsized,out,,0,counting failure; never a member
+927628,COF,CAPITAL ONE FINANCIAL CORP,,,,,unsized,out,,0,counting failure; never a member
+1373715,NOW,"ServiceNow, Inc.",,,1034000000.0,,unsized,out,,0,counting failure; never a member
+936468,LMT,LOCKHEED MARTIN CORP,,,230790753.0,,unsized,out,,0,counting failure; never a member
+80661,PGR,PROGRESSIVE CORP/OH/,,,581371770.0,,unsized,out,,0,counting failure; never a member
+64040,SPGI,S&P Global Inc.,,,,,unsized,out,,0,counting failure; never a member
+76334,PH,Parker-Hannifin Corp,,,126047469.0,,unsized,out,,0,counting failure; never a member
+310764,SYK,STRYKER CORP,,,383573046.0,,unsized,out,,0,counting failure; never a member
+24741,GLW,CORNING INC /NY,,,,,unsized,out,,0,counting failure; never a member
+1335730,MFG,MIZUHO FINANCIAL GROUP INC,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1737806,PDD,PDD Holdings Inc.,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+829224,SBUX,STARBUCKS CORP,,,1140000000.0,,unsized,out,,0,counting failure; never a member
+1303523,BTI,British American Tobacco p.l.c.,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1144967,HDB,HDFC BANK LTD,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+927971,BMO,BANK OF MONTREAL /CAN/,,,708905679.0,,unsized,out,,0,counting failure; never a member
+1119639,PBR,PETROBRAS - PETROLEO BRASILEIRO SA,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+64803,CVS,CVS HEALTH Corp,,,1278970369.0,,unsized,out,,0,counting failure; never a member
+1613103,MDT,Medtronic plc,,,1280045190.0,,unsized,out,,0,counting failure; never a member
+1559720,ABNB,"Airbnb, Inc.",,,,,unsized,out,,0,counting failure; never a member
+1467373,ACN,Accenture plc,,,637016143.0,,unsized,out,,0,counting failure; never a member
+764180,MO,"ALTRIA GROUP, INC.",,,1669743926.0,,unsized,out,,0,counting failure; never a member
+1640147,SNOW,Snowflake Inc.,,,346600000.0,,unsized,out,,0,counting failure; never a member
+313807,BP,BP PLC,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1262039,FTNT,"Fortinet, Inc.",,,733713653.0,,unsized,out,,0,counting failure; never a member
+8670,ADP,AUTOMATIC DATA PROCESSING INC,,,397262737.0,,unsized,out,,0,counting failure; never a member
+831259,FCX,FREEPORT-MCMORAN INC,,,1436017523.0,,unsized,out,,0,counting failure; never a member
+1639920,SPOT,Spotify Technology S.A.,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1390777,BNY,Bank of New York Mellon Corp,,,678504142.0,,unsized,out,,0,counting failure; never a member
+796343,ADBE,ADOBE INC.,,,397500000.0,,unsized,out,,0,counting failure; never a member
+895728,ENB,ENBRIDGE INC,,,2184085509.0,,unsized,out,,0,counting failure; never a member
+1121404,SNY,Sanofi,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+2809,AEM,AGNICO EAGLE MINES LTD,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1690820,CVNA,CARVANA CO.,,,,,unsized,out,,0,counting failure; never a member
+9631,BNS,BANK OF NOVA SCOTIA,,,1236305738.0,,unsized,out,,0,counting failure; never a member
+1045520,CM,CANADIAN IMPERIAL BANK OF COMMERCE /CAN/,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+4281,HWM,Howmet Aerospace Inc.,,,398801399.0,,unsized,out,,0,counting failure; never a member
+1017413,CNQ,CANADIAN NATURAL RESOURCES Ltd,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+92122,SO,SOUTHERN CO,,,1127301098.0,,unsized,out,,0,counting failure; never a member
+1101239,EQIX,EQUINIX INC,,,98671686.0,,unsized,out,,0,counting failure; never a member
+1131399,GSK,GSK plc,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+40533,GD,GENERAL DYNAMICS CORP,,,,,unsized,out,,0,counting failure; never a member
+896878,INTU,INTUIT INC.,,,273537000.0,,unsized,out,,0,counting failure; never a member
+927653,MCK,MCKESSON CORP,,,116590363.0,,unsized,out,,0,counting failure; never a member
+1510295,MPC,Marathon Petroleum Corp,,,280824763.0,,unsized,out,,0,counting failure; never a member
+1477333,NET,"Cloudflare, Inc.",,,,,unsized,out,,0,counting failure; never a member
+1751008,APP,AppLovin Corp,,,,,unsized,out,,0,counting failure; never a member
+1140625,EQNR,EQUINOR ASA,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1035002,VLO,VALERO ENERGY CORP/TX,,,287927461.0,,unsized,out,,0,counting failure; never a member
+1156375,CME,CME GROUP INC.,,,66643583.0,,unsized,out,,0,counting failure; never a member
+1039765,ING,ING GROEP NV,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1792789,DASH,"DoorDash, Inc.",,,,,unsized,out,,0,counting failure; never a member
+1404912,KKR,KKR & Co. Inc.,,,897635601.0,,unsized,out,,0,counting failure; never a member
+1099590,MELI,MERCADOLIBRE INC,,,50696802.0,,unsized,out,,0,counting failure; never a member
+1466258,TT,Trane Technologies plc,,,220023177.0,,unsized,out,,0,counting failure; never a member
+1674101,VRT,Vertiv Holdings Co,,,384988173.0,,unsized,out,,0,counting failure; never a member
+713676,PNC,"PNC FINANCIAL SERVICES GROUP, INC.",,,398943667.0,,unsized,out,,0,counting failure; never a member
+36104,USB,US BANCORP DE,,,1558051446.0,,unsized,out,,0,counting failure; never a member
+1868275,CEG,Constellation Energy Corp,,,354307379.0,,unsized,out,,0,counting failure; never a member
+1534701,PSX,Phillips 66,,,399020916.0,,unsized,out,,0,counting failure; never a member
+1166691,CMCSA,COMCAST CORP,,,2063073161.0,,unsized,out,,0,counting failure; never a member
+277948,CSX,CSX CORP,,,1852474917.0,,unsized,out,,0,counting failure; never a member
+865752,MNST,Monster Beverage Corp,,,979525882.0,,unsized,out,,0,counting failure; never a member
+1326160,DUK,Duke Energy CORP,,,779596217.0,,unsized,out,,0,counting failure; never a member
+1783879,HOOD,"Robinhood Markets, Inc.",,,,,unsized,out,,0,counting failure; never a member
+1122411,ASX,"ASE Technology Holding Co., Ltd.",,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+2039784,MGCLY,"Midea Group Co., Ltd./ADR",,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1048286,MAR,MARRIOTT INTERNATIONAL INC /MD/,,,260766288.0,,unsized,out,,0,counting failure; never a member
+1001085,BN,BROOKFIELD Corp /ON/,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1050915,PWR,"QUANTA SERVICES, INC.",,,150343393.0,,unsized,out,,0,counting failure; never a member
+860730,HCA,"HCA Healthcare, Inc.",,,,,unsized,out,,0,counting failure; never a member
+62709,MRSH,"MARSH & MCLENNAN COMPANIES, INC.",,,477211268.0,,unsized,out,,0,counting failure; never a member
+66740,MMM,3M CO,,,515722417.0,,unsized,out,,0,counting failure; never a member
+1571949,ICE,"Intercontinental Exchange, Inc.",,,561394487.0,,unsized,out,,0,counting failure; never a member
+312069,BCS,BARCLAYS PLC,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+823768,WM,WASTE MANAGEMENT INC,,,399715184.0,,unsized,out,,0,counting failure; never a member
+1059556,MCO,MOODYS CORP /DE/,,,173200000.0,,unsized,out,,0,counting failure; never a member
+1160106,LYG,Lloyds Banking Group plc,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+2098326,SNHIY,"Sany Heavy Industries Co., Ltd./ADR",,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+32604,EMR,EMERSON ELECTRIC CO,,,557800000.0,,unsized,out,,0,counting failure; never a member
+1156039,ELV,"Elevance Health, Inc.",,,216869290.0,,unsized,out,,0,counting failure; never a member
+1090727,UPS,UNITED PARCEL SERVICE INC,,,713924267.0,,unsized,out,,0,counting failure; never a member
+107263,WMB,"WILLIAMS COMPANIES, INC.",,,1223167472.0,,unsized,out,,0,counting failure; never a member
+1169486,TKOMY,"TOKIO MARINE HOLDINGS, INC.",,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+813672,CDNS,CADENCE DESIGN SYSTEMS INC,,,,,unsized,out,,0,counting failure; never a member
+833444,JCI,Johnson Controls International plc,,,,,unsized,out,,0,counting failure; never a member
+872589,REGN,"REGENERON PHARMACEUTICALS, INC.",,,93955110.0,,unsized,out,,0,counting failure; never a member
+89800,SHW,SHERWIN WILLIAMS CO,,,242758151.0,,unsized,out,,0,counting failure; never a member
+895564,BAESY,BAE SYSTEMS PLC /FI/,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1063761,SPG,SIMON PROPERTY GROUP INC.,,,283301181.0,,unsized,out,,0,counting failure; never a member
+1937926,BAM,Brookfield Asset Management Ltd.,,,,,unsized,out,,0,counting failure; never a member
+16875,CP,CANADIAN PACIFIC KANSAS CITY LTD/CN,,,879079224.0,,unsized,out,,0,counting failure; never a member
+1061219,EPD,ENTERPRISE PRODUCTS PARTNERS L.P.,,,2159477169.0,,unsized,out,,0,counting failure; never a member
+1132597,ITUB,Itau Unibanco Holding S.A.,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1053507,AMT,AMERICAN TOWER CORP /MA/,,,,,unsized,out,,0,counting failure; never a member
+723254,CTAS,CINTAS CORP,,,400169561.0,,unsized,out,,0,counting failure; never a member
+1107457,IFNNY,INFINEON TECHNOLOGIES AG,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1103982,MDLZ,"Mondelez International, Inc.",,,,,unsized,out,,0,counting failure; never a member
+1561550,DDOG,"Datadog, Inc.",,,,,unsized,out,,0,counting failure; never a member
+1004315,NGG,NATIONAL GRID PLC,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+49826,ITW,ILLINOIS TOOL WORKS INC,,,284800000.0,,unsized,out,,0,counting failure; never a member
+31462,ECL,ECOLAB INC.,,,280328603.0,,unsized,out,,0,counting failure; never a member
+87347,SLB,SLB LIMITED/NV,,,1484143231.0,,unsized,out,,0,counting failure; never a member
+1002242,E,ENI SPA,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+68505,MSI,"Motorola Solutions, Inc.",,,165493788.0,,unsized,out,,0,counting failure; never a member
+311337,SU,SUNCOR ENERGY INC,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+702165,NSC,NORFOLK SOUTHERN CORP,,,224608373.0,,unsized,out,,0,counting failure; never a member
+1110646,NTES,"NetEase, Inc.",,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+26172,CMI,CUMMINS INC,,,137664487.0,,unsized,out,,0,counting failure; never a member
+756894,B,BARRICK MINING CORP,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1467858,GM,General Motors Co,,,877451541.0,,unsized,out,,0,counting failure; never a member
+821189,EOG,EOG RESOURCES INC,,,524529176.0,,unsized,out,,0,counting failure; never a member
+884887,RCL,ROYAL CARIBBEAN CRUISES LTD,,,267452084.0,,unsized,out,,0,counting failure; never a member
+1858681,APO,"Apollo Global Management, Inc.",,,590543159.0,,unsized,out,,0,counting failure; never a member
+1048911,FDX,FEDEX CORP,,,236581188.0,,unsized,out,,0,counting failure; never a member
+1133421,NOC,NORTHROP GRUMMAN CORP /DE/,,,142063026.0,,unsized,out,,0,counting failure; never a member
+86312,TRV,"TRAVELERS COMPANIES, INC.",,,208575022.0,,unsized,out,,0,counting failure; never a member
+16868,CNI,CANADIAN NATIONAL RAILWAY CO,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+745732,ROST,"ROSS STORES, INC.",,,320781076.0,,unsized,out,,0,counting failure; never a member
+315293,AON,Aon plc,,,212125434.0,,unsized,out,,0,counting failure; never a member
+883241,SNPS,SYNOPSYS INC,,,191636646.0,,unsized,out,,0,counting failure; never a member
+1633978,LITE,Lumentum Holdings Inc.,,,89700000.0,,unsized,out,,0,counting failure; never a member
+844150,NWG,NatWest Group plc,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1648416,RACE,Ferrari N.V.,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1585689,HLT,Hilton Worldwide Holdings Inc.,,,225064910.0,,unsized,out,,0,counting failure; never a member
+1739940,CI,Cigna Group,,,264240486.0,,unsized,out,,0,counting failure; never a member
+21665,CL,COLGATE PALMOLIVE CO,,,797172829.0,,unsized,out,,0,counting failure; never a member
+898173,ORLY,O REILLY AUTOMOTIVE INC,,,808960792.0,,unsized,out,,0,counting failure; never a member
+1276187,ET,Energy Transfer LP,,,3443299601.0,,unsized,out,,0,counting failure; never a member
+1323404,WPM,Wheaton Precious Metals Corp.,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1159508,DB,DEUTSCHE BANK AKTIENGESELLSCHAFT,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1437107,WBD,"Warner Bros. Discovery, Inc.",,,2510703314.0,,unsized,out,,0,counting failure; never a member
+1691493,NU,Nu Holdings Ltd.,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+885725,BSX,BOSTON SCIENTIFIC CORP,,,1449229526.0,,unsized,out,,0,counting failure; never a member
+1297996,DLR,"DIGITAL REALTY TRUST, INC.",,,351406070.0,,unsized,out,,0,counting failure; never a member
+1129137,AMX,AMERICA MOVIL SAB DE CV/,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1086888,MFC,MANULIFE FINANCIAL CORP,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1645590,HPE,Hewlett Packard Enterprise Co,,,1324203521.0,,unsized,out,,0,counting failure; never a member
+354190,AJG,Arthur J. Gallagher & Co.,,,256300000.0,,unsized,out,,0,counting failure; never a member
+1506307,KMI,"KINDER MORGAN, INC.",,,2226802089.0,,unsized,out,,0,counting failure; never a member
+1060391,RSG,"REPUBLIC SERVICES, INC.",,,306212978.0,,unsized,out,,0,counting failure; never a member
+773840,HON,HONEYWELL INTERNATIONAL INC,,,316940010.0,,unsized,out,,0,counting failure; never a member
+75362,PCAR,PACCAR INC,,,526364953.0,,unsized,out,,0,counting failure; never a member
+2969,APD,"Air Products & Chemicals, Inc.",,,222685530.0,,unsized,out,,0,counting failure; never a member
+1067701,URI,"UNITED RENTALS, INC.",,,62646557.0,,unsized,out,,0,counting failure; never a member
+4904,AEP,AMERICAN ELECTRIC POWER CO INC,,,544104955.0,,unsized,out,,0,counting failure; never a member
+2071868,JHPCY,"Jiangsu Hengrui Pharmaceuticals Co., Ltd./ADR",,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1260221,TDG,TransDigm Group INC,,,55276525.0,,unsized,out,,0,counting failure; never a member
+899051,ALL,ALLSTATE CORP,,,252857950.0,,unsized,out,,0,counting failure; never a member
+917851,VALE,Vale S.A.,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+849395,CRH,CRH PUBLIC LTD CO,,,665284511.0,,unsized,out,,0,counting failure; never a member
+929869,RELX,RELX PLC,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1280452,MPWR,"MONOLITHIC POWER SYSTEMS, INC.",,,49143000.0,,unsized,out,,0,counting failure; never a member
+1389170,TRGP,Targa Resources Corp.,,,214431021.0,,unsized,out,,0,counting failure; never a member
+1697862,ARGX,ARGENX SE,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+92230,TFC,TRUIST FINANCIAL CORP,,,1221626188.0,,unsized,out,,0,counting failure; never a member
+277135,GWW,"W.W. GRAINGER, INC.",,,47100942.0,,unsized,out,,0,counting failure; never a member
+1701605,BKR,Baker Hughes Co,,,992674071.0,,unsized,out,,0,counting failure; never a member
+1140859,COR,"Cencora, Inc.",,,190827165.0,,unsized,out,,0,counting failure; never a member
+1664703,BE,Bloom Energy Corp,,,,,unsized,out,,0,counting failure; never a member
+1099219,MET,METLIFE INC,,,635476927.0,,unsized,out,,0,counting failure; never a member
+320187,NKE,"NIKE, Inc.",,,855351589.0,,unsized,out,,0,counting failure; never a member
+1393311,PSA,Public Storage,,,175621134.0,,unsized,out,,0,counting failure; never a member
+1973832,AU,AngloGold Ashanti PLC,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+797468,OXY,OCCIDENTAL PETROLEUM CORP /DE/,,,999637371.0,,unsized,out,,0,counting failure; never a member
+1475260,CVE,CENOVUS ENERGY INC.,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+726728,O,REALTY INCOME CORP,,,946218033.0,,unsized,out,,0,counting failure; never a member
+1552000,MPLX,MPLX LP,,,1013858251.0,,unsized,out,,0,counting failure; never a member
+4977,AFL,AFLAC INC,,,501343298.0,,unsized,out,,0,counting failure; never a member
+1039684,OKE,ONEOK INC /NEW/,,,630369667.0,,unsized,out,,0,counting failure; never a member
+815556,FAST,FASTENAL CO,,,1147497573.0,,unsized,out,,0,counting failure; never a member
+715957,D,"DOMINION ENERGY, INC",,,879455403.0,,unsized,out,,0,counting failure; never a member
+1842726,LSEGY,London Stock Exchange Group plc,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1385157,TEL,TE Connectivity plc,,,289513228.0,,unsized,out,,0,counting failure; never a member
+1395064,TAK,TAKEDA PHARMACEUTICAL CO LTD,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+3570,LNG,"Cheniere Energy, Inc.",,,206534158.0,,unsized,out,,0,counting failure; never a member
+850918,GWLIF,GREAT-WEST LIFECO INC.,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1274152,CSLLY,CSL LTD,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1513845,NBIS,Nebius Group N.V.,,,,,"excluded: no 10-K on record (foreign filer, fund, or shell)",out,,0,
+1539838,FANG,"Diamondback Energy, Inc.",,,280024353.0,,unsized,out,,0,counting failure; never a member
+97210,TER,"TERADYNE, INC",,,156340750.0,,unsized,out,,0,counting failure; never a member
+1035983,FIX,COMFORT SYSTEMS USA INC,,,35194329.0,,unsized,out,,0,counting failure; never a member

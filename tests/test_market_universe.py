@@ -134,3 +134,27 @@ def test_the_published_page_lists_every_member_and_the_rules(tmp_path):
     assert "$2.5B" in page and "flagged" in page
     assert "two consecutive quarterly snapshots" in page      # the rules ship with the list
     assert "<footer>f</footer>" in page                        # the site's own shell
+
+
+def test_a_snapshot_never_reads_sizing_or_indexes_from_cache():
+    """Market caps, share counts and filing indexes are fetched fresh; a
+    quarterly snapshot on last quarter's cache would be a dated list with
+    the wrong date on it."""
+    from fle.market_universe import (newest_shares, recent_submissions,
+                                     vendor_mcap)
+    seen = []
+
+    class Spy:
+        def get(self, url, use_cache=True):
+            seen.append(("get", use_cache)); return '{"units":{"shares":[]},"results":{}}'
+        def get_json(self, url, use_cache=True):
+            seen.append(("json", use_cache))
+            return {"filings": {"recent": {"form": ["10-K", "4"],
+                                            "accessionNumber": ["a", "b"]}},
+                    "sic": "3571"}
+    newest_shares(Spy(), 1)
+    vendor_mcap(Spy(), "AAA", "k")
+    subs = recent_submissions(Spy(), 1)
+    assert all(cache is False for _, cache in seen), seen
+    assert {f["form"] for f in subs["_filings"]} == {"10-K", "4"}
+    assert subs["sic"] == "3571"

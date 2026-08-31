@@ -24,6 +24,11 @@ WHO IS OUT
     the sense this site means
   - anything the sizing rules cannot place above the bar
 
+NOTHING A SNAPSHOT DECIDES ON IS READ FROM CACHE. Market caps, share
+counts and filing indexes are fetched fresh every time; a quarterly
+snapshot that reused last quarter's numbers would be a dated list with
+the wrong date on it.
+
 HOW SIZE IS DECIDED -- two measures, no silent verdicts
   vendor:  Polygon's market_cap for the ticker (the number the rest of
            the world means by the phrase)
@@ -109,6 +114,27 @@ def polygon_ticker(t: str) -> str:
     return t.upper().replace("-", ".")
 
 
+SEC_DATA = "https://data.sec.gov"
+
+
+def recent_submissions(client, cik: int) -> dict:
+    """The main submissions document only -- fetched FRESH, never from cache.
+
+    Eligibility needs the form TYPES a company files, and the `recent`
+    block (the last ~1,000 filings) settles that for any active company:
+    a listed domestic filer has a 10-K and Form 4s in its recent history
+    or it is not one. Reading the extra history files that old companies
+    carry (six 1MB documents for Boeing) made the trial crawl at six
+    seconds per company for nothing. And a snapshot must see today's
+    index, not the one cached last quarter: a company that filed its
+    first 10-K since would otherwise be excluded forever."""
+    from .edgar import _columns_to_rows
+    data = client.get_json(f"{SEC_DATA}/submissions/CIK{cik:010d}.json",
+                           use_cache=False)
+    return {"_filings": _columns_to_rows(data.get("filings", {}).get("recent", {})),
+            "sic": data.get("sic")}
+
+
 def eligibility(subs: dict) -> str:
     """'' if the site can cover it, else the reason it cannot."""
     forms = {f.get("form") for f in subs.get("_filings", [])}
@@ -125,7 +151,8 @@ def newest_shares(client, cik: int) -> float | None:
     """Cover-page share count from the most recently FILED report only, so
     an amendment never double-counts; per-class facts summed."""
     try:
-        facts = json.loads(client.get(CONCEPT_URL.format(cik=cik)))
+        facts = json.loads(client.get(CONCEPT_URL.format(cik=cik),
+                                      use_cache=False))
         vals = [v for v in facts.get("units", {}).get("shares", [])
                 if v.get("val") and v.get("accn")]
         if not vals:
@@ -143,7 +170,8 @@ def vendor_mcap(client, ticker: str, api_key: str | None) -> float | None:
         return None
     try:
         data = json.loads(client.get(
-            DETAILS_URL.format(ticker=polygon_ticker(ticker), key=api_key)))
+            DETAILS_URL.format(ticker=polygon_ticker(ticker), key=api_key),
+            use_cache=False))
         mc = (data.get("results") or {}).get("market_cap")
         return float(mc) if mc else None
     except Exception:  # noqa: BLE001
@@ -220,7 +248,7 @@ def build_snapshot(client, api_key: str | None, entry: float = 1e9,
             on_step(i, len(cands), m.ticker)
         row = Row(cik=m.cik, ticker=m.ticker, company=m.company)
         try:
-            subs = client.submissions(m.cik)
+            subs = recent_submissions(client, m.cik)
         except Exception:  # noqa: BLE001
             row.status, row.decision = "excluded: no filing history", "out"
             snap.rows.append(row)

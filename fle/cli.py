@@ -998,7 +998,7 @@ def cmd_market_universe(args) -> int:
               "sizing will lean on SEC counts alone", file=sys.stderr)
 
     def _p(i, n, tk):
-        if i % 100 == 0 or i == n:
+        if i % 25 == 0 or i == n:
             sys.stdout.write(f"\r  universe {i:,}/{n:,} {tk:8}")
             sys.stdout.flush()
     snap = build_snapshot(client, SETTINGS.polygon_api_key,
