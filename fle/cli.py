@@ -613,16 +613,46 @@ def cmd_history(args) -> int:
 
     new_state: dict = {}
     reused = 0
-    rows: list = []
     agree = disagree = 0
+    walked = failed = 0
+    from .history import mark_restated_rows
+    from .ledger import SECTION16
+    from .walk import run_pool
+
+    cols = ["cik", "ticker", "ceo", "owner_cik", "date", "form", "accession",
+            "shares", "shares_split_adjusted", "outstanding", "pct",
+            "traded", "traded_value", "unpriced_rows", "unexplained",
+            "codes", "groups", "classes", "restated", "matches_panel"]
+    n_rows = 0
+    tickers_out: set = set()
+
+    # THE FILE IS WRITTEN AS COMPANIES COMPLETE, NOT AT THE END. The parent
+    # holds one company's rows at a time; the write-time restated marking
+    # runs per company (it groups by person anyway). Carried rows and
+    # walked rows go through the same door.
+    fh = open(args.out, "w", newline="", encoding="utf-8-sig")
+    w = csv.DictWriter(fh, fieldnames=cols)
+    w.writeheader()
+
+    def emit(rows: list) -> None:
+        nonlocal n_rows
+        if not rows:
+            return
+        mark_restated_rows(rows)
+        for r in rows:
+            w.writerow({k: " ".join(str(r.get(k, "")).split()) for k in cols})
+        n_rows += len(rows)
+        tickers_out.add(rows[0]["ticker"])
+        fh.flush()
+
+    # 1 -- decide reuse for every company (cheap: one index each), emit the
+    #      carried rows now, and queue the rest for the workers
+    jobs = []
     for i, m in enumerate(members, 1):
-        def _say(msg, _i=i, _n=len(members), _t=m.ticker):
-            sys.stdout.write(f"\r  {_i}/{_n} {_t}  {msg}".ljust(52))
-            sys.stdout.flush()
-        _say("certification...")
+        sys.stdout.write(f"\r  {i}/{len(members)} {m.ticker}  checking...".ljust(52))
+        sys.stdout.flush()
         try:
             if args.reuse and m.ticker in prior_rows:
-                from .ledger import SECTION16
                 subs = client.submissions(int(m.cik))
                 latest = ""
                 for f in subs.get("_filings", []):
@@ -632,7 +662,7 @@ def cmd_history(args) -> int:
                         if (when, acc) > (latest[:10], latest[11:]):
                             latest = f"{when} {acc}"
                 if latest and prior_state.get(m.ticker) == latest:
-                    rows.extend(prior_rows[m.ticker])
+                    emit(prior_rows[m.ticker])
                     new_state[m.ticker] = latest
                     reused += 1
                     if prior_rows[m.ticker][-1].get("matches_panel") == "TRUE":
@@ -641,62 +671,35 @@ def cmd_history(args) -> int:
                         disagree += 1
                     continue
                 new_state[m.ticker] = latest
-
-            cert = peo_from_certification(client, int(m.cik))
-            if not cert:
-                continue
-            _say("ledger...")
-            out = shares_outstanding(client, int(m.cik))
-            led = build_ledger(client, int(m.cik), owner_name=cert.name,
-                               share_classes=out.classes if out.ok else 0,
-                               class_members=out.per_class,
-                               exclude=excl.for_issuer(int(m.cik)))
-            if not led.owner_cik:
-                continue
-
-            _say("denominator...")
-            series = denominator_series(
-                client, int(m.cik), since=args.since,
-                on_step=lambda a, b: _say(f"cover page {a}/{b}..."))
-            if not series.classes and out.per_class:
-                series.classes = {"0000": out.per_class}
-
-            _say("walking...")
-            sp = (fetch_splits(client, m.ticker, SETTINGS.polygon_api_key)
-                  if args.splits else None)
-            hist = build_history(
-                client, int(m.cik), led.owner_cik, led.mine,
-                series=series, splits=sp,
-                exclude=excl.for_issuer(int(m.cik)), since=args.since,
-                on_step=lambda a, b: _say(f"filing {a}/{b}..."))
-
-            from .history import mark_restated
-            mark_restated(hist.snapshots)
-            last = hist.snapshots[-1].shares if hist.snapshots else None
-            ok = last is not None and abs(last - led.total) <= max(1.0, led.total * 0.001)
-            agree, disagree = (agree + 1, disagree) if ok else (agree, disagree + 1)
-            for s_ in hist.snapshots:
-                rows.append({
-                    "cik": m.cik, "ticker": m.ticker, "ceo": cert.name,
-                    "owner_cik": led.owner_cik,
-                    "date": s_.date, "form": s_.form, "accession": s_.accession,
-                    "shares": int(s_.shares),
-                    "shares_split_adjusted": int(s_.adjusted),
-                    "outstanding": int(s_.outstanding) if s_.outstanding else "",
-                    "pct": round(s_.pct, 4) if s_.pct is not None else "",
-                    "traded": int(s_.traded) if s_.traded else "",
-                    "traded_value": (round(s_.traded_value, 2)
-                                     if s_.traded_value else ""),
-                    "unpriced_rows": s_.unpriced or "",
-                    "unexplained": (int(s_.unexplained)
-                                    if abs(s_.unexplained) >= 1 else ""),
-                    "codes": s_.codes, "groups": s_.groups,
-                    "classes": s_.classes,
-                    "restated": "TRUE" if s_.restated else "",
-                    "matches_panel": "TRUE" if ok else "",
-                })
         except Exception:  # noqa: BLE001
-            continue
+            pass
+        jobs.append({"cik": int(m.cik), "ticker": m.ticker,
+                     "since": args.since, "splits": bool(args.splits)})
+    _clear()
+
+    # 2 -- walk the rest in recycled worker processes
+    workers = max(1, int(getattr(args, "workers", 1) or 1))
+    if jobs:
+        print(f"  walking {len(jobs)} companies in {workers} worker(s), "
+              f"recycled every 25")
+        done = 0
+        for res in run_pool(jobs, workers,
+                            user_agent=getattr(args, "user_agent", None),
+                            exclusions=args.exclusions,
+                            cache_dir=SETTINGS.cache_dir):
+            done += 1
+            sys.stdout.write(f"\r  {done}/{len(jobs)} {res['ticker']}  "
+                             f"{'ok' if res.get('rows') else res.get('skipped') or res.get('error','')}"
+                             .ljust(60)[:60])
+            sys.stdout.flush()
+            if res.get("rows"):
+                emit(res["rows"])
+                walked += 1
+                agree, disagree = ((agree + 1, disagree) if res.get("ok")
+                                   else (agree, disagree + 1))
+            elif res.get("error"):
+                failed += 1
+    fh.close()
     _clear()
     if args.reuse:
         print(f"  {reused} unchanged (rows carried over), "
@@ -707,20 +710,9 @@ def cmd_history(args) -> int:
         except OSError:
             pass
 
-    cols = ["cik", "ticker", "ceo", "owner_cik", "date", "form", "accession",
-            "shares", "shares_split_adjusted", "outstanding", "pct",
-            "traded", "traded_value", "unpriced_rows", "unexplained",
-            "codes", "groups", "classes", "restated", "matches_panel"]
-    from .history import mark_restated_rows
-    mark_restated_rows(rows)          # every row, walked or reused
-    with open(args.out, "w", newline="", encoding="utf-8-sig") as fh:
-        w = csv.DictWriter(fh, fieldnames=cols)
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: " ".join(str(r.get(k, "")).split()) for k in cols})
-    firms = len({r["ticker"] for r in rows})
-    print(f"  {len(rows):,} snapshots across {firms} companies since {args.since}")
-    print(f"  {agree} end on the panel's figure, {disagree} do not")
+    print(f"  {n_rows:,} snapshots across {len(tickers_out)} companies since {args.since}")
+    print(f"  {agree} end on the panel's figure, {disagree} do not"
+          + (f"; {failed} failed" if failed else ""))
     print(f"  wrote {args.out}")
     return 0
 
@@ -1150,7 +1142,8 @@ def cmd_refresh(args) -> int:
             universe=args.universe, out=path("history.csv"), limit=None,
             tickers=None, exclusions=args.exclusions, since=args.since,
             splits=True, reuse=path("history.csv", staged=False),
-            state=os.path.join(live, "history-state.json")))):
+            state=os.path.join(live, "history-state.json"),
+            workers=min(int(args.workers or 2), 3)))):
         return 1
 
     # 3.5 -- the trailing edge. History has just been rebuilt and the panel
@@ -1848,6 +1841,9 @@ def main(argv=None) -> int:
                          "percentage stays right in the months between a "
                          "split and the cover page that restates the count")
     hi.add_argument("--out", default="history.csv")
+    hi.add_argument("--workers", type=int, default=2,
+                    help="walk companies in this many recycled worker "
+                         "processes (bounds memory; shares the SEC rate limit)")
     hi.add_argument("--reuse", default=None,
                     help="carry over rows for companies with no new filings, "
                          "from this previous history CSV")
