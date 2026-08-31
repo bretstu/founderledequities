@@ -11,8 +11,27 @@ def _subs(forms, sic=None):
 
 
 def test_foreign_filers_and_funds_are_out_by_construction():
-    assert "no 10-K" in eligibility(_subs(["20-F", "6-K"]))
-    assert "no 10-K" in eligibility(_subs(["N-CSR"]))
+    assert "no domestic" in eligibility(_subs(["20-F", "6-K"]))
+    assert "no domestic" in eligibility(_subs(["N-CSR"]))
+
+
+def test_a_company_too_young_for_a_10k_is_still_domestic():
+    """ExxonMobil Holdings (a 2025 holdco with a new CIK) and a fresh
+    spin-off have 10-Qs or a Form 10 and no 10-K yet."""
+    assert eligibility(_subs(["10-Q", "4", "3"])) == ""
+    assert eligibility(_subs(["10-12B", "8-K12B", "3"])) == ""
+    assert eligibility(_subs(["S-1", "S-1/A", "3", "4"])) == ""
+
+
+def test_mature_companies_without_a_proxy_are_pools_or_trusts():
+    assert "no proxy" in eligibility(_subs(["10-K", "10-Q", "3", "4"]))
+    assert eligibility(_subs(["10-K", "10-Q", "3", "4", "DEF 14A"])) == ""
+
+
+def test_non_operating_entities_are_out_by_sic():
+    for sic, why in (("6221", "commodity pool"), ("6792", "royalty trust"),
+                     ("6726", "investment company")):
+        assert why in eligibility(_subs(["10-K", "4", "DEF 14A"], sic=sic))
 
 
 def test_a_10k_filer_with_no_section_16_is_out():
@@ -20,11 +39,13 @@ def test_a_10k_filer_with_no_section_16_is_out():
 
 
 def test_blank_check_companies_are_out_by_sic():
-    assert "blank-check" in eligibility(_subs(["10-K", "4"], sic="6770"))
+    assert "blank-check" in eligibility(_subs(["10-K", "4", "DEF 14A"], sic="6770"))
 
 
 def test_an_operating_company_is_eligible():
     assert eligibility(_subs(["10-K", "10-Q", "3", "4", "DEF 14A"])) == ""
+    # REITs and property trusts are operating companies with real CEOs
+    assert eligibility(_subs(["10-K", "4", "DEF 14A"], sic="6798")) == ""
 
 
 def test_two_measures_agree_disagree_or_missing():
@@ -158,3 +179,35 @@ def test_a_snapshot_never_reads_sizing_or_indexes_from_cache():
     assert all(cache is False for _, cache in seen), seen
     assert {f["form"] for f in subs["_filings"]} == {"10-K", "4"}
     assert subs["sic"] == "3571"
+
+
+def test_a_run_resumes_from_its_checkpoint_on_the_same_day(tmp_path):
+    from fle.market_universe import build_snapshot
+    from fle.universe import Member
+    import fle.market_universe as MU
+    calls = []
+
+    class Feed:
+        def get(self, url, use_cache=True):
+            calls.append(url)
+            if "grouped" in url: return '{"results":[{"T":"AAA","c":10},{"T":"BBB","c":10}]}'
+            if "companyconcept" in url: return '{"units":{"shares":[{"val":2e8,"end":"2026-06-30","accn":"a","filed":"2026-08-01"}]}}'
+            if "reference/tickers" in url: return '{"results":{"market_cap":2.1e9}}'
+            return "{}"
+        def get_json(self, url, use_cache=True):
+            calls.append(url)
+            return {"filings": {"recent": {"form": ["10-K", "4", "DEF 14A"], "accessionNumber": ["x", "y", "z"]}}, "sic": "1"}
+    MU.fetch_all_tickers = lambda client: [Member(1, "AAA", "Alpha"), Member(2, "BBB", "Beta")]
+    ck = str(tmp_path / "u.jsonl")
+    # first run decides both and writes the checkpoint
+    s1 = build_snapshot(Feed(), "k", snapshot="2026-09-01", checkpoint=ck)
+    assert len(s1.members) == 2 and open(ck).read().count("\n") == 2
+    # second run on the same day: no per-company fetches at all
+    calls.clear()
+    s2 = build_snapshot(Feed(), "k", snapshot="2026-09-01", checkpoint=ck)
+    assert len(s2.members) == 2
+    assert not any("submissions" in u or "companyconcept" in u or "reference" in u for u in calls)
+    # a different day ignores the checkpoint and fetches again
+    calls.clear()
+    build_snapshot(Feed(), "k", snapshot="2026-12-01", checkpoint=ck)
+    assert any("submissions" in u for u in calls)

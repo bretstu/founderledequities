@@ -69,7 +69,24 @@ GROUPED_URL = ("https://api.polygon.io/v2/aggs/grouped/locale/us/market/"
                "stocks/{day}?adjusted=true&apiKey={key}")
 
 SECTION16 = {"3", "3/A", "4", "4/A", "5", "5/A"}
-SPAC_SIC = {"6770"}
+# DOMESTIC REGISTRANTS ARE EVIDENCED BY ANY DOMESTIC FORM, NOT ONLY A 10-K.
+# A company younger than its first annual report -- a recent IPO, a
+# spin-off, a holding-company reorganization -- has 10-Qs, a Form 10 or
+# S-1, or a successor-issuer 8-K12B on record and no 10-K yet. Requiring
+# the 10-K excluded ExxonMobil (a 2025 holdco with a new CIK) and every
+# fresh listing, which is where founder-led companies concentrate. Foreign
+# private issuers file 20-F, 6-K and F-1; none of these overlap.
+DOMESTIC = {"10-K", "10-K/A", "10-Q", "10-Q/A", "10-12B", "10-12B/A",
+            "S-1", "S-1/A", "8-K12B"}
+PROXY = {"DEF 14A", "DEFA14A", "DEFM14A"}
+# ENTITIES WITH NO CHIEF EXECUTIVE IN THE SENSE THIS SITE MEANS: a shell
+# awaiting a target, a commodity pool run by a sponsor, a royalty trust
+# run by a trustee, a fund run by an adviser. Each files a 10-K; none has
+# a person whose own stake in the business the site could measure.
+EXCLUDED_SIC = {"6770": "blank-check company",
+                "6221": "commodity pool / exchange-traded product",
+                "6792": "royalty trust",
+                "6726": "investment company / BDC"}
 DISAGREE = 0.25
 STRIKES_TO_EXIT = 2
 
@@ -106,8 +123,12 @@ class Snapshot:
 
     @property
     def review(self) -> list:
+        """Everything a human should read: admitted-on-disagreement rows,
+        every unsized row (a first snapshot has no prior to keep them, so
+        they are out -- but never silently), and any fetch failure."""
         return [r for r in self.rows
-                if r.status in ("disagree", "unsized") and r.decision != "out"]
+                if (r.status == "disagree" and r.decision != "out")
+                or r.status in ("unsized", "unfetched")]
 
 
 def polygon_ticker(t: str) -> str:
@@ -138,12 +159,19 @@ def recent_submissions(client, cik: int) -> dict:
 def eligibility(subs: dict) -> str:
     """'' if the site can cover it, else the reason it cannot."""
     forms = {f.get("form") for f in subs.get("_filings", [])}
-    if "10-K" not in forms and "10-K/A" not in forms:
-        return "no 10-K on record (foreign filer, fund, or shell)"
+    if not (forms & DOMESTIC):
+        return "no domestic filings (foreign filer, fund, or shell)"
     if not (forms & SECTION16):
         return "no Section 16 filings"
-    if str(subs.get("sic") or "") in SPAC_SIC:
-        return "blank-check company (SIC 6770)"
+    sic = str(subs.get("sic") or "")
+    if sic in EXCLUDED_SIC:
+        return f"{EXCLUDED_SIC[sic]} (SIC {sic})"
+    # a mature company -- one with an annual report -- also holds annual
+    # meetings; no proxy statement means no board standing for election,
+    # which is a pool, a trust, or a fund wearing a 10-K. A company too
+    # young for its first 10-K is not held to this yet.
+    if ("10-K" in forms or "10-K/A" in forms) and not (forms & PROXY):
+        return "no proxy statement on record (no board elected by holders)"
     return ""
 
 
@@ -232,13 +260,51 @@ def decide(row: Row, entry: float, exit_: float, prior: dict,
         row.added = added or snapshot
 
 
+ROW_FIELDS = ("cik", "ticker", "company", "mcap_vendor", "mcap_sec",
+              "shares_sec", "close", "status", "decision", "added",
+              "strikes", "note")
+
+
+def _checkpoint_load(path: str | None, snapshot: str) -> dict:
+    """Rows already decided TODAY, keyed by cik. A checkpoint from another
+    date is ignored: a snapshot's decisions belong to its date, and a run
+    resumed tomorrow would mix two days' market caps under one label."""
+    import json
+    import os
+    out = {}
+    if not path or not os.path.exists(path):
+        return out
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            try:
+                d = json.loads(line)
+            except ValueError:
+                continue
+            if d.get("_snapshot") != snapshot:
+                continue
+            row = Row(**{k: d.get(k) for k in ROW_FIELDS})
+            out[row.cik] = row
+    return out
+
+
 def build_snapshot(client, api_key: str | None, entry: float = 1e9,
                    exit_: float = 8e8, prior: dict | None = None,
                    snapshot: str | None = None, limit: int | None = None,
-                   on_step=None) -> Snapshot:
+                   on_step=None, checkpoint: str | None = None) -> Snapshot:
+    """RESUMABLE WITHIN A DAY. Every decided row is appended to the
+    checkpoint as it is made; a rerun on the same date skips those
+    registrants and continues. An hour of fetching should never be lost
+    to a stray Ctrl+C -- it was, once, at 6,525 of 8,004."""
+    import json
+    import os
     snapshot = snapshot or dt.date.today().isoformat()
     prior = prior or {}
     snap = Snapshot(date=snapshot)
+    done = _checkpoint_load(checkpoint, snapshot)
+    ck = None
+    if checkpoint:
+        os.makedirs(os.path.dirname(checkpoint) or ".", exist_ok=True)
+        ck = open(checkpoint, "a", encoding="utf-8")
     closes = market_closes(client, api_key)
     cands = fetch_all_tickers(client)
     if limit:
@@ -246,17 +312,26 @@ def build_snapshot(client, api_key: str | None, entry: float = 1e9,
     for i, m in enumerate(cands, 1):
         if on_step:
             on_step(i, len(cands), m.ticker)
+        if m.cik in done:
+            snap.rows.append(done[m.cik])
+            continue
         row = Row(cik=m.cik, ticker=m.ticker, company=m.company)
-        try:
-            subs = recent_submissions(client, m.cik)
-        except Exception:  # noqa: BLE001
-            row.status, row.decision = "excluded: no filing history", "out"
-            snap.rows.append(row)
+        subs = None
+        for _attempt in range(2):
+            try:
+                subs = recent_submissions(client, m.cik)
+                break
+            except Exception:  # noqa: BLE001 -- one hiccup must not decide membership
+                continue
+        if subs is None:
+            row.status, row.decision = "unfetched", "out"
+            row.note = "filing index unavailable twice; read this row"
+            snap.rows.append(row); _ck(ck, row, snapshot)
             continue
         why = eligibility(subs)
         if why:
             row.status, row.decision = "excluded: " + why, "out"
-            snap.rows.append(row)
+            snap.rows.append(row); _ck(ck, row, snapshot)
             continue
         row.mcap_vendor = vendor_mcap(client, m.ticker, api_key)
         row.shares_sec = newest_shares(client, m.cik)
@@ -265,8 +340,20 @@ def build_snapshot(client, api_key: str | None, entry: float = 1e9,
                         if row.shares_sec and row.close else None)
         classify(row)
         decide(row, entry, exit_, prior, snapshot)
-        snap.rows.append(row)
+        snap.rows.append(row); _ck(ck, row, snapshot)
+    if ck:
+        ck.close()
     return snap
+
+
+def _ck(fh, row: Row, snapshot: str) -> None:
+    if not fh:
+        return
+    import json
+    d = {k: getattr(row, k) for k in ROW_FIELDS}
+    d["_snapshot"] = snapshot
+    fh.write(json.dumps(d) + "\n")
+    fh.flush()
 
 
 EVIDENCE_COLS = ["cik", "ticker", "company", "mcap_vendor", "mcap_sec",
@@ -304,7 +391,8 @@ def write_snapshot(snap: Snapshot, members_path: str, evidence_path: str,
                 w.writerow({c: ("" if getattr(r, c) is None
                                 else getattr(r, c)) for c in EVIDENCE_COLS})
     dump(evidence_path, snap.rows)
-    dump(review_path, sorted(snap.review, key=lambda r: -(r.mcap or 0)))
+    dump(review_path, sorted(snap.review,
+                             key=lambda r: -(r.mcap or (r.shares_sec or 0))))
     return len(snap.members), len(snap.review)
 
 
@@ -329,14 +417,18 @@ def newest_snapshot(universe_dir: str):
 
 RULES_HTML = """
 <p><b>Who is in.</b> Every company in the SEC's own registry of tickered
-registrants that files a 10-K (a domestic filer), has at least one Form 3,
-4 or 5 on record, and had a market capitalization at or above <b>$1 billion</b>
-on the snapshot date. One row per company: a dual-class filer counts once.</p>
+registrants that files domestic reports (a 10-K or 10-Q, or for a company
+too young for either, a Form 10, S-1 or successor-issuer filing), has at
+least one Form 3, 4 or 5 on record, holds annual meetings once it is old
+enough to have filed an annual report, and had a market capitalization at or
+above <b>$1 billion</b> on the snapshot date. One row per company: a
+dual-class filer counts once.</p>
 <p><b>Who is out, and why.</b> Foreign private issuers file 20-Fs and their
 officers file no ownership forms; Section 16 does not reach them, so this site
-cannot measure them. Blank-check companies (SIC 6770) have no chief executive
-in the sense this site means. Companies the sizing rules could not place above
-the bar.</p>
+cannot measure them. Entities with no chief executive in the sense this site
+means: blank-check companies, commodity pools and exchange-traded products,
+royalty trusts, and investment companies (by SEC industry code). Companies
+the sizing rules could not place above the bar.</p>
 <p><b>How size is decided.</b> Two independent measures: the market cap
 published by the price vendor, and the company's own cover-page share count
 (from its most recently filed report) times the newest close. When they agree

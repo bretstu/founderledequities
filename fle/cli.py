@@ -1001,10 +1001,13 @@ def cmd_market_universe(args) -> int:
         if i % 25 == 0 or i == n:
             sys.stdout.write(f"\r  universe {i:,}/{n:,} {tk:8}")
             sys.stdout.flush()
+    checkpoint = os.path.join("_staging", f"universe-{today}.jsonl")
+    if os.path.exists(checkpoint):
+        print(f"  resuming from {checkpoint}")
     snap = build_snapshot(client, SETTINGS.polygon_api_key,
                           entry=args.min_cap, exit_=args.exit_cap,
                           prior=prior, snapshot=today, limit=args.limit,
-                          on_step=_p)
+                          on_step=_p, checkpoint=checkpoint)
     print()
     n_members, n_review = write_snapshot(snap, stem, evidence, review)
     from .market_universe import write_page
