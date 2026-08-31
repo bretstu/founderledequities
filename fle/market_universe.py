@@ -231,22 +231,49 @@ def newest_shares(client, cik: int) -> float | None:
         newest = max(vals, key=lambda v: v.get("filed") or "")["accn"]
         mine = [v for v in vals if v["accn"] == newest]
         end = max(v.get("end") or "" for v in mine)
-        return float(sum(float(v["val"]) for v in mine if v.get("end") == end))
+        total = float(sum(float(v["val"]) for v in mine if v.get("end") == end))
+        # A SHARE COUNT NO COMPANY HAS IS NOT A MEASUREMENT. Akari
+        # Therapeutics' facts say 155.8 BILLION shares -- a filer scale
+        # error in EDGAR's own data, the same disease the cover parser
+        # guards against (JBS), living one API over. NVIDIA, the largest
+        # count on any US exchange, has 24 billion.
+        if total > 50e9:
+            return None
+        return total
     except Exception:  # noqa: BLE001
         return None
 
 
-def vendor_mcap(client, ticker: str, api_key: str | None) -> float | None:
+def vendor_details(client, ticker: str, api_key: str | None) -> tuple:
+    """-> (market_cap, security_type) from the vendor's reference record.
+
+    The TYPE is what SEC's ticker registry does not know: whether this
+    symbol is a common stock (CS), an American Depositary Share (ADRC),
+    or a bond, preferred, warrant or unit trading under an equity-looking
+    ticker. Entergy Arkansas's EAI is a first-mortgage BOND due 2066; the
+    registry lists it like any common."""
     if not api_key:
-        return None
+        return None, None
     try:
         data = json.loads(client.get(
             DETAILS_URL.format(ticker=polygon_ticker(ticker), key=api_key),
             use_cache=False))
-        mc = (data.get("results") or {}).get("market_cap")
-        return float(mc) if mc else None
+        r = data.get("results") or {}
+        mc = r.get("market_cap")
+        return (float(mc) if mc else None), (r.get("type") or None)
     except Exception:  # noqa: BLE001
-        return None
+        return None, None
+
+
+# Common equity, directly listed or as depositary shares. Everything else
+# trading under a ticker -- bonds (SP), preferreds, warrants, rights,
+# units, index products -- is not a common-stock listing and is excluded
+# by name of its type.
+COMMON_TYPES = {"CS", "ADRC"}
+
+
+def vendor_mcap(client, ticker: str, api_key: str | None) -> float | None:
+    return vendor_details(client, ticker, api_key)[0]
 
 
 def market_closes(client, api_key: str | None) -> dict:
@@ -269,8 +296,22 @@ def market_closes(client, api_key: str | None) -> dict:
     return {}
 
 
+POISONED = 50.0   # beyond this ratio the computed measure is wrong, not different
+
+
 def classify(row: Row) -> None:
     mv, ms = row.mcap_vendor, row.mcap_sec
+    if mv and ms and max(mv, ms) / max(min(mv, ms), 1.0) > POISONED:
+        # A DISAGREEMENT OF DEGREE FLAGS; A DISAGREEMENT OF KIND
+        # DISQUALIFIES. Scienture's computed cap was 20,000x the vendor's
+        # ($35B vs $1.7M) -- a wrong close under a colliding ticker, not
+        # two views of one company. The computed measure is discarded for
+        # the decision; the row still goes to a human.
+        row.note = (f"sec measure disqualified: {ms:,.0f} vs vendor "
+                    f"{mv:,.0f}; decided on the vendor figure")
+        row.mcap_sec = None
+        row.status = "disagree"
+        return
     if not mv and not ms:
         row.status = "unsized"
     elif mv and ms and abs(mv - ms) / max(mv, ms) > DISAGREE:
@@ -289,6 +330,16 @@ def decide(row: Row, entry: float, exit_: float, prior: dict,
         row.decision = "kept" if was_in else "out"
         row.note = ("counting failure; kept as a member" if was_in
                     else "counting failure; never a member")
+    elif not row.mcap_vendor and not was_in:
+        # VENDOR ABSENCE IS ITSELF EVIDENCE. Entergy Arkansas lists BONDS;
+        # its common is wholly parent-held, so no vendor carries a market
+        # cap for it -- and our SEC arithmetic priced unfloated shares at
+        # $9B. A newcomer admitted on the computed measure alone, with no
+        # vendor figure to check it, stays out until a human reads the
+        # row. A current member is still kept: the fail-safe outranks this.
+        row.decision = "out"
+        row.note = (row.note + "; " if row.note else "") + \
+            "no vendor measure; sec-only newcomers are not admitted"
     elif not was_in:
         row.decision = "in" if m >= entry else "out"
     elif m < exit_:
@@ -380,11 +431,27 @@ def build_snapshot(client, api_key: str | None, entry: float = 1e9,
             row.status, row.decision = "excluded: " + why, "out"
             snap.rows.append(row); _ck(ck, row, snapshot)
             continue
-        row.mcap_vendor = vendor_mcap(client, m.ticker, api_key)
+        row.mcap_vendor, sec_type = vendor_details(client, m.ticker, api_key)
+        if sec_type and sec_type not in COMMON_TYPES:
+            row.status = f"excluded: not a common-stock listing (vendor type {sec_type})"
+            row.decision = "out"
+            snap.rows.append(row); _ck(ck, row, snapshot)
+            continue
         row.shares_sec = newest_shares(client, m.cik)
         row.close = closes.get(m.ticker) or closes.get(polygon_ticker(m.ticker))
-        row.mcap_sec = (row.shares_sec * row.close
-                        if row.shares_sec and row.close else None)
+        # THE SEC MEASURE IS ONLY VALID IN ITS UNIT'S DOMAIN. For an ADS
+        # (ADRC), EDGAR's dei fact counts ORDINARY shares while the close
+        # prices the DEPOSITARY share -- Akari: 155.8 billion ordinaries,
+        # ~80,000 per ADS. Multiplying them manufactured a $1.6T company
+        # worth $20M. The product is only a market cap when count and
+        # price describe the same security: a directly listed common.
+        if sec_type == "ADRC":
+            row.mcap_sec = None
+            row.note = ("ADS: ordinary-share count is not price-comparable; "
+                        "sized on the vendor figure")
+        else:
+            row.mcap_sec = (row.shares_sec * row.close
+                            if row.shares_sec and row.close else None)
         classify(row)
         decide(row, entry, exit_, prior, snapshot)
         snap.rows.append(row); _ck(ck, row, snapshot)

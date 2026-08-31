@@ -1,156 +1,145 @@
 ﻿cik,ticker,company,sic,mcap_vendor,mcap_sec,shares_sec,close,status,decision,added,strikes,note
-1541157,AKTX,Akari Therapeutics Plc,2834,20832707.4,1606649232132.895,155758529533.0,10.315,disagree,in,2026-08-31,0,
-1067983,BRK-B,BERKSHIRE HATHAWAY INC,6331,1081058445970.0,474506424.0,941481.0,504.0,disagree,in,2026-08-31,0,
-1403161,V,VISA INC.,7389,712465234034.4,179204275134.54,469280842.0,381.87,disagree,in,2026-08-31,0,
-2115436,XOM,ExxonMobil Holdings Corp,2911,644377723251.6,657864794480.4,4111911960.0,159.99,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1541157,AKTX,Akari Therapeutics Plc,2834,20832707.4,1600418890951.575,155758529533.0,10.275,disagree,in,2026-08-31,0,
+1067983,BRK-B,BERKSHIRE HATHAWAY INC,6331,1081058445970.0,475297268.03999996,941481.0,504.84,disagree,in,2026-08-31,0,
+1403161,V,VISA INC.,7389,712465234034.4,178598902848.36,469280842.0,380.58,disagree,in,2026-08-31,0,
+2115436,XOM,ExxonMobil Holdings Corp,2911,644377723251.6,660002988699.6,4111911960.0,160.51,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
 943535,WHEN,"WORLD HEALTH ENERGY HOLDINGS, INC.",7372,,,550834347495.0,,unsized,out,,0,counting failure; never a member
+1651308,ONC,BeOne Medicines Ltd.,2834,41485290103.53,528348177945.225,1478124405.0,357.445,disagree,in,2026-08-31,0,
 844856,HCMC,Healthier Choices Management Corp.,2100,,,527156418606.0,,unsized,out,,0,counting failure; never a member
-1651308,ONC,BeOne Medicines Ltd.,2834,41485290103.53,525266288560.80005,1478124405.0,355.36,disagree,in,2026-08-31,0,
-1141391,MA,Mastercard Inc,7389,521488717281.99994,72849100946.22,122530193.0,594.54,disagree,in,2026-08-31,0,
-1122411,ASX,"ASE Technology Holding Co., Ltd.",3674,98366478396.42,165562918783.86,4447029782.0,37.23,disagree,in,2026-08-31,0,
-1668717,BUD,Anheuser-Busch InBev SA/NV,2082,157786095867.84,143470475521.02,1797199994.0,79.83,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-1156375,CME,CME GROUP INC.,6200,102767753365.40001,19111047078.995,66643583.0,286.765,disagree,in,2026-08-31,0,
-1166691,CMCSA,COMCAST CORP,4841,96026105665.37999,55135630227.725006,2063073161.0,26.725,disagree,in,2026-08-31,0,
-865752,MNST,Monster Beverage Corp,2086,91801165661.04,45175733677.84,979525882.0,46.12,disagree,in,2026-08-31,0,
-1648416,RACE,Ferrari N.V.,3711,73916142449.28,78257358725.09999,184747890.0,423.59,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-49938,IMO,IMPERIAL OIL LTD,2911,63113685234.649994,63889851542.225006,483592715.0,132.115,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1141391,MA,Mastercard Inc,7389,521488717281.99994,72459454932.48,122530193.0,591.36,disagree,in,2026-08-31,0,
+1122411,ASX,"ASE Technology Holding Co., Ltd.",3674,98366478396.42,164273280147.08,4447029782.0,36.94,disagree,in,2026-08-31,0,
+1668717,BUD,Anheuser-Busch InBev SA/NV,2082,157786095867.84,142140547525.46,1797199994.0,79.09,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1156375,CME,CME GROUP INC.,6200,102767753365.40001,19097718362.395,66643583.0,286.565,disagree,in,2026-08-31,0,
+1166691,CMCSA,COMCAST CORP,4841,96026105665.37999,55218153154.165,2063073161.0,26.765,disagree,in,2026-08-31,0,
+865752,MNST,Monster Beverage Corp,2086,91801165661.04,45033702424.950005,979525882.0,45.975,disagree,in,2026-08-31,0,
+1648416,RACE,Ferrari N.V.,3711,73916142449.28,78301698218.7,184747890.0,423.83,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
 1119190,RWAX,"TAP REAL ESTATE TECHNOLOGIES, INC.",5000,,,61921332657.0,,unsized,out,,0,counting failure; never a member
-320187,NKE,"NIKE, Inc.",3021,58746548638.8,33576826626.195004,855351589.0,39.255,disagree,in,2026-08-31,0,
-2058897,CIB,Grupo Cibest S.A.,6029,22964732442.079998,49383003804.0,509103132.0,97.0,disagree,in,2026-08-31,0,
-46619,HEI,HEICO CORP,3724,47032559504.649994,8922556444.92,26905966.0,331.62,disagree,in,2026-08-31,0,
-1381197,IBKR,"Interactive Brokers Group, Inc.",6211,43423011908.64,4024465182.045,42231651.0,95.295,disagree,in,2026-08-31,0,
-1725964,NTR,Nutrien Ltd.,2870,35079712539.740005,42945005028.64,569260406.0,75.44,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-1826168,TIMB,TIM S.A.,4813,8384686473.699999,42460234529.75,2392125889.0,17.75,disagree,in,2026-08-31,0,
-1091667,CHTR,"CHARTER COMMUNICATIONS, INC. /MO/",4841,18323408474.66,40939904089.08,270927828.0,151.11,disagree,in,2026-08-31,0,
-1611747,SCNI,Scinai Immunotherapeutics Ltd.,2836,1700728.3099999998,34127332976.64,13872899584.0,2.46,disagree,in,2026-08-31,0,
-1176948,ARES,Ares Management Corp,6282,32143127859.96,14688186556.61,103332418.0,142.145,disagree,in,2026-08-31,0,
-1754301,FOXA,Fox Corp,4833,28766332107.920002,67.51,1.0,67.51,disagree,in,2026-08-31,0,
+320187,NKE,"NIKE, Inc.",3021,58746548638.8,33529696753.641098,855351589.0,39.1999,disagree,in,2026-08-31,0,
+2058897,CIB,Grupo Cibest S.A.,6029,22964732442.079998,48975721298.4,509103132.0,96.2,disagree,in,2026-08-31,0,
+46619,HEI,HEICO CORP,3724,47032559504.649994,8901300731.779999,26905966.0,330.83,disagree,in,2026-08-31,0,
+1381197,IBKR,"Interactive Brokers Group, Inc.",6211,43423011908.64,4079155170.09,42231651.0,96.59,disagree,in,2026-08-31,0,
+1826168,TIMB,TIM S.A.,4813,8384686473.699999,42914738448.66,2392125889.0,17.94,disagree,in,2026-08-31,0,
+1725964,NTR,Nutrien Ltd.,2870,35079712539.740005,42643297013.46,569260406.0,74.91,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1091667,CHTR,"CHARTER COMMUNICATIONS, INC. /MO/",4841,18323408474.66,40873526771.22,270927828.0,150.865,disagree,in,2026-08-31,0,
+1611747,SCNI,Scinai Immunotherapeutics Ltd.,2836,1700728.3099999998,35237164943.36,13872899584.0,2.54,disagree,in,2026-08-31,0,
+1176948,ARES,Ares Management Corp,6282,32143127859.96,14813735444.480001,103332418.0,143.36,disagree,in,2026-08-31,0,
+1754301,FOXA,Fox Corp,4833,28766332107.920002,67.49,1.0,67.49,disagree,in,2026-08-31,0,
 1471781,GTCH,GBT Technologies Inc.,8742,,,24417866769.0,,unsized,out,,0,counting failure; never a member
 1440799,MMEX,MMEX Resources Corp,7819,,,22295726723.0,,unsized,out,,0,counting failure; never a member
-1098009,AAGH,America Great Health,2834,,,21204811608.0,,unsized,out,,0,counting failure; never a member
-1419793,OCLN,"ORIGINCLEAR, INC.",3559,,,16226290399.0,,unsized,out,,0,counting failure; never a member
 932021,GTLL,GLOBAL TECHNOLOGIES LTD,3663,,,14688440097.0,,unsized,out,,0,counting failure; never a member
-1319161,WMG,Warner Music Group Corp.,7900,14662766825.07,29899.93,1069.0,27.97,disagree,in,2026-08-31,0,
-4457,UHAL,U-Haul Holding Co /NV/,7510,13333449822.050001,1333525661.88,19607788.0,68.01,disagree,in,2026-08-31,0,
-317540,COKE,"Coca-Cola Consolidated, Inc.",2086,13212346716.060001,1379584731.46,7141447.0,193.18,disagree,in,2026-08-31,0,
-1048268,IESC,"IES Holdings, Inc.",1731,12345130977.6,5998326995.58,19924356.0,301.055,disagree,in,2026-08-31,0,
-1333141,FMS,Fresenius Medical Care AG,8090,12294267447.0,6373372355.7,279288885.0,22.82,disagree,in,2026-08-31,0,
-720672,SF,STIFEL FINANCIAL CORP,6211,12274930956.86,5646778036.35,69584449.0,81.15,disagree,in,2026-08-31,0,
-1828108,AUR,"Aurora Innovation, Inc.",7373,11684225212.44,3555068600.44,642869548.0,5.53,disagree,in,2026-08-31,0,
-1411057,CBIH,"Cannabis Bioscience International Holdings, Inc.",8731,,,11626749347.0,,unsized,out,,0,counting failure; never a member
-1568628,BQST,Bioquest Corp,2834,,,11485320230.0,,unsized,out,,0,counting failure; never a member
-1849253,RYAN,"RYAN SPECIALTY HOLDINGS, INC.",6411,11222594617.949999,4597278756.61,109903867.0,41.83,disagree,in,2026-08-31,0,
+1319161,WMG,Warner Music Group Corp.,7900,14662766825.07,30124.42,1069.0,28.18,disagree,in,2026-08-31,0,
+4457,UHAL,U-Haul Holding Co /NV/,7510,13333449822.050001,1332153116.72,19607788.0,67.94,disagree,in,2026-08-31,0,
+317540,COKE,"Coca-Cola Consolidated, Inc.",2086,13212346716.060001,1389261392.145,7141447.0,194.535,disagree,in,2026-08-31,0,
+1048268,IESC,"IES Holdings, Inc.",1731,12345130977.6,5987567843.34,19924356.0,300.515,disagree,in,2026-08-31,0,
+1333141,FMS,Fresenius Medical Care AG,8090,12294267447.0,6350777884.903501,279288885.0,22.7391,disagree,in,2026-08-31,0,
+720672,SF,STIFEL FINANCIAL CORP,6211,12274930956.86,5624511012.67,69584449.0,80.83,disagree,in,2026-08-31,0,
+1828108,AUR,"Aurora Innovation, Inc.",7373,11684225212.44,3564711643.66,642869548.0,5.545,disagree,in,2026-08-31,0,
+1849253,RYAN,"RYAN SPECIALTY HOLDINGS, INC.",6411,11222594617.949999,4611566259.32,109903867.0,41.96,disagree,in,2026-08-31,0,
 1106213,SFRX,SEAFARER EXPLORATION CORP,7900,,,11040410363.0,,unsized,out,,0,counting failure; never a member
 1880431,VHAI,Vocodia Holdings Corp,7371,,,10942818682.0,,unsized,out,,0,counting failure; never a member
-913290,FRO,Frontline plc,4412,9837705464.91,9755334995.98,222622889.0,43.82,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-1888886,GPCR,Structure Therapeutics Inc.,2834,3377947926.0899997,9784967479.622398,213929572.0,45.7392,disagree,in,2026-08-31,0,
-7323,EAI,"ENTERGY ARKANSAS, LLC",4911,,9141311045.82,466631498.0,19.59,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-751978,VICR,VICOR CORP,3679,8656538933.0,4971680721.72,26978949.0,184.28,disagree,in,2026-08-31,0,
+913290,FRO,Frontline plc,4412,9837705464.91,9827019566.238,222622889.0,44.142,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1888886,GPCR,Structure Therapeutics Inc.,2834,3377947926.0899997,9740213413.16,213929572.0,45.53,disagree,in,2026-08-31,0,
+7323,EAI,"ENTERGY ARKANSAS, LLC",4911,,9114954765.549965,466631498.0,19.533518,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+751978,VICR,VICOR CORP,3679,8656538933.0,5026987567.17,26978949.0,186.33,disagree,in,2026-08-31,0,
 1043150,EEGI,"Eline Entertainment Group, Inc.",1520,,,8524529727.0,,unsized,out,,0,counting failure; never a member
 842162,LEA,LEAR CORP,3714,8256602231.28,6155237299.56,49324764.0,124.79,disagree,in,2026-08-31,0,
-91142,AOS,SMITH A O CORP,3630,8206159637.740001,4519318318.9,75732188.0,59.675,disagree,in,2026-08-31,0,
-94845,LEVI,LEVI STRAUSS & CO,2300,8193468464.98,785335376.0550001,37602843.0,20.885,disagree,in,2026-08-31,0,
+91142,AOS,SMITH A O CORP,3630,8206159637.740001,4521211623.6,75732188.0,59.7,disagree,in,2026-08-31,0,
+94845,LEVI,LEVI STRAUSS & CO,2300,8193468464.98,782891191.26,37602843.0,20.82,disagree,in,2026-08-31,0,
 1494413,TWOH,Two Hands Corp,7389,,,7697746967.0,,unsized,out,,0,counting failure; never a member
 1281984,WDLF,"Decentral Life, Inc.",6199,,,7394792892.0,,unsized,out,,0,counting failure; never a member
-1910139,MBLY,Mobileye Global Inc.,7372,7294609590.84,2165760022.14,252419583.0,8.58,disagree,in,2026-08-31,0,
+1910139,MBLY,Mobileye Global Inc.,7372,7294609590.84,2153164284.9483,252419583.0,8.5301,disagree,in,2026-08-31,0,
 1119643,NPHC,NUTRA PHARMA CORP,2833,,,7159727214.0,,unsized,out,,0,counting failure; never a member
-1655210,BYND,"BEYOND MEAT, INC.",2000,238308354.89999998,7075798412.6128,515818978.0,13.7176,disagree,in,2026-08-31,0,
 1643154,ITHUF,"iANTHUS CAPITAL HOLDINGS, INC.",0100,,,6974811082.0,,unsized,out,,0,counting failure; never a member
+1655210,BYND,"BEYOND MEAT, INC.",2000,238308354.89999998,6966135297.89,515818978.0,13.505,disagree,in,2026-08-31,0,
 1437476,GSFI,Green Stream Holdings Inc.,6500,,,6541760129.0,,unsized,out,,0,counting failure; never a member
-1809104,ALIT,"Alight, Inc. / Delaware",7389,373873344.86,6299739155.099999,446790011.0,14.1,disagree,in,2026-08-31,0,
+1809104,ALIT,"Alight, Inc. / Delaware",7389,373873344.86,6536537860.93,446790011.0,14.63,disagree,in,2026-08-31,0,
 1001601,MGTI,"MGT CAPITAL INVESTMENTS, INC.",6199,,,6290802029.0,,unsized,out,,0,counting failure; never a member
 1096296,RITE,MINERALRITE Corp,1090,,,6249776842.0,,unsized,out,,0,counting failure; never a member
 819926,SEII,SHARING ECONOMY INTERNATIONAL INC.,7373,,,6248548045.0,,unsized,out,,0,counting failure; never a member
-1791863,BEPC,Brookfield Renewable Corp,4911,5993000105.4,5509256955.0199995,172218098.0,31.99,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1791863,BEPC,Brookfield Renewable Corp,4911,5993000105.4,5470507882.97,172218098.0,31.765,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
 1463208,TLSS,"Transportation & Logistics Systems, Inc.",4700,,,5889437474.0,,unsized,out,,0,counting failure; never a member
 1688126,CRCW,Crypto Co,7374,,,5829932017.0,,unsized,out,,0,counting failure; never a member
 1481028,HYSR,"SUNHYDROGEN, INC.",3674,,,5727959657.0,,unsized,out,,0,counting failure; never a member
-9326,BCPC,BALCHEM CORP,2800,5688314067.24,775034385.5625,31878021.0,24.3125,disagree,in,2026-08-31,0,
-2083632,OCTV,Octave Intelligence plc,7372,5328490091.8,,,19.975,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+9326,BCPC,BALCHEM CORP,2800,5688314067.24,777504932.19,31878021.0,24.39,disagree,in,2026-08-31,0,
 1384365,RDAR,"Telvantis, Inc.",7371,,,5298840880.0,,unsized,out,,0,counting failure; never a member
-1402388,WFG,"WEST FRASER TIMBER CO., LTD",2421,5298819634.74,,,68.07,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-913353,CIGI,Colliers International Group Inc.,6500,5260116295.530001,3075419886.6000004,30070104.0,102.275,disagree,in,2026-08-31,0,
-1680062,ACMR,"ACM Research, Inc.",3559,5183293166.32,1026250589.1,14176690.0,72.39,disagree,in,2026-08-31,0,
+1402388,WFG,"WEST FRASER TIMBER CO., LTD",2421,5298819634.74,,,68.32,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+913353,CIGI,Colliers International Group Inc.,6500,5260116295.530001,3013024420.8,30070104.0,100.2,disagree,in,2026-08-31,0,
+1680062,ACMR,"ACM Research, Inc.",3559,5183293166.32,1029085927.1,14176690.0,72.59,disagree,in,2026-08-31,0,
 1652958,EDGM,"Edgemode, Inc.",8082,,,4791424217.0,,unsized,out,,0,counting failure; never a member
-1788348,BIPC,Brookfield Infrastructure Corp,4923,4751698061.18,1723334010.1699998,44960449.0,38.33,disagree,in,2026-08-31,0,
-1430723,SFBS,"ServisFirst Bancshares, Inc.",6022,4723704864.0,2342170328.4,54672510.0,42.84,disagree,in,2026-08-31,0,
+1788348,BIPC,Brookfield Infrastructure Corp,4923,4751698061.18,1707148248.53,44960449.0,37.97,disagree,in,2026-08-31,0,
+1430723,SFBS,"ServisFirst Bancshares, Inc.",6022,4723704864.0,2345450679.0,54672510.0,42.9,disagree,in,2026-08-31,0,
 1706509,COSG,Cosmos Group Holdings Inc.,6199,,,4585963082.0,,unsized,out,,0,counting failure; never a member
 1099234,MLMC,"FrankSpeech Network, Inc.",7841,,,4411506596.0,,unsized,out,,0,counting failure; never a member
-1970622,USAR,"USA Rare Earth, Inc.",1000,4402514581.009999,2394789218.855,132638561.0,18.055,disagree,in,2026-08-31,0,
+1970622,USAR,"USA Rare Earth, Inc.",1000,4402514581.009999,2351748005.8104997,132638561.0,17.7305,disagree,in,2026-08-31,0,
 1095146,ABIT,Athena Bitcoin Global,6199,,,4095009545.0,,unsized,out,,0,counting failure; never a member
-1613780,DBVT,DBV Technologies S.A.,2836,850932294.4799999,4079727428.66,296061497.0,13.78,disagree,in,2026-08-31,0,
+1613780,DBVT,DBV Technologies S.A.,2836,850932294.4799999,4081207736.145,296061497.0,13.785,disagree,in,2026-08-31,0,
 803097,SPQS,"SportsQuest, Inc.",7900,,,4024163151.0,,unsized,out,,0,counting failure; never a member
 1611046,MDLK,ModuLink Inc.,7000,,,3969933920.0,,unsized,out,,0,counting failure; never a member
-1051512,TDS,TELEPHONE & DATA SYSTEMS INC /DE/,4813,3873653400.0,1691896510.08,49849632.0,33.94,disagree,in,2026-08-31,0,
+1051512,TDS,TELEPHONE & DATA SYSTEMS INC /DE/,4813,3873653400.0,1676443124.16,49849632.0,33.63,disagree,in,2026-08-31,0,
 1410738,VPLM,Voip-pal.com Inc,3661,,,3854095436.0,,unsized,out,,0,counting failure; never a member
-1279495,BTE,BAYTEX ENERGY CORP.,1381,3314208000.0,3682382787.0699997,765568147.0,4.81,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-1484769,FUBO,FuboTV Inc.,7812,311104053.1,3616093726.0800004,342433118.0,10.56,disagree,in,2026-08-31,0,
-1518715,MCHB,Mechanics Bancorp,6022,3518467228.01,299137974.48,18920808.0,15.81,disagree,in,2026-08-31,0,
-1065059,LEU,CENTRUS ENERGY CORP,1400,3507313379.2400002,2370786503.54,13673933.0,173.38,disagree,in,2026-08-31,0,
-1593275,HG,"Hamilton Insurance Group, Ltd.",6331,3486018545.1,2313750490.7850003,65890659.0,35.115,disagree,in,2026-08-31,0,
-1811414,QS,QuantumScape Corp,3690,3450963876.36,538814945.17,95449946.0,5.645,disagree,in,2026-08-31,0,
+1279495,BTE,BAYTEX ENERGY CORP.,1381,3314208000.0,3693866309.275,765568147.0,4.825,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1484769,FUBO,FuboTV Inc.,7812,311104053.1,3564728758.38,342433118.0,10.41,disagree,in,2026-08-31,0,
+1518715,MCHB,Mechanics Bancorp,6022,3518467228.01,298381142.15999997,18920808.0,15.77,disagree,in,2026-08-31,0,
+1065059,LEU,CENTRUS ENERGY CORP,1400,3507313379.2400002,2372564114.83,13673933.0,173.51,disagree,in,2026-08-31,0,
+1593275,HG,"Hamilton Insurance Group, Ltd.",6331,3486018545.1,2306831971.5899997,65890659.0,35.01,disagree,in,2026-08-31,0,
+1811414,QS,QuantumScape Corp,3690,3450963876.36,530701699.76,95449946.0,5.56,disagree,in,2026-08-31,0,
 1404593,MDCE,Medical Care Technologies Inc.,7389,,,3433896955.0,,unsized,out,,0,counting failure; never a member
-8063,ATRO,ASTRONICS CORP,3728,3256216235.4399996,2365674863.68,32282681.0,73.28,disagree,in,2026-08-31,0,
-1840856,SOUN,"SOUNDHOUND AI, INC.",7372,3157620990.84,127336088.60000001,17461000.0,7.2926,disagree,in,2026-08-31,0,
-2115119,CLBK,"Columbia Financial, Inc./MD/",6035,1202913196.6000001,3137505371.4,269545135.0,11.64,disagree,in,2026-08-31,0,
-821130,AD,"ARRAY DIGITAL INFRASTRUCTURE, INC.",4812,3113242344.0,1935661392.49,53155606.0,36.415,disagree,in,2026-08-31,0,
-1821769,NVTS,Navitas Semiconductor Corp,3674,2999964177.12,2095086774.12,183457686.0,11.42,disagree,in,2026-08-31,0,
+8063,ATRO,ASTRONICS CORP,3728,3256216235.4399996,2374714014.36,32282681.0,73.56,disagree,in,2026-08-31,0,
+1840856,SOUN,"SOUNDHOUND AI, INC.",7372,3157620990.84,124060405.0,17461000.0,7.105,disagree,in,2026-08-31,0,
+2115119,CLBK,"Columbia Financial, Inc./MD/",6035,1202913196.6000001,3133462194.375,269545135.0,11.625,disagree,in,2026-08-31,0,
+821130,AD,"ARRAY DIGITAL INFRASTRUCTURE, INC.",4812,3113242344.0,1948817404.9750001,53155606.0,36.6625,disagree,in,2026-08-31,0,
+1821769,NVTS,Navitas Semiconductor Corp,3674,2999964177.12,2103342369.99,183457686.0,11.465,disagree,in,2026-08-31,0,
 1511820,STEK,Stemtech Corp,5122,,,2997032856.0,,unsized,out,,0,counting failure; never a member
-729580,BELFA,BEL FUSE INC /NJ,3677,2994019957.5,445530723.2,2174912.0,204.85,disagree,in,2026-08-31,0,
-1781755,BWIN,"Baldwin Insurance Group, Inc.",6411,2971007388.96,1038848232.6600001,33988164.0,30.565,disagree,in,2026-08-31,0,
+729580,BELFA,BEL FUSE INC /NJ,3677,2994019957.5,447966624.64,2174912.0,205.97,disagree,in,2026-08-31,0,
+1781755,BWIN,"Baldwin Insurance Group, Inc.",6411,2971007388.96,1041227404.1400001,33988164.0,30.635,disagree,in,2026-08-31,0,
 1376804,RDCT,"VNUE, Inc.",7822,,,2954260249.0,,unsized,out,,0,counting failure; never a member
 1512886,NTRR,NEUTRA CORP.,2833,,,2917899124.0,,unsized,out,,0,counting failure; never a member
-1497230,FYNN,Fyntechnical Innovations Inc,7374,,,2800135695.0,,unsized,out,,0,counting failure; never a member
 1464865,ASII,"Accredited Solutions, Inc.",2080,,,2653493596.0,,unsized,out,,0,counting failure; never a member
-1844452,LUNR,"Intuitive Machines, Inc.",3812,2466151989.33,1293210331.2366,84172557.0,15.3638,disagree,in,2026-08-31,0,
-940942,HUBG,"Hub Group, Inc.",4731,2422290531.1,1472642552.6100001,37315154.0,39.465,disagree,in,2026-08-31,0,
+1844452,LUNR,"Intuitive Machines, Inc.",3812,2466151989.33,1293732201.09,84172557.0,15.37,disagree,in,2026-08-31,0,
+940942,HUBG,"Hub Group, Inc.",4731,2422290531.1,1481784765.34,37315154.0,39.71,disagree,in,2026-08-31,0,
 1681556,GXXM,"GEX MANAGEMENT, INC.",8742,,,2405609162.0,,unsized,out,,0,counting failure; never a member
-1783398,UWMC,UWM Holdings Corp,6162,2390151907.53,151047660.32500002,103104205.0,1.465,disagree,in,2026-08-31,0,
+1783398,UWMC,UWM Holdings Corp,6162,2390151907.53,150532139.29999998,103104205.0,1.46,disagree,in,2026-08-31,0,
 1338929,AHRO,"Authentic Holdings, Inc.",5130,,,2379178836.0,,unsized,out,,0,counting failure; never a member
-88948,SENEA,Seneca Foods Corp,2033,1353008126.88,2323068156.45,11735631.0,197.95,disagree,in,2026-08-31,0,
-1806837,VERX,"Vertex, Inc.",7372,2307550765.5,378260590.05,26359623.0,14.35,disagree,in,2026-08-31,0,
-1852551,NVA,Nova Minerals Corp,1040,210377585.5,2111897453.4199998,401501417.0,5.26,disagree,in,2026-08-31,0,
-1848275,TOP,TOP Financial Group Ltd,6200,2069593232.49,614938285.0,37044475.0,16.6,disagree,in,2026-08-31,0,
+88948,SENEA,Seneca Foods Corp,2033,1353008126.88,2315087927.37,11735631.0,197.27,disagree,in,2026-08-31,0,
+1806837,VERX,"Vertex, Inc.",7372,2307550765.5,375756425.865,26359623.0,14.255,disagree,in,2026-08-31,0,
+1852551,NVA,Nova Minerals Corp,1040,210377585.5,2103867425.0800002,401501417.0,5.24,disagree,in,2026-08-31,0,
+1848275,TOP,TOP Financial Group Ltd,6200,2069593232.49,594193379.0,37044475.0,16.04,disagree,in,2026-08-31,0,
 1755101,ALDS,APPlife Digital Solutions Inc,5531,,,2025025697.0,,unsized,out,,0,counting failure; never a member
 1490054,APHD,"VERDE BIO HOLDINGS, INC.",1311,,,2020821612.0,,unsized,out,,0,counting failure; never a member
 1435617,PWDY,"POWERDYNE INTERNATIONAL, INC.",7374,,,1997483341.0,,unsized,out,,0,counting failure; never a member
-2126198,XPRO,Expro Ltd,1389,1978468513.8899999,,,18.42,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+2126198,XPRO,Expro Ltd,1389,1978468513.8899999,,,18.135,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
 924396,CRSF,Crisp Momentum Inc.,6199,,,1969621210.0,,unsized,out,,0,counting failure; never a member
-1022321,GEL,GENESIS ENERGY LP,4610,1962761947.08,1450330163.68,88650988.0,16.36,disagree,in,2026-08-31,0,
+1022321,GEL,GENESIS ENERGY LP,4610,1962761947.08,1435259495.72,88650988.0,16.19,disagree,in,2026-08-31,0,
 1527613,CIMG,CIMG Inc.,5900,,,1960301219.0,,unsized,out,,0,counting failure; never a member
 1624517,FRQN,"Frequency Holdings, Inc",7389,,,1899869698.0,,unsized,out,,0,counting failure; never a member
-1479615,SLN,Silence Therapeutics plc,2834,834107834.12,1858211885.07,141740037.0,13.11,disagree,in,2026-08-31,0,
+1479615,SLN,Silence Therapeutics plc,2834,834107834.12,1888685993.0249999,141740037.0,13.325,disagree,in,2026-08-31,0,
 862651,INVU,"Investview, Inc.",7389,,,1844470389.0,,unsized,out,,0,counting failure; never a member
 1990446,GRPS,"Trans American Aquaculture, Inc",0200,,,1805926955.0,,unsized,out,,0,counting failure; never a member
 1318268,MDEX,Madison Technologies Inc.,5900,,,1761428576.0,,unsized,out,,0,counting failure; never a member
-1709442,FSUN,FIRSTSUN CAPITAL BANCORP,6021,1761091165.6200001,1114978686.69,27923333.0,39.93,disagree,in,2026-08-31,0,
+1709442,FSUN,FIRSTSUN CAPITAL BANCORP,6021,1761091165.6200001,1116374853.34,27923333.0,39.98,disagree,in,2026-08-31,0,
 1412126,RMSL,RemSleep Holdings Inc.,7200,,,1739610123.0,,unsized,out,,0,counting failure; never a member
 1072379,NWBO,NORTHWEST BIOTHERAPEUTICS INC,2834,,,1705637993.0,,unsized,out,,0,counting failure; never a member
-1589150,RGBP,Regen BioPharma Inc,2834,,,1675277503.0,,unsized,out,,0,counting failure; never a member
 96664,AMFN,"American Fusion, Inc.",4911,,,1641801029.0,,unsized,out,,0,counting failure; never a member
 1343009,CNBX,CNBX Pharmaceuticals Inc.,2834,,,1605768095.0,,unsized,out,,0,counting failure; never a member
 1621227,ADAPY,Adaptimmune Therapeutics PLC,2836,,,1590309546.0,,unsized,out,,0,counting failure; never a member
-2017526,FRNM,"Freenome, Inc.",8071,1589138379.06,128411112.5,8911250.0,14.41,disagree,in,2026-08-31,0,
-1534248,CMMB,Chemomab Therapeutics Ltd.,2834,19857958.6,1533391217.8,575381320.0,2.665,disagree,in,2026-08-31,0,
-1657788,KRP,"Kimbell Royalty Partners, LP",1311,1504359121.44,401518351.52000004,26839462.0,14.96,disagree,in,2026-08-31,0,
-1906364,BXBL,BOXABL Inc.,1520,1416032773.8,39432914.0,10295800.0,3.83,disagree,in,2026-08-31,0,
+2017526,FRNM,"Freenome, Inc.",8071,1589138379.06,129569574.99999999,8911250.0,14.54,disagree,in,2026-08-31,0,
+1534248,CMMB,Chemomab Therapeutics Ltd.,2834,19857958.6,1547775750.8,575381320.0,2.69,disagree,in,2026-08-31,0,
+1657788,KRP,"Kimbell Royalty Partners, LP",1311,1504359121.44,399907983.8,26839462.0,14.9,disagree,in,2026-08-31,0,
+1906364,BXBL,BOXABL Inc.,1520,1416032773.8,40564422.42,10295800.0,3.9399,disagree,in,2026-08-31,0,
 1175680,CYDY,CytoDyn Inc.,2834,,,1381942000.0,,unsized,out,,0,counting failure; never a member
-1877461,CBDW,1606 CORP.,7372,,,1342039105.0,,unsized,out,,0,counting failure; never a member
 1068689,ATDS,"Data443 Risk Mitigation, Inc.",7372,,,1313420344.0,,unsized,out,,0,counting failure; never a member
-1553079,ESBA,"Empire State Realty OP, L.P.",6798,1302898635.75,,,4.43,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
 1465470,SHMP,NaturalShrimp Inc,0900,,,1277546746.0,,unsized,out,,0,counting failure; never a member
 1506929,VRDR,"VERDE RESOURCES, INC.",1040,,,1269280891.0,,unsized,out,,0,counting failure; never a member
 1498067,SKTG,SKYTECH ORION GLOBAL CORP.,7372,,,1247885009.0,,unsized,out,,0,counting failure; never a member
-1726173,BH-A,Biglari Holdings Inc.,5812,1213718063.6000001,400385272.0,206864.0,1935.5,disagree,in,2026-08-31,0,
-866729,SCHL,SCHOLASTIC CORP,2731,734885922.0,1205096808.755,30975371.0,38.905,disagree,in,2026-08-31,0,
-1448397,SHIP,Seanergy Maritime Holdings Corp.,4412,385477242.41999996,1204393185.55,68314985.0,17.63,disagree,in,2026-08-31,0,
+1726173,BH-A,Biglari Holdings Inc.,5812,1213718063.6000001,401833320.0,206864.0,1942.5,disagree,in,2026-08-31,0,
+1448397,SHIP,Seanergy Maritime Holdings Corp.,4412,385477242.41999996,1208492084.65,68314985.0,17.69,disagree,in,2026-08-31,0,
+866729,SCHL,SCHOLASTIC CORP,2731,734885922.0,1197198089.1499999,30975371.0,38.65,disagree,in,2026-08-31,0,
 1131312,ZNOG,ZION OIL & GAS INC,1382,,,1191883199.0,,unsized,out,,0,counting failure; never a member
-1561032,NHP,"National Healthcare Properties, Inc.",6798,1170852308.56,450191039.635,28412183.0,15.845,disagree,in,2026-08-31,0,
-2000046,FETH,Fidelity Ethereum Fund,6199,,1163525262.5,47375000.0,24.5599,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1561032,NHP,"National Healthcare Properties, Inc.",6798,1170852308.56,455021110.745,28412183.0,16.015,disagree,in,2026-08-31,0,
 1391426,CLNV,Clean Vision Corp,2860,,,1152768307.0,,unsized,out,,0,counting failure; never a member
-1440972,LAR,Lithium Argentina AG,1000,1127367000.0,1123043741.16,162406904.0,6.915,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1440972,LAR,Lithium Argentina AG,1000,1127367000.0,1120607637.6000001,162406904.0,6.9,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1828937,FOA,Finance of America Companies Inc.,6162,166199746.68,1113791313.18,62642931.0,17.78,disagree,in,2026-08-31,0,
 1413119,KBLB,"Kraig Biocraft Laboratories, Inc.",2820,,,1099791733.0,,unsized,out,,0,counting failure; never a member
-1828937,FOA,Finance of America Companies Inc.,6162,166199746.68,1099270681.7742002,62642931.0,17.5482,disagree,in,2026-08-31,0,
 1082733,VISM,"VISIUM TECHNOLOGIES, INC.",7371,,,1077502919.0,,unsized,out,,0,counting failure; never a member
 1053369,ELTP,ELITE PHARMACEUTICALS INC /NV/,2834,,,1077136442.0,,unsized,out,,0,counting failure; never a member
 1145604,NIKA,"NIKA PHARMACEUTICALS, INC",2834,,,1051689224.0,,unsized,out,,0,counting failure; never a member
@@ -159,7 +148,6 @@
 1282980,DROR,"Dror Ortho-Design, Inc.",3843,,,976997116.0,,unsized,out,,0,counting failure; never a member
 1343465,SNPW,Sun Pacific Holding Corp.,7310,,,974953335.0,,unsized,out,,0,counting failure; never a member
 1593184,BRGX,"BIOREGENX, INC.",7370,,,971575183.0,,unsized,out,,0,counting failure; never a member
-1753373,MTWO,"M2i Global, Inc.",5050,,,953662377.0,,unsized,out,,0,counting failure; never a member
 1481504,XERI,"XERIANT, INC.",3721,,,924611480.0,,unsized,out,,0,counting failure; never a member
 1141240,LQMT,LIQUIDMETAL TECHNOLOGIES INC,2800,,,917285149.0,,unsized,out,,0,counting failure; never a member
 1568969,LOTT,Techlott Inc.,7371,,,890742444.0,,unsized,out,,0,counting failure; never a member
@@ -174,15 +162,11 @@
 1497649,GSTX,Graphene & Solar Technologies Ltd,1000,,,739928268.0,,unsized,out,,0,counting failure; never a member
 1081938,CPMD,"CANNAPHARMARX, INC.",2834,,,708689905.0,,unsized,out,,0,counting failure; never a member
 1503658,WNHK,"Winning Catering Group, Inc.",6500,,,704043324.0,,unsized,out,,0,counting failure; never a member
-1530746,KAYS,"Kaya Holdings, Inc.",2834,,,686441673.0,,unsized,out,,0,counting failure; never a member
 1026214,FMCC,FEDERAL HOME LOAN MORTGAGE CORP,6111,,,650059553.0,,unsized,out,,0,counting failure; never a member
 1419806,REEMF,RARE ELEMENT RESOURCES LTD,1040,,,645368390.0,,unsized,out,,0,counting failure; never a member
-1756770,CURLF,"Curaleaf Holdings, Inc.",2833,,,623520125.0,,unsized,out,,0,counting failure; never a member
 1586554,CBDY,Target Group Inc.,2833,,,617025999.0,,unsized,out,,0,counting failure; never a member
 1530185,ATVK,"Globaltek Ventures, Inc.",3714,,,613226791.0,,unsized,out,,0,counting failure; never a member
-1309251,MALG,MICROALLIANCE GROUP INC.,2080,,,609316077.0,,unsized,out,,0,counting failure; never a member
 1947861,NMHI,Nature's Miracle Holding Inc.,3523,,,606629892.0,,unsized,out,,0,counting failure; never a member
-1673504,AGLY,Atlantis Glory Inc.,8742,,,603970000.0,,unsized,out,,0,counting failure; never a member
 1290658,ITOX,"IIOT-OXYS, Inc.",7372,,,586385063.0,,unsized,out,,0,counting failure; never a member
 1377149,CRVW,CareView Communications Inc,3663,,,583880748.0,,unsized,out,,0,counting failure; never a member
 1103795,QSEP,"QS Energy, Inc.",3533,,,565305854.0,,unsized,out,,0,counting failure; never a member
@@ -196,13 +180,9 @@
 1593001,NGTF,"NightFood Holdings, Inc.",3590,,,507476668.0,,unsized,out,,0,counting failure; never a member
 1811530,NXMH,"Next Meats Holdings, Inc.",2000,,,500000000.0,,unsized,out,,0,counting failure; never a member
 1449349,RDGL,VIVOS INC,3841,,,494214360.0,,unsized,out,,0,counting failure; never a member
-1703625,NAPD,"NAPC Defense, Inc.",7310,,,491254930.0,,unsized,out,,0,counting failure; never a member
 1572386,GWTI,"GREENWAY TECHNOLOGIES, INC. & SUBSIDIARIES",2860,,,462361204.0,,unsized,out,,0,counting failure; never a member
 908259,OTLC,"Oncotelic Therapeutics, Inc.",2834,,,457512796.0,,unsized,out,,0,counting failure; never a member
-1397795,BRRN,Bryn Inc.,8741,,,450000000.0,,unsized,out,,0,counting failure; never a member
-1642365,ALTB,Alpine Auto Brokers Inc.,5990,,,445500000.0,,unsized,out,,0,counting failure; never a member
 1066684,TGLO,THEGLOBE COM INC,7310,,,441480473.0,,unsized,out,,0,counting failure; never a member
-55234,GAMG,"Global Asset Management Group, Inc.",7990,,,440152858.0,,unsized,out,,0,counting failure; never a member
 1498547,CMRF,"CIM GROUP, INC.",6798,,,436300000.0,,unsized,out,,0,counting failure; never a member
 1339688,LCGMF,LION COPPER & GOLD CORP.,1000,,,431278822.0,,unsized,out,,0,counting failure; never a member
 315545,PVCT,"PROVECTUS BIOPHARMACEUTICALS, INC.",2834,,,420279879.0,,unsized,out,,0,counting failure; never a member
@@ -213,16 +193,13 @@
 1522767,MRMD,MARIMED INC.,2833,,,403040674.0,,unsized,out,,0,counting failure; never a member
 1128189,PKTX,"ProtoKinetix, Inc.",2834,,,391580152.0,,unsized,out,,0,counting failure; never a member
 1439264,MVNC,Marvion Inc.,6199,,,390024555.0,,unsized,out,,0,counting failure; never a member
-1498148,AITX,Artificial Intelligence Technology Solutions Inc.,7372,,,387232589.0,,unsized,out,,0,counting failure; never a member
 92103,SCE-PG,SOUTHERN CALIFORNIA EDISON Co,4911,,,384813979.0,,unsized,out,,0,counting failure; never a member
 846377,TGNT,"Totaligent, Inc.",6153,,,380841775.0,,unsized,out,,0,counting failure; never a member
 1786318,IBATF,INTERNATIONAL BATTERY METALS LTD.,1400,,,379001682.0,,unsized,out,,0,counting failure; never a member
 1814215,BURU,"Nuburu, Inc.",3690,,,370493812.0,,unsized,out,,0,counting failure; never a member
-931182,VRMK,ERP OPERATING LTD PARTNERSHIP,6798,,,364082263.0,,unsized,out,,0,counting failure; never a member
 1725911,NBND,NetBrands Corp.,6199,,,361392060.0,,unsized,out,,0,counting failure; never a member
 1408146,SCYYF,SCANDIUM INTERNATIONAL MINING CORP.,1000,,,355860813.0,,unsized,out,,0,counting failure; never a member
 1282631,NLST,NETLIST INC,3674,,,349583129.0,,unsized,out,,0,counting failure; never a member
-1484674,ATMH,"ALL THINGS MOBILE ANALYTIC, INC.",7389,,,343589316.0,,unsized,out,,0,counting failure; never a member
 772263,NICH,NITCHES INC,2330,,,336821595.0,,unsized,out,,0,counting failure; never a member
 1813452,PLNH,Planet 13 Holdings Inc.,0100,,,335319455.0,,unsized,out,,0,counting failure; never a member
 1811115,RNLXY,Renalytix plc,8071,,,331206012.0,,unsized,out,,0,counting failure; never a member
@@ -244,7 +221,6 @@
 1138867,EESH,"EESTech, Inc.",4941,,,276991955.0,,unsized,out,,0,counting failure; never a member
 1750155,CWBHF,"Charlotte's Web Holdings, Inc.",0100,,,271291529.0,,unsized,out,,0,counting failure; never a member
 1448705,BASA,"BASANITE, INC.",3990,,,267560840.0,,unsized,out,,0,counting failure; never a member
-1882781,CBLO,"C2 Blockchain, Inc.",6199,,,253936005.0,,unsized,out,,0,counting failure; never a member
 1463000,GRUSF,Grown Rogue International Inc.,0100,,,249938980.0,,unsized,out,,0,counting failure; never a member
 1492448,MAJI,Nextel Medical Corp.,4899,,,249843977.0,,unsized,out,,0,counting failure; never a member
 72444,VXRT,"Vaxart, Inc.",2836,,,242835358.0,,unsized,out,,0,counting failure; never a member
@@ -260,8 +236,6 @@
 1584618,ACRL,"Atacama Resources International, Inc.",1000,,,226023535.0,,unsized,out,,0,counting failure; never a member
 1510964,CVSI,"CV Sciences, Inc.",2834,,,225829128.0,,unsized,out,,0,counting failure; never a member
 1134982,AAPI,"Apple iSports Group, Inc.",6411,,,219784477.0,,unsized,out,,0,counting failure; never a member
-1795851,SWRD,"Stewards, Inc.",6153,,,211149963.0,,unsized,out,,0,counting failure; never a member
-1697884,VSBC,VITASPRING BIOMEDICAL CO. LTD.,8731,,,207030030.0,,unsized,out,,0,counting failure; never a member
 1652561,DQWS,DSwiss Inc,2844,,,206904585.0,,unsized,out,,0,counting failure; never a member
 1715433,LCHD,Leader Capital Holdings Corp.,7371,,,206470825.0,,unsized,out,,0,counting failure; never a member
 1756390,AAWH,"Ascend Wellness Holdings, Inc.",2833,,,203212781.0,,unsized,out,,0,counting failure; never a member
@@ -280,12 +254,10 @@
 1349706,TOGI,"TurnOnGreen, Inc.",3690,,,183983122.0,,unsized,out,,0,counting failure; never a member
 1327978,ZARE,Ares Real Estate Income Trust Inc.,6798,,,182786610.0,,unsized,out,,0,counting failure; never a member
 1084475,NIHK,"Video River Networks, Inc.",6500,,,182370497.0,,unsized,out,,0,counting failure; never a member
-1192323,SPST,Superstar Platforms Inc.,7389,,,182289904.0,,unsized,out,,0,counting failure; never a member
 1014052,DTGI,"Digerati Technologies, Inc.",7374,,,179734434.0,,unsized,out,,0,counting failure; never a member
 1874138,SHGI,"Sparx Holdings Group, Inc.",3585,,,178750031.0,,unsized,out,,0,counting failure; never a member
 820771,GFMH,Goliath Film & Media Holdings,7822,,,177118186.0,,unsized,out,,0,counting failure; never a member
 839087,VASO,VASO Corp,3845,,,176018035.0,,unsized,out,,0,counting failure; never a member
-1935092,CETI,"Cyber Enviro-Tech, Inc.",3690,,,174591490.0,,unsized,out,,0,counting failure; never a member
 1042418,INTI,"Inhibitor Therapeutics, Inc.",2834,,,173791968.0,,unsized,out,,0,counting failure; never a member
 1117228,MMMW,MASS MEGAWATTS WIND POWER INC,4991,,,172214579.0,,unsized,out,,0,counting failure; never a member
 1730773,BSFC,Blue Star Foods Corp.,2092,,,171880101.0,,unsized,out,,0,counting failure; never a member
@@ -303,7 +275,6 @@
 1588014,ADMQ,"ADM ENDEAVORS, INC.",7310,,,158520409.0,,unsized,out,,0,counting failure; never a member
 1081834,KUBR,Kuber Resources Corp,4832,,,157556723.0,,unsized,out,,0,counting failure; never a member
 1413909,DSGT,DSG Global Inc.,7373,,,157257212.0,,unsized,out,,0,counting failure; never a member
-1740797,AVAI,"AVAI BIO, INC.",7374,,,153916565.0,,unsized,out,,0,counting failure; never a member
 1938338,GLTK,GlobalTech Corp,4813,,,151071091.0,,unsized,out,,0,counting failure; never a member
 1482430,KBSR,"KBS Real Estate Investment Trust III, Inc.",6798,,,148516246.0,,unsized,out,,0,counting failure; never a member
 1393772,BUDZ,"WEED, INC.",8731,,,148312685.0,,unsized,out,,0,counting failure; never a member
@@ -323,9 +294,7 @@
 1318482,KDOZF,KIDOZ INC.,7311,,,131304499.0,,unsized,out,,0,counting failure; never a member
 1121795,GHST,GHST World Inc.,7372,,,130201179.0,,unsized,out,,0,counting failure; never a member
 1006028,PURE,"PURE BIOSCIENCE, INC.",2890,,,130017569.0,,unsized,out,,0,counting failure; never a member
-1916558,TRWD,Tradewinds Universal,2000,,,129810580.0,,unsized,out,,0,counting failure; never a member
 1454742,GMER,"GOOD GAMING, INC.",7372,,,129117273.0,,unsized,out,,0,counting failure; never a member
-1172069,PTOS,"P2 Solar, Inc.",1700,,,128571513.0,,unsized,out,,0,counting failure; never a member
 1848334,OKMN,"OKMIN RESOURCES, INC.",1311,,,128489287.0,,unsized,out,,0,counting failure; never a member
 1424864,RYES,Rise Gold Corp.,1000,,,127543837.0,,unsized,out,,0,counting failure; never a member
 1394638,DWAY,"Driveitaway Holdings, Inc.",8200,,,127065629.0,,unsized,out,,0,counting failure; never a member
@@ -336,38 +305,25 @@
 1823466,NOTE,"FiscalNote Holdings, Inc.",7389,,,121449403.0,,unsized,out,,0,counting failure; never a member
 725394,DHTI,"Dalrada Technology Group, Inc.",7363,,,120157113.0,,unsized,out,,0,counting failure; never a member
 1622244,OWPC,"One World Products, Inc.",2834,,,120108774.0,,unsized,out,,0,counting failure; never a member
-1570132,ANVI,"ANVI GLOBAL HOLDINGS, INC.",5400,,,119950000.0,,unsized,out,,0,counting failure; never a member
 1415332,LTUM,Lithium Corp,1000,,,117892441.0,,unsized,out,,0,counting failure; never a member
-1558740,WNLV,Winvest Group Ltd,7812,,,116494283.0,,unsized,out,,0,counting failure; never a member
 1114936,UMEW,UMeWorld Inc.,7372,,,116099593.0,,unsized,out,,0,counting failure; never a member
 1473490,GLAI,"Global AI, Inc.",5960,,,114898024.0,,unsized,out,,0,counting failure; never a member
 1445815,BIXT,"BIOXYTRAN, INC",2834,,,114695220.0,,unsized,out,,0,counting failure; never a member
 1771995,APHP,American Picture House Corp,7900,,,114691925.0,,unsized,out,,0,counting failure; never a member
 1172178,LBSR,LIBERTY STAR URANIUM & METALS CORP.,1000,,,111739164.0,,unsized,out,,0,counting failure; never a member
-1415744,NMEX,NORTHERN MINERALS & EXPLORATION LTD.,1040,,,111488932.0,,unsized,out,,0,counting failure; never a member
-1594204,RBTK,ZHEN DING RESOURCES INC.,1000,,,110967348.0,,unsized,out,,0,counting failure; never a member
 1169138,GBUX,"GIVBUX, INC.",7389,,,109964318.0,,unsized,out,,0,counting failure; never a member
-1975222,SSHT,SSHT S&T Group Ltd.,8742,,,109903473.0,,unsized,out,,0,counting failure; never a member
-2010982,PVIT,Palisades Venture Inc.,7374,,,109500000.0,,unsized,out,,0,counting failure; never a member
 1477009,CANN,TREES Corp (Colorado),5912,,,108746520.0,,unsized,out,,0,counting failure; never a member
 1603793,NRIS,"Norris Industries, Inc.",1311,,,108245688.0,,unsized,out,,0,counting failure; never a member
 1831283,LIANY,LianBio,2834,,,108062638.0,,unsized,out,,0,counting failure; never a member
 1091326,BIOM,"SB Technology Holdings, Inc.",2834,,,107883156.0,,unsized,out,,0,counting failure; never a member
 1616156,WEWA,"WEWARDS, INC.",7370,,,107483450.0,,unsized,out,,0,counting failure; never a member
 1009919,IVHI,"Invech Holdings, Inc.",8742,,,106700968.0,,unsized,out,,0,counting failure; never a member
-1498372,IWAL,iWallet Corp,3669,,,106419419.0,,unsized,out,,0,counting failure; never a member
-1468978,SITS,"SOUTHERN ITS INTERNATIONAL, INC.",7372,,,104320659.0,,unsized,out,,0,counting failure; never a member
-1696025,KCRD,"Kindcard, Inc.",5940,,,103580799.0,,unsized,out,,0,counting failure; never a member
 1912582,AIEV,"Thunder Power Holdings, Inc.",3711,,,102597432.0,,unsized,out,,0,counting failure; never a member
 1342916,HNOI,"HNO International, Inc.",1000,,,102355323.0,,unsized,out,,0,counting failure; never a member
 1823635,ECXJ,"CXJ GROUP CO., Ltd",3714,,,102270517.0,,unsized,out,,0,counting failure; never a member
 1919182,UTKN,Universal Token,6199,,,101561000.0,,unsized,out,,0,counting failure; never a member
-1807616,HIGR,Hi-Great Group Holding Co,7011,,,101500000.0,,unsized,out,,0,counting failure; never a member
-1794276,ZHJD,Intelligent Hotel Group Ltd.,2870,,,101400000.0,,unsized,out,,0,counting failure; never a member
-1721056,HSCT,HOOPS SCOUTING USA,7374,,,101250000.0,,unsized,out,,0,counting failure; never a member
 1660734,TRTN-PA,Triton International Ltd,7359,,,101158891.0,,unsized,out,,0,counting failure; never a member
 1626644,ODYY,"Odyssey Health, Inc.",3841,,,100968663.0,,unsized,out,,0,counting failure; never a member
-1842167,LLPS,Limitless Projects Inc.,7389,,,100608200.0,,unsized,out,,0,counting failure; never a member
 1282571,GRNL,GREENLITE VENTURES INC,1000,,,100466664.0,,unsized,out,,0,counting failure; never a member
 1643721,BOTX,DATZ WORLD HOLDINGS CORP.,8742,,,100071075.0,,unsized,out,,0,counting failure; never a member
 1879293,MMCP,"Mag Mile Capital, Inc.",3567,,,100055935.0,,unsized,out,,0,counting failure; never a member
@@ -376,10 +332,8 @@
 1545236,AHII,American Heritage International Inc.,4950,,,99866250.0,,unsized,out,,0,counting failure; never a member
 1072725,GDRZF,GOLD RESERVE LTD,1040,,,99548711.0,,unsized,out,,0,counting failure; never a member
 1800373,GWLL,"GOLDENWELL BIOTECH, INC.",2000,,,99000000.0,,unsized,out,,0,counting failure; never a member
-1932213,BCCG,Blue Chip Capital Group Inc.,6199,,,97806900.0,,unsized,out,,0,counting failure; never a member
 1574676,NGHI,"Galenfeha, Inc.",8711,,,97525679.0,,unsized,out,,0,counting failure; never a member
 764630,AETN,"AETERNUM HEALTH, INC.",3690,,,97105204.0,,unsized,out,,0,counting failure; never a member
-1673475,GPOX,"GPO Plus, Inc.",8900,,,96773765.0,,unsized,out,,0,counting failure; never a member
 1694617,ROYL,"Royale Energy, Inc.",1311,,,96600302.0,,unsized,out,,0,counting failure; never a member
 924515,GTHP,GUIDED THERAPEUTICS INC,3845,,,96537349.0,,unsized,out,,0,counting failure; never a member
 1131903,FCCN,SPECTRAL CAPITAL Corp,7374,,,96291416.0,,unsized,out,,0,counting failure; never a member
@@ -393,10 +347,7 @@
 1107280,OVTZ,OCULUS INC.,7389,,,91422569.0,,unsized,out,,0,counting failure; never a member
 1101433,QMCI,QUOTEMEDIA INC,7389,,,90477798.0,,unsized,out,,0,counting failure; never a member
 1583771,HEPA,"Hepion Pharmaceuticals, Inc.",2834,,,90219317.0,,unsized,out,,0,counting failure; never a member
-1514443,AGSS,"AMERIGUARD SECURITY SERVICES, INC.",7381,,,89348478.0,,unsized,out,,0,counting failure; never a member
 1729637,KARX,Karbon-X Corp.,2844,,,89168144.0,,unsized,out,,0,counting failure; never a member
-1893899,WAMFF,Alaska Silver Corp.,1040,,,89069150.0,,unsized,out,,0,counting failure; never a member
-1525306,FSTJ,First America Resources Corp,5065,,,87964090.0,,unsized,out,,0,counting failure; never a member
 1171008,ADMG,ADAMANT DRI PROCESSING & MINERALS GROUP,1000,,,87110005.0,,unsized,out,,0,counting failure; never a member
 1084551,CRDV,Community Redevelopment Inc.,6552,,,86038098.0,,unsized,out,,0,counting failure; never a member
 1103090,RSCF,"REFLECT SCIENTIFIC, INC.",3821,,,85664086.0,,unsized,out,,0,counting failure; never a member
@@ -409,7 +360,6 @@
 1394108,SUIC,SUIC Worldwide Holdings Ltd.,2860,,,80646938.0,,unsized,out,,0,counting failure; never a member
 1620749,PHCI,Panamera Holdings Corp,8742,,,79886074.0,,unsized,out,,0,counting failure; never a member
 1009922,NSFDF,NXT Energy Solutions Inc.,1382,,,79482768.0,,unsized,out,,0,counting failure; never a member
-1442492,LRDC,"Laredo Oil, Inc.",1311,,,78875660.0,,unsized,out,,0,counting failure; never a member
 1452804,RMHI,"Retrieve Medical Holdings, Inc.",2834,,,78363567.0,,unsized,out,,0,counting failure; never a member
 1758699,TRSO,TRANSUITE.ORG INC.,7370,,,77349992.0,,unsized,out,,0,counting failure; never a member
 750004,LNWO,"Light & Wonder, Inc.",7373,,,77049181.0,,unsized,out,,0,counting failure; never a member
@@ -421,21 +371,16 @@
 1347123,NONE.,"EBR Systems, Inc.",3841,,,75335559.0,,unsized,out,,0,counting failure; never a member
 1324759,HGYN,HONG YUAN HOLDING GROUP,2821,,,74640766.0,,unsized,out,,0,counting failure; never a member
 1367993,HAFG,"Holistic Asset Finance Group Co., Ltd.",7380,,,74228185.0,,unsized,out,,0,counting failure; never a member
-1785493,RHNO,RHINO BITCOIN INC.,1700,,,74191114.0,,unsized,out,,0,counting failure; never a member
 1447380,MFON,MOBIVITY HOLDINGS CORP.,7372,,,73976596.0,,unsized,out,,0,counting failure; never a member
 1965052,MGTE,Marblegate Capital Corp,6199,,,73914402.0,,unsized,out,,0,counting failure; never a member
 1832161,VIPZ,"VIP Play, Inc.",5900,,,73457857.0,,unsized,out,,0,counting failure; never a member
 1605057,VMNT,"Vemanti Group, Inc.",6199,,,73435503.0,,unsized,out,,0,counting failure; never a member
-1855474,AIRJW,AirJoule Technologies Corp.,3585,,,73347394.0,,unsized,out,,0,counting failure; never a member
 1539680,HMMR,HAMMER TECHNOLOGY HOLDINGS CORP.,4899,,,73310489.0,,unsized,out,,0,counting failure; never a member
 1848416,VRNO,Verano Holdings Corp.,0100,,,73217970.0,,unsized,out,,0,counting failure; never a member
-1755347,CPLX,Certiplex Corp,7812,,,73200000.0,,unsized,out,,0,counting failure; never a member
-1420368,DLTI,DLT Resolution Inc.,7200,,,72045117.0,,unsized,out,,0,counting failure; never a member
 1865494,IOBTQ,"IO Biotech, Inc.",2834,,,71948842.0,,unsized,out,,0,counting failure; never a member
 1621906,WSTRF,Western Uranium & Vanadium Corp.,1090,,,71853888.0,,unsized,out,,0,counting failure; never a member
 1870404,CERO,"CERO THERAPEUTICS HOLDINGS, INC.",2836,,,71630992.0,,unsized,out,,0,counting failure; never a member
 1680132,CSUI,CANNABIS SUISSE CORP.,6500,,,70680938.0,,unsized,out,,0,counting failure; never a member
-2025878,ITXP,"Independence Power Holdings, Inc.",8700,,,70450000.0,,unsized,out,,0,counting failure; never a member
 822370,EMMA,"Emmaus Life Sciences, Inc.",2834,,,70188263.0,,unsized,out,,0,counting failure; never a member
 1409253,NAFS,"Havana Roasters Coffee Companies, Inc.",8742,,,70065448.0,,unsized,out,,0,counting failure; never a member
 1619096,SNTW,Summit Networks Inc.,4953,,,68911657.0,,unsized,out,,0,counting failure; never a member
@@ -443,43 +388,34 @@
 1080448,PGOL,PATRIOT GOLD CORP,1040,,,68296490.0,,unsized,out,,0,counting failure; never a member
 1569340,CLCS,"Cell Source, Inc.",2834,,,67945856.0,,unsized,out,,0,counting failure; never a member
 849401,ADMT,"ADM TRONICS UNLIMITED, INC.",3845,,,67588492.0,,unsized,out,,0,counting failure; never a member
-1331421,SDCO,"SDR Drone, Inc.",3721,,,66877720.0,,unsized,out,,0,counting failure; never a member
-1848672,GDLG,Glidelogic Corp.,7371,,,66599350.0,,unsized,out,,0,counting failure; never a member
 924095,MVCO,"Metavesco, Inc.",6199,,,66322140.0,,unsized,out,,0,counting failure; never a member
 724742,TPHS,Trinity Place Holdings Inc.,6512,,,66247266.0,,unsized,out,,0,counting failure; never a member
 1802450,MSPR,"MSP Recovery, Inc.",7374,,,66142649.0,,unsized,out,,0,counting failure; never a member
 1071840,WNDW,"SolarWindow Technologies, Inc.",2860,,,65779045.0,,unsized,out,,0,counting failure; never a member
-1907425,JOCM,JOCOM HOLDINGS CORP.,7380,,,65680500.0,,unsized,out,,0,counting failure; never a member
 1599407,LBRA,1847 Holdings LLC,8742,,,65293659.0,,unsized,out,,0,counting failure; never a member
 1837254,MEHA,Functional Brands Inc.,2833,,,64921095.0,,unsized,out,,0,counting failure; never a member
 2003750,MGSD,"Maitong Sunshine Cultural Development Co., Ltd",4700,,,64125000.0,,unsized,out,,0,counting failure; never a member
 15847,BUKS,BUTLER NATIONAL CORP,7990,,,63932907.0,,unsized,out,,0,counting failure; never a member
 1448038,RWDMU,Redwood Mortgage Investors IX,6500,,,62200000.0,,unsized,out,,0,counting failure; never a member
 1025771,WHLT,CHASE PACKAGING CORP,0700,,,61882172.0,,unsized,out,,0,counting failure; never a member
-1839140,RVRC,Revium Rx.,2834,,,60729100.0,,unsized,out,,0,counting failure; never a member
 1678105,CAHO,Caro Holdings Inc.,5961,,,60652429.0,,unsized,out,,0,counting failure; never a member
 1879270,TCRG,Cannaisseur Group Inc.,2833,,,60459890.0,,unsized,out,,0,counting failure; never a member
 1622996,ACBM,"ACRO BIOMEDICAL CO., LTD.",7900,,,60042000.0,,unsized,out,,0,counting failure; never a member
 918573,GRVE,GROOVE BOTANICALS INC.,1311,,,59643062.0,,unsized,out,,0,counting failure; never a member
 1386044,TAAG,"Awareness Group, Inc.",6163,,,59608825.0,,unsized,out,,0,counting failure; never a member
-1746119,VGES,Vanguard Green Investment Ltd,7200,,,59434838.0,,unsized,out,,0,counting failure; never a member
-1727255,COBA,Chilean Cobalt Corp.,1000,,,57972430.0,,unsized,out,,0,counting failure; never a member
 1918080,DBHL,"Deep Isolation Nuclear, Inc.",4953,,,57667113.0,,unsized,out,,0,counting failure; never a member
 1356371,AMLM,"AMERICAN LITHIUM MINERALS, INC.",1000,,,57615740.0,,unsized,out,,0,counting failure; never a member
 875729,BNET,BION ENVIRONMENTAL TECHNOLOGIES INC,2870,,,57412311.0,,unsized,out,,0,counting failure; never a member
 1289223,NWPG,"Newport Gold, Inc.",1040,,,57310070.0,,unsized,out,,0,counting failure; never a member
 1706524,FLZH,"Flash Sports & Media Holdings, Inc.",7900,,,56716262.0,,unsized,out,,0,counting failure; never a member
 1864531,VSEE,"VSEE HEALTH, INC.",8000,,,56679813.0,,unsized,out,,0,counting failure; never a member
-1779372,BEATW,"HeartBeam, Inc.",3841,,,56349171.0,,unsized,out,,0,counting failure; never a member
 1370816,FBCD,"FBC Holding, Inc.",5600,,,55593817.0,,unsized,out,,0,counting failure; never a member
-1935033,KMFG,KEEMO Fashion Group Ltd,5130,,,55000000.0,,unsized,out,,0,counting failure; never a member
 312257,IVFH,INNOVATIVE FOOD HOLDINGS INC,5141,,,54649479.0,,unsized,out,,0,counting failure; never a member
 318299,SRCO,"SPARTA COMMERCIAL SERVICES, INC.",7389,,,54636926.0,,unsized,out,,0,counting failure; never a member
 1723059,BIOE,Bio Essence Corp,2834,,,53809000.0,,unsized,out,,0,counting failure; never a member
 1709542,XESP,"Electronic Servitor Publication Network, Inc.",7374,,,53528001.0,,unsized,out,,0,counting failure; never a member
 1849221,PMNT,Perfect Moment Ltd.,2300,,,53202530.0,,unsized,out,,0,counting failure; never a member
 1546853,SKKY,"Skkynet Cloud Systems, Inc.",7372,,,53143822.0,,unsized,out,,0,counting failure; never a member
-1939937,LMMY,"Exousia Bio, Inc.",8200,,,52500000.0,,unsized,out,,0,counting failure; never a member
 1508786,SLTN,"SILVERTON ENERGY, INC.",3021,,,52424875.0,,unsized,out,,0,counting failure; never a member
 1901203,UCFI,CN Healthy Food Tech Group Corp.,2000,,,52234983.0,,unsized,out,,0,counting failure; never a member
 1130781,BMPA,"BMP AI Technologies, Inc.",7812,,,51783583.0,,unsized,out,,0,counting failure; never a member
@@ -493,19 +429,15 @@
 1518336,DREM,Dream Homes & Development Corp.,1531,,,48564493.0,,unsized,out,,0,counting failure; never a member
 1091596,AURX,"Nuo Therapeutics, Inc.",3841,,,48433777.0,,unsized,out,,0,counting failure; never a member
 802257,MITI,"Mitesco, Inc.",7370,,,48392796.0,,unsized,out,,0,counting failure; never a member
-1115864,ILXP,ECOMINAS CORP.,1400,,,48215467.0,,unsized,out,,0,counting failure; never a member
 1133798,TXRP,"TX Rail Products, Inc.",5084,,,48053084.0,,unsized,out,,0,counting failure; never a member
 1407583,BHLL,Bunker Hill Mining Corp.,1000,,,47207589.0,,unsized,out,,0,counting failure; never a member
 1632121,BLNC,"Balance Labs, Inc.",8742,,,46852319.0,,unsized,out,,0,counting failure; never a member
 847942,STQN,STRATEGIC ACQUISITIONS INC /NV/,6199,,,46775000.0,,unsized,out,,0,counting failure; never a member
 34285,RLBY,RELIABILITY INC,7363,,,46707790.0,,unsized,out,,0,counting failure; never a member
-1288770,XTGRF,XTRA-GOLD RESOURCES CORP,1000,,,46682117.0,,unsized,out,,0,counting failure; never a member
 926617,AWHL,Aspira Women's Health Inc.,2835,,,46633744.0,,unsized,out,,0,counting failure; never a member
 2064307,LOGC,ContextLogic Holdings Inc.,1400,,,45753716.0,,unsized,out,,0,counting failure; never a member
 1650575,BRQSF,"Borqs Technologies, Inc.",7373,,,45470079.0,,unsized,out,,0,counting failure; never a member
 1350156,PAXH,PREAXIA HEALTH CARE PAYMENT SYSTEMS INC.,5700,,,44714782.0,,unsized,out,,0,counting failure; never a member
-1994373,HNIT,Huineng Technology Corp,7374,,,44545000.0,,unsized,out,,0,counting failure; never a member
-1952670,TVCN,TV Channels Network Inc.,4899,,,44510910.0,,unsized,out,,0,counting failure; never a member
 845819,KTEL,"KonaTel, Inc.",4899,,,43979064.0,,unsized,out,,0,counting failure; never a member
 1171838,SUND,"Sundance Strategies, Inc.",6411,,,43063441.0,,unsized,out,,0,counting failure; never a member
 1781726,ACAT,NP Life Sciences Health Industry Group Inc.,8200,,,42959574.0,,unsized,out,,0,counting failure; never a member
@@ -516,7 +448,6 @@
 1648636,TRLEF,Trillion Energy International Inc.,1311,,,41624457.0,,unsized,out,,0,counting failure; never a member
 1045942,TRCK,"Track Group, Inc.",3669,,,41335187.0,,unsized,out,,0,counting failure; never a member
 1893657,RLEA,Rubber Leaf Inc,3714,,,41109458.0,,unsized,out,,0,counting failure; never a member
-1663038,QTZM,Quantum Genesis AI Corp.,2860,,,40972050.0,,unsized,out,,0,counting failure; never a member
 1815974,ANEB,"Anebulo Pharmaceuticals, Inc.",2834,,,40784731.0,,unsized,out,,0,counting failure; never a member
 1109262,BSCL,"BILI Social International, Inc.",5960,,,40388706.0,,unsized,out,,0,counting failure; never a member
 1603345,AGTX,Agentix Corp.,2836,,,40066951.0,,unsized,out,,0,counting failure; never a member
@@ -532,12 +463,9 @@
 1637147,ZSPC,"zSpace, Inc.",7372,,,37067903.0,,unsized,out,,0,counting failure; never a member
 1519061,TSEOQ,Trinseo PLC,2821,,,36559868.0,,unsized,out,,0,counting failure; never a member
 1792941,GNVR,Genvor Inc,0100,,,36410120.0,,unsized,out,,0,counting failure; never a member
-1477960,LMED,LataMed AI Corp.,7370,,,36134795.0,,unsized,out,,0,counting failure; never a member
 1528985,INRE,"Inland Real Estate Income Trust, Inc.",6798,,,36012053.0,,unsized,out,,0,counting failure; never a member
-1410708,NUVI,Emo Capital Corp.,2870,,,35500000.0,,unsized,out,,0,counting failure; never a member
 1840425,OSRH,"OSR Health, Inc.",3841,,,35118692.0,,unsized,out,,0,counting failure; never a member
 1854480,DEVSF,DevvStream Corp.,6799,,,35067694.0,,unsized,out,,0,counting failure; never a member
-1976663,NXNT,"Nexscient, Inc.",7372,,,34564312.0,,unsized,out,,0,counting failure; never a member
 1923780,NCL,Northann Corp.,3089,,,34364400.0,,unsized,out,,0,counting failure; never a member
 1672571,AAQL,Antiaging Quantum Living Inc.,7331,,,34275340.0,,unsized,out,,0,counting failure; never a member
 1580490,IONI,I-ON Digital Corp.,6199,,,34106234.0,,unsized,out,,0,counting failure; never a member
@@ -556,20 +484,14 @@
 1016504,INBP,INTEGRATED BIOPHARMA INC,2834,,,31059610.0,,unsized,out,,0,counting failure; never a member
 1543652,FFLO,"Free Flow USA, Inc.",5531,,,31000000.0,,unsized,out,,0,counting failure; never a member
 1730869,EBZT,"Everything Blockchain, Inc.",7372,,,30896653.0,,unsized,out,,0,counting failure; never a member
-1871181,FOFA,"FAMILY OFFICE OF AMERICA, INC.",3841,,,30826004.0,,unsized,out,,0,counting failure; never a member
 1163609,SDSYA,SOUTH DAKOTA SOYBEAN PROCESSORS LLC,2070,,,30411500.0,,unsized,out,,0,counting failure; never a member
 1437750,TRXA,T-REX Acquisition Corp.,6199,,,30149940.0,,unsized,out,,0,counting failure; never a member
 1111741,DYNR,"DYNARESOURCE, INC.",1000,,,30149059.0,,unsized,out,,0,counting failure; never a member
 1892316,LDDD,Longduoduo Co Ltd,8000,,,30015036.0,,unsized,out,,0,counting failure; never a member
-1532383,VNJA,VANJIA CORP,1531,,,30000000.0,,unsized,out,,0,counting failure; never a member
 1443863,BICX,BioCorRx Inc.,8093,,,29758177.0,,unsized,out,,0,counting failure; never a member
-1492617,FWFW,"FLYWHEEL ADVANCED TECHNOLOGY, INC.",7380,,,29591164.0,,unsized,out,,0,counting failure; never a member
-1751707,OZVN,OZ VISION INC.,4700,,,29372951.0,,unsized,out,,0,counting failure; never a member
-1872066,MIBE,MIAMI BREEZE CAR CARE INC,7500,,,29133709.0,,unsized,out,,0,counting failure; never a member
 1738177,CMBMF,Cambium Networks Corp,3663,,,29032896.0,,unsized,out,,0,counting failure; never a member
 1141284,ASNS,ACTELIS NETWORKS INC,3669,,,28837580.0,,unsized,out,,0,counting failure; never a member
 1605481,NGLD,Nevada Canyon Gold Corp.,1040,,,28593327.0,,unsized,out,,0,counting failure; never a member
-1828377,FTCO,Fortitude Gold Corp,1040,,,28590128.0,,unsized,out,,0,counting failure; never a member
 1089815,EHSI,Elite Health Systems Inc.,8093,,,28521620.0,,unsized,out,,0,counting failure; never a member
 1648087,AREB,AMERICAN REBEL HOLDINGS INC,3490,,,28489850.0,,unsized,out,,0,counting failure; never a member
 1004989,SGRP,"SPAR Group, Inc.",7389,,,28398560.0,,unsized,out,,0,counting failure; never a member
@@ -581,15 +503,11 @@
 1938569,PALX,Palomino Laboratories Inc.,3674,,,27636539.0,,unsized,out,,0,counting failure; never a member
 1599117,MNTR,"Mentor Capital, Inc.",6799,,,27589296.0,,unsized,out,,0,counting failure; never a member
 1088413,GLGI,"GREYSTONE LOGISTICS, INC.",3559,,,27270271.0,,unsized,out,,0,counting failure; never a member
-1700844,EVOH,EvoAir Holdings Inc.,3585,,,27180631.0,,unsized,out,,0,counting failure; never a member
 1844392,MRAI,"Marpai, Inc.",8090,,,26829834.0,,unsized,out,,0,counting failure; never a member
 1639068,HBUV,Hubilu Venture Corp,6510,,,26237125.0,,unsized,out,,0,counting failure; never a member
-1807689,FCCI,"FAST CASUAL CONCEPTS, INC.",5810,,,26124754.0,,unsized,out,,0,counting failure; never a member
 1515317,MAGE,MAGELLAN COPPER & GOLD Corp,1000,,,25964295.0,,unsized,out,,0,counting failure; never a member
 1953988,HLEO,Helio Corp /FL/,3760,,,25944225.0,,unsized,out,,0,counting failure; never a member
-2056016,RDSC,Radiant Strategies Corp,8742,,,25912500.0,,unsized,out,,0,counting failure; never a member
 1174891,GEDC,"TerraVolt Holdings, Inc.",6798,,,25730540.0,,unsized,out,,0,counting failure; never a member
-2041531,BDTB,Bodhi Tree Biotechnology Inc,8742,,,25441042.0,,unsized,out,,0,counting failure; never a member
 1996210,BLMH,"BLUM HOLDINGS, INC.",5900,,,25230686.0,,unsized,out,,0,counting failure; never a member
 1416090,BSAI,BLUSKY AI INC.,1040,,,25173424.0,,unsized,out,,0,counting failure; never a member
 1482554,HFUS,"Hartford Creative Group, Inc.",7374,,,25027004.0,,unsized,out,,0,counting failure; never a member
@@ -599,16 +517,13 @@
 1308027,VYST,Vystar Corp,3060,,,24621094.0,,unsized,out,,0,counting failure; never a member
 939930,PYYX,"PYXUS INTERNATIONAL, INC.",5150,,,24607791.0,,unsized,out,,0,counting failure; never a member
 1345865,NFTM,Buildablock Corp.,4841,,,23937979.0,,unsized,out,,0,counting failure; never a member
-2032609,SHFH,Scientist Home Future Health Ltd,2844,,,23716000.0,,unsized,out,,0,counting failure; never a member
 1163389,NWPP,NEW PEOPLES BANKSHARES INC,6022,,,23539302.0,,unsized,out,,0,counting failure; never a member
-2034288,RMGL,Rocky Mountains Group Ltd,8200,,,23200000.0,,unsized,out,,0,counting failure; never a member
 827187,SNBRQ,Sleep Number Corp,2510,,,23049000.0,,unsized,out,,0,counting failure; never a member
 1609258,PTCO,PetroGas Co,1311,,,22996680.0,,unsized,out,,0,counting failure; never a member
 1977837,USDW,MADE IN USA INC.,7374,,,22962640.0,,unsized,out,,0,counting failure; never a member
 721693,CREG,Smart Powerr Corp.,7389,,,22959128.0,,unsized,out,,0,counting failure; never a member
 1304161,PBSV,"Pharma-Bio Serv, Inc.",8742,,,22901692.0,,unsized,out,,0,counting failure; never a member
 709005,NROM,NOBLE ROMANS INC,5812,,,22707749.0,,unsized,out,,0,counting failure; never a member
-2071489,YSGL,Yellowstone Group Ltd.,8742,,,22400000.0,,unsized,out,,0,counting failure; never a member
 1404804,OMTK,Omnitek Engineering Corp,3714,,,21948091.0,,unsized,out,,0,counting failure; never a member
 1035422,CTTH,"CTT PHARMACEUTICAL HOLDINGS, INC.",2834,,,21349377.0,,unsized,out,,0,counting failure; never a member
 1419041,FBRX,"Forte Biosciences, Inc.",2834,,,21229087.0,,unsized,out,,0,counting failure; never a member
@@ -624,14 +539,10 @@
 1092570,FULO,FULLNET COMMUNICATIONS INC,4813,,,19623917.0,,unsized,out,,0,counting failure; never a member
 1762239,KAVL,"Kaival Brands Innovations Group, Inc.",5960,,,19535402.0,,unsized,out,,0,counting failure; never a member
 1011060,NORD,Nordicus Partners Corp,8742,,,19173896.0,,unsized,out,,0,counting failure; never a member
-1811999,FMHS,"FARMHOUSE, INC. /NV",7370,,,19105950.0,,unsized,out,,0,counting failure; never a member
-1836295,RTGN,RetinalGenix Technologies Inc.,3841,,,18843628.0,,unsized,out,,0,counting failure; never a member
 88000,HKHC,Horizon Kinetics Holding Corp,6282,,,18635321.0,,unsized,out,,0,counting failure; never a member
 1803977,LIMX,Limitless X Holdings Inc.,7990,,,18506957.0,,unsized,out,,0,counting failure; never a member
 1840102,SPTY,"SPECIFICITY, INC.",7311,,,18437960.0,,unsized,out,,0,counting failure; never a member
 1794942,SKFG,"Stark Focus Group, Inc.",5130,,,18348330.0,,unsized,out,,0,counting failure; never a member
-1745078,VYND,"Vynleads, Inc.",7200,,,18327364.0,,unsized,out,,0,counting failure; never a member
-1143994,MRPT,MACREPORT NET INC,7389,,,17960633.0,,unsized,out,,0,counting failure; never a member
 1556801,MYCB,"My City Builders, Inc.",6500,,,17926686.0,,unsized,out,,0,counting failure; never a member
 1058623,CMLS,CUMULUS MEDIA INC,4832,,,17668032.0,,unsized,out,,0,counting failure; never a member
 1677897,UPYY,UPAY,7372,,,17665211.0,,unsized,out,,0,counting failure; never a member
@@ -639,12 +550,9 @@
 1563665,HRGN,"Harvard Apparatus Regenerative Technology, Inc.",3841,,,17580744.0,,unsized,out,,0,counting failure; never a member
 732417,HBIA,HILLS BANCORPORATION,6022,,,17436739.0,,unsized,out,,0,counting failure; never a member
 1636051,FUST,FUSE GROUP HOLDING INC.,1000,,,17225716.0,,unsized,out,,0,counting failure; never a member
-1553264,APSI,AQUA POWER SYSTEMS INC.,4911,,,17204180.0,,unsized,out,,0,counting failure; never a member
 1703157,SCTH,"Securetech Innovations, Inc.",3714,,,17129717.0,,unsized,out,,0,counting failure; never a member
 1560143,WYTC,WYTEC INTERNATIONAL INC,4822,,,17022867.0,,unsized,out,,0,counting failure; never a member
-1917993,GSTK,Growth Stalk Holdings Corp,0100,,,16970000.0,,unsized,out,,0,counting failure; never a member
 930775,ECIA,ENCISION INC,3841,,,16879645.0,,unsized,out,,0,counting failure; never a member
-1888740,LSEB,LSEB Creative Corp.,2320,,,16813800.0,,unsized,out,,0,counting failure; never a member
 86115,SFES,SAFEGUARD SCIENTIFICS INC,6799,,,16722994.0,,unsized,out,,0,counting failure; never a member
 1430300,GWSO,"Global Warming Solutions, Inc.",5960,,,16393903.0,,unsized,out,,0,counting failure; never a member
 1759546,NRDE,Stark Novus Financial Inc.,3711,,,16289293.0,,unsized,out,,0,counting failure; never a member
@@ -655,10 +563,7 @@
 811222,CDIX,Cardiff Lexington Corp,8011,,,15637361.0,,unsized,out,,0,counting failure; never a member
 868278,PRPH,"ProPhase Labs, Inc.",2834,,,15592556.0,,unsized,out,,0,counting failure; never a member
 1883835,ESGH,ESG Inc.,0100,,,15591376.0,,unsized,out,,0,counting failure; never a member
-1949864,MGNC,Mag Magna Corp,1400,,,15529047.0,,unsized,out,,0,counting failure; never a member
 1489874,GGROU,Golden Growers Cooperative,0700,,,15490480.0,,unsized,out,,0,counting failure; never a member
-1994582,OYCG,Oyocar Group Inc.,5500,,,15337250.0,,unsized,out,,0,counting failure; never a member
-1464343,ATLCP,Atlanticus Holdings Corp,6141,,,15170038.0,,unsized,out,,0,counting failure; never a member
 278165,OMQS,OMNIQ Corp.,7373,,,15152930.0,,unsized,out,,0,counting failure; never a member
 1011509,AUMN,Golden Minerals Co,1040,,,15053048.0,,unsized,out,,0,counting failure; never a member
 856984,USAQ,"QHSLab, Inc.",3841,,,15032788.0,,unsized,out,,0,counting failure; never a member
@@ -693,26 +598,20 @@
 87802,SCND,SCIENTIFIC INDUSTRIES INC,3826,,,11928599.0,,unsized,out,,0,counting failure; never a member
 1679817,OZSC,"OZOP ENERGY SOLUTIONS, INC.",3690,,,11793584.0,,unsized,out,,0,counting failure; never a member
 1931055,MDNC,Medinotec Inc.,3841,,,11755548.0,,unsized,out,,0,counting failure; never a member
-1784440,BHIC,"BioScience Health Innovations, Inc.",7374,,,11752329.0,,unsized,out,,0,counting failure; never a member
 888981,NNUP,NOCOPI TECHNOLOGIES INC/MD/,3944,,,11743364.0,,unsized,out,,0,counting failure; never a member
 1434601,TMGI,"Transglobal Management Group, Inc.",4832,,,11589180.0,,unsized,out,,0,counting failure; never a member
-1784058,PNYG,Pony Group Inc.,7500,,,11500000.0,,unsized,out,,0,counting failure; never a member
 1409197,BSPK,"Bespoke Extracts, Inc.",2834,,,11253552.0,,unsized,out,,0,counting failure; never a member
-1459188,CHEV,Charging Robotics Inc.,5013,,,11246252.0,,unsized,out,,0,counting failure; never a member
 1616736,GGBY,Alpha Investment Inc.,6500,,,11224401.0,,unsized,out,,0,counting failure; never a member
 775057,ALTX,ALTEX INDUSTRIES INC,1311,,,11187640.0,,unsized,out,,0,counting failure; never a member
-1779977,SEQC,"SeeQC, Inc.",7374,,,11085204.0,,unsized,out,,0,counting failure; never a member
 1750777,HWKE,"Hawkeye Digital, Inc.",3861,,,11035630.0,,unsized,out,,0,counting failure; never a member
 1137883,BCLI,BRAINSTORM CELL THERAPEUTICS INC.,2836,,,11034775.0,,unsized,out,,0,counting failure; never a member
 1532390,WTER,ALKALINE WATER Co INC,5140,,,10895805.0,,unsized,out,,0,counting failure; never a member
 774415,KRFG,"King Resources, Inc.",7380,,,10881149.0,,unsized,out,,0,counting failure; never a member
 315958,CRMZ,CREDITRISKMONITOR COM INC,7320,,,10767501.0,,unsized,out,,0,counting failure; never a member
 1832487,GUER,"Guerrilla RF, Inc.",3674,,,10698651.0,,unsized,out,,0,counting failure; never a member
-1813744,WDSP,"World Scan Project, Inc.",5045,,,10647350.0,,unsized,out,,0,counting failure; never a member
 731122,CCFN,MUNCY COLUMBIA FINANCIAL Corp,6022,,,10614047.0,,unsized,out,,0,counting failure; never a member
 1346022,ENRT,Enertopia Corp.,1000,,,10339394.0,,unsized,out,,0,counting failure; never a member
 2029586,BLNH,"Blue Line Holdings, Inc.",2086,,,10226000.0,,unsized,out,,0,counting failure; never a member
-889353,SNTL,Sentinel Holdings Ltd.,7200,,,9690429.0,,unsized,out,,0,counting failure; never a member
 1122020,PCSV,"PCS Edventures!, Inc.",8200,,,9677687.0,,unsized,out,,0,counting failure; never a member
 1099369,DSNY,DESTINY MEDIA TECHNOLOGIES INC,7372,,,9637410.0,,unsized,out,,0,counting failure; never a member
 1414953,MOJO,EQUATOR Beverage Co,2080,,,9569655.0,,unsized,out,,0,counting failure; never a member
@@ -721,7 +620,6 @@
 1854275,ZCAR,"Zoomcar Holdings, Inc.",7510,,,8770836.0,,unsized,out,,0,counting failure; never a member
 1094032,QDMI,QDM International Inc.,6411,,,8636186.0,,unsized,out,,0,counting failure; never a member
 1017655,PAYD,PAID INC,7389,,,8477659.0,,unsized,out,,0,counting failure; never a member
-1699709,VNOV,VitaNova Life Sciences Corp,5130,,,8337454.0,,unsized,out,,0,counting failure; never a member
 1416697,BLPG,"Blue Line Protection Group, Inc.",5900,,,8250144.0,,unsized,out,,0,counting failure; never a member
 812306,PCYN,PROCYON CORP,2834,,,8120388.0,,unsized,out,,0,counting failure; never a member
 1619312,LTSV,"Lightstone Value Plus REIT IV, Inc.",6798,,,8100000.0,,unsized,out,,0,counting failure; never a member
@@ -731,7 +629,6 @@
 885508,STRS,STRATUS PROPERTIES INC,6552,,,7982723.0,,unsized,out,,0,counting failure; never a member
 1424657,CUEN,Cuentas Inc.,5140,,,7952797.0,,unsized,out,,0,counting failure; never a member
 1557376,ZEOX,"Zeo ScientifiX, Inc.",2836,,,7837441.0,,unsized,out,,0,counting failure; never a member
-1641601,RVRF,River Financial Corp,6022,,,7811902.0,,unsized,out,,0,counting failure; never a member
 8146,ALOT,"AstroNova, Inc.",3577,,,7747772.0,,unsized,out,,0,counting failure; never a member
 36840,FREVS,"FIRST REAL ESTATE INVESTMENT TRUST OF NEW JERSEY, INC.",6798,,,7482432.0,,unsized,out,,0,counting failure; never a member
 862668,ESMC,ESCALON MEDICAL CORP,3845,,,7415329.0,,unsized,out,,0,counting failure; never a member
@@ -741,18 +638,13 @@
 1845799,CULL,"Cullman Bancorp, Inc. /MD/",6036,,,7247375.0,,unsized,out,,0,counting failure; never a member
 836564,CPMV,Mosaic ImmunoEngineering Inc.,2836,,,7242137.0,,unsized,out,,0,counting failure; never a member
 1690012,ICR-PA,"InPoint Commercial Real Estate Income, Inc.",6798,,,7197665.0,,unsized,out,,0,counting failure; never a member
-1989788,GAFC,Guru App Factory Corp,7371,,,7106000.0,,unsized,out,,0,counting failure; never a member
 898171,UWHR,UWHARRIE CAPITAL CORP,6022,,,7089015.0,,unsized,out,,0,counting failure; never a member
 1375348,GLNS,Golden Star Resource Corp.,1090,,,7070000.0,,unsized,out,,0,counting failure; never a member
-2057381,RADC,Readvantage Corp.,7374,,,6947400.0,,unsized,out,,0,counting failure; never a member
-1555017,SKYI,"Sky Century Investment, Inc.",8741,,,6935477.0,,unsized,out,,0,counting failure; never a member
 1846235,IMAQ,International Media Acquisition Corp.,7812,,,6836594.0,,unsized,out,,0,counting failure; never a member
 1000045,OMCC,OLD MARKET CAPITAL Corp,6153,,,6790097.0,,unsized,out,,0,counting failure; never a member
-1873213,BRWC,Birdie Win Corp,8200,,,6720000.0,,unsized,out,,0,counting failure; never a member
 1668340,BCTF,"Bancorp 34, Inc.",6035,,,6665415.0,,unsized,out,,0,counting failure; never a member
 202947,CPTP,CAPITAL PROPERTIES INC /RI/,6519,,,6599912.0,,unsized,out,,0,counting failure; never a member
 867038,SPND,SPINDLETOP OIL & GAS CO,1311,,,6598303.0,,unsized,out,,0,counting failure; never a member
-1854816,MINR,Minerva Gold Inc.,1000,,,6570000.0,,unsized,out,,0,counting failure; never a member
 1520118,MWAI,"MedWellAI, Inc.",6199,,,6536580.0,,unsized,out,,0,counting failure; never a member
 1585101,HGIT,"HINES GLOBAL INCOME TRUST, INC.",6798,,,6400000.0,,unsized,out,,0,counting failure; never a member
 737875,FKYS,FIRST KEYSTONE CORP,6022,,,6322401.0,,unsized,out,,0,counting failure; never a member
@@ -762,16 +654,12 @@
 1605331,AERA,AI Era Corp.,6794,,,5988733.0,,unsized,out,,0,counting failure; never a member
 1900679,TETEF,Technology & Telecommunication Acquisition Corp,7389,,,5975740.0,,unsized,out,,0,counting failure; never a member
 1847360,BCOW,"1895 Bancorp of Wisconsin, Inc. /MD/",6036,,,5958261.0,,unsized,out,,0,counting failure; never a member
-1722556,BGFR,BestGofer Inc.,7200,,,5900000.0,,unsized,out,,0,counting failure; never a member
 1893219,ABPO,"Abpro Holdings, Inc.",2836,,,5896048.0,,unsized,out,,0,counting failure; never a member
 747540,SPRS,SURGE COMPONENTS INC,5065,,,5735922.0,,unsized,out,,0,counting failure; never a member
 2029014,MRCL,Mercalot Inc.,7380,,,5735200.0,,unsized,out,,0,counting failure; never a member
 1895249,CNTM,"ConnectM Technology Solutions, Inc.",1700,,,5727583.0,,unsized,out,,0,counting failure; never a member
 1437479,ENBP,ENB Financial Corp,6021,,,5714719.0,,unsized,out,,0,counting failure; never a member
-1657642,SLBK,"Skyline Bankshares, Inc.",6022,,,5672204.0,,unsized,out,,0,counting failure; never a member
 1075706,CIZN,CITIZENS HOLDING CO /MS/,6022,,,5624052.0,,unsized,out,,0,counting failure; never a member
-1726079,LUCN,"Lucent, Inc.",7389,,,5600000.0,,unsized,out,,0,counting failure; never a member
-1680689,NRHI,"Natural Resource Holdings, Inc.",5960,,,5589891.0,,unsized,out,,0,counting failure; never a member
 1933359,NTCS,Natics Corp.,7374,,,5495300.0,,unsized,out,,0,counting failure; never a member
 1723517,UCASU,UC Asset LP,6799,,,5485025.0,,unsized,out,,0,counting failure; never a member
 943034,AATC,AUTOSCOPE TECHNOLOGIES CORP,3829,,,5407707.0,,unsized,out,,0,counting failure; never a member
@@ -779,10 +667,8 @@
 824416,QPRC,QUEST PATENT RESEARCH CORP,5190,,,5331973.0,,unsized,out,,0,counting failure; never a member
 2020919,DSFT,DeltaSoft Corp,7371,,,5317706.0,,unsized,out,,0,counting failure; never a member
 1610718,ODRS,"Outdoor Specialty Products, Inc.",3949,,,5284318.0,,unsized,out,,0,counting failure; never a member
-2065287,DNKC,Dankon Corp,7372,,,5261400.0,,unsized,out,,0,counting failure; never a member
 71557,NUVR,"Nuvera Communications, Inc.",4813,,,5244006.0,,unsized,out,,0,counting failure; never a member
 730349,TOFB,TOFUTTI BRANDS INC,2024,,,5153706.0,,unsized,out,,0,counting failure; never a member
-2050338,CLBZ,Collab Z Inc.,6500,,,5151391.0,,unsized,out,,0,counting failure; never a member
 1016178,CARV,CARVER BANCORP INC,6035,,,5095254.0,,unsized,out,,0,counting failure; never a member
 797465,STLY,"HG Holdings, Inc.",6798,,,5046795.0,,unsized,out,,0,counting failure; never a member
 1999261,STWI,StageWise Strategies Corp.,7374,,,5044334.0,,unsized,out,,0,counting failure; never a member
@@ -799,25 +685,20 @@
 1022505,SDCH,"SideChannel, Inc.",7374,,,4572757.0,,unsized,out,,0,counting failure; never a member
 1781629,ANKM,"Ankam, Inc.",7371,,,4558063.0,,unsized,out,,0,counting failure; never a member
 1420108,GLUC,"Glucose Health, Inc.",2833,,,4545310.0,,unsized,out,,0,counting failure; never a member
-1651992,ASFT,"Appsoft Technologies, Inc.",7372,,,4495198.0,,unsized,out,,0,counting failure; never a member
 1358633,SNBH,SENTIENT BRANDS HOLDINGS INC.,5734,,,4462771.0,,unsized,out,,0,counting failure; never a member
 830616,SCIA,"SCI Engineered Materials, Inc.",3620,,,4450003.0,,unsized,out,,0,counting failure; never a member
 1530425,ARRT,"Artisan Consumer Goods, Inc.",1000,,,4400048.0,,unsized,out,,0,counting failure; never a member
 1753391,QSJC,"TANCHENG GROUP CO., LTD.",7370,,,4381550.0,,unsized,out,,0,counting failure; never a member
 1661600,SATT,SATIVUS TECH CORP.,8742,,,4215571.0,,unsized,out,,0,counting failure; never a member
-1816554,EVTK,EVENTIKO INC.,7990,,,4192500.0,,unsized,out,,0,counting failure; never a member
-1871890,GLEI,Galaxy Enterprises Inc. /WY/,6531,,,4170000.0,,unsized,out,,0,counting failure; never a member
 949961,IOR,INCOME OPPORTUNITY REALTY INVESTORS INC /TX/,6798,,,4066178.0,,unsized,out,,0,counting failure; never a member
 1004724,RHEP,"REGIONAL HEALTH PROPERTIES, INC",6519,,,3924677.0,,unsized,out,,0,counting failure; never a member
 1884164,KWIK,"KwikClick, Inc.",7374,,,3892979.0,,unsized,out,,0,counting failure; never a member
 1101026,ZIVO,"Zivo Bioscience, Inc.",2836,,,3888595.0,,unsized,out,,0,counting failure; never a member
-1765048,GCGJ,GUOCHUN INTERNATIONAL INC.,7370,,,3870600.0,,unsized,out,,0,counting failure; never a member
 1978111,NPLY,Naploy Corp.,8000,,,3803370.0,,unsized,out,,0,counting failure; never a member
 1995920,ESMR,E-Smart Corp.,7371,,,3799469.0,,unsized,out,,0,counting failure; never a member
 1487718,BLTH,"AMERICAN BATTERY MATERIALS, INC.",1400,,,3789585.0,,unsized,out,,0,counting failure; never a member
 1744494,ADNH,"ADVENT TECHNOLOGIES HOLDINGS, INC.",3690,,,3788634.0,,unsized,out,,0,counting failure; never a member
 1910975,RPDL,Rapid Line Inc.,8200,,,3632750.0,,unsized,out,,0,counting failure; never a member
-2029303,THTG,Tech Tonic Group Corp.,7371,,,3623080.0,,unsized,out,,0,counting failure; never a member
 740806,FMBM,F&M BANK CORP,6022,,,3586733.0,,unsized,out,,0,counting failure; never a member
 1489300,ZLME,Zhanling International Ltd,1000,,,3441000.0,,unsized,out,,0,counting failure; never a member
 779227,STLE,STEELE BANCORP INC,6022,,,3405061.0,,unsized,out,,0,counting failure; never a member
@@ -827,7 +708,6 @@
 1957783,MACT,"MachTen, Inc.",4813,,,3272407.0,,unsized,out,,0,counting failure; never a member
 1698022,FMFG,"Farmers & Merchants Bancshares, Inc.",6036,,,3262958.0,,unsized,out,,0,counting failure; never a member
 1865111,ALSAF,Alpha Star Acquisition Corp,7372,,,3226962.0,,unsized,out,,0,counting failure; never a member
-1941360,NELR,Neolara Corp.,1520,,,3177000.0,,unsized,out,,0,counting failure; never a member
 72205,NOBH,NOBILITY HOMES INC,2451,,,3153665.0,,unsized,out,,0,counting failure; never a member
 1006830,CBKM,CONSUMERS BANCORP INC /OH/,6021,,,3144775.0,,unsized,out,,0,counting failure; never a member
 1087456,UBOH,UNITED BANCSHARES INC/OH,6021,,,3136180.0,,unsized,out,,0,counting failure; never a member
@@ -841,7 +721,6 @@
 1807893,SPFX,"STANDARD PREMIUM FINANCE HOLDINGS, INC.",6159,,,2930134.0,,unsized,out,,0,counting failure; never a member
 890066,GLBZ,GLEN BURNIE BANCORP,6022,,,2919695.0,,unsized,out,,0,counting failure; never a member
 1859035,MCAG,Mountain Crest Acquisition Corp. V,3841,,,2873023.0,,unsized,out,,0,counting failure; never a member
-1803096,STRG,"STARGUIDE GROUP, INC.",5190,,,2868000.0,,unsized,out,,0,counting failure; never a member
 1493137,LCTC,"Lifeloc Technologies, Inc",3826,,,2752616.0,,unsized,out,,0,counting failure; never a member
 1205922,VCNX,"VACCINEX, INC.",2834,,,2676637.0,,unsized,out,,0,counting failure; never a member
 1391933,QNTO,"QUAINT OAK BANCORP, INC.",6036,,,2649603.0,,unsized,out,,0,counting failure; never a member
@@ -851,11 +730,9 @@
 50292,IEHC,IEH Corp,3678,,,2477749.0,,unsized,out,,0,counting failure; never a member
 1842939,XAGE,"Longevity Health Holdings, Inc.",2840,,,2475321.0,,unsized,out,,0,counting failure; never a member
 1565228,VISL,"Vislink Technologies, Inc.",3669,,,2467618.0,,unsized,out,,0,counting failure; never a member
-1725262,TYFG,"Tri-County Financial Group, Inc.",6022,,,2390068.0,,unsized,out,,0,counting failure; never a member
 2084261,URSB,"URSB Bancorp, Inc.",6036,,,2334375.0,,unsized,out,,0,counting failure; never a member
 1823365,GBNY,"Generations Bancorp NY, Inc.",6035,,,2241801.0,,unsized,out,,0,counting failure; never a member
 1985554,LDXC,Londax Corp.,7371,,,2231135.0,,unsized,out,,0,counting failure; never a member
-1437213,CCNB,"Coastal Carolina Bancshares, Inc.",6021,,,2187000.0,,unsized,out,,0,counting failure; never a member
 91668,SODI,SOLITRON DEVICES INC,3674,,,2152703.0,,unsized,out,,0,counting failure; never a member
 1470129,VIIQ,VisitIQ Corp.,7372,,,2133236.0,,unsized,out,,0,counting failure; never a member
 1407704,BOTY,"LINGERIE FIGHTING CHAMPIONSHIPS, INC.",7900,,,1912936.0,,unsized,out,,0,counting failure; never a member
@@ -872,12 +749,10 @@
 1967656,PFSB,"PFS Bancorp, Inc.",6036,,,1546063.0,,unsized,out,,0,counting failure; never a member
 1911467,CRCE,"Circle Energy, Inc./NV",1311,,,1530000.0,,unsized,out,,0,counting failure; never a member
 2114521,CSBA,CSB Financial Inc.,6036,,,1402935.0,,unsized,out,,0,counting failure; never a member
-790273,CONC,CONECTISYS CORP,3663,,,1388289.0,,unsized,out,,0,counting failure; never a member
 1230524,LEEN,"Leopard Energy, Inc.",8742,,,1272917.0,,unsized,out,,0,counting failure; never a member
 1133062,JANL,JANEL CORP,7389,,,1186354.0,,unsized,out,,0,counting failure; never a member
 1451448,GMBL,"ESPORTS ENTERTAINMENT GROUP, INC.",7900,,,1145980.0,,unsized,out,,0,counting failure; never a member
 1413891,HWNI,"HIGH WIRE NETWORKS, INC.",4813,,,1119665.0,,unsized,out,,0,counting failure; never a member
-2094107,BSPA,"Ballston Spa Bancorp, Inc.",6022,,,1100071.0,,unsized,out,,0,counting failure; never a member
 1978811,GOVB,"Gouverneur Bancorp, Inc./MD/",6036,,,1058922.0,,unsized,out,,0,counting failure; never a member
 720762,NIMU,NON INVASIVE MONITORING SYSTEMS INC /FL/,3760,,,1032640.0,,unsized,out,,0,counting failure; never a member
 2013792,EWSB,"EWSB Bancorp, Inc. /MD/",6036,,,1014220.0,,unsized,out,,0,counting failure; never a member
@@ -896,15 +771,11 @@
 1883984,ALCED,"Alternus Clean Energy, Inc.",4931,,,724658.0,,unsized,out,,0,counting failure; never a member
 1085913,FMCB,FARMERS & MERCHANTS BANCORP,6021,,,691944.0,,unsized,out,,0,counting failure; never a member
 1099668,FOTB,"FIRST OTTAWA BANCSHARES, INC.",6022,,,645988.0,,unsized,out,,0,counting failure; never a member
-1584480,GTIC,"Greentech Innovations, Inc.",7372,,,606475.0,,unsized,out,,0,counting failure; never a member
 1162283,MGHL,MORGAN GROUP HOLDING CO,6200,,,600090.0,,unsized,out,,0,counting failure; never a member
 2024899,MFBI,"Monroe Federal Bancorp, Inc.",6035,,,541434.0,,unsized,out,,0,counting failure; never a member
-1594968,VEST,Loan Artificial Intelligence Corp.,7900,,,454365.0,,unsized,out,,0,counting failure; never a member
 1407973,SONX,"Sonendo, Inc.",3843,,,427401.0,,unsized,out,,0,counting failure; never a member
-66496,MMTRS,MILLS MUSIC TRUST,6794,,,277712.0,,unsized,out,,0,counting failure; never a member
 1527469,ATH-PA,Athene Holding Ltd.,6311,,,203805.0,,unsized,out,,0,counting failure; never a member
 83350,RSRV,RESERVE PETROLEUM CO,1311,,,151584.0,,unsized,out,,0,counting failure; never a member
-1958928,CTWO,COTWO ADVISORS PHYSICAL EUROPEAN CARBON ALLOWANCE TRUST,6199,,,100000.0,,unsized,out,,0,counting failure; never a member
 1674227,WORX,SCWorx Corp.,7374,,,89789.0,,unsized,out,,0,counting failure; never a member
 1662972,BSTT,"Blackstone Real Estate Income Trust, Inc.",6798,,,20000.0,,unsized,out,,0,counting failure; never a member
 1362988,AYR,Aircastle LTD,7359,,,17840.0,,unsized,out,,0,counting failure; never a member
@@ -912,11 +783,9 @@
 1711929,SWDS,"Starwood Real Estate Income Trust, Inc.",6798,,,10000.0,,unsized,out,,0,counting failure; never a member
 1039828,ANG-PD,American National Group Inc.,6311,,,10000.0,,unsized,out,,0,counting failure; never a member
 1666244,CFTR-PA,"Cantor Fitzgerald Income Trust, Inc.",6798,,,8180.0,,unsized,out,,0,counting failure; never a member
-2094256,CLYD,"BEACON TOPCO, INC.",2834,,,100.0,,unsized,out,,0,counting failure; never a member
 30554,CTA-PB,"EIDP, Inc.",2820,,,100.0,,unsized,out,,0,counting failure; never a member
-13372,NSARO,NSTAR ELECTRIC CO,4911,,,100.0,,unsized,out,,0,counting failure; never a member
 310522,FNMA,FEDERAL NATIONAL MORTGAGE ASSOCIATION FANNIE MAE,6111,,,,,unsized,out,,0,counting failure; never a member
-2131524,BRVE,"Braveheart Bio, Inc.",2834,,,,25.62,unsized,out,,0,counting failure; never a member
+2131524,BRVE,"Braveheart Bio, Inc.",2834,,,,25.31,unsized,out,,0,counting failure; never a member
 1795139,GTBIF,Green Thumb Industries Inc.,0100,,,,,unsized,out,,0,counting failure; never a member
 1581091,RMAX,"RE/MAX Holdings, Inc.",6531,,,,,unsized,out,,0,counting failure; never a member
 1771706,VREOF,Vireo Growth Inc.,2834,,,,,unsized,out,,0,counting failure; never a member
@@ -924,11 +793,9 @@
 2088805,CMII,Columbus Circle Capital Corp II,7373,,,,,unsized,out,,0,counting failure; never a member
 2065779,BCAR,D. Boral ARC Acquisition I Corp.,7372,,,,,unsized,out,,0,counting failure; never a member
 804563,BMBN,BENCHMARK BANKSHARES INC,6022,,,,,unsized,out,,0,counting failure; never a member
-847538,CPKF,CHESAPEAKE FINANCIAL SHARES INC,6021,,,,,unsized,out,,0,counting failure; never a member
 811211,UNIB,UNIVERSITY BANCORP INC /DE/,6022,,,,,unsized,out,,0,counting failure; never a member
 912764,KSBI,KS BANCORP INC,6036,,,,,unsized,out,,0,counting failure; never a member
 1852016,AEAE,AltEnergy Acquisition Corp,3714,,,,,unsized,out,,0,counting failure; never a member
-1970743,RMXI,"RMX INDUSTRIES, INC.",7370,,,,,unsized,out,,0,counting failure; never a member
 832370,EAXR,"Ealixir, Inc.",7372,,,,,unsized,out,,0,counting failure; never a member
 1846084,JETMF,Global Crossing Airlines Group Inc.,4512,,,,,unsized,out,,0,counting failure; never a member
 1275477,BMNM,"BIMINI CAPITAL MANAGEMENT, INC.",6798,,,,,unsized,out,,0,counting failure; never a member
@@ -946,43 +813,28 @@
 1395005,BFCH,"UNLOCKD, Inc.",1000,,,,,unsized,out,,0,counting failure; never a member
 1812173,RBOT,Vicarious Surgical Inc.,3842,,,,,unsized,out,,0,counting failure; never a member
 1901799,BTMCQ,Bitcoin Depot Inc.,6199,,,,,unsized,out,,0,counting failure; never a member
-915661,GRLF,GREEN LEAF INNOVATIONS INC,2050,,,,,unsized,out,,0,counting failure; never a member
 1365359,PCGC,"HYDRO POWER TECHNOLOGIES, INC.",5180,,,,,unsized,out,,0,counting failure; never a member
 2011954,TWNPQ,Twin Hospitality Group Inc.,5812,,,,,unsized,out,,0,counting failure; never a member
-1343491,GJP,"STRATS(SM) TRUST FOR DOMINION RESOURCES, INC. SECURITIES, SERIES 2005-6",6189,,,,24.7,unsized,out,,0,counting failure; never a member
-1356284,GJS,"STRATS(SM) Trust for Goldman Sachs Group Securities, Series 2006-2",6189,,,,,unsized,out,,0,counting failure; never a member
-1353226,GJR,"STRATS(SM) Trust for Procter & Gamble Securities, Series 2006-1",6189,,,,,unsized,out,,0,counting failure; never a member
 1427437,ETI-P,"ENTERGY TEXAS, INC.",4911,,,,,unsized,out,,0,counting failure; never a member
 1403528,OAK-PA,"Brookfield Oaktree Holdings, LLC",6282,,,,,unsized,out,,0,counting failure; never a member
-1340909,GJO,"STRATS SM TRUST FOR WAL-MART STORES, INC. SECURITIES, SERIES 2005-4",6189,,,,,unsized,out,,0,counting failure; never a member
-1357660,GJT,"STRATS(SM) Trust for Allstate Corp Securities, Series 2006-3",6189,,,,23.22,unsized,out,,0,counting failure; never a member
 1628063,SRG-PA,Seritage Growth Properties,6500,,,,,unsized,out,,0,counting failure; never a member
-1284143,JBK,LEHMAN ABS CORP GOLDMAN SACHS CAP 1 SEC BACKED SER 2004-6,6189,,,,25.38,unsized,out,,0,counting failure; never a member
-1348952,ELC,"ENTERGY LOUISIANA, LLC",4911,,,,19.55,unsized,out,,0,counting failure; never a member
-1283464,KTH,STRUCTURED PRODUCTS CORP CORTS TR FOR PECO ENERGY CAP TR III,6189,,,,28.52,unsized,out,,0,counting failure; never a member
+1348952,ELC,"ENTERGY LOUISIANA, LLC",4911,,,,19.52,unsized,out,,0,counting failure; never a member
 18654,AILIH,Ameren Illinois Co,4931,,,,,unsized,out,,0,counting failure; never a member
-70502,NRUC,NATIONAL RURAL UTILITIES COOPERATIVE FINANCE CORP /DC/,6159,,,,21.165,unsized,out,,0,counting failure; never a member
 71508,ENJ,"ENTERGY NEW ORLEANS, LLC",4931,,,,19.29,unsized,out,,0,counting failure; never a member
-823277,CHSCP,CHS INC,5150,,,,,unsized,out,,0,counting failure; never a member
-66901,EMP,"ENTERGY MISSISSIPPI, LLC",4911,,,,19.95,unsized,out,,0,counting failure; never a member
+823277,CHSCP,CHS INC,5150,,,,26.69,unsized,out,,0,counting failure; never a member
+66901,EMP,"ENTERGY MISSISSIPPI, LLC",4911,,,,19.99,unsized,out,,0,counting failure; never a member
 201533,CMS-PB,CONSUMERS ENERGY CO,4931,,,,,unsized,out,,0,counting failure; never a member
 100826,UELMO,UNION ELECTRIC CO,4911,,,,,unsized,out,,0,counting failure; never a member
-41091,GPJA,GEORGIA POWER CO,4911,,,,20.4385,unsized,out,,0,counting failure; never a member
+41091,GPJA,GEORGIA POWER CO,4911,,,,20.26,unsized,out,,0,counting failure; never a member
 2102713,KCAC-UN,Kensington Capital Acquisition Corp. VI,2810,,,,,unsized,out,,0,counting failure; never a member
 1618755,QSP,Restaurant Brands International Limited Partnership,5812,,,,,unsized,out,,0,counting failure; never a member
-1294808,PYT,PPLUS Trust Series GSC-2,6189,,,,23.47,unsized,out,,0,counting failure; never a member
-1267332,IPB,MERRILL LYNCH DEPOSITOR INC INDEXPLUS TRUST SERIES 2003-1,6189,,,,25.03,unsized,out,,0,counting failure; never a member
-1283337,KTN,STRUCTURED PRODUCTS CORP CRED ENHANCE CORTS TR FOR AON CAP A,6189,,,,,unsized,out,,0,counting failure; never a member
-1286405,GJH,STRATS SM TRUST FOR U S CELL CORP SEC SERIES 2004 6,6189,,,,9.48,unsized,out,,0,counting failure; never a member
 1611983,LBRDK,Liberty Broadband Corp,4841,,,,,unsized,out,,0,counting failure; never a member
 1465740,TWO-PC,TWO HARBORS INVESTMENT CORP.,6798,,,,,unsized,out,,0,counting failure; never a member
 23426,CNTHP,CONNECTICUT LIGHT & POWER CO,4911,,,,,unsized,out,,0,counting failure; never a member
 1814974,BBXIB,"BBX Capital, Inc.",5400,,,,,unsized,out,,0,counting failure; never a member
 1882198,ATEK,Athena Technology Acquisition Corp. II,4955,,,,,unsized,out,,0,counting failure; never a member
 1779474,MAPS,"WM TECHNOLOGY, INC.",7372,,,,,unsized,out,,0,counting failure; never a member
-1550453,TRLC,TriLinc Global Impact Fund LLC,6199,,,,,unsized,out,,0,counting failure; never a member
 1050606,SALM,"SALEM MEDIA GROUP, INC. /DE/",4832,,,,,unsized,out,,0,counting failure; never a member
-1376986,TVE,Tennessee Valley Authority,4911,,,,23.46,unsized,out,,0,counting failure; never a member
 1400271,CUBT,Curative Biotechnology Inc,2836,,,,,unsized,out,,0,counting failure; never a member
 942126,TAIT,TAITRON COMPONENTS INC,5065,,,,,unsized,out,,0,counting failure; never a member
 1108248,KNOS,KRONOS ADVANCED TECHNOLOGIES INC,3564,,,,,unsized,out,,0,counting failure; never a member
@@ -993,7 +845,6 @@
 946112,CDSG,"China Dongsheng International, Inc.",1000,,,,,unsized,out,,0,counting failure; never a member
 1127007,VYRE,CABO VERDE CAPITAL INC.,4941,,,,,unsized,out,,0,counting failure; never a member
 1823593,TSPH,TuSimple Holdings Inc.,7373,,,,,unsized,out,,0,counting failure; never a member
-1698538,STSR,"Strategic Student & Senior Housing Trust, Inc.",6798,,,,,unsized,out,,0,counting failure; never a member
 1852575,SGST,"Strategic Storage Trust VI, Inc.",6798,,,,,unsized,out,,0,counting failure; never a member
 1128252,XAKJ,"SIPP International Industries, Inc.",3663,,,,,unsized,out,,0,counting failure; never a member
 1827899,CPTKW,Crown PropTech Acquisitions,5072,,,,,unsized,out,,0,counting failure; never a member

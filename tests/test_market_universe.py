@@ -257,3 +257,53 @@ def test_a_run_resumes_from_its_checkpoint_on_the_same_day(tmp_path):
     calls.clear()
     build_snapshot(Feed(), "k", snapshot="2026-12-01", checkpoint=ck)
     assert any("submissions" in u for u in calls)
+
+
+def test_sizing_respects_each_measures_unit_domain():
+    """The four false admissions of the first full snapshot, by root cause.
+    AKTX/CMMB/SCNI are ADSs: EDGAR counts ORDINARY shares, the close
+    prices the DEPOSITARY share -- the product is not a market cap. EAI
+    is a first-mortgage BOND under an equity-looking ticker."""
+    from fle.market_universe import (COMMON_TYPES, Row, classify, decide,
+                                     newest_shares)
+
+    # bonds, preferreds, warrants are not common-stock listings
+    assert "SP" not in COMMON_TYPES and "ADRC" in COMMON_TYPES and "CS" in COMMON_TYPES
+
+    # an ADS row: sec measure withheld, sized on vendor, honest note
+    r = Row(cik=1, ticker="CMMB", company="Chemomab")
+    r.mcap_vendor, r.mcap_sec = 19_857_959.0, None
+    r.note = "ADS: ordinary-share count is not price-comparable; sized on the vendor figure"
+    classify(r); decide(r, 1e9, 8e8, {}, "2026-08-31")
+    assert r.status == "sized" and r.decision == "out"
+
+    # the 50e9 backstop still refuses impossible counts at source
+    class Feed:
+        def get(self, url, use_cache=True):
+            import json
+            return json.dumps({"units": {"shares": [
+                {"val": 155758529533, "accn": "a", "filed": "2026-08-01",
+                 "end": "2026-06-30"}]}})
+    assert newest_shares(Feed(), 1) is None
+
+    # the 50x poisoned-ratio backstop still guards CS-typed collisions
+    r = Row(cik=2, ticker="XYZ", company="Colliding Close Co")
+    r.mcap_vendor, r.mcap_sec = 1_700_728.0, 35_237_164_943.0
+    classify(r); decide(r, 1e9, 8e8, {}, "2026-08-31")
+    assert r.status == "disagree" and r.mcap_sec is None and r.decision == "out"
+
+    # no vendor record at all: a newcomer waits for a human; a member is kept
+    r = Row(cik=3, ticker="NOV", company="No Vendor Co")
+    r.mcap_vendor, r.mcap_sec = None, 9_114_954_766.0
+    classify(r); decide(r, 1e9, 8e8, {}, "2026-08-31")
+    assert r.decision == "out" and "sec-only newcomers" in r.note
+    r2 = Row(cik=3, ticker="NOV", company="No Vendor Co")
+    r2.mcap_vendor, r2.mcap_sec = None, 9_114_954_766.0
+    classify(r2); decide(r2, 1e9, 8e8, {3: ("2026-05-01", 0)}, "2026-08-31")
+    assert r2.decision in ("in", "kept")
+
+    # an honest two-measure common is untouched
+    r = Row(cik=4, ticker="OK", company="Fine Co")
+    r.mcap_vendor, r.mcap_sec = 2.0e9, 2.1e9
+    classify(r); decide(r, 1e9, 8e8, {}, "2026-08-31")
+    assert r.status == "sized" and r.decision == "in"
