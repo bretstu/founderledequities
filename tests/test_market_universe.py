@@ -38,13 +38,26 @@ def test_investment_companies_are_out_by_the_forms_only_they_file():
     assert "investment company" in eligibility(_subs(["10-K", "4", "DEF 14A", "40-17G", "N-2"]))
 
 
+def test_n_px_is_filed_by_ordinary_corporations_and_excludes_nobody():
+    """Amazon, NVIDIA, J&J and Walmart all file N-PX (say-on-pay votes)."""
+    assert eligibility(_subs(["10-K", "10-Q", "4", "DEF 14A", "N-PX"], sic="5961")) == ""
+
+
 def test_non_operating_entities_are_out_by_sic_unless_they_hold_meetings():
     for sic, why in (("6221", "commodity pool"), ("6792", "royalty trust"),
                      ("6726", "investment company")):
         assert why in eligibility(_subs(["10-K", "4"], sic=sic))
     # Texas Pacific Land: SIC 6792 kept from its trust days, but a board,
     # annual meetings and a chief executive -- rescued by the DEF 14A
-    assert eligibility(_subs(["10-K", "10-Q", "4", "DEF 14A"], sic="6792")) == ""
+    assert eligibility(_subs(["10-K", "10-Q", "4", "DEF 14A"], sic="6792"),
+                       "Texas Pacific Land Corp") == ""
+    # a royalty trust or an ETP also files proxies -- and says what it is
+    assert "royalty trust" in eligibility(_subs(["10-K", "10-Q", "4", "DEF 14A"], sic="6792"),
+                                          "PERMIAN BASIN ROYALTY TRUST")
+    assert "commodity pool" in eligibility(_subs(["10-K", "4", "DEF 14A"], sic="6221"),
+                                           "Grayscale Bitcoin Trust ETF")
+    assert "commodity pool" in eligibility(_subs(["10-K", "4", "DEF 14A"], sic="6221"),
+                                           "INVESCO DB AGRICULTURE FUND")
     # a SPAC is never rescued: it files proxies for extension votes
     assert "blank-check" in eligibility(_subs(["10-K", "4", "DEF 14A"], sic="6770"))
 

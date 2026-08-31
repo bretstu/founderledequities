@@ -80,11 +80,16 @@ DOMESTIC = {"10-K", "10-K/A", "10-Q", "10-Q/A", "10-12B", "10-12B/A",
             "S-1", "S-1/A", "8-K12B"}
 ANNUAL_MEETING = {"DEF 14A"}
 # INVESTMENT COMPANIES ANNOUNCE THEMSELVES BY THE FORMS THEY FILE. A
-# closed-end fund files N-CSR and N-PX; a BDC files N-2 and 40-17G. No
+# closed-end fund files N-CSR and N-CEN; a BDC files N-2 and 40-17G. No
 # operating company files any of these, whatever its SIC says -- and the
-# funds that slipped a SIC gate had blank or misleading codes.
-INVESTMENT_FORMS = {"N-CSR", "N-CSRS", "N-PX", "N-2", "N-2/A", "40-17G",
-                    "N-CEN", "N-Q", "N-MFP", "24F-2NT"}
+# funds that slipped a SIC gate had blank or misleading codes. NOT N-PX:
+# since 2024 ordinary corporations report say-on-pay votes on it, and
+# including it excluded Amazon, NVIDIA, J&J and Walmart in one stroke.
+INVESTMENT_FORMS = {"N-CSR", "N-CSRS", "N-2", "N-2/A", "40-17G", "N-CEN"}
+# an entity that calls itself a trust, fund or ETF is what it says it is;
+# the annual-meeting rescue below is for corporations that kept an old
+# code (Texas Pacific Land dropped "Trust" from its name when it converted)
+SELF_DESCRIBED = ("TRUST", "FUND", "ETF", "ETP")
 # ENTITIES WITH NO CHIEF EXECUTIVE IN THE SENSE THIS SITE MEANS: a shell
 # awaiting a target, a commodity pool run by a sponsor, a royalty trust
 # run by a trustee. Each files a 10-K; none has a person whose own stake
@@ -167,11 +172,12 @@ def recent_submissions(client, cik: int) -> dict:
                            use_cache=False)
     return {"_filings": _columns_to_rows(data.get("filings", {}).get("recent", {})),
             "sic": data.get("sic"),
+            "name": data.get("name") or "",
             "insiderTransactionForIssuerExists":
                 data.get("insiderTransactionForIssuerExists")}
 
 
-def eligibility(subs: dict) -> str:
+def eligibility(subs: dict, name: str = "") -> str:
     """'' if the site can cover it, else the reason it cannot.
 
     Returns "successor" (truthy, but not an exclusion) for an issuer that
@@ -192,7 +198,9 @@ def eligibility(subs: dict) -> str:
     sic = str(subs.get("sic") or "")
     if sic in EXCLUDED_SIC:
         why, rescuable = EXCLUDED_SIC[sic]
-        if not (rescuable and forms & ANNUAL_MEETING):
+        words = set(name.upper().replace(",", " ").replace(".", " ").split())
+        self_described = bool(words & set(SELF_DESCRIBED))
+        if not (rescuable and forms & ANNUAL_MEETING and not self_described):
             return f"{why} (SIC {sic})"
     if not (forms & SECTION16):
         if needs_predecessor(subs) or "8-K12B" in forms:
@@ -355,7 +363,7 @@ def build_snapshot(client, api_key: str | None, entry: float = 1e9,
             snap.rows.append(row); _ck(ck, row, snapshot)
             continue
         row.sic = str(subs.get("sic") or "")
-        why = eligibility(subs)
+        why = eligibility(subs, m.company)
         if why == "successor":
             row.note = ("successor issuer: no Form 4s under this CIK; the "
                         "panel resolves the predecessor")
@@ -458,9 +466,9 @@ officers file no ownership forms; Section 16 does not reach them, so this site
 cannot measure them. Investment companies, identified by the forms only they
 file (N-CSR, N-2, 40-17G). Entities with no chief executive in the sense this
 site means, by SEC industry code: blank-check companies, commodity pools,
-royalty trusts -- unless the entity holds annual meetings, in which case it is
-a corporation that kept an old code. Companies the sizing rules could not
-place above the bar.</p>
+royalty trusts -- unless the entity holds annual meetings and does not call
+itself a trust, fund or ETF, in which case it is a corporation that kept an
+old code. Companies the sizing rules could not place above the bar.</p>
 <p><b>How size is decided.</b> Two independent measures: the market cap
 published by the price vendor, and the company's own cover-page share count
 (from its most recently filed report) times the newest close. When they agree

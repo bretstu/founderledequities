@@ -64,26 +64,28 @@ footer .in{max-width:1000px;margin:0 auto;padding:26px clamp(20px,3.5vw,48px) 48
 
 <main>
   <h1>Every company on the site.</h1>
-  <p class="standfirst">2,111 US public companies with a market capitalization at or
+  <p class="standfirst">2,073 US public companies with a market capitalization at or
   above $1 billion on <b>2026-08-31</b>, chosen by the rules below.
-  68 carried a flag for human review at that snapshot.</p>
+  71 carried a flag for human review at that snapshot.</p>
 
   <section id="rules">
     <h2>The rules</h2>
     
 <p><b>Who is in.</b> Every company in the SEC's own registry of tickered
 registrants that files domestic reports (a 10-K or 10-Q, or for a company
-too young for either, a Form 10, S-1 or successor-issuer filing), has at
-least one Form 3, 4 or 5 on record, holds annual meetings once it is old
-enough to have filed an annual report, and had a market capitalization at or
-above <b>$1 billion</b> on the snapshot date. One row per company: a
-dual-class filer counts once.</p>
+too young for either, a Form 10, S-1 or successor-issuer filing), has
+ownership filings on record (or is a successor issuer whose officers' filings
+sit under a predecessor), and had a market capitalization at or above
+<b>$1 billion</b> on the snapshot date. One row per company: a dual-class
+filer counts once.</p>
 <p><b>Who is out, and why.</b> Foreign private issuers file 20-Fs and their
 officers file no ownership forms; Section 16 does not reach them, so this site
-cannot measure them. Entities with no chief executive in the sense this site
-means: blank-check companies, commodity pools and exchange-traded products,
-royalty trusts, and investment companies (by SEC industry code). Companies
-the sizing rules could not place above the bar.</p>
+cannot measure them. Investment companies, identified by the forms only they
+file (N-CSR, N-2, 40-17G). Entities with no chief executive in the sense this
+site means, by SEC industry code: blank-check companies, commodity pools,
+royalty trusts -- unless the entity holds annual meetings, in which case it is
+a corporation that kept an old code. Companies the sizing rules could not
+place above the bar.</p>
 <p><b>How size is decided.</b> Two independent measures: the market cap
 published by the price vendor, and the company's own cover-page share count
 (from its most recently filed report) times the newest close. When they agree
@@ -116,11 +118,8 @@ with the ticker; the evidence behind every decision is kept.</p>
       <thead><tr style="text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--faint)">
         <th style="padding:6px 0">TICKER</th><th>COMPANY</th><th style="text-align:right">MARKET CAP</th><th>ADDED</th></tr></thead>
       <tbody>
-<tr><td class="k">NVDA</td><td>NVIDIA CORP</td><td class="k" style="text-align:right">$5.25T</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AAPL</td><td>Apple Inc.</td><td class="k" style="text-align:right">$4.67T</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">GOOGL</td><td>Alphabet Inc.</td><td class="k" style="text-align:right">$4.24T</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MSFT</td><td>MICROSOFT CORP</td><td class="k" style="text-align:right">$3.81T</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">AMZN</td><td>AMAZON COM INC</td><td class="k" style="text-align:right">$2.87T</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SPCX</td><td>SPACE EXPLORATION TECHNOLOGIES CORP</td><td class="k" style="text-align:right">$1.87T</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AVGO</td><td>Broadcom Inc.</td><td class="k" style="text-align:right">$1.75T</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">META</td><td>Meta Platforms, Inc.</td><td class="k" style="text-align:right">$1.47T</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -129,28 +128,20 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">MU</td><td>MICRON TECHNOLOGY INC</td><td class="k" style="text-align:right">$1.05T</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LLY</td><td>ELI LILLY &amp; Co</td><td class="k" style="text-align:right">$1.05T</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">JPM</td><td>JPMORGAN CHASE &amp; CO</td><td class="k" style="text-align:right">$950.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">WMT</td><td>Walmart Inc.</td><td class="k" style="text-align:right">$820.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AMD</td><td>ADVANCED MICRO DEVICES INC</td><td class="k" style="text-align:right">$760.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">V</td><td>VISA INC.</td><td class="k" style="text-align:right">$712.5B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
-<tr><td class="k">JNJ</td><td>JOHNSON &amp; JOHNSON</td><td class="k" style="text-align:right">$645.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">XOM</td><td>ExxonMobil Holdings Corp</td><td class="k" style="text-align:right">$644.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MA</td><td>Mastercard Inc</td><td class="k" style="text-align:right">$521.5B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
-<tr><td class="k">INTC</td><td>INTEL CORP</td><td class="k" style="text-align:right">$472.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ABBV</td><td>AbbVie Inc.</td><td class="k" style="text-align:right">$451.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PLTR</td><td>Palantir Technologies Inc.</td><td class="k" style="text-align:right">$447.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">BAC</td><td>BANK OF AMERICA CORP /DE/</td><td class="k" style="text-align:right">$435.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ORCL</td><td>ORACLE CORP</td><td class="k" style="text-align:right">$434.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">CSCO</td><td>CISCO SYSTEMS, INC.</td><td class="k" style="text-align:right">$433.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">COST</td><td>COSTCO WHOLESALE CORP /NEW</td><td class="k" style="text-align:right">$419.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">CVX</td><td>CHEVRON CORP</td><td class="k" style="text-align:right">$396.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">KO</td><td>COCA COLA CO</td><td class="k" style="text-align:right">$385.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LRCX</td><td>LAM RESEARCH CORP</td><td class="k" style="text-align:right">$377.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CAT</td><td>CATERPILLAR INC</td><td class="k" style="text-align:right">$367.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AMAT</td><td>APPLIED MATERIALS INC /DE</td><td class="k" style="text-align:right">$366.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MRK</td><td>Merck &amp; Co., Inc.</td><td class="k" style="text-align:right">$366.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">GE</td><td>GENERAL ELECTRIC CO</td><td class="k" style="text-align:right">$355.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">UNH</td><td>UNITEDHEALTH GROUP INC</td><td class="k" style="text-align:right">$352.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NFLX</td><td>NETFLIX INC</td><td class="k" style="text-align:right">$340.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">MS</td><td>MORGAN STANLEY</td><td class="k" style="text-align:right">$337.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PG</td><td>PROCTER &amp; GAMBLE Co</td><td class="k" style="text-align:right">$334.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HD</td><td>HOME DEPOT, INC.</td><td class="k" style="text-align:right">$329.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PANW</td><td>Palo Alto Networks Inc</td><td class="k" style="text-align:right">$302.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -166,13 +157,13 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">TMO</td><td>THERMO FISHER SCIENTIFIC INC.</td><td class="k" style="text-align:right">$230.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">KLAC</td><td>KLA CORP</td><td class="k" style="text-align:right">$229.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LIN</td><td>LINDE PLC</td><td class="k" style="text-align:right">$225.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">AXP</td><td>AMERICAN EXPRESS CO</td><td class="k" style="text-align:right">$225.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CRWD</td><td>CrowdStrike Holdings, Inc.</td><td class="k" style="text-align:right">$223.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">C</td><td>CITIGROUP INC</td><td class="k" style="text-align:right">$222.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">IBM</td><td>INTERNATIONAL BUSINESS MACHINES CORP</td><td class="k" style="text-align:right">$222.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SNDK</td><td>Sandisk Corp</td><td class="k" style="text-align:right">$217.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CRM</td><td>Salesforce, Inc.</td><td class="k" style="text-align:right">$210.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VZ</td><td>VERIZON COMMUNICATIONS INC</td><td class="k" style="text-align:right">$208.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">SHOP</td><td>SHOPIFY INC.</td><td class="k" style="text-align:right">$196.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MRVL</td><td>Marvell Technology, Inc.</td><td class="k" style="text-align:right">$194.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ABT</td><td>ABBOTT LABORATORIES</td><td class="k" style="text-align:right">$194.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TMUS</td><td>T-Mobile US, Inc.</td><td class="k" style="text-align:right">$194.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -183,8 +174,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">MCD</td><td>MCDONALDS CORP</td><td class="k" style="text-align:right">$187.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DIS</td><td>Walt Disney Co</td><td class="k" style="text-align:right">$186.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">UNP</td><td>UNION PACIFIC CORP</td><td class="k" style="text-align:right">$182.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">GILD</td><td>GILEAD SCIENCES, INC.</td><td class="k" style="text-align:right">$180.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">BLK</td><td>BlackRock, Inc.</td><td class="k" style="text-align:right">$180.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">T</td><td>AT&amp;T INC.</td><td class="k" style="text-align:right">$178.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SCCO</td><td>SOUTHERN COPPER CORP/</td><td class="k" style="text-align:right">$177.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">QCOM</td><td>QUALCOMM INC/DE</td><td class="k" style="text-align:right">$175.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -196,12 +185,14 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">WDC</td><td>WESTERN DIGITAL CORP</td><td class="k" style="text-align:right">$165.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">UBER</td><td>Uber Technologies, Inc</td><td class="k" style="text-align:right">$161.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PFE</td><td>PFIZER INC</td><td class="k" style="text-align:right">$159.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">BUD</td><td>Anheuser-Busch InBev SA/NV</td><td class="k" style="text-align:right">$157.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">COP</td><td>CONOCOPHILLIPS</td><td class="k" style="text-align:right">$156.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ETN</td><td>Eaton Corp plc</td><td class="k" style="text-align:right">$156.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BKNG</td><td>Booking Holdings Inc.</td><td class="k" style="text-align:right">$154.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DHR</td><td>DANAHER CORP /DE/</td><td class="k" style="text-align:right">$151.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NOW</td><td>ServiceNow, Inc.</td><td class="k" style="text-align:right">$149.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TJX</td><td>TJX COMPANIES INC /DE/</td><td class="k" style="text-align:right">$149.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">GLD</td><td>SPDR GOLD TRUST</td><td class="k" style="text-align:right">$143.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VRTX</td><td>VERTEX PHARMACEUTICALS INC / MA</td><td class="k" style="text-align:right">$137.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BMY</td><td>BRISTOL MYERS SQUIBB CO</td><td class="k" style="text-align:right">$136.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NEM</td><td>NEWMONT Corp /DE/</td><td class="k" style="text-align:right">$134.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -226,7 +217,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">ADP</td><td>AUTOMATIC DATA PROCESSING INC</td><td class="k" style="text-align:right">$114.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SNOW</td><td>Snowflake Inc.</td><td class="k" style="text-align:right">$113.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ABNB</td><td>Airbnb, Inc.</td><td class="k" style="text-align:right">$111.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">BNY</td><td>Bank of New York Mellon Corp</td><td class="k" style="text-align:right">$110.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FCX</td><td>FREEPORT-MCMORAN INC</td><td class="k" style="text-align:right">$109.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ENB</td><td>ENBRIDGE INC</td><td class="k" style="text-align:right">$109.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NET</td><td>Cloudflare, Inc.</td><td class="k" style="text-align:right">$106.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -248,7 +238,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">INTU</td><td>INTUIT INC.</td><td class="k" style="text-align:right">$97.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">KKR</td><td>KKR &amp; Co. Inc.</td><td class="k" style="text-align:right">$97.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PSX</td><td>Phillips 66</td><td class="k" style="text-align:right">$97.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">USB</td><td>US BANCORP DE</td><td class="k" style="text-align:right">$97.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PNC</td><td>PNC FINANCIAL SERVICES GROUP, INC.</td><td class="k" style="text-align:right">$96.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CMCSA</td><td>COMCAST CORP</td><td class="k" style="text-align:right">$96.0B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">CSX</td><td>CSX CORP</td><td class="k" style="text-align:right">$95.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -274,9 +263,9 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">JCI</td><td>Johnson Controls International plc</td><td class="k" style="text-align:right">$84.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EPD</td><td>ENTERPRISE PRODUCTS PARTNERS L.P.</td><td class="k" style="text-align:right">$84.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SHW</td><td>SHERWIN WILLIAMS CO</td><td class="k" style="text-align:right">$83.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">BAM</td><td>Brookfield Asset Management Ltd.</td><td class="k" style="text-align:right">$83.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CP</td><td>CANADIAN PACIFIC KANSAS CITY LTD/CN</td><td class="k" style="text-align:right">$82.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AMT</td><td>AMERICAN TOWER CORP /MA/</td><td class="k" style="text-align:right">$82.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">REGN</td><td>REGENERON PHARMACEUTICALS, INC.</td><td class="k" style="text-align:right">$81.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CTAS</td><td>CINTAS CORP</td><td class="k" style="text-align:right">$81.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MSI</td><td>Motorola Solutions, Inc.</td><td class="k" style="text-align:right">$80.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ECL</td><td>ECOLAB INC.</td><td class="k" style="text-align:right">$80.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -288,13 +277,14 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">FDX</td><td>FEDEX CORP</td><td class="k" style="text-align:right">$78.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CMI</td><td>CUMMINS INC</td><td class="k" style="text-align:right">$77.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NOC</td><td>NORTHROP GRUMMAN CORP /DE/</td><td class="k" style="text-align:right">$77.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">TRV</td><td>TRAVELERS COMPANIES, INC.</td><td class="k" style="text-align:right">$77.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GM</td><td>General Motors Co</td><td class="k" style="text-align:right">$75.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AON</td><td>Aon plc</td><td class="k" style="text-align:right">$75.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EOG</td><td>EOG RESOURCES INC</td><td class="k" style="text-align:right">$75.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RCL</td><td>ROYAL CARIBBEAN CRUISES LTD</td><td class="k" style="text-align:right">$74.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TGT</td><td>TARGET CORP</td><td class="k" style="text-align:right">$74.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">RACE</td><td>Ferrari N.V.</td><td class="k" style="text-align:right">$73.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CI</td><td>Cigna Group</td><td class="k" style="text-align:right">$73.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">ET</td><td>Energy Transfer LP</td><td class="k" style="text-align:right">$73.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ROST</td><td>ROSS STORES, INC.</td><td class="k" style="text-align:right">$73.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HLT</td><td>Hilton Worldwide Holdings Inc.</td><td class="k" style="text-align:right">$72.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CL</td><td>COLGATE PALMOLIVE CO</td><td class="k" style="text-align:right">$72.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -306,7 +296,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">HON</td><td>HONEYWELL INTERNATIONAL INC</td><td class="k" style="text-align:right">$68.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DLR</td><td>DIGITAL REALTY TRUST, INC.</td><td class="k" style="text-align:right">$68.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">APD</td><td>Air Products &amp; Chemicals, Inc.</td><td class="k" style="text-align:right">$68.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">AJG</td><td>Arthur J. Gallagher &amp; Co.</td><td class="k" style="text-align:right">$68.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RSG</td><td>REPUBLIC SERVICES, INC.</td><td class="k" style="text-align:right">$68.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BSX</td><td>BOSTON SCIENTIFIC CORP</td><td class="k" style="text-align:right">$67.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AEP</td><td>AMERICAN ELECTRIC POWER CO INC</td><td class="k" style="text-align:right">$66.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -315,21 +304,20 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">TDG</td><td>TransDigm Group INC</td><td class="k" style="text-align:right">$65.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">URI</td><td>UNITED RENTALS, INC.</td><td class="k" style="text-align:right">$64.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CRH</td><td>CRH PUBLIC LTD CO</td><td class="k" style="text-align:right">$63.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">IMO</td><td>IMPERIAL OIL LTD</td><td class="k" style="text-align:right">$63.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BE</td><td>Bloom Energy Corp</td><td class="k" style="text-align:right">$62.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BKR</td><td>Baker Hughes Co</td><td class="k" style="text-align:right">$62.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MPWR</td><td>MONOLITHIC POWER SYSTEMS, INC.</td><td class="k" style="text-align:right">$61.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TRGP</td><td>Targa Resources Corp.</td><td class="k" style="text-align:right">$61.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">TFC</td><td>TRUIST FINANCIAL CORP</td><td class="k" style="text-align:right">$61.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GWW</td><td>W.W. GRAINGER, INC.</td><td class="k" style="text-align:right">$61.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">COR</td><td>Cencora, Inc.</td><td class="k" style="text-align:right">$61.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">MET</td><td>METLIFE INC</td><td class="k" style="text-align:right">$61.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">MPLX</td><td>MPLX LP</td><td class="k" style="text-align:right">$60.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">OKE</td><td>ONEOK INC /NEW/</td><td class="k" style="text-align:right">$59.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">OXY</td><td>OCCIDENTAL PETROLEUM CORP /DE/</td><td class="k" style="text-align:right">$59.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NKE</td><td>NIKE, Inc.</td><td class="k" style="text-align:right">$58.7B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">TEL</td><td>TE Connectivity plc</td><td class="k" style="text-align:right">$58.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">O</td><td>REALTY INCOME CORP</td><td class="k" style="text-align:right">$58.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PSA</td><td>Public Storage</td><td class="k" style="text-align:right">$58.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">AFL</td><td>AFLAC INC</td><td class="k" style="text-align:right">$58.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LNG</td><td>Cheniere Energy, Inc.</td><td class="k" style="text-align:right">$58.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">D</td><td>DOMINION ENERGY, INC</td><td class="k" style="text-align:right">$57.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AU</td><td>AngloGold Ashanti PLC</td><td class="k" style="text-align:right">$57.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -353,8 +341,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">FIX</td><td>COMFORT SYSTEMS USA INC</td><td class="k" style="text-align:right">$53.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CVNA</td><td>CARVANA CO.</td><td class="k" style="text-align:right">$53.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">STT</td><td>STATE STREET CORP</td><td class="k" style="text-align:right">$53.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">DAL</td><td>DELTA AIR LINES, INC.</td><td class="k" style="text-align:right">$52.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">DVN</td><td>DEVON ENERGY CORP/DE</td><td class="k" style="text-align:right">$52.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EW</td><td>Edwards Lifesciences Corp</td><td class="k" style="text-align:right">$52.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BDX</td><td>BECTON DICKINSON &amp; CO</td><td class="k" style="text-align:right">$51.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HONA</td><td>Honeywell Aerospace Inc.</td><td class="k" style="text-align:right">$51.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -362,7 +348,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">ALAB</td><td>Astera Labs, Inc.</td><td class="k" style="text-align:right">$50.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">XYZ</td><td>Block, Inc.</td><td class="k" style="text-align:right">$50.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FITB</td><td>FIFTH THIRD BANCORP</td><td class="k" style="text-align:right">$49.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">AMP</td><td>AMERIPRISE FINANCIAL INC</td><td class="k" style="text-align:right">$49.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WAB</td><td>WESTINGHOUSE AIR BRAKE TECHNOLOGIES CORP</td><td class="k" style="text-align:right">$49.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ETR</td><td>ENTERGY CORP /DE/</td><td class="k" style="text-align:right">$49.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WDAY</td><td>Workday, Inc.</td><td class="k" style="text-align:right">$49.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -411,7 +396,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">RKLB</td><td>Rocket Lab Corp</td><td class="k" style="text-align:right">$41.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FLEX</td><td>FLEX LTD.</td><td class="k" style="text-align:right">$40.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WAT</td><td>WATERS CORP /DE/</td><td class="k" style="text-align:right">$40.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">AIG</td><td>AMERICAN INTERNATIONAL GROUP, INC.</td><td class="k" style="text-align:right">$40.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ED</td><td>CONSOLIDATED EDISON INC</td><td class="k" style="text-align:right">$39.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MCHP</td><td>MICROCHIP TECHNOLOGY INC</td><td class="k" style="text-align:right">$39.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EXPE</td><td>Expedia Group, Inc.</td><td class="k" style="text-align:right">$39.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -435,18 +419,18 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">VMC</td><td>Vulcan Materials CO</td><td class="k" style="text-align:right">$35.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VG</td><td>Venture Global, Inc.</td><td class="k" style="text-align:right">$35.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">KR</td><td>KROGER CO</td><td class="k" style="text-align:right">$35.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">NTR</td><td>Nutrien Ltd.</td><td class="k" style="text-align:right">$35.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">IRM</td><td>IRON MOUNTAIN INC</td><td class="k" style="text-align:right">$35.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RMD</td><td>RESMED INC</td><td class="k" style="text-align:right">$34.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WEC</td><td>WEC ENERGY GROUP, INC.</td><td class="k" style="text-align:right">$34.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RJF</td><td>RAYMOND JAMES FINANCIAL INC</td><td class="k" style="text-align:right">$34.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DXCM</td><td>DEXCOM INC</td><td class="k" style="text-align:right">$34.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">MTB</td><td>M&amp;T BANK CORP</td><td class="k" style="text-align:right">$34.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HBAN</td><td>HUNTINGTON BANCSHARES INC /MD/</td><td class="k" style="text-align:right">$34.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">NTRS</td><td>NORTHERN TRUST CORP</td><td class="k" style="text-align:right">$34.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EQT</td><td>EQT Corp</td><td class="k" style="text-align:right">$34.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CCL</td><td>Carnival Corp Ltd.</td><td class="k" style="text-align:right">$33.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ACGL</td><td>ARCH CAPITAL GROUP LTD.</td><td class="k" style="text-align:right">$33.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">STLD</td><td>STEEL DYNAMICS INC</td><td class="k" style="text-align:right">$33.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">CQP</td><td>Cheniere Energy Partners, L.P.</td><td class="k" style="text-align:right">$33.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EME</td><td>EMCOR Group, Inc.</td><td class="k" style="text-align:right">$32.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ILMN</td><td>ILLUMINA, INC.</td><td class="k" style="text-align:right">$32.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CBOE</td><td>Cboe Global Markets, Inc.</td><td class="k" style="text-align:right">$32.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -479,7 +463,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">CTSH</td><td>COGNIZANT TECHNOLOGY SOLUTIONS CORP</td><td class="k" style="text-align:right">$28.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TDY</td><td>TELEDYNE TECHNOLOGIES INC</td><td class="k" style="text-align:right">$28.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FOXA</td><td>Fox Corp</td><td class="k" style="text-align:right">$28.8B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
-<tr><td class="k">ZM</td><td>Zoom Communications, Inc.</td><td class="k" style="text-align:right">$28.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ATI</td><td>ATI INC</td><td class="k" style="text-align:right">$28.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VICI</td><td>VICI PROPERTIES INC.</td><td class="k" style="text-align:right">$28.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FISV</td><td>FISERV INC</td><td class="k" style="text-align:right">$28.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -504,22 +487,20 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">DOV</td><td>DOVER Corp</td><td class="k" style="text-align:right">$26.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ES</td><td>EVERSOURCE ENERGY</td><td class="k" style="text-align:right">$26.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FE</td><td>FIRSTENERGY CORP</td><td class="k" style="text-align:right">$26.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">CINF</td><td>CINCINNATI FINANCIAL CORP</td><td class="k" style="text-align:right">$26.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VRSN</td><td>VERISIGN INC/CA</td><td class="k" style="text-align:right">$26.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AFRM</td><td>Affirm Holdings, Inc.</td><td class="k" style="text-align:right">$26.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VMRK</td><td>VIVMARK RESIDENTIAL</td><td class="k" style="text-align:right">$26.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">XYL</td><td>Xylem Inc.</td><td class="k" style="text-align:right">$26.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">INSM</td><td>INSMED Inc</td><td class="k" style="text-align:right">$25.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CNP</td><td>CENTERPOINT ENERGY INC</td><td class="k" style="text-align:right">$25.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">RF</td><td>REGIONS FINANCIAL CORP</td><td class="k" style="text-align:right">$25.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PPL</td><td>PPL Corp</td><td class="k" style="text-align:right">$25.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">WRB</td><td>BERKLEY W R CORP</td><td class="k" style="text-align:right">$25.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SYF</td><td>Synchrony Financial</td><td class="k" style="text-align:right">$25.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PPG</td><td>PPG INDUSTRIES INC</td><td class="k" style="text-align:right">$25.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SW</td><td>Smurfit Westrock plc</td><td class="k" style="text-align:right">$25.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ECHO</td><td>EchoStar CORP</td><td class="k" style="text-align:right">$25.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">INCY</td><td>INCYTE CORP</td><td class="k" style="text-align:right">$25.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">Q</td><td>Qnity Electronics, Inc.</td><td class="k" style="text-align:right">$25.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">TPL</td><td>Texas Pacific Land Corp</td><td class="k" style="text-align:right">$25.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ROIV</td><td>Roivant Sciences Ltd.</td><td class="k" style="text-align:right">$25.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TPR</td><td>TAPESTRY, INC.</td><td class="k" style="text-align:right">$25.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VRSK</td><td>Verisk Analytics, Inc.</td><td class="k" style="text-align:right">$25.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -557,9 +538,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">STE</td><td>STERIS plc</td><td class="k" style="text-align:right">$22.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EXE</td><td>EXPAND ENERGY Corp</td><td class="k" style="text-align:right">$22.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ARXS</td><td>Arxis, Inc.</td><td class="k" style="text-align:right">$22.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">MKL</td><td>MARKEL GROUP INC.</td><td class="k" style="text-align:right">$22.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">IFF</td><td>INTERNATIONAL FLAVORS &amp; FRAGRANCES INC</td><td class="k" style="text-align:right">$22.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">L</td><td>LOEWS CORP</td><td class="k" style="text-align:right">$22.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FFIV</td><td>F5, INC.</td><td class="k" style="text-align:right">$22.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">STZ</td><td>CONSTELLATION BRANDS, INC.</td><td class="k" style="text-align:right">$22.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RGLD</td><td>ROYAL GOLD INC</td><td class="k" style="text-align:right">$22.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -582,7 +561,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">RL</td><td>RALPH LAUREN CORP</td><td class="k" style="text-align:right">$21.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BR</td><td>BROADRIDGE FINANCIAL SOLUTIONS, INC.</td><td class="k" style="text-align:right">$20.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">IP</td><td>INTERNATIONAL PAPER CO /NEW/</td><td class="k" style="text-align:right">$20.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">LEN</td><td>LENNAR CORP /NEW/</td><td class="k" style="text-align:right">$20.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ENTG</td><td>ENTEGRIS INC</td><td class="k" style="text-align:right">$20.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LYB</td><td>LyondellBasell Industries N.V.</td><td class="k" style="text-align:right">$20.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TOST</td><td>Toast, Inc.</td><td class="k" style="text-align:right">$20.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -592,6 +570,8 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">SBAC</td><td>SBA COMMUNICATIONS CORP</td><td class="k" style="text-align:right">$20.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WWD</td><td>Woodward, Inc.</td><td class="k" style="text-align:right">$20.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FTAI</td><td>FTAI Aviation Ltd.</td><td class="k" style="text-align:right">$20.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">WES</td><td>Western Midstream Partners, LP</td><td class="k" style="text-align:right">$20.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">FDXF</td><td>FedEx Freight Holding Company, Inc.</td><td class="k" style="text-align:right">$20.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RS</td><td>RELIANCE, INC.</td><td class="k" style="text-align:right">$19.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SSNC</td><td>SS&amp;C Technologies Holdings Inc</td><td class="k" style="text-align:right">$19.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TSN</td><td>TYSON FOODS, INC.</td><td class="k" style="text-align:right">$19.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -625,10 +605,8 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">FLUT</td><td>Flutter Entertainment plc</td><td class="k" style="text-align:right">$17.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LDOS</td><td>Leidos Holdings, Inc.</td><td class="k" style="text-align:right">$17.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LNT</td><td>ALLIANT ENERGY CORP</td><td class="k" style="text-align:right">$17.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">BEN</td><td>FRANKLIN RESOURCES INC</td><td class="k" style="text-align:right">$17.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CHRW</td><td>C. H. ROBINSON WORLDWIDE, INC.</td><td class="k" style="text-align:right">$17.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ROL</td><td>ROLLINS INC</td><td class="k" style="text-align:right">$17.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">CG</td><td>Carlyle Group Inc.</td><td class="k" style="text-align:right">$17.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ASTS</td><td>AST SpaceMobile, Inc.</td><td class="k" style="text-align:right">$17.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">JLL</td><td>JONES LANG LASALLE INC</td><td class="k" style="text-align:right">$17.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BBY</td><td>BEST BUY CO INC</td><td class="k" style="text-align:right">$17.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -644,7 +622,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">WY</td><td>WEYERHAEUSER CO</td><td class="k" style="text-align:right">$17.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">IEX</td><td>IDEX CORP /DE/</td><td class="k" style="text-align:right">$17.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BALL</td><td>BALL Corp</td><td class="k" style="text-align:right">$16.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">PS</td><td>PERSHING SQUARE INC.</td><td class="k" style="text-align:right">$16.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ZBRA</td><td>ZEBRA TECHNOLOGIES CORP</td><td class="k" style="text-align:right">$16.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SITM</td><td>SITIME Corp</td><td class="k" style="text-align:right">$16.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MEDP</td><td>Medpace Holdings, Inc.</td><td class="k" style="text-align:right">$16.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -675,7 +652,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">FIG</td><td>Figma, Inc.</td><td class="k" style="text-align:right">$15.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">YUMC</td><td>Yum China Holdings, Inc.</td><td class="k" style="text-align:right">$15.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ARMK</td><td>Aramark</td><td class="k" style="text-align:right">$15.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">PNFP</td><td>Pinnacle Financial Partners, Inc.</td><td class="k" style="text-align:right">$15.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LAMR</td><td>LAMAR ADVERTISING CO/NEW</td><td class="k" style="text-align:right">$15.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HST</td><td>HOST HOTELS &amp; RESORTS, INC.</td><td class="k" style="text-align:right">$15.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MAA</td><td>MID AMERICA APARTMENT COMMUNITIES INC.</td><td class="k" style="text-align:right">$15.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -688,15 +664,12 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">SWK</td><td>STANLEY BLACK &amp; DECKER, INC.</td><td class="k" style="text-align:right">$14.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">UNM</td><td>Unum Group</td><td class="k" style="text-align:right">$14.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WMG</td><td>Warner Music Group Corp.</td><td class="k" style="text-align:right">$14.7B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
-<tr><td class="k">CRBG</td><td>Corebridge Financial, Inc.</td><td class="k" style="text-align:right">$14.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">IVZ</td><td>Invesco Ltd.</td><td class="k" style="text-align:right">$14.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EG</td><td>EVEREST GROUP, LTD.</td><td class="k" style="text-align:right">$14.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DOC</td><td>HEALTHPEAK PROPERTIES, INC.</td><td class="k" style="text-align:right">$14.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MAS</td><td>MASCO CORP /DE/</td><td class="k" style="text-align:right">$14.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">STRL</td><td>STERLING INFRASTRUCTURE, INC.</td><td class="k" style="text-align:right">$14.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RVTY</td><td>REVVITY, INC.</td><td class="k" style="text-align:right">$14.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BMNR</td><td>BITMINE IMMERSION TECHNOLOGIES, INC.</td><td class="k" style="text-align:right">$14.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">ARCC</td><td>ARES CAPITAL CORP</td><td class="k" style="text-align:right">$14.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TXT</td><td>TEXTRON INC</td><td class="k" style="text-align:right">$14.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PAG</td><td>PENSKE AUTOMOTIVE GROUP, INC.</td><td class="k" style="text-align:right">$14.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TRMB</td><td>TRIMBLE INC.</td><td class="k" style="text-align:right">$14.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -705,6 +678,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">CSL</td><td>CARLISLE COMPANIES INC</td><td class="k" style="text-align:right">$14.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SJM</td><td>J M SMUCKER Co</td><td class="k" style="text-align:right">$14.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AIZ</td><td>ASSURANT, INC.</td><td class="k" style="text-align:right">$14.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">SUN</td><td>Sunoco LP</td><td class="k" style="text-align:right">$14.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">QXO</td><td>QXO, Inc.</td><td class="k" style="text-align:right">$14.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LOGI</td><td>LOGITECH INTERNATIONAL S.A.</td><td class="k" style="text-align:right">$14.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BWXT</td><td>BWX Technologies, Inc.</td><td class="k" style="text-align:right">$14.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -714,10 +688,10 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">CACI</td><td>CACI INTERNATIONAL INC /DE/</td><td class="k" style="text-align:right">$13.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">COO</td><td>COOPER COMPANIES, INC.</td><td class="k" style="text-align:right">$13.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">REG</td><td>REGENCY CENTERS CORP</td><td class="k" style="text-align:right">$13.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">RNR</td><td>RENAISSANCERE HOLDINGS LTD</td><td class="k" style="text-align:right">$13.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LULU</td><td>lululemon athletica inc.</td><td class="k" style="text-align:right">$13.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EQH</td><td>Equitable Holdings, Inc.</td><td class="k" style="text-align:right">$13.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HL</td><td>HECLA MINING CO/DE/</td><td class="k" style="text-align:right">$13.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">ERIE</td><td>ERIE INDEMNITY CO</td><td class="k" style="text-align:right">$13.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RPM</td><td>RPM INTERNATIONAL INC/DE/</td><td class="k" style="text-align:right">$13.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LII</td><td>LENNOX INTERNATIONAL INC</td><td class="k" style="text-align:right">$13.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SGI</td><td>SOMNIGROUP INTERNATIONAL INC.</td><td class="k" style="text-align:right">$13.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -726,10 +700,8 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">TKO</td><td>TKO Group Holdings, Inc.</td><td class="k" style="text-align:right">$13.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EXEL</td><td>EXELIXIS, INC.</td><td class="k" style="text-align:right">$13.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AVY</td><td>Avery Dennison Corp</td><td class="k" style="text-align:right">$13.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">SEIC</td><td>SEI INVESTMENTS CO</td><td class="k" style="text-align:right">$13.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ALLE</td><td>Allegion plc</td><td class="k" style="text-align:right">$13.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FIVE</td><td>FIVE BELOW, INC</td><td class="k" style="text-align:right">$13.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">CNA</td><td>CNA FINANCIAL CORP</td><td class="k" style="text-align:right">$13.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">UHAL</td><td>U-Haul Holding Co /NV/</td><td class="k" style="text-align:right">$13.3B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">HAS</td><td>HASBRO, INC.</td><td class="k" style="text-align:right">$13.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AA</td><td>Alcoa Corp</td><td class="k" style="text-align:right">$13.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -750,7 +722,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">GGG</td><td>GRACO INC</td><td class="k" style="text-align:right">$12.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ALLY</td><td>Ally Financial Inc.</td><td class="k" style="text-align:right">$12.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WSO</td><td>WATSCO INC</td><td class="k" style="text-align:right">$12.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">FNF</td><td>Fidelity National Financial, Inc.</td><td class="k" style="text-align:right">$12.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PEN</td><td>Penumbra Inc</td><td class="k" style="text-align:right">$12.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">IREN</td><td>IREN Ltd</td><td class="k" style="text-align:right">$12.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CHYM</td><td>Chime Financial, Inc.</td><td class="k" style="text-align:right">$12.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -768,7 +739,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">CORT</td><td>CORCEPT THERAPEUTICS INC</td><td class="k" style="text-align:right">$12.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CPT</td><td>CAMDEN PROPERTY TRUST</td><td class="k" style="text-align:right">$12.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FMS</td><td>Fresenius Medical Care AG</td><td class="k" style="text-align:right">$12.3B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
-<tr><td class="k">SF</td><td>STIFEL FINANCIAL CORP</td><td class="k" style="text-align:right">$12.3B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">SMTC</td><td>SEMTECH CORP</td><td class="k" style="text-align:right">$12.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">JEF</td><td>Jefferies Financial Group Inc.</td><td class="k" style="text-align:right">$12.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WTS</td><td>WATTS WATER TECHNOLOGIES INC</td><td class="k" style="text-align:right">$12.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -786,7 +756,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">DECK</td><td>DECKERS OUTDOOR CORP</td><td class="k" style="text-align:right">$12.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">UDR</td><td>UDR, Inc.</td><td class="k" style="text-align:right">$11.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EHC</td><td>Encompass Health Corp</td><td class="k" style="text-align:right">$11.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">AFG</td><td>AMERICAN FINANCIAL GROUP INC</td><td class="k" style="text-align:right">$11.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AMKR</td><td>AMKOR TECHNOLOGY, INC.</td><td class="k" style="text-align:right">$11.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HRL</td><td>HORMEL FOODS CORP /DE/</td><td class="k" style="text-align:right">$11.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MOG-A</td><td>MOOG INC.</td><td class="k" style="text-align:right">$11.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -796,7 +765,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">CART</td><td>Maplebear Inc.</td><td class="k" style="text-align:right">$11.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BTSG</td><td>BrightSpring Health Services, Inc.</td><td class="k" style="text-align:right">$11.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AUR</td><td>Aurora Innovation, Inc.</td><td class="k" style="text-align:right">$11.7B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
-<tr><td class="k">FHN</td><td>FIRST HORIZON CORP</td><td class="k" style="text-align:right">$11.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WTRG</td><td>Essential Utilities, Inc.</td><td class="k" style="text-align:right">$11.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HII</td><td>HUNTINGTON INGALLS INDUSTRIES, INC.</td><td class="k" style="text-align:right">$11.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DPZ</td><td>DOMINOS PIZZA INC</td><td class="k" style="text-align:right">$11.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -837,17 +805,16 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">AXSM</td><td>Axsome Therapeutics, Inc.</td><td class="k" style="text-align:right">$10.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">KRYS</td><td>Krystal Biotech, Inc.</td><td class="k" style="text-align:right">$10.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SANM</td><td>SANMINA CORP</td><td class="k" style="text-align:right">$10.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">GBTC</td><td>Grayscale Bitcoin Trust ETF</td><td class="k" style="text-align:right">$10.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ARW</td><td>ARROW ELECTRONICS, INC.</td><td class="k" style="text-align:right">$10.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BIO</td><td>BIO-RAD LABORATORIES, INC.</td><td class="k" style="text-align:right">$10.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WMS</td><td>ADVANCED DRAINAGE SYSTEMS, INC.</td><td class="k" style="text-align:right">$10.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WTFC</td><td>WINTRUST FINANCIAL CORP</td><td class="k" style="text-align:right">$10.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LFUS</td><td>LITTELFUSE INC /DE</td><td class="k" style="text-align:right">$10.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DRS</td><td>Leonardo DRS, Inc.</td><td class="k" style="text-align:right">$10.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">SSB</td><td>SouthState Bank Corp</td><td class="k" style="text-align:right">$10.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">APGE</td><td>Apogee Therapeutics, Inc.</td><td class="k" style="text-align:right">$10.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FLS</td><td>FLOWSERVE CORP</td><td class="k" style="text-align:right">$10.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CGNX</td><td>COGNEX CORP</td><td class="k" style="text-align:right">$10.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">ORI</td><td>OLD REPUBLIC INTERNATIONAL CORP</td><td class="k" style="text-align:right">$10.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DAR</td><td>DARLING INGREDIENTS INC.</td><td class="k" style="text-align:right">$10.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">IONS</td><td>IONIS PHARMACEUTICALS INC</td><td class="k" style="text-align:right">$10.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FRT</td><td>FEDERAL REALTY INVESTMENT TRUST</td><td class="k" style="text-align:right">$10.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -863,11 +830,10 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">SPXC</td><td>SPX Technologies, Inc.</td><td class="k" style="text-align:right">$10.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RGEN</td><td>REPLIGEN CORP</td><td class="k" style="text-align:right">$9.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SWKS</td><td>SKYWORKS SOLUTIONS, INC.</td><td class="k" style="text-align:right">$9.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">ZION</td><td>ZIONS BANCORPORATION, NATIONAL ASSOCIATION /UT/</td><td class="k" style="text-align:right">$9.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">ONB</td><td>OLD NATIONAL BANCORP /IN/</td><td class="k" style="text-align:right">$9.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EAT</td><td>BRINKER INTERNATIONAL, INC</td><td class="k" style="text-align:right">$9.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AVTR</td><td>Avantor, Inc.</td><td class="k" style="text-align:right">$9.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PNR</td><td>PENTAIR plc</td><td class="k" style="text-align:right">$9.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">FRO</td><td>Frontline plc</td><td class="k" style="text-align:right">$9.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">KYMR</td><td>Kymera Therapeutics, Inc.</td><td class="k" style="text-align:right">$9.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WYNN</td><td>WYNN RESORTS LTD</td><td class="k" style="text-align:right">$9.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HUT</td><td>Hut 8 Corp.</td><td class="k" style="text-align:right">$9.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -879,7 +845,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">WLK</td><td>WESTLAKE CORP</td><td class="k" style="text-align:right">$9.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PRAX</td><td>Praxis Precision Medicines, Inc.</td><td class="k" style="text-align:right">$9.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SIRI</td><td>SIRIUS XM HOLDINGS INC.</td><td class="k" style="text-align:right">$9.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">AMG</td><td>AFFILIATED MANAGERS GROUP, INC.</td><td class="k" style="text-align:right">$9.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MTCH</td><td>Match Group, Inc.</td><td class="k" style="text-align:right">$9.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TTAN</td><td>ServiceTitan, Inc.</td><td class="k" style="text-align:right">$9.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CHWY</td><td>Chewy, Inc.</td><td class="k" style="text-align:right">$9.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -904,8 +869,9 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">CTRE</td><td>CareTrust REIT, Inc.</td><td class="k" style="text-align:right">$9.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VMI</td><td>VALMONT INDUSTRIES INC</td><td class="k" style="text-align:right">$9.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LLYVA</td><td>Liberty Live Holdings, Inc.</td><td class="k" style="text-align:right">$9.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">SNAP</td><td>Snap Inc</td><td class="k" style="text-align:right">$9.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">EAI</td><td>ENTERGY ARKANSAS, LLC</td><td class="k" style="text-align:right">$9.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ADC</td><td>AGREE REALTY CORP</td><td class="k" style="text-align:right">$9.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">JXN</td><td>Jackson Financial Inc.</td><td class="k" style="text-align:right">$9.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BAH</td><td>Booz Allen Hamilton Holding Corp</td><td class="k" style="text-align:right">$9.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AAL</td><td>American Airlines Group Inc.</td><td class="k" style="text-align:right">$9.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AAOI</td><td>APPLIED OPTOELECTRONICS, INC.</td><td class="k" style="text-align:right">$9.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -929,7 +895,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">SM</td><td>SM Energy Co</td><td class="k" style="text-align:right">$8.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BRKR</td><td>BRUKER CORP</td><td class="k" style="text-align:right">$8.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PB</td><td>PROSPERITY BANCSHARES INC</td><td class="k" style="text-align:right">$8.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">KNSL</td><td>Kinsale Capital Group, Inc.</td><td class="k" style="text-align:right">$8.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VICR</td><td>VICOR CORP</td><td class="k" style="text-align:right">$8.7B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">IDCC</td><td>InterDigital, Inc.</td><td class="k" style="text-align:right">$8.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SFD</td><td>SMITHFIELD FOODS INC</td><td class="k" style="text-align:right">$8.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -995,7 +960,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">WULF</td><td>TERAWULF INC.</td><td class="k" style="text-align:right">$7.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NCLH</td><td>Norwegian Cruise Line Holdings Ltd.</td><td class="k" style="text-align:right">$7.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SSRM</td><td>SSR MINING INC.</td><td class="k" style="text-align:right">$7.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">FAF</td><td>First American Financial Corp</td><td class="k" style="text-align:right">$7.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SFM</td><td>Sprouts Farmers Market, Inc.</td><td class="k" style="text-align:right">$7.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GTLB</td><td>Gitlab Inc.</td><td class="k" style="text-align:right">$7.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LW</td><td>Lamb Weston Holdings, Inc.</td><td class="k" style="text-align:right">$7.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1118,8 +1082,8 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">KRMN</td><td>Karman Holdings Inc.</td><td class="k" style="text-align:right">$6.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SNDR</td><td>Schneider National, Inc.</td><td class="k" style="text-align:right">$6.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ORKA</td><td>Oruka Therapeutics, Inc.</td><td class="k" style="text-align:right">$6.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">HWC</td><td>HANCOCK WHITNEY CORP</td><td class="k" style="text-align:right">$6.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">COGT</td><td>Cogent Biosciences, Inc.</td><td class="k" style="text-align:right">$6.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">BEPC</td><td>Brookfield Renewable Corp</td><td class="k" style="text-align:right">$6.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VAL</td><td>Valaris Ltd</td><td class="k" style="text-align:right">$6.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ST</td><td>Sensata Technologies Holding plc</td><td class="k" style="text-align:right">$6.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CWST</td><td>CASELLA WASTE SYSTEMS INC</td><td class="k" style="text-align:right">$6.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1143,12 +1107,10 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">KGS</td><td>Kodiak Gas Services, Inc.</td><td class="k" style="text-align:right">$5.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EXLS</td><td>ExlService Holdings, Inc.</td><td class="k" style="text-align:right">$5.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">XENE</td><td>Xenon Pharmaceuticals Inc.</td><td class="k" style="text-align:right">$5.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">AUB</td><td>Atlantic Union Bankshares Corp</td><td class="k" style="text-align:right">$5.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ENVA</td><td>Enova International, Inc.</td><td class="k" style="text-align:right">$5.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RNG</td><td>RingCentral, Inc.</td><td class="k" style="text-align:right">$5.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">M</td><td>Macy&#x27;s, Inc.</td><td class="k" style="text-align:right">$5.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BYD</td><td>BOYD GAMING CORP</td><td class="k" style="text-align:right">$5.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">BXSL</td><td>Blackstone Secured Lending Fund</td><td class="k" style="text-align:right">$5.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BGC</td><td>BGC Group, Inc.</td><td class="k" style="text-align:right">$5.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DLB</td><td>Dolby Laboratories, Inc.</td><td class="k" style="text-align:right">$5.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SXT</td><td>SENSIENT TECHNOLOGIES CORP</td><td class="k" style="text-align:right">$5.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1158,7 +1120,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">FTDR</td><td>Frontdoor, Inc.</td><td class="k" style="text-align:right">$5.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VSNT</td><td>Versant Media Group, Inc.</td><td class="k" style="text-align:right">$5.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MCY</td><td>MERCURY GENERAL CORP</td><td class="k" style="text-align:right">$5.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">BCPC</td><td>BALCHEM CORP</td><td class="k" style="text-align:right">$5.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">BCPC</td><td>BALCHEM CORP</td><td class="k" style="text-align:right">$5.7B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">NIQ</td><td>NIQ Global Intelligence plc</td><td class="k" style="text-align:right">$5.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MMED</td><td>MiniMed Group, Inc.</td><td class="k" style="text-align:right">$5.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HCC</td><td>WARRIOR MET COAL, INC.</td><td class="k" style="text-align:right">$5.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1166,7 +1128,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">NXST</td><td>NEXSTAR MEDIA GROUP, INC.</td><td class="k" style="text-align:right">$5.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FND</td><td>Floor &amp; Decor Holdings, Inc.</td><td class="k" style="text-align:right">$5.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WH</td><td>WYNDHAM HOTELS &amp; RESORTS, INC.</td><td class="k" style="text-align:right">$5.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">RITM</td><td>Rithm Capital Corp.</td><td class="k" style="text-align:right">$5.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RELY</td><td>Remitly Global, Inc.</td><td class="k" style="text-align:right">$5.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MXL</td><td>MAXLINEAR, INC</td><td class="k" style="text-align:right">$5.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LGND</td><td>LIGAND PHARMACEUTICALS INC</td><td class="k" style="text-align:right">$5.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1174,7 +1135,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">FLG</td><td>FLAGSTAR BANK, NATIONAL ASSOCIATION</td><td class="k" style="text-align:right">$5.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CRSP</td><td>CRISPR Therapeutics AG</td><td class="k" style="text-align:right">$5.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CAKE</td><td>CHEESECAKE FACTORY INC</td><td class="k" style="text-align:right">$5.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">OBDC</td><td>Blue Owl Capital Corp</td><td class="k" style="text-align:right">$5.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AX</td><td>Axos Financial, Inc.</td><td class="k" style="text-align:right">$5.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BKH</td><td>BLACK HILLS CORP /SD/</td><td class="k" style="text-align:right">$5.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PAGP</td><td>PLAINS GP HOLDINGS LP</td><td class="k" style="text-align:right">$5.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1183,7 +1143,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">DFTX</td><td>Definium Therapeutics, Inc.</td><td class="k" style="text-align:right">$5.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SHC</td><td>Sotera Health Co</td><td class="k" style="text-align:right">$5.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AROC</td><td>Archrock, Inc.</td><td class="k" style="text-align:right">$5.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">MAIN</td><td>Main Street Capital CORP</td><td class="k" style="text-align:right">$5.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GXO</td><td>GXO Logistics, Inc.</td><td class="k" style="text-align:right">$5.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GVA</td><td>GRANITE CONSTRUCTION INC</td><td class="k" style="text-align:right">$5.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NJR</td><td>NEW JERSEY RESOURCES CORP</td><td class="k" style="text-align:right">$5.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1198,14 +1157,17 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">CNX</td><td>CNX Resources Corp</td><td class="k" style="text-align:right">$5.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LAUR</td><td>LAUREATE EDUCATION, INC.</td><td class="k" style="text-align:right">$5.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PIPR</td><td>PIPER SANDLER COMPANIES</td><td class="k" style="text-align:right">$5.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">OCTV</td><td>Octave Intelligence plc</td><td class="k" style="text-align:right">$5.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SAIC</td><td>Science Applications International Corp</td><td class="k" style="text-align:right">$5.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MRCY</td><td>MERCURY SYSTEMS INC</td><td class="k" style="text-align:right">$5.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">MWH</td><td>SOLV Energy, Inc.</td><td class="k" style="text-align:right">$5.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CORZ</td><td>Core Scientific, Inc./tx</td><td class="k" style="text-align:right">$5.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">WFG</td><td>WEST FRASER TIMBER CO., LTD</td><td class="k" style="text-align:right">$5.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SBRA</td><td>Sabra Health Care REIT, Inc.</td><td class="k" style="text-align:right">$5.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">CIGI</td><td>Colliers International Group Inc.</td><td class="k" style="text-align:right">$5.3B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">PSN</td><td>PARSONS CORP</td><td class="k" style="text-align:right">$5.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">JMKE</td><td>Jersey Mike&#x27;s Subs Inc.</td><td class="k" style="text-align:right">$5.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PSMT</td><td>PRICESMART INC</td><td class="k" style="text-align:right">$5.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">OTF</td><td>Blue Owl Technology Finance Corp.</td><td class="k" style="text-align:right">$5.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">OUT</td><td>OUTFRONT Media Inc.</td><td class="k" style="text-align:right">$5.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">KRG</td><td>KITE REALTY GROUP TRUST</td><td class="k" style="text-align:right">$5.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RGTI</td><td>Rigetti Computing, Inc.</td><td class="k" style="text-align:right">$5.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1218,10 +1180,10 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">MUR</td><td>MURPHY OIL CORP</td><td class="k" style="text-align:right">$5.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MIDD</td><td>MIDDLEBY Corp</td><td class="k" style="text-align:right">$5.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">UNF</td><td>UNIFIRST CORP</td><td class="k" style="text-align:right">$5.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">WTM</td><td>WHITE MOUNTAINS INSURANCE GROUP LTD</td><td class="k" style="text-align:right">$5.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EBC</td><td>Eastern Bankshares, Inc.</td><td class="k" style="text-align:right">$5.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SPHR</td><td>Sphere Entertainment Co.</td><td class="k" style="text-align:right">$5.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MRP</td><td>Millrose Properties, Inc.</td><td class="k" style="text-align:right">$5.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">HESM</td><td>Hess Midstream LP</td><td class="k" style="text-align:right">$5.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GOLF</td><td>Acushnet Holdings Corp.</td><td class="k" style="text-align:right">$5.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">REYN</td><td>Reynolds Consumer Products Inc.</td><td class="k" style="text-align:right">$5.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MC</td><td>Moelis &amp; Co</td><td class="k" style="text-align:right">$5.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1247,7 +1209,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">IRDM</td><td>Iridium Communications Inc.</td><td class="k" style="text-align:right">$4.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CE</td><td>Celanese Corp</td><td class="k" style="text-align:right">$4.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ENPH</td><td>Enphase Energy, Inc.</td><td class="k" style="text-align:right">$4.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">GHC</td><td>Graham Holdings Co</td><td class="k" style="text-align:right">$4.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TFSL</td><td>TFS Financial CORP</td><td class="k" style="text-align:right">$4.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CHH</td><td>CHOICE HOTELS INTERNATIONAL INC /DE</td><td class="k" style="text-align:right">$4.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SKY</td><td>Champion Homes, Inc.</td><td class="k" style="text-align:right">$4.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1262,7 +1223,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">RDN</td><td>RADIAN GROUP INC</td><td class="k" style="text-align:right">$4.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BOX</td><td>BOX INC</td><td class="k" style="text-align:right">$4.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">KBR</td><td>KBR, INC.</td><td class="k" style="text-align:right">$4.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">FFIN</td><td>FIRST FINANCIAL BANKSHARES INC</td><td class="k" style="text-align:right">$4.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BB</td><td>BLACKBERRY Ltd</td><td class="k" style="text-align:right">$4.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GEF</td><td>GREIF, INC</td><td class="k" style="text-align:right">$4.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GNTX</td><td>GENTEX CORP</td><td class="k" style="text-align:right">$4.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1281,7 +1241,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">VSH</td><td>VISHAY INTERTECHNOLOGY INC</td><td class="k" style="text-align:right">$4.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DYN</td><td>Dyne Therapeutics, Inc.</td><td class="k" style="text-align:right">$4.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PJT</td><td>PJT Partners Inc.</td><td class="k" style="text-align:right">$4.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">TPC</td><td>TUTOR PERINI CORP</td><td class="k" style="text-align:right">$4.7B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
+<tr><td class="k">TPC</td><td>TUTOR PERINI CORP</td><td class="k" style="text-align:right">$4.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TREX</td><td>TREX CO INC</td><td class="k" style="text-align:right">$4.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NP</td><td>Neptune Insurance Holdings Inc.</td><td class="k" style="text-align:right">$4.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EWTX</td><td>Edgewise Therapeutics, Inc.</td><td class="k" style="text-align:right">$4.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1300,11 +1260,11 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">NNI</td><td>NELNET INC</td><td class="k" style="text-align:right">$4.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PAY</td><td>Paymentus Holdings, Inc.</td><td class="k" style="text-align:right">$4.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FULT</td><td>FULTON FINANCIAL CORP</td><td class="k" style="text-align:right">$4.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">GLXY</td><td>Galaxy Digital Inc.</td><td class="k" style="text-align:right">$4.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ONDS</td><td>Ondas Inc.</td><td class="k" style="text-align:right">$4.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BDC</td><td>BELDEN INC.</td><td class="k" style="text-align:right">$4.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EQPT</td><td>EquipmentShare.com Inc</td><td class="k" style="text-align:right">$4.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GFF</td><td>GRIFFON CORP</td><td class="k" style="text-align:right">$4.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">CRGY</td><td>Crescent Energy Co</td><td class="k" style="text-align:right">$4.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">YOU</td><td>Clear Secure, Inc.</td><td class="k" style="text-align:right">$4.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RUM</td><td>RUM Group Inc.</td><td class="k" style="text-align:right">$4.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SLGN</td><td>SILGAN HOLDINGS INC</td><td class="k" style="text-align:right">$4.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1318,6 +1278,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">IBOC</td><td>INTERNATIONAL BANCSHARES CORP</td><td class="k" style="text-align:right">$4.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">USAR</td><td>USA Rare Earth, Inc.</td><td class="k" style="text-align:right">$4.4B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">BLLN</td><td>BillionToOne, Inc.</td><td class="k" style="text-align:right">$4.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">BRC</td><td>BRADY CORP</td><td class="k" style="text-align:right">$4.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ICUI</td><td>ICU MEDICAL INC/DE</td><td class="k" style="text-align:right">$4.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">OLLI</td><td>Ollie&#x27;s Bargain Outlet Holdings, Inc.</td><td class="k" style="text-align:right">$4.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CVCO</td><td>CAVCO INDUSTRIES, INC.</td><td class="k" style="text-align:right">$4.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1341,7 +1302,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">ITRI</td><td>ITRON, INC.</td><td class="k" style="text-align:right">$4.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MIAX</td><td>MIAMI INTERNATIONAL HOLDINGS, INC.</td><td class="k" style="text-align:right">$4.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ITGR</td><td>Integer Holdings Corp</td><td class="k" style="text-align:right">$4.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">CNS</td><td>COHEN &amp; STEERS, INC.</td><td class="k" style="text-align:right">$4.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LAZ</td><td>Lazard, Inc.</td><td class="k" style="text-align:right">$4.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HP</td><td>Helmerich &amp; Payne, Inc.</td><td class="k" style="text-align:right">$4.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GEO</td><td>GEO GROUP INC</td><td class="k" style="text-align:right">$4.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1371,6 +1331,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">LMND</td><td>Lemonade, Inc.</td><td class="k" style="text-align:right">$4.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VVV</td><td>VALVOLINE INC</td><td class="k" style="text-align:right">$4.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AVNT</td><td>AVIENT CORP</td><td class="k" style="text-align:right">$4.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">MANE</td><td>Veradermics, Inc</td><td class="k" style="text-align:right">$4.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CECO</td><td>CECO ENVIRONMENTAL CORP</td><td class="k" style="text-align:right">$4.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SLG</td><td>SL GREEN REALTY CORP</td><td class="k" style="text-align:right">$4.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BFH</td><td>BREAD FINANCIAL HOLDINGS, INC.</td><td class="k" style="text-align:right">$4.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1385,9 +1346,11 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">LOPE</td><td>Grand Canyon Education, Inc.</td><td class="k" style="text-align:right">$3.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PRIM</td><td>Primoris Services Corp</td><td class="k" style="text-align:right">$3.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TNGX</td><td>Tango Therapeutics, Inc.</td><td class="k" style="text-align:right">$3.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">SUNC</td><td>SunocoCorp LLC</td><td class="k" style="text-align:right">$3.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BMI</td><td>BADGER METER INC</td><td class="k" style="text-align:right">$3.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">APLE</td><td>Apple Hospitality REIT, Inc.</td><td class="k" style="text-align:right">$3.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CVBF</td><td>CVB FINANCIAL CORP</td><td class="k" style="text-align:right">$3.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">USAC</td><td>USA Compression Partners, LP</td><td class="k" style="text-align:right">$3.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ATMU</td><td>Atmus Filtration Technologies Inc.</td><td class="k" style="text-align:right">$3.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BRZE</td><td>Braze, Inc.</td><td class="k" style="text-align:right">$3.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">INDB</td><td>INDEPENDENT BANK CORP</td><td class="k" style="text-align:right">$3.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1416,7 +1379,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">WSC</td><td>WillScot Holdings Corp</td><td class="k" style="text-align:right">$3.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VAC</td><td>MARRIOTT VACATIONS WORLDWIDE Corp</td><td class="k" style="text-align:right">$3.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">IPAR</td><td>INTERPARFUMS INC</td><td class="k" style="text-align:right">$3.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">GNW</td><td>GENWORTH FINANCIAL INC</td><td class="k" style="text-align:right">$3.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RNST</td><td>RENASANT CORP</td><td class="k" style="text-align:right">$3.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PTRN</td><td>Pattern Group Inc.</td><td class="k" style="text-align:right">$3.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VKTX</td><td>Viking Therapeutics, Inc.</td><td class="k" style="text-align:right">$3.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1442,9 +1404,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">RXO</td><td>RXO, Inc.</td><td class="k" style="text-align:right">$3.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">OGN</td><td>Organon &amp; Co.</td><td class="k" style="text-align:right">$3.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LRN</td><td>Stride, Inc.</td><td class="k" style="text-align:right">$3.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">NIC</td><td>NICOLET BANKSHARES INC</td><td class="k" style="text-align:right">$3.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">OPCH</td><td>Option Care Health, Inc.</td><td class="k" style="text-align:right">$3.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">PRK</td><td>PARK NATIONAL CORP /OH/</td><td class="k" style="text-align:right">$3.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LXP</td><td>LXP Industrial Trust</td><td class="k" style="text-align:right">$3.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BATRA</td><td>Atlanta Braves Holdings, Inc.</td><td class="k" style="text-align:right">$3.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GRAL</td><td>GRAIL, Inc.</td><td class="k" style="text-align:right">$3.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1487,8 +1447,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">AAMI</td><td>Acadian Asset Management Inc.</td><td class="k" style="text-align:right">$3.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PLSE</td><td>PULSE BIOSCIENCES, INC.</td><td class="k" style="text-align:right">$3.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LION</td><td>Lionsgate Studios Corp.</td><td class="k" style="text-align:right">$3.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">FSK</td><td>FS KKR Capital Corp</td><td class="k" style="text-align:right">$3.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">GBDC</td><td>GOLUB CAPITAL BDC, Inc.</td><td class="k" style="text-align:right">$3.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">XXI</td><td>Twenty One Capital, Inc.</td><td class="k" style="text-align:right">$3.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">QURE</td><td>uniQure N.V.</td><td class="k" style="text-align:right">$3.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GPCR</td><td>Structure Therapeutics Inc.</td><td class="k" style="text-align:right">$3.4B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">NMIH</td><td>NMI Holdings, Inc.</td><td class="k" style="text-align:right">$3.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1501,15 +1460,14 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">AGYS</td><td>AGILYSYS INC</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CBU</td><td>COMMUNITY FINANCIAL SYSTEM, INC.</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AGO</td><td>ASSURED GUARANTY LTD</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">BTE</td><td>BAYTEX ENERGY CORP.</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CWK</td><td>Cushman &amp; Wakefield Ltd.</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BKU</td><td>BankUnited, Inc.</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">OSIS</td><td>OSI SYSTEMS INC</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SEI</td><td>Solaris Energy Infrastructure, Inc.</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">SFNC</td><td>SIMMONS FIRST NATIONAL CORP</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">HTGC</td><td>Hercules Capital, Inc.</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DAN</td><td>DANA Inc</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CARG</td><td>CarGurus, Inc.</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">ATRO</td><td>ASTRONICS CORP</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">ATRO</td><td>ASTRONICS CORP</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">IPGP</td><td>IPG PHOTONICS CORP</td><td class="k" style="text-align:right">$3.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SHOO</td><td>STEVEN MADDEN, LTD.</td><td class="k" style="text-align:right">$3.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TNET</td><td>TRINET GROUP, INC.</td><td class="k" style="text-align:right">$3.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1522,6 +1480,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">CPK</td><td>CHESAPEAKE UTILITIES CORP</td><td class="k" style="text-align:right">$3.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">OPEN</td><td>Opendoor Technologies Inc.</td><td class="k" style="text-align:right">$3.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PK</td><td>Park Hotels &amp; Resorts Inc.</td><td class="k" style="text-align:right">$3.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">DKL</td><td>Delek Logistics Partners, LP</td><td class="k" style="text-align:right">$3.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ATKR</td><td>Atkore Inc.</td><td class="k" style="text-align:right">$3.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SOUN</td><td>SOUNDHOUND AI, INC.</td><td class="k" style="text-align:right">$3.2B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">AVA</td><td>AVISTA CORP</td><td class="k" style="text-align:right">$3.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1567,7 +1526,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">CLSK</td><td>CLEANSPARK, INC.</td><td class="k" style="text-align:right">$3.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BELFA</td><td>BEL FUSE INC /NJ</td><td class="k" style="text-align:right">$3.0B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">ARQT</td><td>Arcutis Biotherapeutics, Inc.</td><td class="k" style="text-align:right">$3.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">DBRG</td><td>DigitalBridge Group, Inc.</td><td class="k" style="text-align:right">$3.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">REZI</td><td>RESIDEO TECHNOLOGIES, INC.</td><td class="k" style="text-align:right">$3.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SDRL</td><td>SEADRILL Ltd</td><td class="k" style="text-align:right">$3.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BWIN</td><td>Baldwin Insurance Group, Inc.</td><td class="k" style="text-align:right">$3.0B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
@@ -1588,6 +1546,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">FBK</td><td>FB Financial Corp</td><td class="k" style="text-align:right">$2.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CXT</td><td>Crane NXT, Co.</td><td class="k" style="text-align:right">$2.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DXPE</td><td>DXP ENTERPRISES INC</td><td class="k" style="text-align:right">$2.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">INFQ</td><td>Infleqtion, Inc.</td><td class="k" style="text-align:right">$2.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DNOW</td><td>DNOW Inc.</td><td class="k" style="text-align:right">$2.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">POWI</td><td>POWER INTEGRATIONS INC</td><td class="k" style="text-align:right">$2.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DGII</td><td>DIGI INTERNATIONAL INC</td><td class="k" style="text-align:right">$2.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1647,7 +1606,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">BKV</td><td>BKV Corp</td><td class="k" style="text-align:right">$2.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FBNC</td><td>FIRST BANCORP /NC/</td><td class="k" style="text-align:right">$2.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AEHR</td><td>AEHR TEST SYSTEMS</td><td class="k" style="text-align:right">$2.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">FRME</td><td>FIRST MERCHANTS CORP</td><td class="k" style="text-align:right">$2.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BBT</td><td>Beacon Financial Corp</td><td class="k" style="text-align:right">$2.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NWL</td><td>NEWELL BRANDS INC.</td><td class="k" style="text-align:right">$2.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EEFT</td><td>EURONET WORLDWIDE, INC.</td><td class="k" style="text-align:right">$2.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1686,9 +1644,11 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">SYBT</td><td>Stock Yards Bancorp, Inc.</td><td class="k" style="text-align:right">$2.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LASR</td><td>NLIGHT, INC.</td><td class="k" style="text-align:right">$2.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NKTR</td><td>NEKTAR THERAPEUTICS</td><td class="k" style="text-align:right">$2.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">LB</td><td>LandBridge Co LLC</td><td class="k" style="text-align:right">$2.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ATRC</td><td>AtriCure, Inc.</td><td class="k" style="text-align:right">$2.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LUNR</td><td>Intuitive Machines, Inc.</td><td class="k" style="text-align:right">$2.5B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">VERA</td><td>Vera Therapeutics, Inc.</td><td class="k" style="text-align:right">$2.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">LIFE</td><td>Ethos Technologies Inc.</td><td class="k" style="text-align:right">$2.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MBIN</td><td>Merchants Bancorp</td><td class="k" style="text-align:right">$2.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MPT</td><td>MEDICAL PROPERTIES TRUST INC</td><td class="k" style="text-align:right">$2.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VVX</td><td>V2X, Inc.</td><td class="k" style="text-align:right">$2.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1727,7 +1687,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">ARR</td><td>Armour Residential REIT, Inc.</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VERX</td><td>Vertex, Inc.</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">WERN</td><td>WERNER ENTERPRISES INC</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">EFSC</td><td>ENTERPRISE FINANCIAL SERVICES CORP</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">PURR</td><td>Hyperliquid Strategies Inc</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RAMP</td><td>LiveRamp Holdings, Inc.</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AADX</td><td>Applied Aerospace &amp; Defense, Inc.</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DBD</td><td>DIEBOLD NIXDORF, Inc</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1739,11 +1699,11 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">COHU</td><td>COHU INC</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">STDN</td><td>Standard Nuclear, Inc.</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MLYS</td><td>Mineralys Therapeutics, Inc.</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">BOBS</td><td>Bob&#x27;s Discount Furniture, Inc.</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WU</td><td>Western Union CO</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">KMT</td><td>KENNAMETAL INC</td><td class="k" style="text-align:right">$2.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NGL</td><td>NGL Energy Partners LP</td><td class="k" style="text-align:right">$2.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CLOV</td><td>CLOVER HEALTH INVESTMENTS, CORP. /DE</td><td class="k" style="text-align:right">$2.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">NWBI</td><td>Northwest Bancshares, Inc.</td><td class="k" style="text-align:right">$2.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BFLY</td><td>Butterfly Network, Inc.</td><td class="k" style="text-align:right">$2.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MTX</td><td>MINERALS TECHNOLOGIES INC</td><td class="k" style="text-align:right">$2.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ROG</td><td>ROGERS CORP</td><td class="k" style="text-align:right">$2.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1753,7 +1713,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">XRAY</td><td>DENTSPLY SIRONA Inc.</td><td class="k" style="text-align:right">$2.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">OFG</td><td>OFG BANCORP</td><td class="k" style="text-align:right">$2.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BLKB</td><td>BLACKBAUD INC</td><td class="k" style="text-align:right">$2.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">HTH</td><td>Hilltop Holdings Inc.</td><td class="k" style="text-align:right">$2.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SRPT</td><td>Sarepta Therapeutics, Inc.</td><td class="k" style="text-align:right">$2.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MCRI</td><td>MONARCH CASINO &amp; RESORT INC</td><td class="k" style="text-align:right">$2.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ANDE</td><td>Andersons, Inc.</td><td class="k" style="text-align:right">$2.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1775,7 +1734,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">GNL</td><td>Global Net Lease, Inc.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MFP</td><td>Midera Food Processing, Inc.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RUN</td><td>Sunrun Inc.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">FCF</td><td>FIRST COMMONWEALTH FINANCIAL CORP /PA/</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SHO</td><td>Sunstone Hotel Investors, Inc.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">INVX</td><td>Innovex International, Inc.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ESTA</td><td>ESTABLISHMENT LABS HOLDINGS INC.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1787,6 +1745,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">CTOS</td><td>Custom Truck One Source, Inc.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VOYG</td><td>Voyager Technologies, Inc./TX</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ADMA</td><td>ADMA BIOLOGICS, INC.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">MNR</td><td>MACH NATURAL RESOURCES LP</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PEB</td><td>Pebblebrook Hotel Trust</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TIC</td><td>TIC Solutions, Inc.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NWN</td><td>Northwest Natural Holding Co</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1796,8 +1755,10 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">ICHR</td><td>ICHOR HOLDINGS, LTD.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NVCR</td><td>NovoCure Ltd</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DV</td><td>DoubleVerify Holdings, Inc.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">TOP</td><td>TOP Financial Group Ltd</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">HAPN</td><td>Happen, Inc.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DRVN</td><td>Driven Brands Holdings Inc.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">ETH</td><td>Grayscale Ethereum Staking Mini ETF</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CTRI</td><td>Centuri Holdings, Inc.</td><td class="k" style="text-align:right">$2.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NSP</td><td>INSPERITY, INC.</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">STOK</td><td>Stoke Therapeutics, Inc.</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1815,7 +1776,9 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">BXDC</td><td>Blackstone Digital Infrastructure Trust Inc.</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PGNY</td><td>Progyny, Inc.</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AGIO</td><td>AGIOS PHARMACEUTICALS, INC.</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">KEEL</td><td>Keel Infrastructure Corp.</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">KSS</td><td>KOHLS Corp</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">XPRO</td><td>Expro Ltd</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PLPC</td><td>PREFORMED LINE PRODUCTS CO</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PRCH</td><td>Porch Group, Inc.</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LCID</td><td>Lucid Group, Inc.</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1823,6 +1786,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">HE</td><td>HAWAIIAN ELECTRIC INDUSTRIES INC</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GENB</td><td>Generate Biomedicines, Inc.</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CCS</td><td>Century Communities, Inc.</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">GEL</td><td>GENESIS ENERGY LP</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">NEXT</td><td>NextDecade Corp</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">OLN</td><td>OLIN Corp</td><td class="k" style="text-align:right">$2.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ASST</td><td>Strive, Inc.</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1840,20 +1804,20 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">HAWK</td><td>HawkEye 360, Inc.</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PDFS</td><td>PDF SOLUTIONS INC</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GCT</td><td>GigaCloud Technology Inc</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">NUV</td><td>NUVEEN MUNICIPAL VALUE FUND INC</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">IMCR</td><td>Immunocore Holdings plc</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SAM</td><td>BOSTON BEER CO INC</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ASTH</td><td>Astrana Health, Inc.</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TSHA</td><td>Taysha Gene Therapies, Inc.</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">STRA</td><td>Strategic Education, Inc.</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BLBD</td><td>Blue Bird Corp</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">GABC</td><td>GERMAN AMERICAN BANCORP, INC.</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SHAZ</td><td>SharonAI Holdings Inc.</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">KARD</td><td>Kardigan, Inc.</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ATEN</td><td>A10 Networks, Inc.</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RBCAA</td><td>REPUBLIC BANCORP INC /KY/</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">ETHE</td><td>Grayscale Ethereum Staking ETF</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LYNX</td><td>Lyntris Inc.</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LOB</td><td>Live Oak Bancshares, Inc.</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">DBC</td><td>Invesco DB Commodity Index Tracking Fund</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DHC</td><td>DIVERSIFIED HEALTHCARE TRUST</td><td class="k" style="text-align:right">$1.9B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TH</td><td>Target Hospitality Corp.</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">QUBT</td><td>Quantum Computing Inc.</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1884,7 +1848,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">DMRA</td><td>Damora Therapeutics, Inc.</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FTRE</td><td>Fortrea Holdings Inc.</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DCOM</td><td>Dime Commercial Bancshares, Inc. /NY/</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">TSLX</td><td>Sixth Street Specialty Lending, Inc.</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AMPL</td><td>Amplitude, Inc.</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">IE</td><td>Ivanhoe Electric Inc.</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SBET</td><td>Sharplink, Inc.</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1894,7 +1857,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">TGLS</td><td>Tecnoglass Holdings Inc.</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WMK</td><td>WEIS MARKETS INC</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FSUN</td><td>FIRSTSUN CAPITAL BANCORP</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
-<tr><td class="k">TRIN</td><td>Trinity Capital Inc.</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MBC</td><td>MasterBrand, Inc.</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">STBA</td><td>S&amp;T BANCORP INC</td><td class="k" style="text-align:right">$1.8B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GLOB</td><td>Globant S.A.</td><td class="k" style="text-align:right">$1.7B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1934,7 +1896,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">PLAB</td><td>PHOTRONICS INC</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RVLV</td><td>Revolve Group, Inc.</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">EVCM</td><td>EverCommerce Inc.</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">CSWC</td><td>CAPITAL SOUTHWEST CORP</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SVV</td><td>Savers Value Village, Inc.</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ICFI</td><td>ICF International, Inc.</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CTS</td><td>CTS CORP</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1946,6 +1907,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">ALNT</td><td>ALLIENT INC</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BAND</td><td>Bandwidth Inc.</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">WEN</td><td>Wendy&#x27;s Co</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">PBT</td><td>PERMIAN BASIN ROYALTY TRUST</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MLKN</td><td>MILLERKNOLL, INC.</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">IMKTA</td><td>INGLES MARKETS INC</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">FLNC</td><td>Fluence Energy, Inc.</td><td class="k" style="text-align:right">$1.6B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1980,6 +1942,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">TRAX</td><td>First Tracks Biotherapeutics, Inc.</td><td class="k" style="text-align:right">$1.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ABSI</td><td>Absci Corp</td><td class="k" style="text-align:right">$1.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HLX</td><td>HELIX ENERGY SOLUTIONS GROUP INC</td><td class="k" style="text-align:right">$1.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">NRP</td><td>NATURAL RESOURCE PARTNERS LP</td><td class="k" style="text-align:right">$1.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TNDM</td><td>TANDEM DIABETES CARE INC</td><td class="k" style="text-align:right">$1.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TYRA</td><td>Tyra Biosciences, Inc.</td><td class="k" style="text-align:right">$1.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AVBP</td><td>ArriVent BioPharma, Inc.</td><td class="k" style="text-align:right">$1.5B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -1998,6 +1961,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">AMPX</td><td>Amprius Technologies, Inc.</td><td class="k" style="text-align:right">$1.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AZTA</td><td>Azenta, Inc.</td><td class="k" style="text-align:right">$1.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ENOV</td><td>Enovis CORP</td><td class="k" style="text-align:right">$1.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">AKTS</td><td>Aktis Oncology, Inc.</td><td class="k" style="text-align:right">$1.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PEBO</td><td>PEOPLES BANCORP INC</td><td class="k" style="text-align:right">$1.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SCL</td><td>STEPAN CO</td><td class="k" style="text-align:right">$1.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GBX</td><td>GREENBRIER COMPANIES INC</td><td class="k" style="text-align:right">$1.4B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -2066,7 +2030,9 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">PCT</td><td>PureCycle Technologies, Inc.</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AORT</td><td>ARTIVION, INC.</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LZB</td><td>LA-Z-BOY INC</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">ESBA</td><td>Empire State Realty OP, L.P.</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HLF</td><td>HERBALIFE LTD.</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">DOLE</td><td>Dole plc</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HBT</td><td>HBT Financial, Inc.</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LQDT</td><td>LIQUIDITY SERVICES INC</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TRUP</td><td>TRUPANION, INC.</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -2080,7 +2046,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">SPTX</td><td>Seaport Therapeutics, Inc.</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RMIX</td><td>Suncrete, Inc.</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">OSBC</td><td>OLD SECOND BANCORP INC</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">MSDL</td><td>Morgan Stanley Direct Lending Fund</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MLTX</td><td>MoonLake Immunotherapeutics</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ASIC</td><td>Ategrity Specialty Insurance Co Holdings</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">OPY</td><td>OPPENHEIMER HOLDINGS INC</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -2088,6 +2053,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">ARHS</td><td>Arhaus, Inc.</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MNKD</td><td>MANNKIND CORP</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">NSSC</td><td>NAPCO SECURITY TECHNOLOGIES, INC</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">DBA</td><td>INVESCO DB AGRICULTURE FUND</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">UTZ</td><td>Utz Brands, Inc.</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">YELP</td><td>YELP INC</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PWP</td><td>Perella Weinberg Partners</td><td class="k" style="text-align:right">$1.3B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -2097,6 +2063,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">CBRL</td><td>CRACKER BARREL OLD COUNTRY STORE, INC</td><td class="k" style="text-align:right">$1.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BRBR</td><td>BELLRING BRANDS, INC.</td><td class="k" style="text-align:right">$1.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MYE</td><td>MYERS INDUSTRIES INC</td><td class="k" style="text-align:right">$1.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">YSS</td><td>York Space Systems Inc.</td><td class="k" style="text-align:right">$1.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CRI</td><td>CARTERS INC</td><td class="k" style="text-align:right">$1.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MMI</td><td>Marcus &amp; Millichap, Inc.</td><td class="k" style="text-align:right">$1.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GTM</td><td>ZoomInfo Technologies Inc.</td><td class="k" style="text-align:right">$1.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -2137,14 +2104,11 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">PDS</td><td>PRECISION DRILLING Corp</td><td class="k" style="text-align:right">$1.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LNN</td><td>LINDSAY CORP</td><td class="k" style="text-align:right">$1.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">TRIP</td><td>TripAdvisor, Inc.</td><td class="k" style="text-align:right">$1.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">PSEC</td><td>PROSPECT CAPITAL CORP</td><td class="k" style="text-align:right">$1.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">FETH</td><td>Fidelity Ethereum Fund</td><td class="k" style="text-align:right">$1.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HZO</td><td>MARINEMAX INC</td><td class="k" style="text-align:right">$1.2B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SCSC</td><td>SCANSOURCE, INC.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">OCSL</td><td>Oaktree Specialty Lending Corp</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">UVSP</td><td>UNIVEST FINANCIAL Corp</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MRVI</td><td>MARAVAI LIFESCIENCES HOLDINGS, INC.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GLUE</td><td>Monte Rosa Therapeutics, Inc.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">GSBD</td><td>Goldman Sachs BDC, Inc.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">UVV</td><td>UNIVERSAL CORP /VA/</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">MCB</td><td>Metropolitan Bank Holding Corp.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">OI</td><td>O-I Glass, Inc. /DE/</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -2153,6 +2117,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">WLFC</td><td>WILLIS LEASE FINANCE CORP</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GNK</td><td>GENCO SHIPPING &amp; TRADING LTD</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AVO</td><td>Mission Produce, Inc.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">LAR</td><td>Lithium Argentina AG</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">UPWK</td><td>UPWORK, INC</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">KURA</td><td>Kura Oncology, Inc.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">VRTS</td><td>VIRTUS INVESTMENT PARTNERS, INC.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -2171,8 +2136,8 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">MSEX</td><td>MIDDLESEX WATER CO</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CRAI</td><td>CRA INTERNATIONAL, INC.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">QNST</td><td>QUINSTREET, INC</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
+<tr><td class="k">SBR</td><td>SABINE ROYALTY TRUST</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AEVA</td><td>Aeva Technologies, Inc.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">NPK</td><td>NATIONAL PRESTO INDUSTRIES INC</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">SAFE</td><td>Safehold Inc.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PD</td><td>PagerDuty, Inc.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DLX</td><td>DELUXE CORP</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -2182,7 +2147,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">CFFN</td><td>Capitol Federal Financial, Inc.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">BW</td><td>Babcock &amp; Wilcox Enterprises, Inc.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">GLIBA</td><td>Liberty Capital Corp/NV</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">MHLA</td><td>Maiden Holdings, Ltd.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">RHLD</td><td>Resolute Holdings Management, Inc.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">PXED</td><td>Phoenix Education Partners, Inc.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">LZ</td><td>LEGALZOOM.COM, INC.</td><td class="k" style="text-align:right">$1.1B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
@@ -2213,7 +2177,6 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">OBX</td><td>Obsidian Therapeutics, Inc.</td><td class="k" style="text-align:right">$1.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">HRTG</td><td>Heritage Insurance Holdings, Inc.</td><td class="k" style="text-align:right">$1.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">ABUS</td><td>Arbutus Biopharma Corp</td><td class="k" style="text-align:right">$1.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
-<tr><td class="k">HBNC</td><td>HORIZON BANCORP INC /IN/</td><td class="k" style="text-align:right">$1.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">AVEX</td><td>AEVEX Corp.</td><td class="k" style="text-align:right">$1.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">CADL</td><td>Candel Therapeutics, Inc.</td><td class="k" style="text-align:right">$1.0B</td><td class="k" style="color:var(--faint)">2026-08-31</td></tr>
 <tr><td class="k">DBVT</td><td>DBV Technologies S.A.</td><td class="k" style="text-align:right">$851M</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
@@ -2227,6 +2190,7 @@ with the ticker; the evidence behind every decision is kept.</p>
 <tr><td class="k">FOA</td><td>Finance of America Companies Inc.</td><td class="k" style="text-align:right">$166M</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">AKTX</td><td>Akari Therapeutics Plc</td><td class="k" style="text-align:right">$21M</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
 <tr><td class="k">CMMB</td><td>Chemomab Therapeutics Ltd.</td><td class="k" style="text-align:right">$20M</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
+<tr><td class="k">SCNI</td><td>Scinai Immunotherapeutics Ltd.</td><td class="k" style="text-align:right">$2M</td><td class="k" style="color:var(--faint)">2026-08-31  ·  flagged</td></tr>
       </tbody>
     </table>
   </section>
