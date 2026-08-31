@@ -71,10 +71,12 @@ def test_non_operating_entities_are_out_by_sic_unless_they_hold_meetings():
 
 
 def test_a_successor_issuer_passes_through_for_the_panel_to_resolve():
-    """ExxonMobil Holdings: 10-Qs and an 8-K12B, EDGAR says no insider
-    transactions exist for this issuer. Its Form 4s live under CIK 34088."""
+    """ExxonMobil Holdings: 10-Qs and an 8-K12B, no insider filings of its
+    own -- a successor DECLARED itself one. Imperial Oil also has zero
+    insider filings, but no 8-K12B: a Canadian MJDS filer whose insiders
+    report at home. Quiet is not the same as succeeded."""
     assert eligibility(_subs(["10-Q", "8-K12B"], sic="2911", insiders=0)) == "successor"
-    # with no 8-K12B and no EDGAR insider flag either, it is just silent
+    assert "no Section 16" in eligibility(_subs(["10-K", "10-Q"], sic="2911", insiders=0))
     assert "no Section 16" in eligibility(_subs(["10-K", "10-Q"], sic="2911", insiders=1))
 
 

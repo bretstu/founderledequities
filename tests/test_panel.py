@@ -530,3 +530,37 @@ def test_index_accepts_the_all_flag():
         except SystemExit:
             pass
     assert "--all" in buf.getvalue()
+
+
+def test_threaded_panel_matches_sequential(tmp_path, monkeypatch):
+    """Four workers, one worker: identical rows in identical order, every
+    company checkpointed exactly once."""
+    import csv as _csv
+    import fle.panel as P
+
+    class M:
+        def __init__(self, cik, tk): self.cik, self.ticker, self.company = cik, tk, tk + " Co"
+    members = [M(i, f"T{i:02}") for i in range(1, 13)]
+
+    class Rec:
+        def __init__(self, cik):
+            self.graded = []
+            self._d = {"cik": cik, "pct": cik * 1.0, "settled": True,
+                       "confidence": "high", "ceo": f"CEO {cik}"}
+        def as_dict(self): return dict(self._d)
+    monkeypatch.setattr(P, "build",
+                        lambda client, cik, **kw: Rec(cik))
+
+    def run(workers, ck):
+        return P.run_panel(None, members, str(ck), workers=workers)
+    seq = run(1, tmp_path / "a.jsonl")
+    par = run(4, tmp_path / "b.jsonl")
+    assert [r["cik"] for r in seq] == [r["cik"] for r in par] == [m.cik for m in members]
+    assert seq == par
+    lines = open(tmp_path / "b.jsonl").read().strip().splitlines()
+    assert len(lines) == 12                       # one checkpoint line each
+    # and a resume run touches nothing: all rows come back marked resumed
+    calls = []
+    monkeypatch.setattr(P, "build", lambda *a, **k: calls.append(1) or Rec(0))
+    again = run(4, tmp_path / "b.jsonl")
+    assert not calls and [r["cik"] for r in again] == [m.cik for m in members]

@@ -188,7 +188,6 @@ def eligibility(subs: dict, name: str = "") -> str:
     finding the certified chief executive among its filers; the universe
     only has to let such a company through instead of reading "no Form 4s"
     as "nothing to measure"."""
-    from .successor import needs_predecessor
     forms = {f.get("form") for f in subs.get("_filings", [])}
     if not (forms & DOMESTIC):
         return "no domestic filings (foreign filer, fund, or shell)"
@@ -209,7 +208,11 @@ def eligibility(subs: dict, name: str = "") -> str:
         if not (rescuable and forms & ANNUAL_MEETING and not self_described):
             return f"{why} (SIC {sic})"
     if not (forms & SECTION16):
-        if needs_predecessor(subs) or "8-K12B" in forms:
+        # ONLY AN 8-K12B IS SUCCESSOR EVIDENCE. "No insider filings" alone
+        # also describes Imperial Oil -- a Canadian MJDS filer whose
+        # insiders report at home and never will file here. A successor
+        # declared itself one; an exempt filer just looks quiet.
+        if "8-K12B" in forms:
             return "successor"
         return "no Section 16 filings"
     return ""
