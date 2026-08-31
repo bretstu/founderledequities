@@ -24,20 +24,69 @@ from .config import SEC_BASE, SEC_DATA, MAX_REQUESTS_PER_SECOND, SETTINGS
 
 
 class RateLimiter:
-    """Simple token-bucket limiter, thread-safe."""
+    """Simple token-bucket limiter, thread-safe -- with a shared circuit
+    breaker for SEC's fair-access block.
+
+    A 429 from SEC is a rolling block that STAYS OPEN while requests keep
+    arriving. Per-thread backoff got that exactly wrong: four workers each
+    retrying every 45-135s kept a probe landing every twenty seconds, the
+    block never closed, and each company burned sixteen minutes on the
+    way to an error. So a block is shared state: the first worker to see
+    it sets a quiet period for ALL of them, they all sleep through it, and
+    exactly one request goes out afterwards to test the door. If that one
+    is refused, the quiet period doubles -- eleven minutes, then twenty-two, then
+    twenty-two -- and only after ~two hours of continuous refusal does anything
+    give up. Silence is what lifts the block; the breaker manufactures it.
+    """
 
     def __init__(self, per_second: float = MAX_REQUESTS_PER_SECOND):
         self._min_interval = 1.0 / per_second
         self._last = 0.0
         self._lock = threading.Lock()
+        self._blocked_until = 0.0
+        self._consecutive = 0
 
     def wait(self) -> None:
+        while True:
+            with self._lock:
+                now = time.monotonic()
+                until = self._blocked_until
+            if until <= now:
+                break
+            time.sleep(min(until - now, 5.0))
         with self._lock:
             now = time.monotonic()
             sleep_for = self._min_interval - (now - self._last)
             if sleep_for > 0:
                 time.sleep(sleep_for)
             self._last = time.monotonic()
+
+    def trip(self, retry_after: float = 0.0) -> float:
+        """Record a refusal; returns the quiet period set (seconds)."""
+        with self._lock:
+            now = time.monotonic()
+            if self._blocked_until > now:
+                return 0.0            # already resting; join the same nap
+            self._consecutive += 1
+            # SEC's rule, in its own words: the block lifts once requests
+            # have stayed below the threshold FOR TEN MINUTES, and any
+            # request during the time-out extends it. So the first rest is
+            # the full ten minutes -- a shorter probe only resets the clock.
+            # Eleven, not ten: the other workers may each have a request
+            # in flight when the breaker trips, and those land inside the
+            # time-out. A minute of margin costs nothing; a probe one second
+            # early resets the entire window.
+            quiet = max(retry_after, min(660.0 * 2 ** (self._consecutive - 1), 1320.0))
+            self._blocked_until = now + quiet
+            return quiet
+
+    def clear(self) -> None:
+        with self._lock:
+            self._consecutive = 0
+
+    @property
+    def exhausted(self) -> bool:
+        return self._consecutive > 6
 
 
 
@@ -105,7 +154,6 @@ class EdgarClient:
 
         last_err: Exception | None = None
         attempt = 0
-        throttled = 0
         while attempt < retries:
             self._limiter.wait()
             try:
@@ -113,28 +161,21 @@ class EdgarClient:
                 if resp.status_code == 404:
                     raise FileNotFoundError(f"404 for {url}")
                 if resp.status_code in (403, 429):
-                    # FAIR-ACCESS BLOCK, NOT A FAILED REQUEST. SEC's
-                    # Archives host blocks an IP for ~10 minutes after
-                    # heavy traffic; 2-4-8 second sleeps against that are
-                    # three knocks on a locked door, and the day this
-                    # shipped, eight companies were recorded as having no
-                    # certification because every fetch inside the block
-                    # "failed". Wait like you mean it -- Retry-After if
-                    # offered, else an escalating minute-scale pause --
-                    # and do not count patience against the retry budget.
-                    throttled += 1
-                    if throttled > 6:
-                        last_err = RuntimeError(f"{resp.status_code} for {url}")
+                    # FAIR-ACCESS BLOCK. Trip the SHARED breaker: every
+                    # worker rests, one request tests the door afterwards.
+                    if self._limiter.exhausted:
+                        last_err = RuntimeError(
+                            f"{resp.status_code} for {url} (SEC block did "
+                            f"not lift in ~an hour of quiet)")
                         break
                     ra = (resp.headers.get("Retry-After") or "").strip()
-                    wait = max(float(ra) if ra.isdigit() else 0.0,
-                               45.0 * throttled)
-                    # say so: a silent wait looks exactly like a hang
-                    print(f"  [sec {resp.status_code}: waiting {wait:.0f}s "
-                          f"({throttled}/6)]", file=sys.stderr, flush=True)
-                    time.sleep(wait)
+                    quiet = self._limiter.trip(float(ra) if ra.isdigit() else 0.0)
+                    if quiet:
+                        print(f"  [sec {resp.status_code}: all workers resting "
+                              f"{quiet/60:.0f} min]", file=sys.stderr, flush=True)
                     continue
                 resp.raise_for_status()
+                self._limiter.clear()
                 text = resp.text
                 if use_cache:
                     # ATOMIC: a cache-warmer and the nightly can fetch the

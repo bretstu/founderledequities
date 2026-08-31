@@ -103,28 +103,35 @@ def test_missing_files_are_survivable(tmp_path):
                            str(tmp_path / "also-nope.csv")) == 0
 
 
-def test_a_throttled_client_waits_and_then_succeeds(tmp_path, monkeypatch):
-    """429 gets minute-scale patience (Retry-After honored), not 2-second
-    knocks -- and the block does not consume the retry budget."""
+def test_a_block_rests_every_worker_and_probes_once(tmp_path, monkeypatch):
+    """A 429 trips a SHARED breaker: the quiet period applies to all
+    threads, one request tests the door afterwards, a refusal doubles the
+    rest, and a success resets the escalation."""
     import fle.edgar as E
     naps = []
-    monkeypatch.setattr(E.time, "sleep", lambda s: naps.append(s))
+    clock = [1000.0]
+    monkeypatch.setattr(E.time, "sleep", lambda s: (naps.append(s), clock.__setitem__(0, clock[0] + s)))
+    monkeypatch.setattr(E.time, "monotonic", lambda: clock[0])
 
     class Resp:
         def __init__(self, code, body="ok"):
-            self.status_code, self.text, self.headers = code, body, {"Retry-After": "90"}
+            self.status_code, self.text, self.headers = code, body, {}
         def raise_for_status(self): pass
 
     class Sess:
-        def __init__(self): self.calls = 0
+        def __init__(self, refusals): self.calls, self.refusals = 0, refusals
         def get(self, url, timeout=30):
             self.calls += 1
-            return Resp(429) if self.calls <= 2 else Resp(200, "the body")
+            return Resp(429) if self.calls <= self.refusals else Resp(200, "body")
     c = E.EdgarClient(cache_dir=str(tmp_path))
-    c._session = Sess()
+    c._session = Sess(refusals=2)
     c._limiter._min_interval = 0
-    assert c.get("https://www.sec.gov/x", use_cache=False) == "the body"
-    assert len(naps) == 2 and all(n >= 90 for n in naps)
+    assert c.get("https://www.sec.gov/x", use_cache=False) == "body"
+    # two refusals -> rests of 10 min then 20 min, then success clears
+    assert sum(naps) >= 660 + 1320 and c._session.calls == 3
+    assert c._limiter._consecutive == 0
+    # a second worker arriving mid-rest joins the same nap (trip returns 0)
+    c._limiter.trip(); assert c._limiter.trip() == 0.0
 
 
 def test_a_fetch_starved_certification_search_refuses_to_conclude():
