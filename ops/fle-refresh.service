@@ -1,0 +1,19 @@
+[Unit]
+Description=Founder Led Equities nightly rebuild and deploy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# --- edit these three paths/values for the mini PC ---
+User=bretstu
+WorkingDirectory=/home/bretstu/projects/founderledequities
+Environment=FLE_USER_AGENT=FounderLedEquities bretstu corrections@founderledequities.com
+# a real contact address in the user agent is what keeps EDGAR from 403ing you
+Environment=FLE_DEPLOY_CMD=/home/bretstu/projects/founderledequities/ops/deploy.sh
+# optional: a healthchecks.io (or similar) ping URL; pages you when a night fails
+#Environment=FLE_HEARTBEAT_URL=https://hc-ping.com/your-uuid-here
+ExecStart=/usr/bin/python3 -m fle.cli refresh --dir /home/bretstu/projects/founderledequities
+# refuse-to-publish (exit 2) and failures both count as failed for monitoring
+SuccessExitStatus=0
+TimeoutStartSec=4h

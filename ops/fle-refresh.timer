@@ -1,0 +1,13 @@
+[Unit]
+Description=Run the Founder Led Equities rebuild nightly
+
+[Timer]
+# Form 4s land on EDGAR until ~22:00 ET; 02:30 ET catches the full day.
+# systemd reads this in the machine's local time -- adjust if the box
+# is not on Eastern (07:30 UTC in winter, 06:30 UTC in summer).
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

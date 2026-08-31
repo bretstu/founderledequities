@@ -1,0 +1,291 @@
+"""Shares outstanding at any past date, and the classes in force then.
+
+A percentage needs a denominator FROM THE SAME MOMENT. Tesla went from 3.33
+billion shares to 3.95 billion in ten years; dividing a 2016 holding by
+today's count understates it by a sixth, and the error grows the further back
+you go.
+
+The same is true of the class list. Today's cover page names today's classes.
+Block's "Common Stock" WAS the class in 2019; Dell's "Series A" was Class A
+before the 2018 rename. A series keyed on today's classes loses both.
+
+WHERE IT COMES FROM.
+
+`dei:EntityCommonStockSharesOutstanding` is tagged on every cover page, and
+the XBRL concept API returns every value ever filed -- not just the newest.
+Each carries an `end` date, a `form` and an accession, so the series is free
+once the request is made.
+
+For a multi-class filer the API holds nothing un-dimensioned and the cover
+page must be read instead, once per quarter. That is the expensive path, and
+it is why `classes_by_year` reads one filing a year rather than one a
+quarter: class structures change rarely, share counts change constantly.
+
+WHERE IT STOPS.
+
+Cover-page tagging begins around 2009 and is reliable from about 2011. Before
+that there is no machine-readable denominator, so a series cannot honestly
+start earlier. Ten years is comfortably inside that.
+"""
+from __future__ import annotations
+
+import statistics
+from dataclasses import dataclass, field
+
+from .outstanding import CONCEPT, class_names, _facts_from_document
+
+
+@dataclass
+class Point:
+    """The denominator as one filing reported it."""
+    as_of: str
+    shares: float
+    form: str = ""
+    accession: str = ""
+
+
+@dataclass
+class Series:
+    points: list = field(default_factory=list)     # oldest first
+    classes: dict = field(default_factory=dict)    # year -> {member: shares}
+    note: str = ""
+
+    def at(self, when: str) -> Point | None:
+        """The newest cover date at or before `when`.
+
+        Forward-fill, because a denominator holds until the next cover page
+        restates it -- and a filing made in April is measured against the
+        count printed on the March cover, not on one that does not exist yet.
+        """
+        got = None
+        for p in self.points:
+            if p.as_of <= when:
+                got = p
+            else:
+                break
+        return got or (self.points[0] if self.points else None)
+
+    def classes_at(self, when: str) -> dict:
+        """The classes in force in that year, falling back to the nearest."""
+        if not self.classes:
+            return {}
+        year = (when or "")[:4]
+        if year in self.classes:
+            return self.classes[year]
+        years = sorted(self.classes)
+        earlier = [y for y in years if y <= year]
+        return self.classes[earlier[-1]] if earlier else self.classes[years[0]]
+
+    def __bool__(self) -> bool:
+        return bool(self.points)
+
+
+def outstanding_series(client, cik: int, since: str = "") -> Series:
+    """Every cover-page count this company has filed, oldest first."""
+    out = Series()
+    try:
+        data = client.get_json(CONCEPT.format(cik=int(cik)))
+    except Exception:  # noqa: BLE001
+        out.note = "no un-dimensioned cover-page fact; read per filing"
+        return out
+
+    rows = [u for u in data.get("units", {}).get("shares", [])
+            if isinstance(u.get("val"), (int, float)) and u["val"] > 0]
+    if not rows:
+        out.note = "no un-dimensioned cover-page fact; read per filing"
+        return out
+
+    # One cover date can carry several facts -- an amendment restating the
+    # same date, or one fact per class. Keep the newest FILING for each date,
+    # and sum only within that filing.
+    by_date: dict = {}
+    for u in rows:
+        end = u.get("end") or ""
+        if since and end < since:
+            continue
+        by_date.setdefault(end, []).append(u)
+
+    for end, group in sorted(by_date.items()):
+        by_acc: dict = {}
+        for u in group:
+            by_acc.setdefault(u.get("accn") or "", []).append(u)
+        chosen = max(by_acc.items(),
+                     key=lambda kv: max((x.get("filed") or "") for x in kv[1]))[1]
+        out.points.append(Point(
+            as_of=end,
+            shares=sum(float(u["val"]) for u in chosen),
+            form=chosen[0].get("form") or "",
+            accession=chosen[0].get("accn") or ""))
+    reject_outliers(out)
+    return out
+
+
+# A cover page a filer got wrong is still a cover page. Six were found in
+# 500 companies, and every one was read correctly -- the DOCUMENT is wrong:
+#
+#   Smurfit Westrock   100 shares, no scale         (~522,000,000 actual)
+#   Paramount Skydance 1,000, scale="0"             (~1,111,000,000)
+#   ResMed             145,681, decimals="INF"      (~145,723,000)
+#   Chipotle           27,962                       (~27,910,000)
+#   Packaging Corp     89,932,185 with scale="3"    (~94,205,000)
+#   Edison Intl        797,458,179,000,000          (~816,520,000)
+#
+# The last two are the filer misapplying the inline-XBRL scale attribute,
+# which this module applies faithfully; the rest are simply typed wrong.
+# Five rows of 25,028 produced percentages that cannot exist -- Paramount
+# at 7,621,074% and Smurfit at 1,493,878% of their own companies.
+#
+# So the point is DROPPED, never rescaled: guessing that 145,681 "meant"
+# 145,681,000 would invent a number no document states. Dropped, the
+# denominator forward-fills from the previous cover page, which is what
+# `Series.at` does for every filing that does not restate the count.
+OUTLIER_FACTOR = 50.0
+MIN_POINTS_TO_JUDGE = 6
+
+
+def reject_outliers(out: "Series") -> None:
+    """Drop cover-page counts a company's own history contradicts.
+
+    Judged against the MEDIAN, which a handful of absurd values cannot move,
+    and only where there are enough points for a median to mean anything --
+    a company with three cover pages has no basis to call one of them wrong.
+    """
+    good = [p for p in out.points if p.shares > 0]
+    if len(good) < MIN_POINTS_TO_JUDGE:
+        return
+    mid = statistics.median(p.shares for p in good)
+    if mid <= 0:
+        return
+    keep, dropped = [], []
+    for p in out.points:
+        if p.shares > 0 and (p.shares > mid * OUTLIER_FACTOR
+                             or p.shares < mid / OUTLIER_FACTOR):
+            dropped.append(p)
+        else:
+            keep.append(p)
+    if not dropped:
+        return
+    out.points = keep
+    said = "; ".join(f"{p.as_of} {p.shares:,.0f} ({p.form} {p.accession})"
+                     for p in dropped[:4])
+    out.note = ((out.note + " | ") if out.note else "") + (
+        f"dropped {len(dropped)} cover-page count(s) more than "
+        f"{OUTLIER_FACTOR:.0f}x from this company's median of "
+        f"{mid:,.0f}: {said}")
+
+
+PERIODIC = ("10-K", "10-K/A", "10-Q", "10-Q/A", "20-F")
+
+
+def from_cover_pages(client, cik: int, since: str = "",
+                     on_step=None) -> Series:
+    """Read every periodic cover page in the window.
+
+    THE CONCEPT API HAS NOTHING FOR A MULTI-CLASS FILER. It holds only
+    un-dimensioned facts, and a company tagging its count once per class has
+    none -- which is the 404 that sends the panel to the cover page. The
+    series had no such fallback, so Meta, Coinbase and Block came back with
+    no denominator on a single one of their 952 snapshots.
+
+    One pass gives both things the walk needs: the per-class counts, and the
+    class MEMBERS from the same document. Reading them separately meant the
+    class list came back empty for exactly the companies that need it, and
+    Meta's "Clas A Common Stock" fell through to the raw-title fallback --
+    restoring, in the history, the 184,659-share error the panel had fixed.
+
+    Roughly forty documents over ten years. They are cached, so this is paid
+    once per company.
+    """
+    subs = client.submissions(int(cik))
+    filings = [f for f in subs.get("_filings", [])
+               if (f.get("form") or "") in PERIODIC
+               and (not since or (f.get("filingDate") or "") >= since)]
+    filings.sort(key=lambda f: (f.get("filingDate") or ""))
+
+    out = Series()
+    seen_year: dict = {}
+    for n, f in enumerate(filings, 1):
+        if on_step:
+            on_step(n, len(filings))
+        acc = f.get("accessionNumber") or ""
+        try:
+            name = f.get("primaryDocument")
+            if not name:
+                idx = client.filing_index(int(cik), acc)
+                items = idx.get("directory", {}).get("item", [])
+                name = next((i["name"] for i in items
+                             if (i.get("name") or "").lower()
+                             .endswith((".htm", ".html"))), None)
+            if not name:
+                continue
+            raw = client.primary_document(int(cik), acc, name)
+        except Exception:  # noqa: BLE001
+            continue
+
+        facts = _facts_from_document(raw)
+        if not facts:
+            continue
+        names = class_names(raw)
+        per_class = {names.get(ctx, ctx): v for ctx, v in facts.items()}
+        when = f.get("reportDate") or f.get("filingDate") or ""
+        out.points.append(Point(as_of=when, shares=sum(facts.values()),
+                                form=f.get("form") or "", accession=acc))
+        # The class list, keyed by year. A structure changes almost never, so
+        # the first filing of each year settles it.
+        year = (f.get("filingDate") or "")[:4]
+        if year and year not in seen_year and any(
+                m for m in per_class if ":" in str(m)):
+            seen_year[year] = per_class
+    out.points.sort(key=lambda p: p.as_of)
+    # The multi-class path sums several facts per cover page, so a filer's
+    # scale error lands here too -- Edison International's 797 trillion came
+    # through this route.
+    reject_outliers(out)
+    out.classes = seen_year
+    return out
+
+
+def denominator_series(client, cik: int, since: str = "",
+                       on_step=None) -> Series:
+    """The concept API where it works, cover pages where it does not.
+
+    The API returns the whole history in one request, so a filer it covers
+    needs no cover pages for the DENOMINATOR. It still needs a class list --
+    but the API only ever holds un-dimensioned facts, which is what a
+    single-class filer files, so ONE cover page settles it rather than forty.
+    """
+    got = outstanding_series(client, cik, since=since)
+    if not got.points:
+        return from_cover_pages(client, cik, since=since, on_step=on_step)
+
+    # One document, the newest in the window, for the class list alone.
+    one = _newest_cover(client, cik, since)
+    if one is not None and len(one) > 1:
+        # Dimensioned after all: the API's un-dimensioned history is not the
+        # whole company, so fall back and read them all.
+        return from_cover_pages(client, cik, since=since, on_step=on_step)
+    got.classes = {"0000": one} if one else {}
+    return got
+
+
+def _newest_cover(client, cik: int, since: str) -> dict | None:
+    """The class list from the most recent periodic filing, or None."""
+    subs = client.submissions(int(cik))
+    filings = [f for f in subs.get("_filings", [])
+               if (f.get("form") or "") in PERIODIC]
+    filings.sort(key=lambda f: (f.get("filingDate") or ""), reverse=True)
+    for f in filings[:3]:
+        acc = f.get("accessionNumber") or ""
+        try:
+            name = f.get("primaryDocument")
+            if not name:
+                continue
+            raw = client.primary_document(int(cik), acc, name)
+        except Exception:  # noqa: BLE001
+            continue
+        facts = _facts_from_document(raw)
+        if not facts:
+            continue
+        names = class_names(raw)
+        return {names.get(ctx, ctx): v for ctx, v in facts.items()}
+    return None

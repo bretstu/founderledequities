@@ -1,0 +1,102 @@
+"""Holdings a filing reports that the company itself says are not the
+chief executive's.
+
+WHY THIS EXISTS.
+
+Ariel Emanuel's February 2025 Form 4 lists 114 million TKO Class B shares
+held by Endeavor's entities, and in the same footnote disclaims them: he sits
+on Endeavor's governing body, so the rules deem him to share ownership, and
+he says plainly that the shares are not his. TKO's own proxy agrees --
+143,850 Class A, zero Class B, under one per cent.
+
+We read the number and not the sentence beside it, and reported him at
+62.65%: the second largest founder stake in the index, and wrong.
+
+WHY THERE IS NO RULE FOR IT.
+
+Every structured field is identical whether shares are yours or merely
+attributed to you. Musk's trust holds 413 million and it is his; Endeavor's
+entities hold 114 million and it is not. The rows look the same. The only
+difference is a sentence of boilerplate.
+
+Schedule 13D was the last structural idea and it failed on the case it was
+built for -- Emanuel HAS 13Ds for TKO -- while missing Lachlan Murdoch, whose
+Fox stake sits in a family trust that files separately. It flagged the honest
+and cleared the attributed.
+
+WHAT THIS IS INSTEAD.
+
+The same thing S&P Global does, which is what Simply Wall St resells: a
+person reads the filing and records the decision. Smaller, and more honest,
+because the reasoning is written down where it can be checked.
+
+RULES FOR ENTRIES.
+
+  - a source URL is required. Not "we decided" but "the proxy says".
+  - the panel reports every exclusion applied; nothing is silently adjusted.
+  - an entry names ONE class at ONE company. It cannot affect anything else.
+  - it does not expire, because the underlying filing will not change.
+"""
+from __future__ import annotations
+
+import csv
+from dataclasses import dataclass, field
+from pathlib import Path
+
+DEFAULT = "universe/exclusions.csv"
+
+COLUMNS = ["cik", "ticker", "security", "direct", "reason", "source"]
+
+
+@dataclass(frozen=True)
+class Exclusion:
+    cik: str
+    ticker: str
+    security: str                  # the class, as the ledger labels it
+    direct: str = ""               # "D", "I", or blank for both
+    reason: str = ""
+    source: str = ""
+
+    def matches(self, security: str, direct: str) -> bool:
+        if self.security.strip().lower() != (security or "").strip().lower():
+            return False
+        return not self.direct or self.direct.upper() == (direct or "").upper()
+
+
+@dataclass
+class Exclusions:
+    by_cik: dict = field(default_factory=dict)
+    path: str = ""
+
+    def for_issuer(self, cik) -> list:
+        return self.by_cik.get(str(int(cik)), [])
+
+    def __bool__(self) -> bool:
+        return bool(self.by_cik)
+
+
+def read_exclusions(path: str | None = None) -> Exclusions:
+    """Load the list, or an empty one if there is no file."""
+    p = Path(path or DEFAULT)
+    out = Exclusions(path=str(p))
+    if not p.exists():
+        return out
+    with p.open(encoding="utf-8-sig", newline="") as fh:
+        for row in csv.DictReader(fh):
+            cik = (row.get("cik") or "").strip()
+            if not cik.isdigit():
+                continue
+            src = (row.get("source") or "").strip()
+            if not src:
+                # A source is the whole point. An entry without one is a
+                # guess with a CSV around it.
+                raise ValueError(
+                    f"{p}: {row.get('ticker') or cik} has no source URL")
+            out.by_cik.setdefault(str(int(cik)), []).append(Exclusion(
+                cik=str(int(cik)),
+                ticker=(row.get("ticker") or "").strip().upper(),
+                security=(row.get("security") or "").strip(),
+                direct=(row.get("direct") or "").strip().upper(),
+                reason=(row.get("reason") or "").strip(),
+                source=src))
+    return out

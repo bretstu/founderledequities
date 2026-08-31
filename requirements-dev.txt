@@ -1,0 +1,2 @@
+# Development only. The pipeline itself needs nothing here.
+pytest>=8.0
