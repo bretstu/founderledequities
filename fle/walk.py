@@ -66,14 +66,38 @@ def walk_company(job: dict) -> dict:
                            share_classes=out.classes if out.ok else 0,
                            class_members=out.per_class,
                            exclude=excl.for_issuer(cik))
+        walk_cik = cik
         if not led.owner_cik:
-            return {"ticker": tk, "rows": [], "skipped": "no owner matched"}
-        series = denominator_series(client, cik, since=job["since"])
+            # A SUCCESSOR FILES UNDER ITS PREDECESSOR'S CIK -- the same
+            # fallback the panel uses (ownership.build), which the first
+            # version of this worker dropped in the move: ExxonMobil
+            # Holdings walked zero rows while its panel figure was fine.
+            from .successor import find_predecessor
+            pre = find_predecessor(client, cik, cert.name)
+            if not pre.cik:
+                return {"ticker": tk, "rows": [], "skipped": "no owner matched"}
+            walk_cik = pre.cik
+            out_pre = shares_outstanding(client, pre.cik)
+            led = build_ledger(client, pre.cik, owner_name=cert.name,
+                               share_classes=out_pre.classes if out_pre.ok else 0,
+                               class_members=out_pre.per_class,
+                               exclude=excl.for_issuer(pre.cik))
+            if not led.owner_cik:
+                return {"ticker": tk, "rows": [],
+                        "skipped": f"no owner under predecessor {pre.cik} either"}
+        series = denominator_series(client, walk_cik, since=job["since"])
+        if walk_cik != cik:
+            # the record spans both registrants: the predecessor's covers
+            # carry the years before the reorganisation, the successor's
+            # the years after; later years win where both speak
+            newer = denominator_series(client, cik, since=job["since"])
+            for year, members in (newer.classes or {}).items():
+                series.classes[year] = members
         if not series.classes and out.per_class:
             series.classes = {"0000": out.per_class}
         sp = (fetch_splits(client, tk, SETTINGS.polygon_api_key)
               if job.get("splits") else None)
-        hist = build_history(client, cik, led.owner_cik, led.mine,
+        hist = build_history(client, walk_cik, led.owner_cik, led.mine,
                              series=series, splits=sp,
                              exclude=excl.for_issuer(cik), since=job["since"])
         mark_restated(hist.snapshots)

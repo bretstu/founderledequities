@@ -507,7 +507,8 @@ def cmd_panel(args) -> int:
 
     rows = run_panel(client, members, args.checkpoint, redo=args.redo,
                      exclusions=read_exclusions(args.exclusions),
-                     on_row=row_done, on_filing=on_filing)
+                     on_row=row_done, on_filing=on_filing,
+                     workers=max(1, int(getattr(args, "workers", 1) or 1)))
     write_csv(rows, args.out)
     s = summarise(rows)
     print(f"\n  {s['with_a_figure']} of {s['total']} produced a figure"
@@ -688,17 +689,24 @@ def cmd_history(args) -> int:
                             exclusions=args.exclusions,
                             cache_dir=SETTINGS.cache_dir):
             done += 1
-            sys.stdout.write(f"\r  {done}/{len(jobs)} {res['ticker']}  "
-                             f"{'ok' if res.get('rows') else res.get('skipped') or res.get('error','')}"
-                             .ljust(60)[:60])
-            sys.stdout.flush()
             if res.get("rows"):
+                sys.stdout.write(f"\r  {done}/{len(jobs)} {res['ticker']}  ok"
+                                 .ljust(44)[:44])
+                sys.stdout.flush()
                 emit(res["rows"])
                 walked += 1
                 agree, disagree = ((agree + 1, disagree) if res.get("ok")
                                    else (agree, disagree + 1))
-            elif res.get("error"):
-                failed += 1
+            else:
+                # a company that produced nothing says why, on a line that
+                # STAYS -- the first rehearsal printed reasons only on the
+                # transient ticker line and "0 snapshots" arrived unexplained
+                why = (res.get("skipped") or res.get("error")
+                       or "walked but produced no snapshots")
+                print(f"\r  {done}/{len(jobs)} {res['ticker']}  -- {why}"
+                      .ljust(64))
+                if res.get("error"):
+                    failed += 1
     fh.close()
     _clear()
     if args.reuse:
