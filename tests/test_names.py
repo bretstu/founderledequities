@@ -148,3 +148,19 @@ def test_apostrophes_break_three_different_ways():
     assert names_match(cert, "O GRADY MICHAEL G") >= 0.7
     assert names_match(cert, "OGrady Michael G") >= 0.7
     assert names_match(cert, "O'Grady Michael G") >= 0.7
+
+
+def test_a_bare_initial_is_never_a_surname():
+    """WRB, live-site bug: the certification 'W. Robert Berkley' matched
+    GOSSELINK ROBERT W at 1.0 -- surname 'W' -- and an SVP's shares were
+    published under the chief executive's name. The real CEO's EDGAR name
+    is BERKLEY WILLIAM R JR: initial-variant given names, right surname."""
+    from fle.names import names_match
+
+    cert = "W. Robert Berkley"
+    assert names_match(cert, "GOSSELINK ROBERT W") == 0.0
+    assert names_match(cert, "BERKLEY WILLIAM R JR") == 0.75
+    assert names_match(cert, "BERKLEY WILLIAM R") == 0.75
+    # the motivating conventions still work
+    assert names_match("Ron M. Vachris", "Vachris Roland Michael") >= 0.85
+    assert names_match("R. Vachris", "Vachris Roland") >= 0.75

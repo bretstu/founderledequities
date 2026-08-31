@@ -719,6 +719,14 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                 # certification names the person who signs as principal
                 # executive officer, and a trust never does.
                 sc = sc + 1.0 if is_officer else sc
+                # THE CERTIFIED ROLE BREAKS TIES BETWEEN NAMESAKES. With
+                # suffixes stripped, W. R. Berkley Jr (President and CEO)
+                # and W. R. Berkley (Executive Chairman) are the same name;
+                # only the filed title says which one the certification
+                # means. Small enough to never overturn a better name.
+                if _title and re.search(r"\bCEO\b|CHIEF EXEC|PRINCIPAL EXEC",
+                                        _title, re.I):
+                    sc += 0.05
                 if sc > best[0]:
                     runner, best, tied = best[0], (sc, cik_, name_), []
                 elif sc == best[0] and cik_ != best[1]:

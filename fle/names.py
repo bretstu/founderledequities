@@ -110,10 +110,17 @@ def _interpretations(tokens: list[str]) -> list[tuple[str, str]]:
     if len(tokens) == 1:
         return [(tokens[0], tokens[0])]
     out = []
+    # A BARE INITIAL IS NEVER A SURNAME. "W. Robert Berkley" once yielded a
+    # reading with surname "W" -- which "matched" GOSSELINK ROBERT W's
+    # trailing initial, scored ROBERT==ROBERT a perfect 1.0, and put an
+    # SVP's shares under the chief executive's name on the live site. The
+    # surname is the load-bearing token; a single letter cannot bear it.
     for g in tokens[:-1]:          # surname last  (proxy convention)
-        out.append((g, tokens[-1]))
+        if len(tokens[-1]) > 1:
+            out.append((g, tokens[-1]))
     for g in tokens[1:]:           # surname first (EDGAR convention)
-        out.append((g, tokens[0]))
+        if len(tokens[0]) > 1:
+            out.append((g, tokens[0]))
     return out
 
 def _score_pair(fa: str, fb: str) -> float:
