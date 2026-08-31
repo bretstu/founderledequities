@@ -84,7 +84,8 @@ def _append(path: str, row: dict) -> None:
 
 
 def run_panel(client, members, checkpoint: str, redo: str = "none",
-              on_row=None, on_filing=None, exclusions=None) -> list[dict]:
+              on_row=None, on_filing=None, exclusions=None,
+              workers: int = 1) -> list[dict]:
     """-> every row, finished or resumed.
 
     `redo` is "none" (skip anything done), "failed" (retry errors and rows
@@ -96,25 +97,41 @@ def run_panel(client, members, checkpoint: str, redo: str = "none",
         if os.path.exists(checkpoint):
             os.remove(checkpoint)
 
-    rows = []
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+
+    lock = threading.Lock()
+    todo, rows_by_cik = [], {}
     for i, m in enumerate(members, 1):
         prior = done.get(m.cik)
         if prior and redo == "failed":
             stale = prior.get("error") or not prior.get("settled")
             if not stale:
-                rows.append(prior)
+                rows_by_cik[m.cik] = prior
                 if on_row:
                     on_row(i, len(members), prior, True)
                 continue
         elif prior:
-            rows.append(prior)
+            rows_by_cik[m.cik] = prior
             if on_row:
                 on_row(i, len(members), prior, True)
             continue
+        todo.append((i, m))
 
+    n_done = len(rows_by_cik)
+
+    def one(item):
+        """Identify one company. The client is shared -- its rate limiter
+        is a lock, so N threads together still respect the SEC's pace --
+        and the checkpoint is appended under a lock, one full line at a
+        time, exactly as the sequential loop did."""
+        nonlocal n_done
+        i, m = item
         try:
+            # per-filing progress is per-thread noise when interleaved;
+            # only the single-threaded run narrates at that grain
             tick = ((lambda a, b, _m=m, _i=i: on_filing(_i, len(members), _m, a, b))
-                    if on_filing else None)
+                    if (on_filing and workers == 1) else None)
             rec = build(client, m.cik, company=m.company, ticker=m.ticker,
                         exclusions=exclusions, on_progress=tick)
         except Exception as exc:  # noqa: BLE001
@@ -128,10 +145,22 @@ def run_panel(client, members, checkpoint: str, redo: str = "none",
                    checked_shares="", checked_by="", note="")
         row.setdefault("form4_url", "")
         row.setdefault("cover_url", "")
-        _append(checkpoint, row)
-        rows.append(row)
-        if on_row:
-            on_row(i, len(members), row, False)
+        with lock:
+            _append(checkpoint, row)
+            rows_by_cik[m.cik] = row
+            n_done += 1
+            if on_row:
+                on_row(n_done, len(members), row, False)
+        return None
+
+    if workers <= 1:
+        for item in todo:
+            one(item)
+    elif todo:
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            list(ex.map(one, todo))
+
+    rows = [rows_by_cik[m.cik] for m in members if m.cik in rows_by_cik]
     return rows
 
 
