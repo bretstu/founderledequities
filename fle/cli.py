@@ -453,7 +453,32 @@ def cmd_index(args) -> int:
 
 # --------------------------------------------------------------- panel
 
+def _exclusive(path: str):
+    """Hold an exclusive lock on <path>.lock for the life of a long run, or
+    exit naming the holder. Two panels on one checkpoint, or two walks on
+    one output file, corrupt each other -- and the day nine stopped runs
+    turned out to be alive and writing, the corruption was invisible until
+    a ps. The lock makes a second run impossible however it is launched:
+    by hand, by wrapper, by a forgotten terminal. Released by the OS the
+    instant the process ends, so a crash never leaves a stale lock."""
+    import fcntl
+    lock_path = path + ".lock"
+    os.makedirs(os.path.dirname(lock_path) or ".", exist_ok=True)
+    fh = open(lock_path, "a+")
+    try:
+        fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        fh.seek(0)
+        holder = fh.read().strip() or "unknown pid"
+        print(f"another run holds {lock_path} (pid {holder}); "
+              f"stop it first: kill {holder}", file=sys.stderr)
+        raise SystemExit(2)
+    fh.seek(0); fh.truncate(); fh.write(str(os.getpid())); fh.flush()
+    return fh          # keep the handle alive; dropping it releases the lock
+
+
 def cmd_panel(args) -> int:
+    _lock = _exclusive(args.checkpoint)   # noqa: F841 -- held until return
     """Run the universe, resuming what is already done."""
     client = _client(args)
     members = read_universe(args.universe)
@@ -560,6 +585,7 @@ def _filings_for(client, issuer_cik: int, owner_cik: str):
 
 
 def cmd_history(args) -> int:
+    _lock = _exclusive(args.out)          # noqa: F841 -- held until return
     """A snapshot after every filing, for each company in the universe.
 
     The same settling rule as the panel, walked oldest-first instead of

@@ -564,3 +564,32 @@ def test_threaded_panel_matches_sequential(tmp_path, monkeypatch):
     monkeypatch.setattr(P, "build", lambda *a, **k: calls.append(1) or Rec(0))
     again = run(4, tmp_path / "b.jsonl")
     assert not calls and [r["cik"] for r in again] == [m.cik for m in members]
+
+
+def test_a_second_run_on_the_same_checkpoint_is_refused(tmp_path):
+    """Two panels on one checkpoint corrupt each other. The lock is held by
+    the process, released by the OS on exit, and refuses any second
+    holder however it was launched."""
+    import subprocess, sys, textwrap, time
+    lock_target = str(tmp_path / "panel.jsonl")
+    holder = subprocess.Popen([sys.executable, "-c", textwrap.dedent(f"""
+        import sys, time; sys.path.insert(0, {repr(str(__import__('pathlib').Path(__file__).resolve().parents[1]))})
+        from fle.cli import _exclusive
+        h = _exclusive({lock_target!r}); print("held", flush=True); time.sleep(5)
+    """)], stdout=subprocess.PIPE, text=True)
+    assert holder.stdout.readline().strip() == "held"
+    try:
+        second = subprocess.run([sys.executable, "-c", textwrap.dedent(f"""
+            import sys; sys.path.insert(0, {repr(str(__import__('pathlib').Path(__file__).resolve().parents[1]))})
+            from fle.cli import _exclusive
+            _exclusive({lock_target!r})
+        """)], capture_output=True, text=True)
+        assert second.returncode == 2 and "another run holds" in second.stderr
+    finally:
+        holder.kill(); holder.wait()
+    # once the holder is gone the lock is free
+    subprocess.run([sys.executable, "-c", textwrap.dedent(f"""
+        import sys; sys.path.insert(0, {repr(str(__import__('pathlib').Path(__file__).resolve().parents[1]))})
+        from fle.cli import _exclusive
+        _exclusive({lock_target!r}); print("free")
+    """)], check=True)
