@@ -46,7 +46,14 @@ class Settings:
 SETTINGS = Settings()
 # SEC fair access allows ten requests a second. Staying under it is the
 # difference between a working pipeline and an IP block.
-MAX_REQUESTS_PER_SECOND = 8
+# SEC's fair-access threshold is 10 requests/second per IP, enforced by an
+# automated rolling block (~10 minutes of 429s). Eight was the working
+# pace for a year. On a day when the address has already sent hundreds of
+# thousands of requests, the threshold trips far below it and a cold
+# 2,000-company panel crawled at ten an hour, almost all of it backoff.
+# FLE_RATE lets a long run pick a gentler pace: fewer blocks beat more
+# requests.
+MAX_REQUESTS_PER_SECOND = float(os.environ.get("FLE_RATE") or 8)
 
 SEC_BASE = "https://www.sec.gov"
 SEC_DATA = "https://data.sec.gov"

@@ -15,7 +15,7 @@ cd "$(dirname "$0")/.."
 # interrupt by going to sleep until 03:45.)
 trap 'echo; echo "== stopped by user; the checkpoint keeps all progress =="; exit 130' INT
 
-CMD=(env PYTHONUNBUFFERED=1 python3 -m fle.cli panel
+CMD=(env PYTHONUNBUFFERED=1 FLE_RATE="${FLE_RATE:-4}" python3 -m fle.cli panel
      --universe universe/universe-2026-08-31.csv --workers 4
      --out _staging/u-panel.csv --checkpoint _staging/u-panel.jsonl)
 

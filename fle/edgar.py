@@ -13,6 +13,7 @@ import html
 import json
 import os
 import re
+import sys
 import threading
 import time
 from typing import Any
@@ -128,6 +129,9 @@ class EdgarClient:
                     ra = (resp.headers.get("Retry-After") or "").strip()
                     wait = max(float(ra) if ra.isdigit() else 0.0,
                                45.0 * throttled)
+                    # say so: a silent wait looks exactly like a hang
+                    print(f"  [sec {resp.status_code}: waiting {wait:.0f}s "
+                          f"({throttled}/6)]", file=sys.stderr, flush=True)
                     time.sleep(wait)
                     continue
                 resp.raise_for_status()
