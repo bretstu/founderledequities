@@ -78,15 +78,26 @@ SECTION16 = {"3", "3/A", "4", "4/A", "5", "5/A"}
 # private issuers file 20-F, 6-K and F-1; none of these overlap.
 DOMESTIC = {"10-K", "10-K/A", "10-Q", "10-Q/A", "10-12B", "10-12B/A",
             "S-1", "S-1/A", "8-K12B"}
-PROXY = {"DEF 14A", "DEFA14A", "DEFM14A"}
+ANNUAL_MEETING = {"DEF 14A"}
+# INVESTMENT COMPANIES ANNOUNCE THEMSELVES BY THE FORMS THEY FILE. A
+# closed-end fund files N-CSR and N-PX; a BDC files N-2 and 40-17G. No
+# operating company files any of these, whatever its SIC says -- and the
+# funds that slipped a SIC gate had blank or misleading codes.
+INVESTMENT_FORMS = {"N-CSR", "N-CSRS", "N-PX", "N-2", "N-2/A", "40-17G",
+                    "N-CEN", "N-Q", "N-MFP", "24F-2NT"}
 # ENTITIES WITH NO CHIEF EXECUTIVE IN THE SENSE THIS SITE MEANS: a shell
 # awaiting a target, a commodity pool run by a sponsor, a royalty trust
-# run by a trustee, a fund run by an adviser. Each files a 10-K; none has
-# a person whose own stake in the business the site could measure.
-EXCLUDED_SIC = {"6770": "blank-check company",
-                "6221": "commodity pool / exchange-traded product",
-                "6792": "royalty trust",
-                "6726": "investment company / BDC"}
+# run by a trustee. Each files a 10-K; none has a person whose own stake
+# in the business the site could measure. BUT A CODE IS A LABEL, NOT A
+# FACT: Texas Pacific Land kept SIC 6792 after converting from a trust to
+# a corporation with a board and a chief executive. So a trust-or-pool
+# code is overridden by evidence of an annual meeting -- a DEF 14A -- which
+# a trustee-run or sponsor-run vehicle never files. A blank-check company
+# is not rescued this way: it files proxies for extension votes.
+EXCLUDED_SIC = {"6770": ("blank-check company", False),
+                "6221": ("commodity pool / exchange-traded product", True),
+                "6792": ("royalty trust", True),
+                "6726": ("investment company", True)}
 DISAGREE = 0.25
 STRIKES_TO_EXIT = 2
 
@@ -105,6 +116,7 @@ class Row:
     added: str = ""
     strikes: int = 0
     note: str = ""
+    sic: str = ""
 
     @property
     def mcap(self) -> float | None:
@@ -128,7 +140,8 @@ class Snapshot:
         they are out -- but never silently), and any fetch failure."""
         return [r for r in self.rows
                 if (r.status == "disagree" and r.decision != "out")
-                or r.status in ("unsized", "unfetched")]
+                or r.status in ("unsized", "unfetched")
+                or (r.note.startswith("successor") and r.decision != "out")]
 
 
 def polygon_ticker(t: str) -> str:
@@ -153,25 +166,38 @@ def recent_submissions(client, cik: int) -> dict:
     data = client.get_json(f"{SEC_DATA}/submissions/CIK{cik:010d}.json",
                            use_cache=False)
     return {"_filings": _columns_to_rows(data.get("filings", {}).get("recent", {})),
-            "sic": data.get("sic")}
+            "sic": data.get("sic"),
+            "insiderTransactionForIssuerExists":
+                data.get("insiderTransactionForIssuerExists")}
 
 
 def eligibility(subs: dict) -> str:
-    """'' if the site can cover it, else the reason it cannot."""
+    """'' if the site can cover it, else the reason it cannot.
+
+    Returns "successor" (truthy, but not an exclusion) for an issuer that
+    files periodic reports with no insider filings of its own: a holding
+    company or redomiciled entity whose officers' Form 4s sit under the
+    predecessor CIK -- ExxonMobil Holdings after July 2026. The panel
+    stage resolves the predecessor (fle/successor.py) and verifies it by
+    finding the certified chief executive among its filers; the universe
+    only has to let such a company through instead of reading "no Form 4s"
+    as "nothing to measure"."""
+    from .successor import needs_predecessor
     forms = {f.get("form") for f in subs.get("_filings", [])}
     if not (forms & DOMESTIC):
         return "no domestic filings (foreign filer, fund, or shell)"
-    if not (forms & SECTION16):
-        return "no Section 16 filings"
+    if forms & INVESTMENT_FORMS:
+        return "investment company (files " + ", ".join(
+            sorted(forms & INVESTMENT_FORMS)[:2]) + ")"
     sic = str(subs.get("sic") or "")
     if sic in EXCLUDED_SIC:
-        return f"{EXCLUDED_SIC[sic]} (SIC {sic})"
-    # a mature company -- one with an annual report -- also holds annual
-    # meetings; no proxy statement means no board standing for election,
-    # which is a pool, a trust, or a fund wearing a 10-K. A company too
-    # young for its first 10-K is not held to this yet.
-    if ("10-K" in forms or "10-K/A" in forms) and not (forms & PROXY):
-        return "no proxy statement on record (no board elected by holders)"
+        why, rescuable = EXCLUDED_SIC[sic]
+        if not (rescuable and forms & ANNUAL_MEETING):
+            return f"{why} (SIC {sic})"
+    if not (forms & SECTION16):
+        if needs_predecessor(subs) or "8-K12B" in forms:
+            return "successor"
+        return "no Section 16 filings"
     return ""
 
 
@@ -260,7 +286,7 @@ def decide(row: Row, entry: float, exit_: float, prior: dict,
         row.added = added or snapshot
 
 
-ROW_FIELDS = ("cik", "ticker", "company", "mcap_vendor", "mcap_sec",
+ROW_FIELDS = ("cik", "ticker", "company", "sic", "mcap_vendor", "mcap_sec",
               "shares_sec", "close", "status", "decision", "added",
               "strikes", "note")
 
@@ -328,8 +354,12 @@ def build_snapshot(client, api_key: str | None, entry: float = 1e9,
             row.note = "filing index unavailable twice; read this row"
             snap.rows.append(row); _ck(ck, row, snapshot)
             continue
+        row.sic = str(subs.get("sic") or "")
         why = eligibility(subs)
-        if why:
+        if why == "successor":
+            row.note = ("successor issuer: no Form 4s under this CIK; the "
+                        "panel resolves the predecessor")
+        elif why:
             row.status, row.decision = "excluded: " + why, "out"
             snap.rows.append(row); _ck(ck, row, snapshot)
             continue
@@ -356,9 +386,9 @@ def _ck(fh, row: Row, snapshot: str) -> None:
     fh.flush()
 
 
-EVIDENCE_COLS = ["cik", "ticker", "company", "mcap_vendor", "mcap_sec",
-                 "shares_sec", "close", "status", "decision", "added",
-                 "strikes", "note"]
+EVIDENCE_COLS = ["cik", "ticker", "company", "sic", "mcap_vendor",
+                 "mcap_sec", "shares_sec", "close", "status", "decision",
+                 "added", "strikes", "note"]
 
 
 def load_prior(evidence_path: str) -> dict:
@@ -418,17 +448,19 @@ def newest_snapshot(universe_dir: str):
 RULES_HTML = """
 <p><b>Who is in.</b> Every company in the SEC's own registry of tickered
 registrants that files domestic reports (a 10-K or 10-Q, or for a company
-too young for either, a Form 10, S-1 or successor-issuer filing), has at
-least one Form 3, 4 or 5 on record, holds annual meetings once it is old
-enough to have filed an annual report, and had a market capitalization at or
-above <b>$1 billion</b> on the snapshot date. One row per company: a
-dual-class filer counts once.</p>
+too young for either, a Form 10, S-1 or successor-issuer filing), has
+ownership filings on record (or is a successor issuer whose officers' filings
+sit under a predecessor), and had a market capitalization at or above
+<b>$1 billion</b> on the snapshot date. One row per company: a dual-class
+filer counts once.</p>
 <p><b>Who is out, and why.</b> Foreign private issuers file 20-Fs and their
 officers file no ownership forms; Section 16 does not reach them, so this site
-cannot measure them. Entities with no chief executive in the sense this site
-means: blank-check companies, commodity pools and exchange-traded products,
-royalty trusts, and investment companies (by SEC industry code). Companies
-the sizing rules could not place above the bar.</p>
+cannot measure them. Investment companies, identified by the forms only they
+file (N-CSR, N-2, 40-17G). Entities with no chief executive in the sense this
+site means, by SEC industry code: blank-check companies, commodity pools,
+royalty trusts -- unless the entity holds annual meetings, in which case it is
+a corporation that kept an old code. Companies the sizing rules could not
+place above the bar.</p>
 <p><b>How size is decided.</b> Two independent measures: the market cap
 published by the price vendor, and the company's own cover-page share count
 (from its most recently filed report) times the newest close. When they agree

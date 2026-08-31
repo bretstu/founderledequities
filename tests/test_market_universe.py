@@ -6,8 +6,10 @@ from fle.market_universe import (Row, Snapshot, classify, decide,
                                  write_snapshot)
 
 
-def _subs(forms, sic=None):
-    return {"_filings": [{"form": f} for f in forms], "sic": sic}
+def _subs(forms, sic=None, insiders=1):
+    return {"_filings": [{"form": f, "accessionNumber": "0001193125-26-000001"}
+                         for f in forms],
+            "sic": sic, "insiderTransactionForIssuerExists": insiders}
 
 
 def test_foreign_filers_and_funds_are_out_by_construction():
@@ -23,15 +25,36 @@ def test_a_company_too_young_for_a_10k_is_still_domestic():
     assert eligibility(_subs(["S-1", "S-1/A", "3", "4"])) == ""
 
 
-def test_mature_companies_without_a_proxy_are_pools_or_trusts():
-    assert "no proxy" in eligibility(_subs(["10-K", "10-Q", "3", "4"]))
-    assert eligibility(_subs(["10-K", "10-Q", "3", "4", "DEF 14A"])) == ""
+def test_controlled_companies_without_proxies_are_still_companies():
+    """Blackstone and Erie elect directors through a private class and file
+    no DEF 14A; FedEx Freight filed a 10-K before its first meeting. A
+    missing proxy is not a missing board."""
+    assert eligibility(_subs(["10-K", "10-Q", "3", "4"], sic="6282")) == ""
+    assert eligibility(_subs(["10-K", "4"], sic="6411")) == ""
 
 
-def test_non_operating_entities_are_out_by_sic():
+def test_investment_companies_are_out_by_the_forms_only_they_file():
+    assert "investment company" in eligibility(_subs(["10-K", "4", "DEF 14A", "N-CSR"]))
+    assert "investment company" in eligibility(_subs(["10-K", "4", "DEF 14A", "40-17G", "N-2"]))
+
+
+def test_non_operating_entities_are_out_by_sic_unless_they_hold_meetings():
     for sic, why in (("6221", "commodity pool"), ("6792", "royalty trust"),
                      ("6726", "investment company")):
-        assert why in eligibility(_subs(["10-K", "4", "DEF 14A"], sic=sic))
+        assert why in eligibility(_subs(["10-K", "4"], sic=sic))
+    # Texas Pacific Land: SIC 6792 kept from its trust days, but a board,
+    # annual meetings and a chief executive -- rescued by the DEF 14A
+    assert eligibility(_subs(["10-K", "10-Q", "4", "DEF 14A"], sic="6792")) == ""
+    # a SPAC is never rescued: it files proxies for extension votes
+    assert "blank-check" in eligibility(_subs(["10-K", "4", "DEF 14A"], sic="6770"))
+
+
+def test_a_successor_issuer_passes_through_for_the_panel_to_resolve():
+    """ExxonMobil Holdings: 10-Qs and an 8-K12B, EDGAR says no insider
+    transactions exist for this issuer. Its Form 4s live under CIK 34088."""
+    assert eligibility(_subs(["10-Q", "8-K12B"], sic="2911", insiders=0)) == "successor"
+    # with no 8-K12B and no EDGAR insider flag either, it is just silent
+    assert "no Section 16" in eligibility(_subs(["10-K", "10-Q"], sic="2911", insiders=1))
 
 
 def test_a_10k_filer_with_no_section_16_is_out():
