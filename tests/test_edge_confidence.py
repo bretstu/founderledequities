@@ -168,3 +168,24 @@ def test_a_partial_submissions_index_raises_instead_of_truncating(tmp_path, monk
     monkeypatch.setattr(c, "get_json", fake_get_json)
     with pytest.raises(RuntimeError, match="partial"):
         c.submissions(40729)
+
+
+def test_a_search_that_opened_no_documents_refuses_to_conclude():
+    """Wrapper-only index listings whose page fallback yielded nothing:
+    eight 'filings with no documents' in a row became 'no certification'.
+    Zero documents opened is a broken index, not an absent certification."""
+    import pytest
+    from fle.identity import peo_from_certification
+
+    class WrappersOnly:
+        def submissions(self, cik):
+            return {"_filings": [{"form": "10-K",
+                                  "accessionNumber": f"0001234567-26-00000{i}",
+                                  "filingDate": f"2026-0{i+1}-01",
+                                  "primaryDocument": ""} for i in range(3)]}
+        def filing_index(self, cik, acc):
+            # only the submission wrapper: the shape a throttled page
+            # fallback leaves behind
+            return {"directory": {"item": [{"name": f"{acc}.txt", "size": "1"}]}}
+    with pytest.raises(RuntimeError, match="opened 0 documents"):
+        peo_from_certification(WrappersOnly(), 1)

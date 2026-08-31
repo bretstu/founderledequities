@@ -292,9 +292,13 @@ class EdgarClient:
         caller with whatever the JSON gave it, not lose the filing.
         """
         url = f"{self.filing_dir(cik, accession)}/{accession}-index.htm"
+        # A missing page (404) is genuine absence -- return nothing. A
+        # FETCH failure is not: swallowing a 429 here once made a blocked
+        # filing look like a filing with no documents, and eight of those
+        # in a row became "no certification". Let it raise.
         try:
             return _documents_from_index_page(self.get(url))
-        except Exception:  # noqa: BLE001
+        except FileNotFoundError:
             return []
 
     def primary_document(self, cik: int, accession: str, doc_name: str) -> str:

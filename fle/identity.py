@@ -203,6 +203,7 @@ def peo_from_certification(
     filings.sort(key=lambda f: f.get("filingDate", ""), reverse=True)
 
     fetch_failures = 0
+    docs_read = 0
     for skipped, f in enumerate(filings[:max_filings]):
         acc = f["accessionNumber"]
         try:
@@ -224,6 +225,7 @@ def peo_from_certification(
             except Exception:  # noqa: BLE001
                 fetch_failures += 1
                 continue
+            docs_read += 1
             if hit is None:
                 continue
             names, _ = hit
@@ -250,6 +252,7 @@ def peo_from_certification(
         except Exception:  # noqa: BLE001
             fetch_failures += 1
             continue
+        docs_read += 1
         text = _plain_text(raw)
         idx = text.lower().find("certification")
         while idx != -1:
@@ -273,6 +276,15 @@ def peo_from_certification(
                         )
             idx = text.lower().find("certification", idx + 1)
 
+    if not fetch_failures and filings and docs_read == 0:
+        # A SEARCH THAT READ NOTHING HAS NOT SEARCHED. Every candidate
+        # list came back empty -- wrapper-only index listings whose page
+        # fallback returned nothing -- so no document was ever opened.
+        # That is a broken index, not a company without a certification.
+        raise RuntimeError(
+            f"certification search opened 0 documents across "
+            f"{min(len(filings), max_filings)} periodic filing(s); index "
+            f"listings were empty -- refusing to conclude 'no certification'")
     if fetch_failures:
         # EIGHT COMPANIES WERE ONCE RECORDED AS HAVING NO CERTIFICATION
         # because every fetch happened inside SEC's fair-access block and
