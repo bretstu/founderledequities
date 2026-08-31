@@ -268,3 +268,27 @@ def test_a_healthy_series_is_left_completely_alone():
     reject_outliers(ser)
     assert [p.shares for p in ser.points] == before
     assert not ser.note
+
+
+def test_a_scale_that_makes_the_count_absurd_is_refused():
+    """JBS's cover prints '776,086,920 Class A common shares' and tags it
+    scale='3' -- a filer error worth 776 BILLION shares. The printed
+    figure outranks a scale that makes it absurd; the note says so."""
+    from fle.outstanding import _facts_from_document
+
+    html = (
+        '<ix:nonfraction name="dei:EntityCommonStockSharesOutstanding" '
+        'contextref="C1" scale="3" decimals="0">776,086,920</ix:nonfraction>'
+        '<ix:nonfraction name="dei:EntityCommonStockSharesOutstanding" '
+        'contextref="C2" scale="3" decimals="0">294,842,267</ix:nonfraction>')
+    notes: list = []
+    facts = _facts_from_document(html, notes)
+    assert facts == {"C1": 776086920.0, "C2": 294842267.0}
+    assert len(notes) == 2 and "scale=3" in notes[0]
+
+    # a LEGITIMATE scale still applies: "3,949.5" with scale=6 is Tesla
+    html2 = ('<ix:nonfraction name="dei:EntityCommonStockSharesOutstanding" '
+             'contextref="C1" scale="6" decimals="-5">3,949.5</ix:nonfraction>')
+    notes2: list = []
+    assert _facts_from_document(html2, notes2) == {"C1": 3949500000.0}
+    assert not notes2

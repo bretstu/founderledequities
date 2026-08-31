@@ -101,7 +101,7 @@ def class_names(html: str) -> dict[str, str]:
     return out
 
 
-def _facts_from_document(html: str) -> dict[str, float]:
+def _facts_from_document(html: str, notes: list | None = None) -> dict[str, float]:
     """Every cover-page share count in an inline XBRL document, by context.
 
     One element per share class. `scale` is a power of ten the displayed
@@ -121,7 +121,23 @@ def _facts_from_document(html: str) -> dict[str, float]:
             continue
         scale = SCALE.search(whole)
         if scale:
-            val *= 10 ** int(scale.group(1))
+            scaled = val * 10 ** int(scale.group(1))
+            # THE PRINTED FIGURE OUTRANKS A SCALE THAT MAKES IT ABSURD.
+            # JBS's cover reads "776,086,920 Class A common shares" and its
+            # inline tag says scale="3" -- a filer error that would make
+            # one class 776 billion shares. No listed company has 50
+            # billion shares of anything (NVIDIA, the largest, has 24B
+            # total), so when the scaled value crosses that line and the
+            # printed number alone does not, trust the printed number and
+            # say so. If BOTH are absurd, keep the raw value: the caution
+            # machinery downstream will grade it.
+            if scaled >= 50e9 > val:
+                if notes is not None:
+                    notes.append(
+                        f"cover tag carries scale={scale.group(1)} making "
+                        f"{scaled:,.0f} shares; used the printed figure")
+            else:
+                val = scaled
         if SIGN.search(whole):
             val = -val
         if val > 0:
@@ -148,7 +164,8 @@ def from_latest_filing(client, cik: int) -> Outstanding:
         url = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{acc}/{doc}"
         try:
             raw_html = client.get(url)
-            facts = _facts_from_document(raw_html)
+            scale_notes: list = []
+            facts = _facts_from_document(raw_html, scale_notes)
         except Exception:  # noqa: BLE001
             continue
         if not facts:
@@ -161,7 +178,7 @@ def from_latest_filing(client, cik: int) -> Outstanding:
             classes=len(facts),
             per_class={names.get(ctx, ctx): v for ctx, v in facts.items()},
             url=f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{acc}/",
-            note=(f"read from the {f.get('form')} cover page; the XBRL API has "
+            note="; ".join(scale_notes) + ("; " if scale_notes else "") + (f"read from the {f.get('form')} cover page; the XBRL API has "
                   f"no un-dimensioned fact for this filer"
                   + (f", summed across {len(facts)} share classes"
                      if len(facts) > 1 else "")),
