@@ -141,3 +141,23 @@ def test_a_fetch_starved_certification_search_refuses_to_conclude():
             raise RuntimeError("429 for https://www.sec.gov/...")
     with pytest.raises(RuntimeError, match="refusing to conclude"):
         peo_from_certification(Blocked(), 1520006)
+
+
+def test_a_partial_submissions_index_raises_instead_of_truncating(tmp_path, monkeypatch):
+    """Ally and AGNC file 424B2s daily; their 10-Ks live in EDGAR's history
+    files. When those failed inside a throttle, the index silently lost
+    every periodic filing and the CEO was recorded as certless."""
+    import json
+    import pytest
+    import fle.edgar as E
+    c = E.EdgarClient(cache_dir=str(tmp_path))
+    main = {"filings": {"recent": {"form": ["424B2"], "accessionNumber": ["a"],
+                                   "filingDate": ["2026-08-01"]},
+                        "files": [{"name": "CIK0000040729-submissions-001.json"}]}}
+    def fake_get_json(url, use_cache=True):
+        if url.endswith("submissions-001.json"):
+            raise RuntimeError("429 for " + url)
+        return json.loads(json.dumps(main))
+    monkeypatch.setattr(c, "get_json", fake_get_json)
+    with pytest.raises(RuntimeError, match="partial"):
+        c.submissions(40729)

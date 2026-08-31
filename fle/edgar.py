@@ -177,12 +177,26 @@ class EdgarClient:
         data = self.get_json(url)
         recent = data.get("filings", {}).get("recent", {})
         rows = _columns_to_rows(recent)
+        failed = []
         for extra in data.get("filings", {}).get("files", []):
             extra_url = f"{SEC_DATA}/submissions/{extra['name']}"
             try:
                 rows.extend(_columns_to_rows(self.get_json(extra_url)))
-            except Exception:  # noqa: BLE001
-                pass  # older history is optional; do not fail the run
+            except Exception as exc:  # noqa: BLE001
+                failed.append(f"{extra['name']}: {exc}")
+        if failed:
+            # A PARTIAL INDEX IS NOT AN INDEX. This once said "older history
+            # is optional" and passed silently. For a company that files
+            # prospectus supplements daily -- Ally, AGNC -- the last 1,000
+            # filings are all 424B2s and every 10-K and 10-Q lives in the
+            # history files; when those failed inside SEC's throttle, the
+            # certification search found no periodic filing to read and
+            # recorded "no certification", and a history walk would have
+            # silently lost years of Form 4s. Missing history is a fetch
+            # failure and must raise like one: retryable, never answered.
+            raise RuntimeError(
+                f"submissions index for CIK {cik} is partial: "
+                f"{len(failed)} history file(s) unavailable ({failed[0][:80]})")
         data["_filings"] = rows
         return data
 
