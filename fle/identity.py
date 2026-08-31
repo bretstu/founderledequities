@@ -24,7 +24,12 @@ PERIODIC_FORMS = ("10-K", "10-Q", "10-K/A", "10-Q/A")
 CERT_NAME_RE = re.compile(r"\bI,\s*([^,\n]{2,60}?)\s*,", re.I)
 
 NAME_SHAPE_RE = re.compile(
-    r"^[A-Z][\w.'\-]*(?:[,]?\s+[A-Za-z][\w.'\-]*){1,5}$"
+    # Tokens may include ONE parenthesized alias: "Chih-Hsiang (Thompson)
+    # Lin" is the standard English-alias convention for a large class of
+    # executives' legal names, and rejecting it recorded AAOI's CEO as
+    # having filed no certification. The parenthesized token is part of
+    # the name's shape, never required, and never valid alone.
+    r"^[A-Z][\w.'\-]*(?:[,]?\s+(?:[A-Za-z][\w.'\-]*|\([A-Za-z][\w.'\-]*\))){1,5}$"
 )
 
 NOT_A_NAME = {

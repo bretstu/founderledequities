@@ -164,3 +164,19 @@ def test_a_bare_initial_is_never_a_surname():
     # the motivating conventions still work
     assert names_match("Ron M. Vachris", "Vachris Roland Michael") >= 0.85
     assert names_match("R. Vachris", "Vachris Roland") >= 0.75
+
+
+def test_a_parenthesized_alias_is_part_of_a_names_shape():
+    """AAOI: 'I, Chih-Hsiang (Thompson) Lin, certify' extracted as nothing
+    and the CEO was recorded as having filed no certification. The
+    English-alias convention is a name shape, not noise."""
+    from fle.identity import NAME_SHAPE_RE, extract_names_from_certification
+    from fle.names import names_match
+
+    t = "Certification I, Chih-Hsiang (Thompson) Lin, certify that:"
+    assert extract_names_from_certification(t) == ["Chih-Hsiang (Thompson) Lin"]
+    assert NAME_SHAPE_RE.match("Ming (Jenny) Hsieh")
+    assert NAME_SHAPE_RE.match("Stefan J. Murry")          # unchanged
+    assert not NAME_SHAPE_RE.match("(Thompson)")            # never valid alone
+    # and the extracted name still matches the EDGAR filer record
+    assert names_match("Chih-Hsiang (Thompson) Lin", "LIN CHIH-HSIANG") >= 0.7
