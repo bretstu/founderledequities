@@ -23,6 +23,17 @@ import requests
 from .config import SEC_BASE, SEC_DATA, MAX_REQUESTS_PER_SECOND, SETTINGS
 
 
+# Set on Ctrl+C: every worker waiting on the limiter or resting through a
+# block abandons its request at once, so a run stops in seconds instead
+# of finishing the queue. (A ThreadPoolExecutor's context exit waits for
+# ALL queued work; with 2,000 companies queued, Ctrl+C once did nothing.)
+STOP = threading.Event()
+
+
+class Stopped(RuntimeError):
+    """The run was interrupted; the in-flight company is abandoned."""
+
+
 class RateLimiter:
     """Simple token-bucket limiter, thread-safe -- with a shared circuit
     breaker for SEC's fair-access block.
@@ -48,12 +59,16 @@ class RateLimiter:
 
     def wait(self) -> None:
         while True:
+            if STOP.is_set():
+                raise Stopped("interrupted")
             with self._lock:
                 now = time.monotonic()
                 until = self._blocked_until
             if until <= now:
                 break
-            time.sleep(min(until - now, 5.0))
+            time.sleep(min(until - now, 1.0))
+        if STOP.is_set():
+            raise Stopped("interrupted")
         with self._lock:
             now = time.monotonic()
             sleep_for = self._min_interval - (now - self._last)

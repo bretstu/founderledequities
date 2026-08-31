@@ -593,3 +593,43 @@ def test_a_second_run_on_the_same_checkpoint_is_refused(tmp_path):
         from fle.cli import _exclusive
         _exclusive({lock_target!r}); print("free")
     """)], check=True)
+
+
+def test_ctrl_c_stops_within_seconds_and_checkpoints_nothing_in_flight(tmp_path, monkeypatch):
+    """With 2,000 companies queued, the pool's context exit once waited for
+    all of them; Ctrl+C did nothing. Now: pending work cancelled, workers
+    waiting on the limiter abandon their request, the interrupted company
+    is never written."""
+    import threading, time
+    import fle.panel as P
+    import fle.edgar as E
+    E.STOP.clear()
+
+    class M:
+        def __init__(self, cik, tk): self.cik, self.ticker, self.company = cik, tk, tk
+    members = [M(i, f"T{i:03}") for i in range(1, 41)]
+    started = threading.Event()
+
+    def slow_build(client, cik, **kw):
+        started.set()
+        # a worker parked in the limiter's rest loop: waits until told
+        while not E.STOP.is_set():
+            time.sleep(0.01)
+        raise E.Stopped("interrupted")
+    monkeypatch.setattr(P, "build", slow_build)
+
+    def interrupt_soon():
+        started.wait(2)
+        time.sleep(0.05)
+        import _thread
+        _thread.interrupt_main()
+    threading.Thread(target=interrupt_soon, daemon=True).start()
+    t0 = time.time()
+    try:
+        P.run_panel(None, members, str(tmp_path / "ck.jsonl"), workers=4)
+        assert False, "expected KeyboardInterrupt"
+    except KeyboardInterrupt:
+        pass
+    assert time.time() - t0 < 5
+    assert not (tmp_path / "ck.jsonl").exists() or (tmp_path / "ck.jsonl").read_text() == ""
+    E.STOP.clear()

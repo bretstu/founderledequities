@@ -99,6 +99,7 @@ def run_panel(client, members, checkpoint: str, redo: str = "none",
 
     import threading
     from concurrent.futures import ThreadPoolExecutor
+    from .edgar import STOP, Stopped
 
     lock = threading.Lock()
     todo, rows_by_cik = [], {}
@@ -134,7 +135,11 @@ def run_panel(client, members, checkpoint: str, redo: str = "none",
                     if (on_filing and workers == 1) else None)
             rec = build(client, m.cik, company=m.company, ticker=m.ticker,
                         exclusions=exclusions, on_progress=tick)
+        except Stopped:
+            return None          # interrupted: not an answer, not an error
         except Exception as exc:  # noqa: BLE001
+            if STOP.is_set():
+                return None      # the interrupt surfaced as some other error
             rec = Ownership(cik=m.cik, company=m.company,
                             error=f"{type(exc).__name__}: {exc}")
         row = rec.as_dict()
@@ -157,8 +162,28 @@ def run_panel(client, members, checkpoint: str, redo: str = "none",
         for item in todo:
             one(item)
     elif todo:
-        with ThreadPoolExecutor(max_workers=workers) as ex:
-            list(ex.map(one, todo))
+        from concurrent.futures import wait as _wait
+        ex = ThreadPoolExecutor(max_workers=workers)
+        futs = [ex.submit(one, item) for item in todo]
+        try:
+            # Poll rather than block: a main thread parked in an
+            # uninterruptible wait never sees Ctrl+C. One second of
+            # latency is the price of a stop that always lands.
+            pending = set(futs)
+            while pending:
+                done, pending = _wait(pending, timeout=1.0)
+                for f in done:
+                    f.result()
+        except KeyboardInterrupt:
+            # STOP MEANS NOW. Cancel everything queued, tell every waiting
+            # worker to abandon its request, and let the pool drain the
+            # handful in flight -- seconds, not the rest of the universe.
+            STOP.set()
+            for f in futs:
+                f.cancel()
+            ex.shutdown(wait=True, cancel_futures=True)
+            raise
+        ex.shutdown(wait=True)
 
     rows = [rows_by_cik[m.cik] for m in members if m.cik in rows_by_cik]
     return rows
