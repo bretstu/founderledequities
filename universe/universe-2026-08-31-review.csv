@@ -1,160 +1,156 @@
 ﻿cik,ticker,company,sic,mcap_vendor,mcap_sec,shares_sec,close,status,decision,added,strikes,note
-1541157,AKTX,Akari Therapeutics Plc,2834,20832707.4,1661943510117.11,155758529533.0,10.67,disagree,in,2026-08-31,0,
-1067983,BRK-B,BERKSHIRE HATHAWAY INC,6331,1081058445970.0,475156045.89,941481.0,504.69,disagree,in,2026-08-31,0,
-2115436,XOM,ExxonMobil Holdings Corp,2911,644377723251.6,663076642889.7,4111911960.0,161.2575,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1541157,AKTX,Akari Therapeutics Plc,2834,20832707.4,1606649232132.895,155758529533.0,10.315,disagree,in,2026-08-31,0,
+1067983,BRK-B,BERKSHIRE HATHAWAY INC,6331,1081058445970.0,474506424.0,941481.0,504.0,disagree,in,2026-08-31,0,
+1403161,V,VISA INC.,7389,712465234034.4,179204275134.54,469280842.0,381.87,disagree,in,2026-08-31,0,
+2115436,XOM,ExxonMobil Holdings Corp,2911,644377723251.6,657864794480.4,4111911960.0,159.99,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
 943535,WHEN,"WORLD HEALTH ENERGY HOLDINGS, INC.",7372,,,550834347495.0,,unsized,out,,0,counting failure; never a member
 844856,HCMC,Healthier Choices Management Corp.,2100,,,527156418606.0,,unsized,out,,0,counting failure; never a member
-1651308,ONC,BeOne Medicines Ltd.,2834,41485290103.53,523839898509.975,1478124405.0,354.395,disagree,in,2026-08-31,0,
-1141391,MA,Mastercard Inc,7389,521488717281.99994,72399415137.91,122530193.0,590.87,disagree,in,2026-08-31,0,
-1122411,ASX,"ASE Technology Holding Co., Ltd.",3674,98366478396.42,167475141590.12,4447029782.0,37.66,disagree,in,2026-08-31,0,
-1668717,BUD,Anheuser-Busch InBev SA/NV,2082,157786095867.84,143686139520.30002,1797199994.0,79.95,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-1222333,GLD,SPDR GOLD TRUST,6221,,143060304000.0,352400000.0,405.96,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-1156375,CME,CME GROUP INC.,6200,102767753365.40001,19072060582.94,66643583.0,286.18,disagree,in,2026-08-31,0,
+1651308,ONC,BeOne Medicines Ltd.,2834,41485290103.53,525266288560.80005,1478124405.0,355.36,disagree,in,2026-08-31,0,
+1141391,MA,Mastercard Inc,7389,521488717281.99994,72849100946.22,122530193.0,594.54,disagree,in,2026-08-31,0,
+1122411,ASX,"ASE Technology Holding Co., Ltd.",3674,98366478396.42,165562918783.86,4447029782.0,37.23,disagree,in,2026-08-31,0,
+1668717,BUD,Anheuser-Busch InBev SA/NV,2082,157786095867.84,143470475521.02,1797199994.0,79.83,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1156375,CME,CME GROUP INC.,6200,102767753365.40001,19111047078.995,66643583.0,286.765,disagree,in,2026-08-31,0,
 1166691,CMCSA,COMCAST CORP,4841,96026105665.37999,55135630227.725006,2063073161.0,26.725,disagree,in,2026-08-31,0,
-865752,MNST,Monster Beverage Corp,2086,91801165661.04,45263891007.22,979525882.0,46.21,disagree,in,2026-08-31,0,
-1648416,RACE,Ferrari N.V.,3711,73916142449.28,77911880170.8,184747890.0,421.72,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-49938,IMO,IMPERIAL OIL LTD,2911,63113685234.649994,64482252618.1,483592715.0,133.34,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+865752,MNST,Monster Beverage Corp,2086,91801165661.04,45175733677.84,979525882.0,46.12,disagree,in,2026-08-31,0,
+1648416,RACE,Ferrari N.V.,3711,73916142449.28,78257358725.09999,184747890.0,423.59,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+49938,IMO,IMPERIAL OIL LTD,2911,63113685234.649994,63889851542.225006,483592715.0,132.115,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
 1119190,RWAX,"TAP REAL ESTATE TECHNOLOGIES, INC.",5000,,,61921332657.0,,unsized,out,,0,counting failure; never a member
-320187,NKE,"NIKE, Inc.",3021,58746548638.8,33645254753.315002,855351589.0,39.335,disagree,in,2026-08-31,0,
-2058897,CIB,Grupo Cibest S.A.,6029,22964732442.079998,49433914117.2,509103132.0,97.1,disagree,in,2026-08-31,0,
-46619,HEI,HEICO CORP,3724,47032559504.649994,8975023078.619999,26905966.0,333.57,disagree,in,2026-08-31,0,
-1381197,IBKR,"Interactive Brokers Group, Inc.",6211,43423011908.64,4004405147.8199997,42231651.0,94.82,disagree,in,2026-08-31,0,
-1725964,NTR,Nutrien Ltd.,2870,35079712539.740005,43027547787.509995,569260406.0,75.585,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-1826168,TIMB,TIM S.A.,4813,8384686473.699999,42531998306.420006,2392125889.0,17.78,disagree,in,2026-08-31,0,
-1091667,CHTR,"CHARTER COMMUNICATIONS, INC. /MO/",4841,18323408474.66,41118716455.560005,270927828.0,151.77,disagree,in,2026-08-31,0,
-1611747,SCNI,Scinai Immunotherapeutics Ltd.,2836,1700728.3099999998,36485725905.92,13872899584.0,2.63,disagree,in,2026-08-31,0,
-1176948,ARES,Ares Management Corp,6282,32143127859.96,14708853040.21,103332418.0,142.345,disagree,in,2026-08-31,0,
-1754301,FOXA,Fox Corp,4833,28766332107.920002,67.285,1.0,67.285,disagree,in,2026-08-31,0,
+320187,NKE,"NIKE, Inc.",3021,58746548638.8,33576826626.195004,855351589.0,39.255,disagree,in,2026-08-31,0,
+2058897,CIB,Grupo Cibest S.A.,6029,22964732442.079998,49383003804.0,509103132.0,97.0,disagree,in,2026-08-31,0,
+46619,HEI,HEICO CORP,3724,47032559504.649994,8922556444.92,26905966.0,331.62,disagree,in,2026-08-31,0,
+1381197,IBKR,"Interactive Brokers Group, Inc.",6211,43423011908.64,4024465182.045,42231651.0,95.295,disagree,in,2026-08-31,0,
+1725964,NTR,Nutrien Ltd.,2870,35079712539.740005,42945005028.64,569260406.0,75.44,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1826168,TIMB,TIM S.A.,4813,8384686473.699999,42460234529.75,2392125889.0,17.75,disagree,in,2026-08-31,0,
+1091667,CHTR,"CHARTER COMMUNICATIONS, INC. /MO/",4841,18323408474.66,40939904089.08,270927828.0,151.11,disagree,in,2026-08-31,0,
+1611747,SCNI,Scinai Immunotherapeutics Ltd.,2836,1700728.3099999998,34127332976.64,13872899584.0,2.46,disagree,in,2026-08-31,0,
+1176948,ARES,Ares Management Corp,6282,32143127859.96,14688186556.61,103332418.0,142.145,disagree,in,2026-08-31,0,
+1754301,FOXA,Fox Corp,4833,28766332107.920002,67.51,1.0,67.51,disagree,in,2026-08-31,0,
 1471781,GTCH,GBT Technologies Inc.,8742,,,24417866769.0,,unsized,out,,0,counting failure; never a member
 1440799,MMEX,MMEX Resources Corp,7819,,,22295726723.0,,unsized,out,,0,counting failure; never a member
 1098009,AAGH,America Great Health,2834,,,21204811608.0,,unsized,out,,0,counting failure; never a member
 1419793,OCLN,"ORIGINCLEAR, INC.",3559,,,16226290399.0,,unsized,out,,0,counting failure; never a member
 932021,GTLL,GLOBAL TECHNOLOGIES LTD,3663,,,14688440097.0,,unsized,out,,0,counting failure; never a member
-1319161,WMG,Warner Music Group Corp.,7900,14662766825.07,29910.62,1069.0,27.98,disagree,in,2026-08-31,0,
-4457,UHAL,U-Haul Holding Co /NV/,7510,13333449822.050001,1332933506.6824,19607788.0,67.9798,disagree,in,2026-08-31,0,
-317540,COKE,"Coca-Cola Consolidated, Inc.",2086,13212346716.060001,1388511540.21,7141447.0,194.43,disagree,in,2026-08-31,0,
-1048268,IESC,"IES Holdings, Inc.",1731,12345130977.6,6149652479.4,19924356.0,308.65,disagree,in,2026-08-31,0,
-1333141,FMS,Fresenius Medical Care AG,8090,12294267447.0,6351029244.9,279288885.0,22.74,disagree,in,2026-08-31,0,
-1828108,AUR,"Aurora Innovation, Inc.",7373,11684225212.44,3667570771.34,642869548.0,5.705,disagree,in,2026-08-31,0,
+1319161,WMG,Warner Music Group Corp.,7900,14662766825.07,29899.93,1069.0,27.97,disagree,in,2026-08-31,0,
+4457,UHAL,U-Haul Holding Co /NV/,7510,13333449822.050001,1333525661.88,19607788.0,68.01,disagree,in,2026-08-31,0,
+317540,COKE,"Coca-Cola Consolidated, Inc.",2086,13212346716.060001,1379584731.46,7141447.0,193.18,disagree,in,2026-08-31,0,
+1048268,IESC,"IES Holdings, Inc.",1731,12345130977.6,5998326995.58,19924356.0,301.055,disagree,in,2026-08-31,0,
+1333141,FMS,Fresenius Medical Care AG,8090,12294267447.0,6373372355.7,279288885.0,22.82,disagree,in,2026-08-31,0,
+720672,SF,STIFEL FINANCIAL CORP,6211,12274930956.86,5646778036.35,69584449.0,81.15,disagree,in,2026-08-31,0,
+1828108,AUR,"Aurora Innovation, Inc.",7373,11684225212.44,3555068600.44,642869548.0,5.53,disagree,in,2026-08-31,0,
 1411057,CBIH,"Cannabis Bioscience International Holdings, Inc.",8731,,,11626749347.0,,unsized,out,,0,counting failure; never a member
 1568628,BQST,Bioquest Corp,2834,,,11485320230.0,,unsized,out,,0,counting failure; never a member
-1849253,RYAN,"RYAN SPECIALTY HOLDINGS, INC.",6411,11222594617.949999,4625853762.030001,109903867.0,42.09,disagree,in,2026-08-31,0,
+1849253,RYAN,"RYAN SPECIALTY HOLDINGS, INC.",6411,11222594617.949999,4597278756.61,109903867.0,41.83,disagree,in,2026-08-31,0,
 1106213,SFRX,SEAFARER EXPLORATION CORP,7900,,,11040410363.0,,unsized,out,,0,counting failure; never a member
 1880431,VHAI,Vocodia Holdings Corp,7371,,,10942818682.0,,unsized,out,,0,counting failure; never a member
-1588489,GBTC,Grayscale Bitcoin Trust ETF,6221,,10383838828.0,172260100.0,60.28,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-913290,FRO,Frontline plc,4412,9837705464.91,9899995349.2522,222622889.0,44.4698,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-1888886,GPCR,Structure Therapeutics Inc.,2834,3377947926.0899997,9771874989.816,213929572.0,45.678,disagree,in,2026-08-31,0,
-7323,EAI,"ENTERGY ARKANSAS, LLC",4911,,9178641565.66,466631498.0,19.67,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-751978,VICR,VICOR CORP,3679,8656538933.0,5047491568.41,26978949.0,187.09,disagree,in,2026-08-31,0,
+913290,FRO,Frontline plc,4412,9837705464.91,9755334995.98,222622889.0,43.82,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1888886,GPCR,Structure Therapeutics Inc.,2834,3377947926.0899997,9784967479.622398,213929572.0,45.7392,disagree,in,2026-08-31,0,
+7323,EAI,"ENTERGY ARKANSAS, LLC",4911,,9141311045.82,466631498.0,19.59,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+751978,VICR,VICOR CORP,3679,8656538933.0,4971680721.72,26978949.0,184.28,disagree,in,2026-08-31,0,
 1043150,EEGI,"Eline Entertainment Group, Inc.",1520,,,8524529727.0,,unsized,out,,0,counting failure; never a member
-842162,LEA,LEAR CORP,3714,8256602231.28,6177926691.0,49324764.0,125.25,disagree,in,2026-08-31,0,
-91142,AOS,SMITH A O CORP,3630,8206159637.740001,4508337151.64,75732188.0,59.53,disagree,in,2026-08-31,0,
-94845,LEVI,LEVI STRAUSS & CO,2300,8193468464.98,784113283.6574999,37602843.0,20.8525,disagree,in,2026-08-31,0,
+842162,LEA,LEAR CORP,3714,8256602231.28,6155237299.56,49324764.0,124.79,disagree,in,2026-08-31,0,
+91142,AOS,SMITH A O CORP,3630,8206159637.740001,4519318318.9,75732188.0,59.675,disagree,in,2026-08-31,0,
+94845,LEVI,LEVI STRAUSS & CO,2300,8193468464.98,785335376.0550001,37602843.0,20.885,disagree,in,2026-08-31,0,
 1494413,TWOH,Two Hands Corp,7389,,,7697746967.0,,unsized,out,,0,counting failure; never a member
 1281984,WDLF,"Decentral Life, Inc.",6199,,,7394792892.0,,unsized,out,,0,counting failure; never a member
 1910139,MBLY,Mobileye Global Inc.,7372,7294609590.84,2165760022.14,252419583.0,8.58,disagree,in,2026-08-31,0,
 1119643,NPHC,NUTRA PHARMA CORP,2833,,,7159727214.0,,unsized,out,,0,counting failure; never a member
-1655210,BYND,"BEYOND MEAT, INC.",2000,238308354.89999998,7030612670.14,515818978.0,13.63,disagree,in,2026-08-31,0,
+1655210,BYND,"BEYOND MEAT, INC.",2000,238308354.89999998,7075798412.6128,515818978.0,13.7176,disagree,in,2026-08-31,0,
 1643154,ITHUF,"iANTHUS CAPITAL HOLDINGS, INC.",0100,,,6974811082.0,,unsized,out,,0,counting failure; never a member
 1437476,GSFI,Green Stream Holdings Inc.,6500,,,6541760129.0,,unsized,out,,0,counting failure; never a member
+1809104,ALIT,"Alight, Inc. / Delaware",7389,373873344.86,6299739155.099999,446790011.0,14.1,disagree,in,2026-08-31,0,
 1001601,MGTI,"MGT CAPITAL INVESTMENTS, INC.",6199,,,6290802029.0,,unsized,out,,0,counting failure; never a member
 1096296,RITE,MINERALRITE Corp,1090,,,6249776842.0,,unsized,out,,0,counting failure; never a member
 819926,SEII,SHARING ECONOMY INTERNATIONAL INC.,7373,,,6248548045.0,,unsized,out,,0,counting failure; never a member
-1809104,ALIT,"Alight, Inc. / Delaware",7389,373873344.86,6230486703.395,446790011.0,13.945,disagree,in,2026-08-31,0,
-1791863,BEPC,Brookfield Renewable Corp,4911,5993000105.4,5510979136.0,172218098.0,32.0,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1791863,BEPC,Brookfield Renewable Corp,4911,5993000105.4,5509256955.0199995,172218098.0,31.99,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
 1463208,TLSS,"Transportation & Logistics Systems, Inc.",4700,,,5889437474.0,,unsized,out,,0,counting failure; never a member
 1688126,CRCW,Crypto Co,7374,,,5829932017.0,,unsized,out,,0,counting failure; never a member
 1481028,HYSR,"SUNHYDROGEN, INC.",3674,,,5727959657.0,,unsized,out,,0,counting failure; never a member
-9326,BCPC,BALCHEM CORP,2800,5688314067.24,779417613.4499999,31878021.0,24.45,disagree,in,2026-08-31,0,
-2083632,OCTV,Octave Intelligence plc,7372,5328490091.8,,,20.338,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+9326,BCPC,BALCHEM CORP,2800,5688314067.24,775034385.5625,31878021.0,24.3125,disagree,in,2026-08-31,0,
+2083632,OCTV,Octave Intelligence plc,7372,5328490091.8,,,19.975,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
 1384365,RDAR,"Telvantis, Inc.",7371,,,5298840880.0,,unsized,out,,0,counting failure; never a member
-1402388,WFG,"WEST FRASER TIMBER CO., LTD",2421,5298819634.74,,,68.03,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-913353,CIGI,Colliers International Group Inc.,6500,5260116295.530001,3037982607.12,30070104.0,101.03,disagree,in,2026-08-31,0,
-1680062,ACMR,"ACM Research, Inc.",3559,5183293166.32,1064527652.1,14176690.0,75.09,disagree,in,2026-08-31,0,
+1402388,WFG,"WEST FRASER TIMBER CO., LTD",2421,5298819634.74,,,68.07,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+913353,CIGI,Colliers International Group Inc.,6500,5260116295.530001,3075419886.6000004,30070104.0,102.275,disagree,in,2026-08-31,0,
+1680062,ACMR,"ACM Research, Inc.",3559,5183293166.32,1026250589.1,14176690.0,72.39,disagree,in,2026-08-31,0,
 1652958,EDGM,"Edgemode, Inc.",8082,,,4791424217.0,,unsized,out,,0,counting failure; never a member
-1788348,BIPC,Brookfield Infrastructure Corp,4923,4751698061.18,1717938756.29,44960449.0,38.21,disagree,in,2026-08-31,0,
-1430723,SFBS,"ServisFirst Bancshares, Inc.",6022,4723704864.0,2344083866.25,54672510.0,42.875,disagree,in,2026-08-31,0,
+1788348,BIPC,Brookfield Infrastructure Corp,4923,4751698061.18,1723334010.1699998,44960449.0,38.33,disagree,in,2026-08-31,0,
+1430723,SFBS,"ServisFirst Bancshares, Inc.",6022,4723704864.0,2342170328.4,54672510.0,42.84,disagree,in,2026-08-31,0,
 1706509,COSG,Cosmos Group Holdings Inc.,6199,,,4585963082.0,,unsized,out,,0,counting failure; never a member
 1099234,MLMC,"FrankSpeech Network, Inc.",7841,,,4411506596.0,,unsized,out,,0,counting failure; never a member
-1970622,USAR,"USA Rare Earth, Inc.",1000,4402514581.009999,2402084339.71,132638561.0,18.11,disagree,in,2026-08-31,0,
+1970622,USAR,"USA Rare Earth, Inc.",1000,4402514581.009999,2394789218.855,132638561.0,18.055,disagree,in,2026-08-31,0,
 1095146,ABIT,Athena Bitcoin Global,6199,,,4095009545.0,,unsized,out,,0,counting failure; never a member
-1613780,DBVT,DBV Technologies S.A.,2836,850932294.4799999,4076766813.69,296061497.0,13.77,disagree,in,2026-08-31,0,
+1613780,DBVT,DBV Technologies S.A.,2836,850932294.4799999,4079727428.66,296061497.0,13.78,disagree,in,2026-08-31,0,
 803097,SPQS,"SportsQuest, Inc.",7900,,,4024163151.0,,unsized,out,,0,counting failure; never a member
 1611046,MDLK,ModuLink Inc.,7000,,,3969933920.0,,unsized,out,,0,counting failure; never a member
-1051512,TDS,TELEPHONE & DATA SYSTEMS INC /DE/,4813,3873653400.0,1671458160.96,49849632.0,33.53,disagree,in,2026-08-31,0,
+1051512,TDS,TELEPHONE & DATA SYSTEMS INC /DE/,4813,3873653400.0,1691896510.08,49849632.0,33.94,disagree,in,2026-08-31,0,
 1410738,VPLM,Voip-pal.com Inc,3661,,,3854095436.0,,unsized,out,,0,counting failure; never a member
-1279495,BTE,BAYTEX ENERGY CORP.,1381,3314208000.0,3739800398.095,765568147.0,4.885,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-1518715,MCHB,Mechanics Bancorp,6022,3518467228.01,300462431.04,18920808.0,15.88,disagree,in,2026-08-31,0,
-1065059,LEU,CENTRUS ENERGY CORP,1400,3507313379.2400002,2436011163.9500003,13673933.0,178.15,disagree,in,2026-08-31,0,
-1593275,HG,"Hamilton Insurance Group, Ltd.",6331,3486018545.1,2326599169.29,65890659.0,35.31,disagree,in,2026-08-31,0,
-1811414,QS,QuantumScape Corp,3690,3450963876.36,537383195.98,95449946.0,5.63,disagree,in,2026-08-31,0,
-1484769,FUBO,FuboTV Inc.,7812,311104053.1,3440083103.428,342433118.0,10.046,disagree,in,2026-08-31,0,
+1279495,BTE,BAYTEX ENERGY CORP.,1381,3314208000.0,3682382787.0699997,765568147.0,4.81,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1484769,FUBO,FuboTV Inc.,7812,311104053.1,3616093726.0800004,342433118.0,10.56,disagree,in,2026-08-31,0,
+1518715,MCHB,Mechanics Bancorp,6022,3518467228.01,299137974.48,18920808.0,15.81,disagree,in,2026-08-31,0,
+1065059,LEU,CENTRUS ENERGY CORP,1400,3507313379.2400002,2370786503.54,13673933.0,173.38,disagree,in,2026-08-31,0,
+1593275,HG,"Hamilton Insurance Group, Ltd.",6331,3486018545.1,2313750490.7850003,65890659.0,35.115,disagree,in,2026-08-31,0,
+1811414,QS,QuantumScape Corp,3690,3450963876.36,538814945.17,95449946.0,5.645,disagree,in,2026-08-31,0,
 1404593,MDCE,Medical Care Technologies Inc.,7389,,,3433896955.0,,unsized,out,,0,counting failure; never a member
-8063,ATRO,ASTRONICS CORP,3728,3256216235.4399996,2377942282.46,32282681.0,73.66,disagree,in,2026-08-31,0,
-1840856,SOUN,"SOUNDHOUND AI, INC.",7372,3157620990.84,124496930.0,17461000.0,7.13,disagree,in,2026-08-31,0,
-2115119,CLBK,"Columbia Financial, Inc./MD/",6035,1202913196.6000001,3118637211.9500003,269545135.0,11.57,disagree,in,2026-08-31,0,
-821130,AD,"ARRAY DIGITAL INFRASTRUCTURE, INC.",4812,3113242344.0,1913336037.9699998,53155606.0,35.995,disagree,in,2026-08-31,0,
-1821769,NVTS,Navitas Semiconductor Corp,3674,2999964177.12,2133612888.18,183457686.0,11.63,disagree,in,2026-08-31,0,
+8063,ATRO,ASTRONICS CORP,3728,3256216235.4399996,2365674863.68,32282681.0,73.28,disagree,in,2026-08-31,0,
+1840856,SOUN,"SOUNDHOUND AI, INC.",7372,3157620990.84,127336088.60000001,17461000.0,7.2926,disagree,in,2026-08-31,0,
+2115119,CLBK,"Columbia Financial, Inc./MD/",6035,1202913196.6000001,3137505371.4,269545135.0,11.64,disagree,in,2026-08-31,0,
+821130,AD,"ARRAY DIGITAL INFRASTRUCTURE, INC.",4812,3113242344.0,1935661392.49,53155606.0,36.415,disagree,in,2026-08-31,0,
+1821769,NVTS,Navitas Semiconductor Corp,3674,2999964177.12,2095086774.12,183457686.0,11.42,disagree,in,2026-08-31,0,
 1511820,STEK,Stemtech Corp,5122,,,2997032856.0,,unsized,out,,0,counting failure; never a member
-729580,BELFA,BEL FUSE INC /NJ,3677,2994019957.5,451511731.2,2174912.0,207.6,disagree,in,2026-08-31,0,
-1781755,BWIN,"Baldwin Insurance Group, Inc.",6411,2971007388.96,1030691073.3,33988164.0,30.325,disagree,in,2026-08-31,0,
+729580,BELFA,BEL FUSE INC /NJ,3677,2994019957.5,445530723.2,2174912.0,204.85,disagree,in,2026-08-31,0,
+1781755,BWIN,"Baldwin Insurance Group, Inc.",6411,2971007388.96,1038848232.6600001,33988164.0,30.565,disagree,in,2026-08-31,0,
 1376804,RDCT,"VNUE, Inc.",7822,,,2954260249.0,,unsized,out,,0,counting failure; never a member
 1512886,NTRR,NEUTRA CORP.,2833,,,2917899124.0,,unsized,out,,0,counting failure; never a member
 1497230,FYNN,Fyntechnical Innovations Inc,7374,,,2800135695.0,,unsized,out,,0,counting failure; never a member
 1464865,ASII,"Accredited Solutions, Inc.",2080,,,2653493596.0,,unsized,out,,0,counting failure; never a member
-1844452,LUNR,"Intuitive Machines, Inc.",3812,2466151989.33,1281106317.54,84172557.0,15.22,disagree,in,2026-08-31,0,
-940942,HUBG,"Hub Group, Inc.",4731,2422290531.1,1468164734.1299999,37315154.0,39.345,disagree,in,2026-08-31,0,
+1844452,LUNR,"Intuitive Machines, Inc.",3812,2466151989.33,1293210331.2366,84172557.0,15.3638,disagree,in,2026-08-31,0,
+940942,HUBG,"Hub Group, Inc.",4731,2422290531.1,1472642552.6100001,37315154.0,39.465,disagree,in,2026-08-31,0,
 1681556,GXXM,"GEX MANAGEMENT, INC.",8742,,,2405609162.0,,unsized,out,,0,counting failure; never a member
-1783398,UWMC,UWM Holdings Corp,6162,2390151907.53,150016618.275,103104205.0,1.455,disagree,in,2026-08-31,0,
+1783398,UWMC,UWM Holdings Corp,6162,2390151907.53,151047660.32500002,103104205.0,1.465,disagree,in,2026-08-31,0,
 1338929,AHRO,"Authentic Holdings, Inc.",5130,,,2379178836.0,,unsized,out,,0,counting failure; never a member
-1806837,VERX,"Vertex, Inc.",7372,2307550765.5,372988665.45,26359623.0,14.15,disagree,in,2026-08-31,0,
-88948,SENEA,Seneca Foods Corp,2033,1353008126.88,2270551207.725,11735631.0,193.475,disagree,in,2026-08-31,0,
-1852551,NVA,Nova Minerals Corp,1040,210377585.5,2156062609.29,401501417.0,5.37,disagree,in,2026-08-31,0,
-1848275,TOP,TOP Financial Group Ltd,6200,2069593232.49,634942301.5,37044475.0,17.14,disagree,in,2026-08-31,0,
-2020455,ETH,Grayscale Ethereum Staking Mini ETF,6221,,2056632807.68,88040788.0,23.36,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+88948,SENEA,Seneca Foods Corp,2033,1353008126.88,2323068156.45,11735631.0,197.95,disagree,in,2026-08-31,0,
+1806837,VERX,"Vertex, Inc.",7372,2307550765.5,378260590.05,26359623.0,14.35,disagree,in,2026-08-31,0,
+1852551,NVA,Nova Minerals Corp,1040,210377585.5,2111897453.4199998,401501417.0,5.26,disagree,in,2026-08-31,0,
+1848275,TOP,TOP Financial Group Ltd,6200,2069593232.49,614938285.0,37044475.0,16.6,disagree,in,2026-08-31,0,
 1755101,ALDS,APPlife Digital Solutions Inc,5531,,,2025025697.0,,unsized,out,,0,counting failure; never a member
 1490054,APHD,"VERDE BIO HOLDINGS, INC.",1311,,,2020821612.0,,unsized,out,,0,counting failure; never a member
 1435617,PWDY,"POWERDYNE INTERNATIONAL, INC.",7374,,,1997483341.0,,unsized,out,,0,counting failure; never a member
-2126198,XPRO,Expro Ltd,1389,1978468513.8899999,,,18.35,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+2126198,XPRO,Expro Ltd,1389,1978468513.8899999,,,18.42,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
 924396,CRSF,Crisp Momentum Inc.,6199,,,1969621210.0,,unsized,out,,0,counting failure; never a member
-1022321,GEL,GENESIS ENERGY LP,4610,1962761947.08,1441970375.5116,88650988.0,16.2657,disagree,in,2026-08-31,0,
+1022321,GEL,GENESIS ENERGY LP,4610,1962761947.08,1450330163.68,88650988.0,16.36,disagree,in,2026-08-31,0,
 1527613,CIMG,CIMG Inc.,5900,,,1960301219.0,,unsized,out,,0,counting failure; never a member
 1624517,FRQN,"Frequency Holdings, Inc",7389,,,1899869698.0,,unsized,out,,0,counting failure; never a member
-1479615,SLN,Silence Therapeutics plc,2834,834107834.12,1880890290.99,141740037.0,13.27,disagree,in,2026-08-31,0,
-1725210,ETHE,Grayscale Ethereum Staking ETF,6221,,1862999450.0,94568500.0,19.7,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-1328237,DBC,Invesco DB Commodity Index Tracking Fund,6221,,1854525000.0,59250000.0,31.3,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1479615,SLN,Silence Therapeutics plc,2834,834107834.12,1858211885.07,141740037.0,13.11,disagree,in,2026-08-31,0,
 862651,INVU,"Investview, Inc.",7389,,,1844470389.0,,unsized,out,,0,counting failure; never a member
 1990446,GRPS,"Trans American Aquaculture, Inc",0200,,,1805926955.0,,unsized,out,,0,counting failure; never a member
 1318268,MDEX,Madison Technologies Inc.,5900,,,1761428576.0,,unsized,out,,0,counting failure; never a member
-1709442,FSUN,FIRSTSUN CAPITAL BANCORP,6021,1761091165.6200001,1119167186.6399999,27923333.0,40.08,disagree,in,2026-08-31,0,
+1709442,FSUN,FIRSTSUN CAPITAL BANCORP,6021,1761091165.6200001,1114978686.69,27923333.0,39.93,disagree,in,2026-08-31,0,
 1412126,RMSL,RemSleep Holdings Inc.,7200,,,1739610123.0,,unsized,out,,0,counting failure; never a member
 1072379,NWBO,NORTHWEST BIOTHERAPEUTICS INC,2834,,,1705637993.0,,unsized,out,,0,counting failure; never a member
 1589150,RGBP,Regen BioPharma Inc,2834,,,1675277503.0,,unsized,out,,0,counting failure; never a member
 96664,AMFN,"American Fusion, Inc.",4911,,,1641801029.0,,unsized,out,,0,counting failure; never a member
 1343009,CNBX,CNBX Pharmaceuticals Inc.,2834,,,1605768095.0,,unsized,out,,0,counting failure; never a member
 1621227,ADAPY,Adaptimmune Therapeutics PLC,2836,,,1590309546.0,,unsized,out,,0,counting failure; never a member
-2017526,FRNM,"Freenome, Inc.",8071,1589138379.06,129213125.0,8911250.0,14.5,disagree,in,2026-08-31,0,
-1534248,CMMB,Chemomab Therapeutics Ltd.,2834,19857958.6,1573667910.1999998,575381320.0,2.735,disagree,in,2026-08-31,0,
-1657788,KRP,"Kimbell Royalty Partners, LP",1311,1504359121.44,403128719.24,26839462.0,15.02,disagree,in,2026-08-31,0,
-1906364,BXBL,BOXABL Inc.,1520,1416032773.8,39124040.0,10295800.0,3.8,disagree,in,2026-08-31,0,
+2017526,FRNM,"Freenome, Inc.",8071,1589138379.06,128411112.5,8911250.0,14.41,disagree,in,2026-08-31,0,
+1534248,CMMB,Chemomab Therapeutics Ltd.,2834,19857958.6,1533391217.8,575381320.0,2.665,disagree,in,2026-08-31,0,
+1657788,KRP,"Kimbell Royalty Partners, LP",1311,1504359121.44,401518351.52000004,26839462.0,14.96,disagree,in,2026-08-31,0,
+1906364,BXBL,BOXABL Inc.,1520,1416032773.8,39432914.0,10295800.0,3.83,disagree,in,2026-08-31,0,
 1175680,CYDY,CytoDyn Inc.,2834,,,1381942000.0,,unsized,out,,0,counting failure; never a member
 1877461,CBDW,1606 CORP.,7372,,,1342039105.0,,unsized,out,,0,counting failure; never a member
 1068689,ATDS,"Data443 Risk Mitigation, Inc.",7372,,,1313420344.0,,unsized,out,,0,counting failure; never a member
-1553079,ESBA,"Empire State Realty OP, L.P.",6798,1302898635.75,,,,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1553079,ESBA,"Empire State Realty OP, L.P.",6798,1302898635.75,,,4.43,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
 1465470,SHMP,NaturalShrimp Inc,0900,,,1277546746.0,,unsized,out,,0,counting failure; never a member
 1506929,VRDR,"VERDE RESOURCES, INC.",1040,,,1269280891.0,,unsized,out,,0,counting failure; never a member
 1498067,SKTG,SKYTECH ORION GLOBAL CORP.,7372,,,1247885009.0,,unsized,out,,0,counting failure; never a member
-1448397,SHIP,Seanergy Maritime Holdings Corp.,4412,385477242.41999996,1220105632.1,68314985.0,17.86,disagree,in,2026-08-31,0,
-1726173,BH-A,Biglari Holdings Inc.,5812,1213718063.6000001,400281840.0,206864.0,1935.0,disagree,in,2026-08-31,0,
-866729,SCHL,SCHOLASTIC CORP,2731,734885922.0,1197507842.86,30975371.0,38.66,disagree,in,2026-08-31,0,
+1726173,BH-A,Biglari Holdings Inc.,5812,1213718063.6000001,400385272.0,206864.0,1935.5,disagree,in,2026-08-31,0,
+866729,SCHL,SCHOLASTIC CORP,2731,734885922.0,1205096808.755,30975371.0,38.905,disagree,in,2026-08-31,0,
+1448397,SHIP,Seanergy Maritime Holdings Corp.,4412,385477242.41999996,1204393185.55,68314985.0,17.63,disagree,in,2026-08-31,0,
 1131312,ZNOG,ZION OIL & GAS INC,1382,,,1191883199.0,,unsized,out,,0,counting failure; never a member
-1561032,NHP,"National Healthcare Properties, Inc.",6798,1170852308.56,448344247.74,28412183.0,15.78,disagree,in,2026-08-31,0,
-1440972,LAR,Lithium Argentina AG,1000,1127367000.0,1159585294.56,162406904.0,7.14,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
-2000046,FETH,Fidelity Ethereum Fund,6199,,1154291875.0,47375000.0,24.365,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1561032,NHP,"National Healthcare Properties, Inc.",6798,1170852308.56,450191039.635,28412183.0,15.845,disagree,in,2026-08-31,0,
+2000046,FETH,Fidelity Ethereum Fund,6199,,1163525262.5,47375000.0,24.5599,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
 1391426,CLNV,Clean Vision Corp,2860,,,1152768307.0,,unsized,out,,0,counting failure; never a member
-1828937,FOA,Finance of America Companies Inc.,6162,166199746.68,1115044171.8,62642931.0,17.8,disagree,in,2026-08-31,0,
+1440972,LAR,Lithium Argentina AG,1000,1127367000.0,1123043741.16,162406904.0,6.915,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
 1413119,KBLB,"Kraig Biocraft Laboratories, Inc.",2820,,,1099791733.0,,unsized,out,,0,counting failure; never a member
-710752,SBR,SABINE ROYALTY TRUST,6792,1091263973.25,,,76.245,sized,in,2026-08-31,0,successor issuer: no Form 4s under this CIK; the panel resolves the predecessor
+1828937,FOA,Finance of America Companies Inc.,6162,166199746.68,1099270681.7742002,62642931.0,17.5482,disagree,in,2026-08-31,0,
 1082733,VISM,"VISIUM TECHNOLOGIES, INC.",7371,,,1077502919.0,,unsized,out,,0,counting failure; never a member
 1053369,ELTP,ELITE PHARMACEUTICALS INC /NV/,2834,,,1077136442.0,,unsized,out,,0,counting failure; never a member
 1145604,NIKA,"NIKA PHARMACEUTICALS, INC",2834,,,1051689224.0,,unsized,out,,0,counting failure; never a member
@@ -378,7 +374,6 @@
 1818643,PHXE-P,"Phoenix Energy One, LLC",1311,,,100000000.0,,unsized,out,,0,counting failure; never a member
 911421,PREJF,PARTNERRE LTD,6321,,,100000000.0,,unsized,out,,0,counting failure; never a member
 1545236,AHII,American Heritage International Inc.,4950,,,99866250.0,,unsized,out,,0,counting failure; never a member
-1412100,MHLA,"Maiden Holdings, Ltd.",6331,,,99682710.0,,unsized,out,,0,counting failure; never a member
 1072725,GDRZF,GOLD RESERVE LTD,1040,,,99548711.0,,unsized,out,,0,counting failure; never a member
 1800373,GWLL,"GOLDENWELL BIOTECH, INC.",2000,,,99000000.0,,unsized,out,,0,counting failure; never a member
 1932213,BCCG,Blue Chip Capital Group Inc.,6199,,,97806900.0,,unsized,out,,0,counting failure; never a member
@@ -501,7 +496,6 @@
 1115864,ILXP,ECOMINAS CORP.,1400,,,48215467.0,,unsized,out,,0,counting failure; never a member
 1133798,TXRP,"TX Rail Products, Inc.",5084,,,48053084.0,,unsized,out,,0,counting failure; never a member
 1407583,BHLL,Bunker Hill Mining Corp.,1000,,,47207589.0,,unsized,out,,0,counting failure; never a member
-1732409,BCHG,Grayscale Bitcoin Cash Trust (BCH),6221,,,47123300.0,,unsized,out,,0,counting failure; never a member
 1632121,BLNC,"Balance Labs, Inc.",8742,,,46852319.0,,unsized,out,,0,counting failure; never a member
 847942,STQN,STRATEGIC ACQUISITIONS INC /NV/,6199,,,46775000.0,,unsized,out,,0,counting failure; never a member
 34285,RLBY,RELIABILITY INC,7363,,,46707790.0,,unsized,out,,0,counting failure; never a member
@@ -604,7 +598,6 @@
 1490873,ESSI,"ECO SCIENCE SOLUTIONS, INC.",5900,,,24952656.0,,unsized,out,,0,counting failure; never a member
 1308027,VYST,Vystar Corp,3060,,,24621094.0,,unsized,out,,0,counting failure; never a member
 939930,PYYX,"PYXUS INTERNATIONAL, INC.",5150,,,24607791.0,,unsized,out,,0,counting failure; never a member
-1732406,LTCN,Grayscale Litecoin Trust (LTC),6221,,,24252100.0,,unsized,out,,0,counting failure; never a member
 1345865,NFTM,Buildablock Corp.,4841,,,23937979.0,,unsized,out,,0,counting failure; never a member
 2032609,SHFH,Scientist Home Future Health Ltd,2844,,,23716000.0,,unsized,out,,0,counting failure; never a member
 1163389,NWPP,NEW PEOPLES BANKSHARES INC,6022,,,23539302.0,,unsized,out,,0,counting failure; never a member
@@ -653,7 +646,6 @@
 930775,ECIA,ENCISION INC,3841,,,16879645.0,,unsized,out,,0,counting failure; never a member
 1888740,LSEB,LSEB Creative Corp.,2320,,,16813800.0,,unsized,out,,0,counting failure; never a member
 86115,SFES,SAFEGUARD SCIENTIFICS INC,6799,,,16722994.0,,unsized,out,,0,counting failure; never a member
-1408534,FGBIP,"First Guaranty Bancshares, Inc.",6035,,,16539094.0,,unsized,out,,0,counting failure; never a member
 1430300,GWSO,"Global Warming Solutions, Inc.",5960,,,16393903.0,,unsized,out,,0,counting failure; never a member
 1759546,NRDE,Stark Novus Financial Inc.,3711,,,16289293.0,,unsized,out,,0,counting failure; never a member
 1850767,ACUT,Accustem Sciences Inc.,2834,,,16072267.0,,unsized,out,,0,counting failure; never a member
@@ -728,7 +720,6 @@
 1938571,APTN,"ADAPTIN BIO, INC.",2836,,,9233573.0,,unsized,out,,0,counting failure; never a member
 1854275,ZCAR,"Zoomcar Holdings, Inc.",7510,,,8770836.0,,unsized,out,,0,counting failure; never a member
 1094032,QDMI,QDM International Inc.,6411,,,8636186.0,,unsized,out,,0,counting failure; never a member
-1808377,LUCYW,Innovative Eyewear Inc,3851,,,8609196.0,,unsized,out,,0,counting failure; never a member
 1017655,PAYD,PAID INC,7389,,,8477659.0,,unsized,out,,0,counting failure; never a member
 1699709,VNOV,VitaNova Life Sciences Corp,5130,,,8337454.0,,unsized,out,,0,counting failure; never a member
 1416697,BLPG,"Blue Line Protection Group, Inc.",5900,,,8250144.0,,unsized,out,,0,counting failure; never a member
@@ -880,7 +871,6 @@
 912967,FBSI,FIRST BANCSHARES INC /MO/,6036,,,1550815.0,,unsized,out,,0,counting failure; never a member
 1967656,PFSB,"PFS Bancorp, Inc.",6036,,,1546063.0,,unsized,out,,0,counting failure; never a member
 1911467,CRCE,"Circle Energy, Inc./NV",1311,,,1530000.0,,unsized,out,,0,counting failure; never a member
-1761325,GXLM,Grayscale Stellar Lumens Trust (XLM),6221,,,1419000.0,,unsized,out,,0,counting failure; never a member
 2114521,CSBA,CSB Financial Inc.,6036,,,1402935.0,,unsized,out,,0,counting failure; never a member
 790273,CONC,CONECTISYS CORP,3663,,,1388289.0,,unsized,out,,0,counting failure; never a member
 1230524,LEEN,"Leopard Energy, Inc.",8742,,,1272917.0,,unsized,out,,0,counting failure; never a member
@@ -926,7 +916,7 @@
 30554,CTA-PB,"EIDP, Inc.",2820,,,100.0,,unsized,out,,0,counting failure; never a member
 13372,NSARO,NSTAR ELECTRIC CO,4911,,,100.0,,unsized,out,,0,counting failure; never a member
 310522,FNMA,FEDERAL NATIONAL MORTGAGE ASSOCIATION FANNIE MAE,6111,,,,,unsized,out,,0,counting failure; never a member
-2131524,BRVE,"Braveheart Bio, Inc.",2834,,,,26.7,unsized,out,,0,counting failure; never a member
+2131524,BRVE,"Braveheart Bio, Inc.",2834,,,,25.62,unsized,out,,0,counting failure; never a member
 1795139,GTBIF,Green Thumb Industries Inc.,0100,,,,,unsized,out,,0,counting failure; never a member
 1581091,RMAX,"RE/MAX Holdings, Inc.",6531,,,,,unsized,out,,0,counting failure; never a member
 1771706,VREOF,Vireo Growth Inc.,2834,,,,,unsized,out,,0,counting failure; never a member
@@ -951,7 +941,6 @@
 1138586,XCRT,"Xcelerate, Inc.",8000,,,,,unsized,out,,0,counting failure; never a member
 1122993,BMXI,BROOKMOUNT EXPLORATIONS INC,1400,,,,,unsized,out,,0,counting failure; never a member
 1363598,NTRX,"Entrex Carbon Market, Inc.",5712,,,,,unsized,out,,0,counting failure; never a member
-862022,HGTXU,HUGOTON ROYALTY TRUST,6792,,,,,unsized,out,,0,counting failure; never a member
 1335288,REOS,ReoStar Energy CORP,1382,,,,,unsized,out,,0,counting failure; never a member
 1817232,HGAS,Global Gas Corp,2810,,,,,unsized,out,,0,counting failure; never a member
 1395005,BFCH,"UNLOCKD, Inc.",1000,,,,,unsized,out,,0,counting failure; never a member
@@ -966,25 +955,25 @@
 1427437,ETI-P,"ENTERGY TEXAS, INC.",4911,,,,,unsized,out,,0,counting failure; never a member
 1403528,OAK-PA,"Brookfield Oaktree Holdings, LLC",6282,,,,,unsized,out,,0,counting failure; never a member
 1340909,GJO,"STRATS SM TRUST FOR WAL-MART STORES, INC. SECURITIES, SERIES 2005-4",6189,,,,,unsized,out,,0,counting failure; never a member
-1357660,GJT,"STRATS(SM) Trust for Allstate Corp Securities, Series 2006-3",6189,,,,,unsized,out,,0,counting failure; never a member
+1357660,GJT,"STRATS(SM) Trust for Allstate Corp Securities, Series 2006-3",6189,,,,23.22,unsized,out,,0,counting failure; never a member
 1628063,SRG-PA,Seritage Growth Properties,6500,,,,,unsized,out,,0,counting failure; never a member
 1284143,JBK,LEHMAN ABS CORP GOLDMAN SACHS CAP 1 SEC BACKED SER 2004-6,6189,,,,25.38,unsized,out,,0,counting failure; never a member
 1348952,ELC,"ENTERGY LOUISIANA, LLC",4911,,,,19.55,unsized,out,,0,counting failure; never a member
 1283464,KTH,STRUCTURED PRODUCTS CORP CORTS TR FOR PECO ENERGY CAP TR III,6189,,,,28.52,unsized,out,,0,counting failure; never a member
 18654,AILIH,Ameren Illinois Co,4931,,,,,unsized,out,,0,counting failure; never a member
-70502,NRUC,NATIONAL RURAL UTILITIES COOPERATIVE FINANCE CORP /DC/,6159,,,,21.4159,unsized,out,,0,counting failure; never a member
+70502,NRUC,NATIONAL RURAL UTILITIES COOPERATIVE FINANCE CORP /DC/,6159,,,,21.165,unsized,out,,0,counting failure; never a member
 71508,ENJ,"ENTERGY NEW ORLEANS, LLC",4931,,,,19.29,unsized,out,,0,counting failure; never a member
 823277,CHSCP,CHS INC,5150,,,,,unsized,out,,0,counting failure; never a member
-66901,EMP,"ENTERGY MISSISSIPPI, LLC",4911,,,,20.0688,unsized,out,,0,counting failure; never a member
+66901,EMP,"ENTERGY MISSISSIPPI, LLC",4911,,,,19.95,unsized,out,,0,counting failure; never a member
 201533,CMS-PB,CONSUMERS ENERGY CO,4931,,,,,unsized,out,,0,counting failure; never a member
 100826,UELMO,UNION ELECTRIC CO,4911,,,,,unsized,out,,0,counting failure; never a member
-41091,GPJA,GEORGIA POWER CO,4911,,,,20.47,unsized,out,,0,counting failure; never a member
+41091,GPJA,GEORGIA POWER CO,4911,,,,20.4385,unsized,out,,0,counting failure; never a member
 2102713,KCAC-UN,Kensington Capital Acquisition Corp. VI,2810,,,,,unsized,out,,0,counting failure; never a member
 1618755,QSP,Restaurant Brands International Limited Partnership,5812,,,,,unsized,out,,0,counting failure; never a member
-1294808,PYT,PPLUS Trust Series GSC-2,6189,,,,,unsized,out,,0,counting failure; never a member
+1294808,PYT,PPLUS Trust Series GSC-2,6189,,,,23.47,unsized,out,,0,counting failure; never a member
 1267332,IPB,MERRILL LYNCH DEPOSITOR INC INDEXPLUS TRUST SERIES 2003-1,6189,,,,25.03,unsized,out,,0,counting failure; never a member
 1283337,KTN,STRUCTURED PRODUCTS CORP CRED ENHANCE CORTS TR FOR AON CAP A,6189,,,,,unsized,out,,0,counting failure; never a member
-1286405,GJH,STRATS SM TRUST FOR U S CELL CORP SEC SERIES 2004 6,6189,,,,9.44,unsized,out,,0,counting failure; never a member
+1286405,GJH,STRATS SM TRUST FOR U S CELL CORP SEC SERIES 2004 6,6189,,,,9.48,unsized,out,,0,counting failure; never a member
 1611983,LBRDK,Liberty Broadband Corp,4841,,,,,unsized,out,,0,counting failure; never a member
 1465740,TWO-PC,TWO HARBORS INVESTMENT CORP.,6798,,,,,unsized,out,,0,counting failure; never a member
 23426,CNTHP,CONNECTICUT LIGHT & POWER CO,4911,,,,,unsized,out,,0,counting failure; never a member

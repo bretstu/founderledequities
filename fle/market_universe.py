@@ -195,10 +195,16 @@ def eligibility(subs: dict, name: str = "") -> str:
     if forms & INVESTMENT_FORMS:
         return "investment company (files " + ", ".join(
             sorted(forms & INVESTMENT_FORMS)[:2]) + ")"
+    words = set(name.upper().replace(",", " ").replace(".", " ").split())
+    # a registrant that calls itself a fund or ETF and holds no annual
+    # meetings is what it says it is, whatever its SIC (Fidelity Ethereum
+    # Fund carries none). "Trust" is deliberately not in this test: REITs
+    # and property trusts are operating companies with boards.
+    if words & {"FUND", "ETF", "ETP"} and not (forms & ANNUAL_MEETING):
+        return "self-described fund with no annual meeting"
     sic = str(subs.get("sic") or "")
     if sic in EXCLUDED_SIC:
         why, rescuable = EXCLUDED_SIC[sic]
-        words = set(name.upper().replace(",", " ").replace(".", " ").split())
         self_described = bool(words & set(SELF_DESCRIBED))
         if not (rescuable and forms & ANNUAL_MEETING and not self_described):
             return f"{why} (SIC {sic})"

@@ -43,6 +43,14 @@ def test_n_px_is_filed_by_ordinary_corporations_and_excludes_nobody():
     assert eligibility(_subs(["10-K", "10-Q", "4", "DEF 14A", "N-PX"], sic="5961")) == ""
 
 
+def test_a_self_described_fund_with_no_meetings_is_out_whatever_its_sic():
+    assert "self-described fund" in eligibility(_subs(["10-K", "10-Q", "3"], sic=""),
+                                                "Fidelity Ethereum Fund")
+    # a REIT called a Trust with meetings is a company; so is a bank called Trust
+    assert eligibility(_subs(["10-K", "4", "DEF 14A"], sic="6798"), "American Assets Trust, Inc.") == ""
+    assert eligibility(_subs(["10-K", "4", "DEF 14A"], sic="6022"), "NORTHERN TRUST CORP") == ""
+
+
 def test_non_operating_entities_are_out_by_sic_unless_they_hold_meetings():
     for sic, why in (("6221", "commodity pool"), ("6792", "royalty trust"),
                      ("6726", "investment company")):

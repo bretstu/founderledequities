@@ -18,7 +18,8 @@ from fle.market_universe import eligibility, recent_submissions  # noqa: E402
 # at the wrong company.)
 MUST_FAIL = {"NUV": "closed-end fund", "BXSL": "BDC", "MSDL": "BDC",
              "PBT": "royalty trust", "SBR": "royalty trust",
-             "GBTC": "crypto ETP", "DBA": "commodity pool", "USO": "commodity pool"}
+             "GBTC": "crypto ETP", "DBA": "commodity pool", "USO": "commodity pool",
+             "FETH": "crypto fund, no SIC"}
 MUST_PASS_EXTRA = {"XOM": "successor issuer", "HONA": "spin-off",
                    "BX": "controlled, no proxy", "ERIE": "controlled, no proxy",
                    "TPL": "ex-trust corporation", "FDXF": "young spin-off"}
