@@ -10,7 +10,12 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
-CMD=(python3 -m fle.cli panel
+# YOUR Ctrl+C exits the wrapper; only the 01:55 TIMER pauses-and-resumes.
+# (The first version could not tell the two apart and answered a user's
+# interrupt by going to sleep until 03:45.)
+trap 'echo; echo "== stopped by user; the checkpoint keeps all progress =="; exit 130' INT
+
+CMD=(env PYTHONUNBUFFERED=1 python3 -m fle.cli panel
      --universe universe/universe-2026-08-31.csv --workers 4
      --out _staging/u-panel.csv --checkpoint _staging/u-panel.jsonl)
 
@@ -36,6 +41,12 @@ while true; do
   if [ "$status" -eq 0 ]; then
     echo "== panel finished =="
     break
+  fi
+  if [ "$status" -ne 124 ]; then
+    # not the timer (124 = timeout fired): a crash or something unexpected.
+    # Do not silently sleep on it -- say so and stop.
+    echo "== panel exited with status $status; see _staging/u-panel.log =="
+    exit "$status"
   fi
   naptime=$(secs_until 03:45)
   echo "== paused for the nightly: sleeping $(( naptime / 60 )) min =="
