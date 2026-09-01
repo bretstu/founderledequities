@@ -140,8 +140,17 @@ def stake_from_schedule13(client, cik: int, owner_name: str,
 
 
 def is_foreign_reporter(subs: dict) -> bool:
-    """A 20-F/40-F filer with no 10-K: the Section 16 exemption regime."""
-    forms = {(f.get("form") or "") for f in subs.get("_filings", [])}
-    foreign = any(x in forms for x in ("20-F", "40-F", "20-F/A", "40-F/A"))
-    domestic = any(x in forms for x in ("10-K", "10-K/A"))
-    return foreign and not domestic
+    """Foreign regime NOW: the newest periodic filing is a 20-F/40-F.
+
+    Lifetime tests get Shopify wrong: its feed holds two 10-Ks from a
+    2021-22 domestic stint AND eight 40-Fs -- including the current one.
+    A company reports under exactly one regime at a time, and the newest
+    periodic filing says which."""
+    periodic = [f for f in subs.get("_filings", [])
+                if (f.get("form") or "") in
+                ("10-K", "10-K/A", "10-Q", "10-Q/A",
+                 "20-F", "20-F/A", "40-F", "40-F/A")]
+    if not periodic:
+        return False
+    newest = max(periodic, key=lambda f: f.get("filingDate", ""))
+    return (newest.get("form") or "").startswith(("20-F", "40-F"))

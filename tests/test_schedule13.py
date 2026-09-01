@@ -74,10 +74,21 @@ def test_end_to_end_with_entity_escapes():
     assert stake.filing_date == "2024-02-13" and "sc13ga8.htm" in stake.url
 
 
-def test_foreign_reporter_detection():
-    assert is_foreign_reporter({"_filings": [{"form": "40-F"}, {"form": "6-K"}]})
-    assert not is_foreign_reporter({"_filings": [{"form": "10-K"}, {"form": "40-F"}]})
-    assert not is_foreign_reporter({"_filings": [{"form": "10-K"}]})
+def test_foreign_reporter_is_judged_by_the_newest_periodic_filing():
+    """Shopify holds 10-Ks from a 2021-22 domestic stint AND current
+    40-Fs; a lifetime test called it domestic and the fallback never
+    fired. The newest periodic filing names today's regime."""
+    shop_shaped = {"_filings": [
+        {"form": "10-K", "filingDate": "2022-02-15"},
+        {"form": "10-Q", "filingDate": "2022-08-01"},
+        {"form": "40-F", "filingDate": "2026-02-10"},
+        {"form": "6-K", "filingDate": "2026-08-01"}]}
+    assert is_foreign_reporter(shop_shaped)
+    back_home = {"_filings": [
+        {"form": "40-F", "filingDate": "2020-02-10"},
+        {"form": "10-K", "filingDate": "2026-02-15"}]}
+    assert not is_foreign_reporter(back_home)
+    assert not is_foreign_reporter({"_filings": [{"form": "6-K", "filingDate": "2026-01-01"}]})
 
 
 def test_a_fetch_failure_raises_not_absent():
