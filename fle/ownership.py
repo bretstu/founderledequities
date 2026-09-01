@@ -54,6 +54,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 
 from .config import SETTINGS
+from .schedule13 import is_foreign_reporter, stake_from_schedule13
 from .identity import peo_from_certification
 from .ledger import build_ledger
 from .splits import fetch_splits
@@ -273,6 +274,36 @@ def build(client, cik: int, company: str = "", ticker: str = "",
             rec.shares_as_of = led.last_filing
             rec.form4_url = led.last_url
         else:
+            # FOREIGN-REGIME FALLBACK. A 20-F/40-F issuer's insiders are
+            # exempt from Section 16 (Rule 3a12-3(b)), so an empty ledger
+            # here is the regime, not the person. But a >5% CEO still
+            # files Schedule 13D/G about the company -- Lütke's 13G/A
+            # states 80,997,982 SHOP shares, 6.3% -- so before giving up,
+            # read those. Only reached when Section 16 found nothing, so
+            # it cannot disturb a company the normal path serves.
+            try:
+                subs = client.submissions(cik)
+            except Exception:  # noqa: BLE001
+                subs = {}
+            if is_foreign_reporter(subs):
+                stake = stake_from_schedule13(client, cik, owner_name)
+                if stake:
+                    rec.shares = stake.shares
+                    rec.shares_as_of = stake.filing_date
+                    rec.form4_url = stake.url
+                    rec.stake_source = f"{stake.form} {stake.filing_date}"
+                    rec.confidence = "low"
+                    flag("problem",
+                         f"foreign-regime issuer: stake from {stake.form} "
+                         f"dated {stake.filing_date}; no U.S. transaction "
+                         f"filings exist")
+                    if stake.percent is not None:
+                        flag("note", f"schedule reports {stake.percent}% of class")
+                    return rec
+                rec.error = ("foreign-regime issuer (20-F/40-F): insiders "
+                             "exempt from Section 16; no Schedule 13D/G "
+                             "stake found for this person")
+                return rec
             rec.error = led.note or "no Section 16 holdings found"
             return rec
 
