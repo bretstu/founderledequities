@@ -30,8 +30,16 @@ from .config import SEC_BASE, SEC_DATA, MAX_REQUESTS_PER_SECOND, SETTINGS
 STOP = threading.Event()
 
 
-class Stopped(RuntimeError):
-    """The run was interrupted; the in-flight company is abandoned."""
+class Stopped(BaseException):
+    """The run was interrupted; the in-flight company is abandoned.
+
+    A BaseException, like KeyboardInterrupt, ON PURPOSE: the ledger and
+    the certification search skip individual bad filings with generic
+    `except Exception` handlers, and when this was a RuntimeError the
+    01:55 timer's interrupt was swallowed inside a worker's fetch -- the
+    ledger finished with an empty filing list and three CEOs were
+    checkpointed as owning nothing. An interrupt must pass through every
+    handler that was written for network hiccups."""
 
 
 class RateLimiter:
