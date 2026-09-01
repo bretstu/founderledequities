@@ -389,11 +389,23 @@ def _doc_url(cik: int, acc: str, primary: str) -> str:
             f"{acc.replace('-', '')}/{name}")
 
 
-def _parse(client, cik: int, f: dict):
+class _Unread(Exception):
+    """A filing that could not be FETCHED, as opposed to one that was read
+    and did not parse. The chooser counts these: a search that could not
+    read its filings must not conclude that the person is absent."""
+
+
+def _parse(client, cik: int, f: dict, unread: list | None = None):
+    url = _doc_url(cik, f.get("accessionNumber", ""), f.get("primaryDocument", ""))
     try:
-        return ET.fromstring(client.get(
-            _doc_url(cik, f.get("accessionNumber", ""), f.get("primaryDocument", ""))))
-    except Exception:  # noqa: BLE001
+        raw = client.get(url)
+    except Exception as exc:  # noqa: BLE001 -- fetch failed: throttle, outage
+        if unread is not None:
+            unread.append(f"{f.get('accessionNumber')}: {exc}")
+        return None
+    try:
+        return ET.fromstring(raw)
+    except Exception:  # noqa: BLE001 -- read fine, not XML: genuinely skip
         return None
 
 
@@ -695,6 +707,7 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
         return [f for f in ordered if f.get("accessionNumber") in accs]
 
     mine = theirs(owner_cik) if owner_cik else None
+    unread_count = 0
     if mine is None and owner_name:
         # Form 3s first -- one per insider, so a short list covering everyone.
         # Then everything else, newest first, for a Form 3 that predates
@@ -714,8 +727,9 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
         # and today's chief executive files today under today's title.
         CEO_TITLE = re.compile(r"\bCEO\b|CHIEF EXEC|PRINCIPAL EXEC", re.I)
         cands: dict = {}
+        unread: list = []
         for f in threes + (rest if not max_search else rest[:max_search]):
-            root = _parse(client, issuer_cik, f)
+            root = _parse(client, issuer_cik, f, unread)
             if root is None:
                 continue
             when = f.get("filingDate") or ""
@@ -741,6 +755,8 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                     settled_early = True
             if settled_early:
                 break
+
+        unread_count = len(unread)
 
         def rank(d):
             # An officer outranks a namesake vehicle outright: the
@@ -817,6 +833,17 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                     if alt and len(alt) > len(mine or []):
                         owner_cik, led.owner_name, mine = cik_, name_, alt
     if mine is None:
+        if unread_count:
+            # THE THIRD HOME OF THE SAME BUG. Under SEC's throttle (or an
+            # interrupt, back when it was catchable) every filing "parsed
+            # to nothing", the loop skipped them all, and three sitting
+            # CEOs -- Thaysen, Gelfond, Jonas -- were recorded as absent
+            # from their own companies' filings. A search that could not
+            # read is not a search; say so, retryably.
+            raise RuntimeError(
+                f"owner search could not read {unread_count} of the "
+                f"filings it needed (SEC throttling?); refusing to "
+                f"conclude the person is absent")
         led.note = (f"could not find this person among the issuer's "
                     f"{led.issuer_s16} Section 16 filings "
                     f"({led.searched} Form 3s searched); "

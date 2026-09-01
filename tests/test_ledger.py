@@ -2985,3 +2985,24 @@ def test_small_unexplained_noise_is_still_ignored():
     snaps = [s(1.0e6, 0), s(9.5e5, -5.0e4), s(1.0e6, 5.0e4), s(1.0e6, 0)]
     mark_restated(snaps)
     assert not any(x.restated for x in snaps)
+
+
+def test_an_owner_search_that_could_not_read_refuses_to_conclude_absence(monkeypatch):
+    """Thaysen (ILMN), Gelfond (IMAX), Jonas (IDT) were recorded as absent
+    from their own companies' filings: every Form 4 fetch failed under
+    the throttle, the parser returned None, the loop skipped them all.
+    Unreadable is not absent."""
+    import pytest
+    import fle.ledger as L
+
+    class Throttled:
+        def submissions(self, cik):
+            return {"_filings": [
+                {"form": "3", "accessionNumber": "0001-26-000001",
+                 "primaryDocument": "x.xml", "filingDate": "2026-01-01"},
+                {"form": "4", "accessionNumber": "0001-26-000002",
+                 "primaryDocument": "y.xml", "filingDate": "2026-02-01"}]}
+        def get(self, url, use_cache=True):
+            raise RuntimeError("429 for " + url)
+    with pytest.raises(RuntimeError, match="could not read"):
+        L.build_ledger(Throttled(), 1, owner_name="Jacob Thaysen")
