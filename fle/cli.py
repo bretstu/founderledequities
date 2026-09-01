@@ -530,10 +530,15 @@ def cmd_panel(args) -> int:
               + (f"  -> {row.get('owner_name')}"
                  if row.get("owner_name") and not row.get("is_officer") else ""))
 
-    rows = run_panel(client, members, args.checkpoint, redo=args.redo,
-                     exclusions=read_exclusions(args.exclusions),
-                     on_row=row_done, on_filing=on_filing,
-                     workers=max(1, int(getattr(args, "workers", 1) or 1)))
+    try:
+        rows = run_panel(client, members, args.checkpoint, redo=args.redo,
+                         exclusions=read_exclusions(args.exclusions),
+                         on_row=row_done, on_filing=on_filing,
+                         workers=max(1, int(getattr(args, "workers", 1) or 1)))
+    except KeyboardInterrupt:
+        _clear()
+        print("  interrupted; the checkpoint keeps every finished company")
+        return 130
     write_csv(rows, args.out)
     s = summarise(rows)
     print(f"\n  {s['with_a_figure']} of {s['total']} produced a figure"
