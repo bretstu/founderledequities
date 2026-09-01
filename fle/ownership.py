@@ -77,6 +77,9 @@ class Ownership:
     is_officer: bool = False      # the one signal that says it IS the CEO
 
     shares: float | None = None
+    # "SC 13G/A 2024-02-13" when the figure came from a Schedule 13D/G
+    # (foreign-regime fallback) rather than Section 16; empty otherwise.
+    stake_source: str = ""
     outstanding: float | None = None
     pct: float | None = None
 

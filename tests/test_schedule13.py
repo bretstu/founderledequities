@@ -100,3 +100,15 @@ def test_a_fetch_failure_raises_not_absent():
             raise RuntimeError("429")
     with pytest.raises(RuntimeError):
         stake_from_schedule13(Broken(), 1, "Anyone")
+
+
+def test_stake_source_is_a_declared_field_that_survives_as_dict():
+    """The first wiring assigned rec.stake_source without declaring the
+    field; asdict() silently dropped it, so even a successful fallback
+    left no trace in the checkpoint. A field the CSV must carry is
+    declared, not improvised."""
+    from fle.ownership import Ownership
+    r = Ownership(cik=1, company="x")
+    assert r.stake_source == ""
+    r.stake_source = "SC 13G/A 2024-02-13"
+    assert r.as_dict().get("stake_source") == "SC 13G/A 2024-02-13"
