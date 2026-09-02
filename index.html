@@ -1214,7 +1214,7 @@ function renderHero(){
      subline), never a component of a statistic. */
   const OPEN=PANEL.filter(r=>!r.masked);
   $("#thesis").innerHTML=`<b>${above5}</b> of ${open} chief executives own more than 5% of the company they run.`+
-    (sealed?`<span style="color:var(--faint);font-size:0.55em;display:block;margin-top:6px">${sealed} more companies measured — their stakes sit behind the seal</span>`:"");
+    (sealed?`<span style="color:var(--faint);font-size:0.55em;display:block;margin-top:10px;font-weight:400">${sealed.toLocaleString()} more companies measured <button class="gopro" onclick="openPro()" style="font-size:0.8em;padding:6px 14px;margin-left:12px;vertical-align:2px">Go Pro</button></span>`:"");
 
   // WHAT THE SITE IS ACTUALLY ABOUT, said with the numbers we have.
   //
@@ -1357,9 +1357,7 @@ function renderTable(){
     </tr>`}).join("");
   const sealedN=PANEL.filter(r=>r.masked).length;
   $("#tcount").textContent=
-    `${total} compan${total===1?"y":"ies"}`+
-    (sealedN?` · ${sealedN.toLocaleString()} more measured — behind the seal ${SEAL}`:"")+
-    ` · scroll the table${state.live.panel?"":" · embedded sample — serve sp500.csv beside this file to load all 500"}`;
+    `${total} compan${total===1?"y":"ies"} · scroll the table${state.live.panel?"":" · embedded sample — serve sp500.csv beside this file to load all 500"}`;
   document.querySelectorAll("th.sortable").forEach(th=>{
     const on=th.dataset.key===state.sort.key;
     th.querySelector(".arr").textContent=on?(state.sort.dir<0?" ↓":" ↑"):"";
