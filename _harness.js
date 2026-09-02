@@ -61,7 +61,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,nFilings,evBadge,unchangedKind,pctOf,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,soldTickers,sparkline,lastTrades,exportTable,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,nFilings,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,soldTickers,sparkline,lastTrades,exportTable,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -327,6 +327,9 @@ const P=runPage();
   assert(t.includes("sortTape('v')"), "the value head is clickable");
   setView("");
 
+  assert((idxsrc.match(/^\/\*@shared\*\/$/gm)||[]).length>=25,"the declarations the company pages reuse are marked @shared");
+  assert(idxsrc.includes('href="/company/${r.tk}/"'),"the drawer and the screener link to each company's page");
+  assert(typeof P.SEAL==="string"&&P.SEAL.length===1,"the seal glyph is defined (it was referenced in five places and defined in none)");
   // drawer with events present -- and the trade date leads there
   openDrawer("TSLA");
   assert(els["#drawer"]._html.includes("Latest trades"), "drawer prefers filed events");

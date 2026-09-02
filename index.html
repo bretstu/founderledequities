@@ -546,6 +546,10 @@ td.asrc a:hover{color:var(--blue)}
 .dflags{margin:14px 30px 0}
 .dflags summary{font-family:var(--mono);font-size:11.5px;color:var(--faint);cursor:pointer}
 .dflags pre{font-family:var(--mono);font-size:11px;color:var(--mut);white-space:pre-wrap;background:var(--panel);border-radius:8px;padding:12px 14px;margin-top:8px;line-height:1.6}
+.dfull{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--blue);text-decoration:none}
+.dfull:hover{text-decoration:underline}
+td.c-co .tk a{color:inherit;text-decoration:none}
+td.c-co .tk a:hover{text-decoration:underline}
 .dsrc{padding:8px 30px 36px;font-size:12.5px;color:var(--mut)}
 .dsrc a{font-family:var(--mono);font-size:11.5px}
 
@@ -821,11 +825,20 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
    back to an embedded sample of real pipeline output and says so.
    ================================================================ */
 const $=s=>document.querySelector(s);
+/* @shared MARKS CODE THE COMPANY PAGES REUSE. ops/build_company_pages.py
+   extracts every declaration that follows a marker into public/company.js,
+   so the parsers, the formatters, the chart and the honesty rules (what a
+   cleaned series excludes, how a trade is badged) have ONE source and the
+   two pages cannot drift. Nothing marked may touch the DOM or app state. */
+/*@shared*/
+const SEAL="◆";   /* the glyph of a stake behind the seal; referenced in five places and, until now, defined in none */
+/*@shared*/
 const fmt=n=>Math.round(n).toLocaleString("en-US");
 /* ROUNDING CAN CROSS THE BOUNDARY IT WAS TESTED AGAINST.
    Musk's 12 September 2025 purchase is $999,959,042 -- under a billion, so
    it took the millions branch, rounded to 1000.0 and printed "$1000M". The
    unit is chosen after rounding now, not before. */
+/*@shared*/
 const money=n=>{
   const u=[[1e12,"T",2],[1e9,"B",1],[1e6,"M",1]];
   for(const [div,suf,dp] of u){
@@ -837,6 +850,7 @@ const money=n=>{
   }
   return "$"+Math.round(n).toLocaleString("en-US");
 };
+/*@shared*/
 const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
@@ -928,6 +942,7 @@ const EVSAMPLE=[{"tk":"SLB","ceo":"Olivier Le Peuch","fd":"2026-08-27","td":"202
 let PANEL=[],HIST={},PRICES={},PRICES_ASOF="",FOUNDERS={},EVENTS=[],PERF={},TRENDS={};
 
 /* ---------------- CSV loading ---------------- */
+/*@shared*/
 function parseCSV(text){
   const rows=[];let row=[],cell="",inQ=false;
   text=text.replace(/^\uFEFF/,"");
@@ -947,8 +962,10 @@ function parseCSV(text){
   const head=rows.shift().map(h=>h.trim());
   return rows.filter(r=>r.length>1).map(r=>Object.fromEntries(head.map((h,i)=>[h,(r[i]||"").trim()])));
 }
+/*@shared*/
 const num=v=>{const n=parseFloat(String(v).replace(/,/g,""));return isFinite(n)?n:null};
 
+/*@shared*/
 function mapPanel(recs){
   return recs.map(r=>({
     tk:(r.ticker||"").toUpperCase(), co:r.company||"", ceo:r.ceo||"",
@@ -974,6 +991,7 @@ function mapPanel(recs){
     src13:r.stake_source||"",
   })).filter(r=>r.tk&&(r.masked||(r.pct!==null&&r.sh!==null)));
 }
+/*@shared*/
 function mapHistory(recs){
   const out={};
   /* whether this file carries the pipeline's restated column -- detected
@@ -994,6 +1012,7 @@ function mapHistory(recs){
   return out;
 }
 
+/*@shared*/
 function mapEvents(recs){
   // one row per (filing, code, day) -- the pipeline already folded the
   // broker fills, so nothing here re-derives anything
@@ -1092,6 +1111,7 @@ async function loadData(){
   });
 }
 
+/*@shared*/
 function fInfo(tk){return FOUNDERS[tk]||null}
 function fOnly(tk,on){
   /* off: everyone. on: only companies whose chief executive the proxy
@@ -1113,11 +1133,13 @@ function wireSw(id,flip){
   el.addEventListener("click",flip);
   el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}});
 }
+/*@shared*/
 function fMark(tk){
   const i=fInfo(tk);
   if(!i||i.f!=="yes")return"";
   return `<span class="fm" title="founder — ${(i.ev||"named a founder in the proxy").replace(/"/g,"&quot;").slice(0,300)}">F</span>`;
 }
+/*@shared*/
 function fBadge(tk){
   const i=fInfo(tk);
   if(!i)return"";
@@ -1136,6 +1158,7 @@ function applyPrices(){
 }
 
 /* ---------------- charts ---------------- */
+/*@shared*/
 function chartSVG(pts,{w=520,h=200}={}){
   if(pts.length>140){const k=Math.ceil(pts.length/140);
     pts=pts.filter((_,i)=>i%k===0||i===pts.length-1);}
@@ -1559,7 +1582,7 @@ function renderTable(){
   $("#tbody").innerHTML=rows.map((r,i)=>{
     return `<tr onclick="openDrawer('${r.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${r.tk}')">
      <td class="rk">${String(i+1).padStart(2,"0")}</td>
-     <td class="c-co"><div class="tk">${r.tk}</div><div class="nm" title="${r.co.replace(/"/g,"&quot;")}">${r.co}</div></td>
+     <td class="c-co"><div class="tk"><a href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></div><div class="nm" title="${r.co.replace(/"/g,"&quot;")}">${r.co}</div></td>
      <td class="ceo h-ceo"><span class="ceow"><span class="cn" title="${r.ceo.replace(/"/g,"&quot;")}">${r.ceo}</span>${fBadge(r.tk)}</span></td>
      <td><div class="cell-own">${r.masked
         ?`<div class="tbar" title="measured from this company's filings — in the sealed universe; the S&P 500 is open in full"><i style="width:0.75%"></i></div><div class="tpct" style="color:var(--faint)" title="measured from this company's filings — in the sealed universe; the S&P 500 is open in full">${SEAL}${trendArrow(r.tk)}</div>`
@@ -1588,7 +1611,9 @@ function renderTable(){
     th.setAttribute("aria-sort",on?(state.sort.dir<0?"descending":"ascending"):"none");
   });
 }
+/*@shared*/
 let _cleanCache={},_cleanSrc=null;
+/*@shared*/
 function cleanHist(tk){
   /* THE CACHE DIES WITH ITS SOURCE.
      The page paints instantly from embedded samples, then the real data
@@ -1673,6 +1698,7 @@ function cleanHist(tk){
   }
   return _cleanCache[tk]=kept;
 }
+/*@shared*/
 function trajStats(tk,days){
   /* the numbers one company's history yields: where it is, where it was at
      the horizon, and whether the latest filing set a record low */
@@ -1699,6 +1725,7 @@ function trajStats(tk,days){
           spanDays:(Date.parse(last[0])-Date.parse(pts[0][0]))/86400e3,
           ageDays:Math.round((Date.now()-Date.parse(last[0]))/86400e3)};
 }
+/*@shared*/
 function soldTickers(){
   /* who has EVER reduced a stake by selling, from the filed trades --
      exercise-and-sell doesn't count against anyone, because the stake did
@@ -1952,6 +1979,7 @@ function coOf(tk){const r=PANEL.find(p=>p.tk===tk);return r?r.co:"";}
    exchanged into shares and sold (Schwarzman, every time -- his common
    position is zero before and after); "sale, position unchanged" is a day
    the filing does not explain. All three sit apart from the ranking. */
+/*@shared*/
 const UNCHANGED={"exercise and sell":"exercise","convert and sell":"convert","sale, position unchanged":"","purchase, position unchanged":"bought"};
 /* A PRE-REGISTRATION TRADE IS KEPT APART THE SAME WAY. Section 16 reporting
    begins at registration and the first Form 4 catches up on everything
@@ -1959,10 +1987,12 @@ const UNCHANGED={"exercise and sell":"exercise","convert and sell":"convert","sa
    the person signed, and says nothing about what they did as a public-
    company chief executive. Badged, one click away, not ranked, not the
    last trade, not a sale for never-sold. */
+/*@shared*/
 function unchangedKind(e){
   if(e.pre)return"pre";
   return (e.c==="S"||e.c==="P")&&e.lb in UNCHANGED?UNCHANGED[e.lb]:null;
 }
+/*@shared*/
 function evBadge(e){
   if(e.pre)return{t:"PRE-IPO",k:"neu",
     n:`traded before the company's first ownership filing (${e.reg}) — a pre-registration transaction reported in the catch-up Form 4, not a trade in the public stock`};
@@ -1984,6 +2014,7 @@ function evBadge(e){
   return{t:"SOLD",k:"dsoft",
     n:"a sale — the 10b5-1 checkbox did not exist before April 2023, so scheduled-or-not is unknown"};
 }
+/*@shared*/
 function evValCell(e){
   if(e.v===null||e.v===undefined)return '<span class="nopr" title="the filing reports no price on these rows">—</span>';
   const m=money(e.v);
@@ -1999,11 +2030,13 @@ function evValCell(e){
    Form 4 filed 17 June said so; shown as "17 June" the row read as a sale
    inside the lockup. The other date is always one hover away, and a lag
    past two business days is named. */
+/*@shared*/
 function lagNote(e){
   if(!e.td||!e.fd||e.td===e.fd)return"";
   const days=Math.round((Date.parse(e.fd)-Date.parse(e.td))/86400e3);
   return days>4?` — filed ${days} days after the trade (the first Form 4 after a registration reports everything since the Form 3)`:" — filings lag trades by up to two business days";
 }
+/*@shared*/
 function pctOf(e){
   /* THE PERCENTAGE, OR ITS APPROXIMATION. The pipeline declines a figure
      over any residue; it offers pct_approx when the residue is under 1% of
@@ -2014,9 +2047,11 @@ function pctOf(e){
   if(e.pa!==null&&e.pa!==undefined)return{v:e.pa,approx:true};
   return null;
 }
+/*@shared*/
 function approxNote(e){
   return `≈ the walk left ${fmt(Math.abs(e.rs||0))} share${Math.abs(e.rs||0)===1?"":"s"} unexplained that day — under 1% of the trade and 0.1% of the position, so the figure cannot move`;
 }
+/*@shared*/
 function pctWhy(e){
   /* WHY A PERCENTAGE IS MISSING IS ITSELF INFORMATION.
      A blank cell beside Schwarzman's $20.1m and a filled one beside
@@ -2237,10 +2272,12 @@ function dayScope(){
   const sealed=PANEL.some(r=>r.masked);
   return (state.pro&&!sealed)?PANEL.length.toLocaleString()+" companies":"S&P 500";
 }
+/*@shared*/
 function shortDay(d){
   const t=Date.parse(d+"T00:00:00Z");if(isNaN(t))return d;
   return new Date(t).toLocaleDateString("en-US",{weekday:"short",month:"numeric",day:"numeric",timeZone:"UTC"}).replace(",","");
 }
+/*@shared*/
 function niceDay(d){
   const t=Date.parse(d+"T00:00:00Z");if(isNaN(t))return d;
   return new Date(t).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:"UTC"});
@@ -2482,6 +2519,7 @@ function openDrawer(tk){
      <div class="tk">${r.tk}${r.masked?` · ${SEAL} SEALED UNIVERSE`:" · S&P 500"}</div>
      <h3>${r.co}</h3>
      <div class="ce">${r.ceo} — CEO ${fBadge(r.tk)}</div>
+     <a class="dfull" href="/company/${r.tk}/" title="this company's own page: the record, every trade, every filing">Full record →</a>
      ${fInfo(r.tk)&&fInfo(r.tk).f==="yes"&&fInfo(r.tk).ev?`<div class="dnote" style="margin:14px 0 0">“${fInfo(r.tk).ev.slice(0,280)}” <span style="color:var(--faint)">— ${fInfo(r.tk).src}</span></div>`:""}
    </div>
    <div class="dpct${r.units||r.masked?" wide":""}">${r.masked

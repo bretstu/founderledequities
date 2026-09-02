@@ -71,7 +71,10 @@ def money(v):
         s = f"{x:.0f}" if x >= 100 else f"{x:.{dp}f}"
         if float(s) >= 1000 and div < 1e12:
             continue
-        return "$" + s.rstrip("0").rstrip(".") + suf
+        # strip only a decimal's trailing zeros: "1.30" -> "1.3", never "370" -> "37"
+        if "." in s:
+            s = s.rstrip("0").rstrip(".")
+        return "$" + s + suf
     return f"${v:,.0f}"
 
 

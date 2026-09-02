@@ -110,6 +110,10 @@ fi
 
 # ---- 2. free tier, at the root: the generator's output plus prices ----
 cp -r site-data/. public/
+# ---- 3a. one page per company, at its own address ----
+# company.js and site.css are extracted from index.html here, so the pages
+# and the home page share one source for every rule; sitemap.xml lists them.
+python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" public/
 for f in prices.csv perf.csv; do
   [ -s "$f" ] && cp "$f" public/
 done

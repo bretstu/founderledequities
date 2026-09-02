@@ -1,0 +1,232 @@
+#!/usr/bin/env python3
+"""One page per company, at its own address.
+
+    python3 ops/build_company_pages.py panel.csv founders.csv prices.csv \\
+        universe/sp500-<date>.csv public/
+
+A PAGE IS SOMETHING A LINK CAN POINT AT AND A SEARCH ENGINE CAN FIND. The
+drawer has neither property. This writes public/company/<TICKER>/index.html
+for every company in the panel -- title, description and card tags baked in
+so a shared link unfurls with the number and a query like "how much of
+Tesla does the CEO own" has a page to land on -- plus /company.js, /site.css
+and /sitemap.xml.
+
+ONE SOURCE FOR THE RULES. company.js is not written by hand: every
+declaration in index.html marked /*@shared*/ (the parsers, the formatters,
+the chart, the honesty rules) is extracted here and the page's own logic
+(assets/company-page.js) appended, so the two pages cannot drift. The
+stylesheet is index.html's <style>, extracted the same way.
+
+THE SEAL IS THE ONLY GATE, ON PAGES TOO. An S&P company's page carries its
+numbers in the HTML. A sealed company's page carries the company, the CEO
+and the founder verdict -- public already -- and no figure; company.js fills
+the numbers in from /pro/ for a signed-in subscriber.
+"""
+import csv
+import html
+import json
+import os
+import re
+import sys
+
+SITE = "https://founderledequities.com"
+
+
+def extract_shared(index_html: str) -> str:
+    """Every declaration that follows a /*@shared*/ marker, whole."""
+    lines = index_html.split("\n")
+    out = []
+    i = 0
+    n = 0
+    while i < len(lines):
+        if lines[i].strip() == "/*@shared*/":
+            j = i + 1
+            first = lines[j]
+            block = [first]
+            opens = first.count("{") - first.count("}")
+            if opens == 0 and first.rstrip().endswith(("}", ";")):
+                # complete on one line: function fInfo(tk){return ...}
+                i = j + 1
+                out.append(first); n += 1
+                continue
+            if opens > 0 or (first.rstrip().endswith("{")):
+                # a braced body: through the line that closes it at column 0
+                k = j + 1
+                while k < len(lines) and not re.match(r"^\}[;)]?\s*$", lines[k]):
+                    block.append(lines[k]); k += 1
+                if k < len(lines):
+                    block.append(lines[k])
+                i = k + 1
+            elif not first.rstrip().endswith(";"):
+                # a multi-line expression: through the first line ending in ';'
+                k = j + 1
+                while k < len(lines) and not lines[k].rstrip().endswith(";"):
+                    block.append(lines[k]); k += 1
+                if k < len(lines):
+                    block.append(lines[k])
+                i = k + 1
+            else:
+                i = j + 1
+            out.append("\n".join(block))
+            n += 1
+        else:
+            i += 1
+    if n < 20:
+        raise SystemExit(f"only {n} shared declarations found in index.html; expected 20+")
+    return "\n\n".join(out)
+
+
+def extract_style(index_html: str) -> str:
+    m = re.search(r"<style>(.*?)</style>", index_html, re.S)
+    if not m:
+        raise SystemExit("no <style> in index.html")
+    return m.group(1).strip()
+
+
+def extract_topnav(index_html: str) -> str:
+    m = re.search(r'(<div class="top"><div class="wrap topin">.*?</div></div>)\n', index_html, re.S)
+    if not m:
+        raise SystemExit("no top nav in index.html")
+    nav = m.group(1)
+    # links become absolute, back to the home page's sections; the dev
+    # toggle and Go Pro stay off a static page that has no modal
+    nav = nav.replace('href="#', 'href="/#').replace('href="about.html"', 'href="/about.html"')
+    nav = re.sub(r'\s*<button class="devtog".*?</button>', "", nav, flags=re.S)
+    nav = re.sub(r'<button class="gopro" onclick="openPro\(\)">Go Pro</button>',
+                 '<a class="gopro" href="/#account" style="text-decoration:none">Go Pro</a>', nav)
+    nav = nav.replace("onclick=\"window.scrollTo({top:0,behavior:'smooth'})\"", "onclick=\"location.href='/'\"")
+    nav = nav.replace("onkeydown=\"if(event.key==='Enter')window.scrollTo({top:0,behavior:'smooth'})\"",
+                      "onkeydown=\"if(event.key==='Enter')location.href='/'\"")
+    return nav
+
+
+def num(v):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def money(v):
+    for div, suf, dp in ((1e12, "T", 2), (1e9, "B", 1), (1e6, "M", 1)):
+        if v < div * 0.9995:
+            continue
+        x = v / div
+        s = f"{x:.0f}" if x >= 100 else f"{x:.{dp}f}"
+        if float(s) >= 1000 and div < 1e12:
+            continue
+        # strip only a decimal's trailing zeros: "1.30" -> "1.3", never "370" -> "37"
+        if "." in s:
+            s = s.rstrip("0").rstrip(".")
+        return "$" + s + suf
+    return f"${v:,.0f}"
+
+
+def page_text(r, sp: bool, price):
+    """Title and description: the number for an open company, none for a
+    sealed one -- the HTML is public, and the seal is the product."""
+    ceo, co, tk = r["ceo"] or "The chief executive", r["company"] or r["ticker"], r["ticker"]
+    pct = num(r.get("pct"))
+    if sp and pct is not None:
+        title = f"{ceo} owns {pct:.2f}% of {co} ({tk}) — Founder Led Equities"
+        sh = num(r.get("shares")) or 0
+        val = f", worth {money(sh * price)} at the latest close" if price and sh else ""
+        desc = (f"{ceo}, CEO of {co}, holds {pct:.2f}% of the company's common shares"
+                f"{val} — {sh:,.0f} shares as of {r.get('shares_as_of') or 'the latest filing'}, "
+                f"computed from SEC filings, never estimated. Every trade since 2016, every filing linked.")
+    else:
+        title = f"What {ceo} owns of {co} ({tk}) — Founder Led Equities"
+        desc = (f"{ceo}, CEO of {co}: the stake computed from SEC filings, the record over time, "
+                f"every trade since 2016 with the filing linked. This company sits in the Pro tier; "
+                f"the S&P 500 is open to everyone.")
+    return title, desc[:300]
+
+
+def main(panel_p, founders_p, prices_p, sp_p, out_dir):
+    here = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.dirname(here)
+    index_html = open(os.path.join(root, "index.html"), encoding="utf-8").read()
+    template = open(os.path.join(root, "company.html"), encoding="utf-8").read()
+    page_js = open(os.path.join(root, "assets", "company-page.js"), encoding="utf-8").read()
+
+    shared = extract_shared(index_html)
+    header = ('/* generated by ops/build_company_pages.py -- do not edit; the source is\n'
+              '   index.html (the declarations marked @shared) and assets/company-page.js */\n'
+              'let PANEL=[],HIST={},PRICES={},PRICES_ASOF="",FOUNDERS={},EVENTS=[];\n'
+              'const state={pro:false,live:{}};\n')
+    os.makedirs(out_dir, exist_ok=True)
+    with open(os.path.join(out_dir, "company.js"), "w", encoding="utf-8") as fh:
+        fh.write(header + shared + "\n\n" + page_js)
+    with open(os.path.join(out_dir, "site.css"), "w", encoding="utf-8") as fh:
+        fh.write(extract_style(index_html))
+    topnav = extract_topnav(index_html)
+
+    sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
+    prices, price_date = {}, ""
+    try:
+        for r in csv.DictReader(open(prices_p, encoding="utf-8-sig")):
+            p = num(r.get("close"))
+            if p:
+                prices[r["ticker"].upper()] = p
+                price_date = max(price_date, r.get("date") or "")
+    except OSError:
+        pass
+    founders = {}
+    try:
+        for r in csv.DictReader(open(founders_p, encoding="utf-8-sig")):
+            founders[r["ticker"].upper()] = {"f": (r.get("founder") or "").lower(),
+                                             "ev": r.get("evidence") or "", "src": r.get("source") or ""}
+    except OSError:
+        pass
+
+    urls = []
+    n_open = n_sealed = 0
+    for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
+        tk = (r.get("ticker") or "").upper()
+        if not tk or not re.match(r"^[A-Z0-9.\-]{1,8}$", tk):
+            continue
+        is_sp = tk in sp
+        price = prices.get(tk)
+        title, desc = page_text(r, is_sp, price)
+        payload = {"tk": tk, "co": r.get("company") or tk, "ceo": r.get("ceo") or "", "sp": is_sp,
+                   "founder": founders.get(tk)}
+        if is_sp:
+            row = {k: r.get(k, "") for k in ("ticker", "company", "ceo", "pct", "shares", "outstanding",
+                                             "shares_as_of", "confidence", "cik", "form4_url",
+                                             "excluded_shares", "excluded_detail", "problems", "cautions",
+                                             "operating_partnership", "stake_source")}
+            payload["row"] = row
+            if price:
+                payload["price"] = price
+                payload["price_date"] = price_date
+            n_open += 1
+        else:
+            n_sealed += 1
+        page = (template
+                .replace("{{TITLE}}", html.escape(title))
+                .replace("{{DESCRIPTION}}", html.escape(desc))
+                .replace("{{TICKER}}", html.escape(tk))
+                .replace("{{TIER}}", "S&amp;P 500" if is_sp else "Sealed universe")
+                .replace("{{COMPANY}}", html.escape(payload["co"]))
+                .replace("{{CEO}}", html.escape(payload["ceo"]))
+                .replace("{{TOPNAV}}", topnav)
+                .replace("{{COMPANY_JSON}}", json.dumps(payload).replace("</", "<\\/")))
+        d = os.path.join(out_dir, "company", tk)
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
+            fh.write(page)
+        urls.append(f"{SITE}/company/{tk}/")
+
+    with open(os.path.join(out_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
+        fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+        for u in [f"{SITE}/", f"{SITE}/about.html"] + urls:
+            fh.write(f"  <url><loc>{html.escape(u)}</loc></url>\n")
+        fh.write("</urlset>\n")
+    with open(os.path.join(out_dir, "robots.txt"), "w", encoding="utf-8") as fh:
+        fh.write(f"User-agent: *\nAllow: /\nDisallow: /pro/\nDisallow: /api/\nSitemap: {SITE}/sitemap.xml\n")
+    print(f"  company pages: {n_open} open, {n_sealed} sealed; company.js, site.css, sitemap.xml, robots.txt")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(*sys.argv[1:6]))
