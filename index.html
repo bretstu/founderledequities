@@ -1219,11 +1219,10 @@ function renderHero(){
   if(led.length)out+=stat(led.length,"Founder-led companies",true);
   if(state.live.prices){
     if(led.length){
-      /* prices cover the S&P today, so the dollar stats say so -- a
-         universe founder count beside an S&P dollar sum was two scopes
-         wearing one sentence. Universe pricing arrives with promotion. */
-      out+=stat(money(ledVal),"Held by S&P 500 founders");
-      out+=stat(Math.round(ledVal/(allVal||1)*100)+"%","Of S&P chief-executive wealth");
+      /* the deploy prices the whole universe now (one grouped Polygon
+         call), so these sums are universe-true and say so plainly */
+      out+=stat(money(ledVal),"Held by those founders");
+      out+=stat(Math.round(ledVal/(allVal||1)*100)+"%","Of all chief-executive wealth");
     }else out+=stat(money(allVal),"Held by all chief executives");
   }
   /* THE NEWEST FILING WE READ, NOT THE NEWEST ONE THAT MOVED SOMEBODY.
