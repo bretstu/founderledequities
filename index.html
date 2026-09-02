@@ -277,6 +277,7 @@ td.src a:hover{color:var(--blue)}
 .dayrow .drv{font-family:var(--mono);font-size:12px;text-align:right;white-space:nowrap;color:var(--mut)}
 .dayrow .drv b{font-weight:600;color:var(--ink);margin-right:6px}
 .dayrow .drv a{color:var(--faint);text-decoration:none;margin-left:8px}
+.dayrow .drv .dtd{color:var(--faint)}
 .dayrow .drv a:hover{color:var(--blue)}
 .dayempty{padding:14px 24px 10px;font-size:13.5px;color:var(--mut);line-height:1.6;text-align:center}
 @media(max-width:640px){.dayrow{grid-template-columns:auto minmax(0,1fr)}.dayrow .drv{grid-column:1/-1;text-align:left;padding-left:2px}}
@@ -1887,7 +1888,7 @@ function evBadge(e){
   if(e.lb==="purchase, position unchanged")return{t:"UNCHANGED",k:"neu",
     n:"shares bought and the position on record left where it was — this measurement did not register them; open the filing"};
   if(e.c==="P")return{t:"BOUGHT",k:"up",
-    n:e.pl==="plan"?"a purchase made under a pre-set 10b5-1 plan — rarer still than an open-market buy"
+    n:e.pl==="plan"?"planned — a purchase made under a pre-set Rule 10b5-1 plan, rarer still than an open-market buy"
      :"an open-market purchase — their own money, at the market's price"};
   if(e.lb==="exercise and sell")return{t:"EX &amp; SELL",k:"neu",
     n:"options exercised and the shares sold the same day — compensation cashed; the stake did not move"};
@@ -1898,7 +1899,7 @@ function evBadge(e){
   if(e.pl==="discretionary")return{t:"SOLD",k:"down",
     n:"a sale NOT marked as pre-scheduled — their decision, their timing"};
   if(e.pl==="plan")return{t:"SOLD",k:"dsoft",
-    n:"sold under a 10b5-1 plan — scheduled long before the trade date"};
+    n:"planned — sold under a Rule 10b5-1 plan, scheduled long before the trade date"};
   return{t:"SOLD",k:"dsoft",
     n:"a sale — the 10b5-1 checkbox did not exist before April 2023, so scheduled-or-not is unknown"};
 }
@@ -2087,7 +2088,7 @@ function evTable(rows,sortable,emptyMsg){
    (rows.length?"":`<tr><td colspan="7"><div class="eempty">${emptyMsg||"Nothing here."}</div></td></tr>`)+
    rows.map(e=>{
     const b=evBadge(e);
-    const plan=e.pl==="plan"?"10b5-1":e.pl==="discretionary"?"discretionary":"";
+    const plan=e.pl==="plan"?"planned":e.pl==="discretionary"?"discretionary":"";
     return `<tr onclick="openDrawer('${e.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
      <td class="adate" title="filed ${e.fd}; traded ${e.td}${lagNote(e)}">${e.fd}${e.td&&e.td!==e.fd?`<span class="atd">traded ${e.td}</span>`:""}</td>
      <td><span class="atk">${e.tk}</span><span class="aceo">${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span></td>
@@ -2155,6 +2156,10 @@ function dayScope(){
   const sealed=PANEL.some(r=>r.masked);
   return (state.pro&&!sealed)?PANEL.length.toLocaleString()+" companies":"S&P 500";
 }
+function shortDay(d){
+  const t=Date.parse(d+"T00:00:00Z");if(isNaN(t))return d;
+  return new Date(t).toLocaleDateString("en-US",{weekday:"short",month:"numeric",day:"numeric",timeZone:"UTC"}).replace(",","");
+}
 function niceDay(d){
   const t=Date.parse(d+"T00:00:00Z");if(isNaN(t))return d;
   return new Date(t).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:"UTC"});
@@ -2179,7 +2184,7 @@ function dayText(day,rows){
     const side=evSide(e);
     const uk=unchangedKind(e);
     const what=side==="buys"?"bought":uk==="pre"?(e.c==="P"?"bought (pre-IPO)":"sold (pre-IPO)"):uk==="exercise"?"cashed options for":uk==="convert"?"converted and sold":uk==="bought"?"bought (position unchanged)":uk===""?"sold (position unchanged)":"sold";
-    const man=side==="exsell"?"stake unchanged":e.pl==="plan"?"10b5-1 plan":e.pl==="discretionary"?"discretionary":"";
+    const man=side==="exsell"?"stake unchanged":e.pl==="plan"?"planned":e.pl==="discretionary"?"discretionary":"";
     const pp=pctOf(e);
     const pc=(!pp||side==="exsell")?"":(side==="buys"?" +":" −")+(pp.approx?"≈":"")+(pp.v>=100?"100%+":pp.v.toFixed(pp.v<1?2:1)+"%")+" of stake";
     L.push(`${e.ceo||coOf(e.tk)} (${e.tk}) ${what} ${e.v&&!e.fl?money(e.v):compact(e.sh)+" sh"}${pc}${man?", "+man:""}${e.td&&e.td!==e.fd?` (traded ${e.td})`:""}`);
@@ -2212,7 +2217,7 @@ function renderDay(){
   let recent=days.slice(-5);
   if(day&&!recent.includes(day))recent=[day,...recent].sort().slice(-5);
   const chipDay=d=>{const t=Date.parse(d+"T00:00:00Z");
-    const lab=isNaN(t)?d:new Date(t).toLocaleDateString("en-US",{weekday:"short",month:"numeric",day:"numeric",timeZone:"UTC"}).replace(",","");
+    const lab=shortDay(d);
     const n=EVENTS.filter(e=>e.fd===d&&unchangedKind(e)===null).length;
     return `<button class="chip${d===day?" on":""}" onclick="gotoDay('${d===days[days.length-1]?"":d}')" title="${niceDay(d)} — ${n} trade${n===1?"":"s"} that moved a stake">${lab}<i>${n}</i></button>`;};
   const scope=dayScope();
@@ -2222,11 +2227,12 @@ function renderDay(){
     const pc=side==="exsell"?`<span title="options exercised and the shares sold the same day — the stake did not move">stake unchanged</span>`
       :!pp?`<span class="nopr" title="${pctWhy(e)}">share of stake not stated</span>`
       :`${pp.approx?`<span class="apx" title="${approxNote(e)}">≈ </span>`:""}${side==="buys"?"+":"−"}${pp.v>=100?"100%+":pp.v.toFixed(pp.v<1?2:1)+"%"} of stake`;
-    const man=side==="exsell"?"":e.pl==="plan"?" · 10b5-1":e.pl==="discretionary"?" · discretionary":"";
+    const man=side==="exsell"?"":e.pl==="plan"?` · <span title="sold under a Rule 10b5-1 plan, set up long before the trade date and executed automatically">planned</span>`:e.pl==="discretionary"?` · <span title="not under a pre-set plan — their own decision, at their own timing">discretionary</span>`:"";
+    const when=`<span class="dtd" title="the trade date; the filing reached EDGAR ${e.fd}${lagNote(e)}">traded ${shortDay(e.td||e.fd)}</span>`;
     return `<div class="dayrow" onclick="openDrawer('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
       <span class="abadge ${b.k}" title="${b.n} — traded ${e.td||e.fd}${lagNote(e)}">${b.t}</span>
       <span class="drwho"><span class="atk">${e.tk}</span>${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span>
-      <span class="drv"><b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>${pc}${man}${e.u?`<a href="${e.u}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing itself, on EDGAR">4 ↗</a>`:""}</span>
+      <span class="drv"><b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>${pc}${man} · ${when}${e.u?`<a href="${e.u}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing itself, on EDGAR">4 ↗</a>`:""}</span>
     </div>`;};
   el.innerHTML=`<div class="dayb">
     <div class="dayh">
@@ -2316,7 +2322,7 @@ function evColumn(side){
     </div>
     ${top.length?top.map(bar).join(""):`<div class="aempty">${ks.length?`No chief executive of these companies ${sell?"reduced a stake":"bought shares"}${ks.length===1?` ${ks[0]==="plan"?"under a plan":"at their own discretion"}`:""} in ${win}.`:"Both manners are off — select one to see the column."}</div>`}
     <div class="af">
-      <span class="key"><span><i></i>discretionary</span><span><i class="plan"></i>10b5-1 plan</span>${state.live.founders?`<span><span class="fm">F</span>founder</span>`:""}</span>
+      <span class="key"><span><i></i>discretionary</span><span><i class="plan"></i>planned</span>${state.live.founders?`<span><span class="fm">F</span>founder</span>`:""}</span>
       ${pool.length?`<a onclick="setView('${side}')">${people.length>N?`Top ${N} of ${people.length} · `:""}all ${pool.length.toLocaleString()} trade${pool.length===1?"":"s"} →</a>`:""}
     </div>
   </div>`;

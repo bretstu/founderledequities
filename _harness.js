@@ -123,6 +123,10 @@ const P=runPage();
   assert(/class="chip on"[^>]*>(Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d+\/\d+<i>/.test(dayHtml),"the newest day's chip is lit and reads like a day");
   assert((dayHtml.match(/class="dayrow"/g)||[]).length===rows.length&&dayHtml.includes('class="daylist"'),"one row per trade inside a fixed, scrolling frame");
   assert(dayHtml.includes("openDrawer(")&&dayHtml.includes("sec.gov"),"day rows are doors and carry filing links");
+  assert(/class="dtd"[^>]*>traded (Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d+\/\d+</.test(dayHtml),"every strip row says when the trade happened");
+  {const shown=dayHtml.replace(/title="[^"]*"/g,"");
+   assert(!shown.includes("10b5"),"the rule's name lives in the definitions on hover, not in a label");
+   assert(shown.includes("planned")||!rows.some(e=>e.pl==="plan"),"a planned trade is labelled planned");}
   const txt=dayText(newest,rows);
   assert(txt.split("\n").length===rows.length+2+(allDay.length>rows.length?1:0)&&txt.includes("?day="+newest),
     "the copy text is one line per trade, a headline, the also-filed line when there is one, and the permalink");
