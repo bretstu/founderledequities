@@ -628,7 +628,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="controls">
     <label class="search">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input id="q" type="search" placeholder="Search all 2,135 companies — ticker, name, or chief executive" aria-label="Search">
+      <input id="q" type="search" placeholder="Search company, ticker, or chief executive" aria-label="Search">
     </label>
     <button class="chip on" data-min="0">All</button>
     <button class="chip" data-min="1">&gt; 1%</button>
@@ -1311,10 +1311,12 @@ function renderTable(){
   let rows=PANEL.filter(r=>{
     const q=state.q.toLowerCase();
     const fOK=fOnly(r.tk,state.tbF);
-    /* a masked stake can't be compared to a threshold; it stays in the
-       full list and steps aside only when a minimum is actually set */
-    const minOK=r.masked?state.min<=0:r.pct>=state.min;
-    return fOK&&(!q||r.tk.toLowerCase().includes(q)||r.co.toLowerCase().includes(q)||r.ceo.toLowerCase().includes(q))&&minOK;
+    /* SEALED COMPANIES ARE NOT ROWS. The free table is the S&P 500,
+       complete; the sealed remainder exists as a stated fact (hero and
+       footer), not as 1,635 rows of dashes. A subscriber's panel has no
+       masked rows, so this filter costs Pro nothing. */
+    if(r.masked)return false;
+    return fOK&&(!q||r.tk.toLowerCase().includes(q)||r.co.toLowerCase().includes(q)||r.ceo.toLowerCase().includes(q))&&r.pct>=state.min;
   });
   const {key,dir}=state.sort;
   const CONF={high:3,medium:2,low:1};
@@ -1343,10 +1345,10 @@ function renderTable(){
      <td class="asof c-asof">${r.asof||"—"}</td>
      <td class="c-conf"><span class="conf"><span class="dot ${r.conf}"></span>${r.conf}</span></td>
     </tr>`}).join("");
-  const sealedN=rows.filter(r=>r.masked).length;
+  const sealedN=PANEL.filter(r=>r.masked).length;
   $("#tcount").textContent=
     `${total} compan${total===1?"y":"ies"}`+
-    (sealedN?` · the S&P 500 open in full · ${sealedN.toLocaleString()} more behind the seal ${SEAL}`:"")+
+    (sealedN?` · ${sealedN.toLocaleString()} more measured — behind the seal ${SEAL}`:"")+
     ` · scroll the table${state.live.panel?"":" · embedded sample — serve sp500.csv beside this file to load all 500"}`;
   document.querySelectorAll("th.sortable").forEach(th=>{
     const on=th.dataset.key===state.sort.key;
