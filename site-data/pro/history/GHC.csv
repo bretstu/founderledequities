@@ -1,0 +1,22 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2016-03-23,4,0001140361-16-058971,16374,16374,5314580,0.3081,1100,509971.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2016-11-21,4,0000950157-16-002512,26241,26241,5314580,0.4938,3974,,1,5893,G,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2017-07-24,4,0000950157-17-001227,36429,36429,5314580,0.6855,10188,6079179.6,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2017-10-27,4,0000950157-17-001510,51239,51239,5314580,0.9641,14810,,1,,G,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2018-02-22,4,0000950157-19-000012,56500,56500,5314580,1.0631,611,6845.42,1,4650,AL,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2018-08-02,4/A,0000950157-18-000885,55889,55889,5314580,1.0516,1050,581280.0,,-1661,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2019-12-31,5,0000950157-20-000208,73967,73967,5312237,1.3924,14958,8075036.12,1,3119,AJL,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2020-08-03,4,0000950157-20-000980,73667,73667,5112199,1.441,-300,,1,,D,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2020-09-10,4/A,0000950157-21-000315,73667,73667,5112199,1.441,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2022-03-07,4,0000950157-22-000253,76820,76820,4903978,1.5665,3153,1345889.58,,,M,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2023-03-07,4,0001621362-23-000001,77820,77820,4791124,1.6243,1000,426860.0,,,M,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2023-07-06,4,0000104889-23-000046,79880,79880,4648527,1.7184,2060,879331.6,,,M,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2024-09-23,4,0000950157-24-001295,81223,81223,4399812,1.8461,1340,38063798.0,,2,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2024-10-15,4,0000950157-24-001421,82849,82849,4333589,1.9118,1626,38383210.38,,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2024-11-01,4,0000950157-24-001476,84745,84745,4333589,1.9555,1896,38649267.96,,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2025-08-20,4,0000950157-25-000702,85452,85452,4359871,1.96,702,13975004.54,,5,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2025-09-29,4,0000950157-25-000818,86464,86464,4359871,1.9832,1012,14431010.2,,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2025-10-07,4,0000950157-25-000854,37841,37841,4362423,0.8674,,,2,-48623,J,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2025-11-11,4,0000950157-25-000941,38584,38584,4362423,0.8845,743,14033878.13,,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2026-05-26,4,0000950157-26-000654,38587,38587,4307084,0.8959,,,3,3,J,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+104889,GHC,Timothy J. O'Shaughnessy,1621362,2026-08-13,4,0000950157-26-000904,42800,42800,4234928,1.0106,4211,,3,2,J,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

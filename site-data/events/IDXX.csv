@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+IDXX,874716,Michael G. Erickson,2005385,2026-02-19,2026-02-17,S,discretionary sale,5371,3369666.17,627.3815,,0,15092,-2399,discretionary,M,6,0,Common Stock,D,4,0000874716-26-000033,,https://www.sec.gov/Archives/edgar/data/874716/000087471626000033/wk-form4_1771542024.xml
+IDXX,874716,Michael G. Erickson,2005385,2025-08-14,2025-08-12,S,discretionary sale,406,263813.50,649.9598,,-9930,11286,-9523,discretionary,,2,0,Common Stock,D,4,0000874716-25-000143,,https://www.sec.gov/Archives/edgar/data/874716/000087471625000143/wk-form4_1755208864.xml

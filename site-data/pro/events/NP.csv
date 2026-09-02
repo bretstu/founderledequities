@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+NP,2067129,Trevor Burgess,1613062,2026-03-13,2026-03-13,P,open-market purchase,50000,935345.00,18.7069,0.1100,50000,45517964,0,discretionary,,1,0,Class A Common Stock,D,4,0002067129-26-000008,,https://www.sec.gov/Archives/edgar/data/2067129/000206712926000008/primary_doc.xml
+NP,2067129,Trevor Burgess,1613062,2025-11-14,2025-10-02,P,open-market purchase,50000,1000000.00,20.0000,0.1101,2032964,45467964,0,discretionary,,1,0,Class A Common Stock,D,4,0001193125-25-283512,,https://www.sec.gov/Archives/edgar/data/2067129/000119312525283512/ownership.xml

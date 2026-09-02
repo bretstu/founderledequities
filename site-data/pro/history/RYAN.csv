@@ -1,0 +1,11 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1849253,RYAN,Timothy W. Turner,1870059,2021-07-21,4,0000899243-21-029737,5198792,5198792,109903867,4.7303,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+1849253,RYAN,Timothy W. Turner,1870059,2022-03-18,4,0001209191-22-020555,5198792,5198792,518113310,1.0034,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+1849253,RYAN,Timothy W. Turner,1870059,2022-05-17,4,0001209191-22-030217,4846095,4846095,518393136,0.9348,-352697,13014519.3,2,,CS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+1849253,RYAN,Timothy W. Turner,1870059,2023-04-05,4,0001209191-23-023815,4850153,4850153,519561540,0.9335,4058,117541.04,1,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+1849253,RYAN,Timothy W. Turner,1870059,2023-05-22,4,0001209191-23-031897,4160244,4160244,519561540,0.8007,-689909,29976546.05,2,,CS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+1849253,RYAN,Timothy W. Turner,1870059,2024-04-01,4,0001562180-24-003179,4164281,4164281,520893746,0.7994,4037,163281.0,1,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+1849253,RYAN,Timothy W. Turner,1870059,2024-08-09,4,0001562180-24-006132,2164281,2164281,522896396,0.4139,-2000000,124900000.0,2,,CS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+1849253,RYAN,Timothy W. Turner,1870059,2025-04-01,4,0001628280-25-016342,2168345,2168345,262429241,0.8263,4064,215257.18,1,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1849253,RYAN,Timothy W. Turner,1870059,2025-12-11,4,0001870059-25-000003,2168739,2168739,263810660,0.8221,394,6946247.7,1,,MS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1849253,RYAN,Timothy W. Turner,1870059,2026-05-05,4,0001870059-26-000003,2168739,2168739,263659415,0.8226,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

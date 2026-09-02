@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2969,APD,Eduardo F. Menezes,1411350,2025-02-07,3,0001225208-25-001422,713,713,222475666,0.0003,,,,,,1,c-9,,TRUE
+2969,APD,Eduardo F. Menezes,1411350,2025-02-24,4,0001225208-25-002347,13348,13348,222475666,0.006,12635,,1,,A,1,c-9,,TRUE
+2969,APD,Eduardo F. Menezes,1411350,2025-12-01,4,0001225208-25-009621,30762,30762,222590241,0.0138,17414,,2,,AJ,1,c-9,,TRUE

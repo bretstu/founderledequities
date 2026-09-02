@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+217346,TXT,Lisa M. Atherton,2020959,2026-01-04,3,0002020959-26-000002,31834,31834,176224064,0.0181,,,,,,1,c-2,,TRUE
+217346,TXT,Lisa M. Atherton,2020959,2026-02-13,4,0002020959-26-000004,29374,29374,174162437,0.0169,-2532,1012168.0,1,72,GMS,1,c-2,,TRUE
+217346,TXT,Lisa M. Atherton,2020959,2026-03-01,4,0002020959-26-000006,54509,54509,174162437,0.0313,25110,198089.2,1,25,AF,1,c-2,,TRUE

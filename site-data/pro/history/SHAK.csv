@@ -1,0 +1,8 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1620533,SHAK,Robert Lynch,1786642,2024-05-20,3,0001620533-24-000045,0,0,42436666,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1620533,SHAK,Robert Lynch,1786642,2024-05-23,4,0001620533-24-000047,35687,35687,42436666,0.0841,35687,,2,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1620533,SHAK,Robert Lynch,1786642,2025-03-01,4,0001620533-25-000018,54104,54104,42532782,0.1272,18417,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1620533,SHAK,Robert Lynch,1786642,2025-05-23,4,0001620533-25-000033,48093,48093,42666652,0.1127,-6011,707013.82,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1620533,SHAK,Robert Lynch,1786642,2026-03-01,4,0001012975-26-000224,72845,72845,42692511,0.1706,24752,185587.33,1,,AF,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1620533,SHAK,Robert Lynch,1786642,2026-05-15,4,0001786642-26-000004,77845,77845,42781521,0.182,5000,301940.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1620533,SHAK,Robert Lynch,1786642,2026-05-23,4,0001786642-26-000006,71853,71853,42781521,0.168,-5992,375818.24,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

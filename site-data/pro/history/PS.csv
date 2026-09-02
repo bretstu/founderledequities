@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2026053,PS,William A. Ackman,1056513,2026-04-28,4,0001140361-26-018949,94640492,94640492,400000000,23.6601,-5491308,19015800.95,6,,ADGJP,1,C_9f94fa27-93dc-49ac-baee-33ddd4213326,,TRUE
+2026053,PS,William A. Ackman,1056513,2026-04-29,3,0001140361-26-017910,101814729,101814729,400000000,25.4537,,,,7174237,,1,C_9f94fa27-93dc-49ac-baee-33ddd4213326,,TRUE
+2026053,PS,William A. Ackman,1056513,2026-08-17,4,0001140361-26-033760,84808692,84808692,400000000,21.2022,-10000000,,1,-7006037,G,1,C_9f94fa27-93dc-49ac-baee-33ddd4213326,,TRUE

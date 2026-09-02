@@ -1,0 +1,12 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1692063,SNDR,James S. Filter,1925274,2022-04-15,4,0001692063-22-000121,123186,123186,177922155,0.0692,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1692063,SNDR,James S. Filter,1925274,2023-02-15,4,0001692063-23-000039,135120,135120,178030689,0.0759,11934,15613.26,1,,AF,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1692063,SNDR,James S. Filter,1925274,2023-02-21,4,0001692063-24-000010,145171,145171,178030689,0.0815,11986,133614.0,1,-1935,AF,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1692063,SNDR,James S. Filter,1925274,2023-03-15,4,0001692063-23-000061,133185,133185,178030689,0.0748,-1935,51006.6,,-10051,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1692063,SNDR,James S. Filter,1925274,2024-02-15,4,0001692063-24-000022,182595,182595,175985484,0.1038,37424,46590.2,1,11986,AF,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1692063,SNDR,James S. Filter,1925274,2024-02-23,4,0001692063-24-000042,193785,193785,175985484,0.1101,11190,134045.15,1,,AF,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1692063,SNDR,James S. Filter,1925274,2024-03-15,4,0001692063-24-000058,192533,192533,175985484,0.1094,-1252,28232.6,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1692063,SNDR,James S. Filter,1925274,2025-02-14,4,0001562180-25-001262,202650,202650,175487680,0.1155,10117,246606.72,1,,AF,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1692063,SNDR,James S. Filter,1925274,2025-03-15,4,0001562180-25-002511,201611,201611,175487680,0.1149,-1039,24676.25,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1692063,SNDR,James S. Filter,1925274,2026-02-13,4,0001925274-26-000002,209672,209672,175336516,0.1196,8061,343409.69,1,,AF,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1692063,SNDR,James S. Filter,1925274,2026-07-01,4,0001925274-26-000004,224439,224439,175300899,0.128,14767,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

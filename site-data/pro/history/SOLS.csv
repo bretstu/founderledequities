@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2064953,SOLS,David Sewell,1617514,2025-10-30,4,0001628280-25-048307,0,0,158727456,0.0,,,,,,0,c-2,,TRUE
+2064953,SOLS,David Sewell,1617514,2026-02-24,4,0002064953-26-000020,0,0,158747545,0.0,,,,,,0,c-2,,TRUE
+2064953,SOLS,David Sewell,1617514,2026-03-10,4,0001617514-26-000003,0,0,158747545,0.0,,,,,,0,c-2,,TRUE
+2064953,SOLS,David Sewell,1617514,2026-06-10,4,0002064953-26-000062,0,0,158804273,0.0,,,,,,0,c-2,,TRUE

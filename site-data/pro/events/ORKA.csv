@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+ORKA,907654,Lawrence Klein,1762583,2026-06-15,2026-06-15,S,discretionary sale,1729,120494.01,69.6900,0.1865,-1729,925580,0,discretionary,,1,0,Common Stock,D,4,0000907654-26-000062,,https://www.sec.gov/Archives/edgar/data/907654/000090765426000062/form4.xml
+ORKA,907654,Lawrence Klein,1762583,2026-03-17,2026-03-16,S,discretionary sale,1729,71407.70,41.3000,0.1861,-1729,927309,0,discretionary,,1,0,Common Stock,D,4,0000907654-26-000033,,https://www.sec.gov/Archives/edgar/data/907654/000090765426000033/form4.xml

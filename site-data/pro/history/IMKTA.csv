@@ -1,0 +1,2 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+50493,IMKTA,James W. Lanning,1249480,2021-11-26,4,0001249480-21-000003,10000,10000,18994376,0.0526,-9936,769841.28,2,,CS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

@@ -1,0 +1,7 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1995807,LB,Jason Long,2028425,2024-06-27,3,0000950170-24-078641,0,0,73151603,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1995807,LB,Jason Long,2028425,2024-07-15,4,0000950170-24-084353,254827,254827,73151603,0.3484,254827,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1995807,LB,Jason Long,2028425,2025-07-01,4,0000950170-25-093934,221403,221403,76550520,0.2892,-33424,2218685.12,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1995807,LB,Jason Long,2028425,2026-01-05,4,0001193125-26-005382,223546,223546,77089115,0.29,2143,99842.37,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1995807,LB,Jason Long,2028425,2026-07-01,4,0001193125-26-294727,190121,190121,77085412,0.2466,-33425,2416627.5,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1995807,LB,Jason Long,2028425,2026-08-04,4,0001193125-26-338548,210479,210479,77085412,0.273,20358,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+OPCH,1014739,John Rademacher,1779969,2026-05-04,2026-05-04,P,open-market purchase,12500,264706.25,21.1765,1.8311,12500,695152,0,discretionary,,1,0,Common Stock,D,4,0001437749-26-014692,,https://www.sec.gov/Archives/edgar/data/1014739/000143774926014692/rdgdoc.xml
+OPCH,1014739,John Rademacher,1779969,2021-05-12,2021-05-11,P,open-market purchase,10000,164236.00,16.4236,,-52716,10000,-62716,unknown,,1,0,"Common Stock, par value $0.0001",D,4,0001104659-21-065038,,https://www.sec.gov/Archives/edgar/data/1014739/000110465921065038/tm2116030-3_4seq1.xml

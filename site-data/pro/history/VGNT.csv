@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2078008,VGNT,Joseph Liotine,1624146,2026-04-01,3,0000950103-26-005393,0,0,70893660,0.0,,,,,,0,c-2,,TRUE
+2078008,VGNT,Joseph Liotine,1624146,2026-04-02,4,0000950103-26-005402,118455,118455,70893660,0.1671,109714,,1,8741,A,1,c-2,,TRUE
+2078008,VGNT,Joseph Liotine,1624146,2026-04-22,4,0001193125-26-177256,230153,230153,70893660,0.3246,111698,,1,,A,1,c-2,,TRUE
+2078008,VGNT,Joseph Liotine,1624146,2026-06-21,4,0001193125-26-279414,208864,208864,70893660,0.2946,-21289,976952.21,,,F,1,c-2,,TRUE

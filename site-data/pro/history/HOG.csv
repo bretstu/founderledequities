@@ -1,0 +1,6 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+793952,HOG,Artie Starrs,1732105,2025-10-01,3,0001732105-25-000006,0,0,121552837,0.0,,,,,,0,c-2,,TRUE
+793952,HOG,Artie Starrs,1732105,2025-11-05,4,0001732105-25-000009,0,0,118141863,0.0,,,,,,0,c-2,,TRUE
+793952,HOG,Artie Starrs,1732105,2026-02-13,4,0001732105-26-000002,0,0,111850563,0.0,,,,,,0,c-2,,TRUE
+793952,HOG,Artie Starrs,1732105,2026-03-09,4,0001732105-26-000004,15000,15000,111850563,0.0134,15000,286500.0,,,P,1,c-2,,TRUE
+793952,HOG,Artie Starrs,1732105,2026-08-10,4,0001732105-26-000006,25000,25000,104072507,0.024,10000,258941.0,,,P,1,c-2,,TRUE

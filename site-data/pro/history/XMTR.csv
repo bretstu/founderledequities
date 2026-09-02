@@ -1,0 +1,10 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1657573,XMTR,Sanjeev Singh Sahni,2051034,2025-01-07,3,0001562180-25-000330,0,0,50301352,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1657573,XMTR,Sanjeev Singh Sahni,2051034,2025-01-23,4,0001562180-25-000510,93766,93766,50301352,0.1864,93766,,2,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1657573,XMTR,Sanjeev Singh Sahni,2051034,2026-01-05,4,0002051034-26-000001,89320,89320,51824424,0.1724,-4446,295962.1,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1657573,XMTR,Sanjeev Singh Sahni,2051034,2026-01-08,4,0002051034-26-000002,63130,63130,51824424,0.1218,-26190,1714570.36,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1657573,XMTR,Sanjeev Singh Sahni,2051034,2026-02-24,4,0002051034-26-000003,113022,113022,51824424,0.2181,49892,433494.92,1,,AS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1657573,XMTR,Sanjeev Singh Sahni,2051034,2026-03-10,4,0002051034-26-000004,144508,144508,51824424,0.2788,31486,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1657573,XMTR,Sanjeev Singh Sahni,2051034,2026-04-02,4,0002051034-26-000005,143397,143397,52598798,0.2726,-1111,46401.68,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1657573,XMTR,Sanjeev Singh Sahni,2051034,2026-07-03,4,0002051034-26-000006,183903,183903,57323573,0.3208,40506,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1657573,XMTR,Sanjeev Singh Sahni,2051034,2026-08-17,4,0002051034-26-000007,182403,182403,57323573,0.3182,-1500,135278.7,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

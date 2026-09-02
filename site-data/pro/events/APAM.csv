@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+APAM,1517302,Jason A. Gottlieb,1695089,2020-11-03,2020-11-02,S,sale,10000,415495.00,41.5495,10.8899,-10000,81828,0,unknown,,1,0,"Class A Common Stock, par value $0.01 per share",D,4,0001127602-20-028005,,https://www.sec.gov/Archives/edgar/data/1517302/000112760220028005/form4.xml
+APAM,1517302,Jason A. Gottlieb,1695089,2019-03-14,2019-03-13,S,sale,10000,261766.00,26.1766,8.9518,-10000,101710,0,unknown,,1,0,"Class A Common Stock, par value $0.01 per share",D,4,0001127602-19-011373,,https://www.sec.gov/Archives/edgar/data/1517302/000112760219011373/form4.xml

@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+4127,SWKS,Philip G. Brace,1336507,2025-02-17,4,0000004127-25-000025,0,0,160741022,0.0,,,,,,0,c-2,,TRUE
+4127,SWKS,Philip G. Brace,1336507,2025-02-25,4,0000004127-25-000028,10000,10000,160741022,0.0062,10000,661300.0,,,P,1,c-2,,TRUE
+4127,SWKS,Philip G. Brace,1336507,2025-11-05,4,0001336507-25-000005,15375,15375,148679767,0.0103,5375,407409.16,1,,FM,1,c-2,,TRUE
+4127,SWKS,Philip G. Brace,1336507,2025-11-11,4,0001336507-25-000007,17249,17249,148679767,0.0116,1874,133155.9,1,,AF,1,c-2,,TRUE

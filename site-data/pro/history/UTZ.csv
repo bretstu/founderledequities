@@ -1,0 +1,11 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1739566,UTZ,Howard Friedman,1609864,2022-12-15,4,0001739566-22-000273,112044,112044,140161835,0.0799,112044,,1,,A,1,us-gaap:CommonClassAMember|utz:CommonClassVMember,,TRUE
+1739566,UTZ,Howard Friedman,1609864,2023-01-31,4,0001739566-23-000015,176673,176673,140361868,0.1259,64629,,1,,A,1,us-gaap:CommonClassAMember|utz:CommonClassVMember,,TRUE
+1739566,UTZ,Howard Friedman,1609864,2023-11-14,4,0001739566-23-000153,184873,184873,140490417,0.1316,8200,106153.1,,,P,1,us-gaap:CommonClassAMember|utz:CommonClassVMember,,TRUE
+1739566,UTZ,Howard Friedman,1609864,2023-12-31,4,0001739566-24-000019,223239,223239,140755827,0.1586,38366,406487.2,1,,AF,1,us-gaap:CommonClassAMember|utz:CommonClassVMember,,TRUE
+1739566,UTZ,Howard Friedman,1609864,2025-01-02,4,0001739566-25-000028,262204,262204,141410319,0.1854,38965,448079.58,1,,AF,1,us-gaap:CommonClassAMember|utz:CommonClassVMember,,TRUE
+1739566,UTZ,Howard Friedman,1609864,2025-02-24,4,0001609864-25-000003,265729,265729,141410319,0.1879,3525,49911.89,,,P,1,us-gaap:CommonClassAMember|utz:CommonClassVMember,,TRUE
+1739566,UTZ,Howard Friedman,1609864,2025-05-05,4,0001739566-25-000121,272079,272079,141410753,0.1924,6350,75257.02,,,P,1,us-gaap:CommonClassAMember|utz:CommonClassVMember,,TRUE
+1739566,UTZ,Howard Friedman,1609864,2025-11-03,4,0001628280-25-048916,279279,279279,142858774,0.1955,7200,76183.2,,,P,1,us-gaap:CommonClassAMember|utz:CommonClassVMember,,TRUE
+1739566,UTZ,Howard Friedman,1609864,2026-01-02,4,0001628280-26-000947,477547,477547,143781904,0.3321,198268,871795.44,2,,AF,1,us-gaap:CommonClassAMember|utz:CommonClassVMember,,TRUE
+1739566,UTZ,Howard Friedman,1609864,2026-03-09,4,0001628280-26-016532,610045,610045,143781904,0.4243,132498,,1,,A,1,us-gaap:CommonClassAMember|utz:CommonClassVMember,,TRUE

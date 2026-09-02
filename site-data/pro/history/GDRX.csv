@@ -1,0 +1,7 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1809519,GDRX,Wendy Barnes,2049585,2025-01-01,3,0001809519-25-000006,0,0,383609648,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1809519,GDRX,Wendy Barnes,2049585,2025-03-03,4,0001809519-25-000044,0,0,383609648,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1809519,GDRX,Wendy Barnes,2049585,2026-01-15,4,0001809519-26-000006,427993,427993,342574498,0.1249,427993,652599.75,2,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1809519,GDRX,Wendy Barnes,2049585,2026-03-03,4,0001809519-26-000044,427993,427993,342574498,0.1249,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1809519,GDRX,Wendy Barnes,2049585,2026-04-15,4,0001809519-26-000074,584825,584825,338675373,0.1727,156832,268616.88,3,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1809519,GDRX,Wendy Barnes,2049585,2026-07-15,4,0001809519-26-000137,741657,741657,341145388,0.2174,156832,362572.56,3,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

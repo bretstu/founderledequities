@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+EVRG,1711269,David A. Campbell,1292208,2021-09-23,2021-09-23,P,open-market purchase,7850,499698.82,63.6559,12.2553,7850,71904,0,unknown,,1,0,Common Stock,D,4,0001127602-21-025719,,https://www.sec.gov/Archives/edgar/data/1711269/000112760221025719/form4.xml
+EVRG,1711269,David A. Campbell,1292208,2021-03-04,2021-03-03,P,open-market purchase,10000,529195.00,52.9195,18.5000,10000,64054,0,unknown,,1,0,Common Stock,D,4,0001127602-21-009327,,https://www.sec.gov/Archives/edgar/data/1711269/000112760221009327/form4.xml

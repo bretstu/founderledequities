@@ -1,0 +1,7 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1823239,MRVI,Bernd Brust,1380632,2025-06-08,4,0000950170-25-084483,2000000,2000000,254659517,0.7854,2000000,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1823239,MRVI,Bernd Brust,1380632,2025-11-11,4,0001380632-25-000004,2250559,2250559,255706831,0.8801,250559,809010.42,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1823239,MRVI,Bernd Brust,1380632,2025-11-13,4,0001380632-25-000006,2466771,2466771,255706831,0.9647,216212,702689.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1823239,MRVI,Bernd Brust,1380632,2026-06-08,4,0001380632-26-000002,2115770,2115770,258190244,0.8195,-351001,1762025.02,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1823239,MRVI,Bernd Brust,1380632,2026-07-08,4,0001380632-26-000004,2086520,2086520,259673625,0.8035,-29250,173160.0,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1823239,MRVI,Bernd Brust,1380632,2026-08-10,4,0001380632-26-000006,2057270,2057270,259673625,0.7923,-29250,182227.5,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

@@ -1,0 +1,21 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1517302,APAM,Jason A. Gottlieb,1695089,2017-02-03,3,0001127602-17-004131,36232,36232,76942872,0.0471,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2017-02-16,4,0001127602-17-006995,71232,71232,76942872,0.0926,35000,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2018-02-15,4,0001127602-18-006664,79488,79488,76942872,0.1033,8256,166949.42,1,,AF,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2019-02-15,4,0001127602-19-006931,111710,111710,76935129,0.1452,32222,191961.04,1,,AF,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2019-03-13,4,0001127602-19-011373,101710,101710,76935129,0.1322,-10000,261766.0,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2020-02-18,4,0001127602-20-006209,91828,91828,77822929,0.118,-9882,352589.76,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2020-11-02,4,0001127602-20-028005,81828,81828,78575100,0.1041,-10000,415495.0,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2021-02-16,4,0001127602-21-006264,71804,71804,78422403,0.0916,-10024,522851.84,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2021-03-01,4,0001127602-21-008423,71804,71804,78422403,0.0916,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2021-11-01,4,0001127602-21-028078,70038,70038,79039639,0.0886,-1766,87328.7,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2022-02-15,4,0001127602-22-005353,63713,63713,78850284,0.0808,-6325,253316.25,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2022-03-01,4,0001127602-22-007384,63713,63713,78850284,0.0808,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2023-02-15,4,0001127602-23-005574,72007,72007,79464416,0.0906,8294,511700.12,1,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2023-03-01,4,0001127602-23-008358,112407,112407,79464416,0.1415,40400,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2024-02-15,4,0001127602-24-005722,122407,122407,79894387,0.1532,10000,173519.56,1,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2024-03-01,4,0001127602-24-007832,158319,158319,79894387,0.1982,35912,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2025-02-18,4,0001127602-25-005720,161661,161661,80287946,0.2014,10546,730251.48,1,-7204,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2025-03-03,4,0001127602-25-007520,196661,196661,80287946,0.2449,35000,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2026-02-17,4,0001517302-26-000041,191472,191472,80586160,0.2376,-5189,219909.82,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1517302,APAM,Jason A. Gottlieb,1695089,2026-03-02,4,0001517302-26-000057,228352,228352,80586160,0.2834,36880,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE

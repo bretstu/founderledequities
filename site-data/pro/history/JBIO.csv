@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1798749,JBIO,Tom Frohlich,1823925,2025-04-28,3,0000950170-25-062018,0,0,28985019,0.0,,,,,,0,C_3304a014-529e-431b-a2be-9087696a6be5,,TRUE
+1798749,JBIO,Tom Frohlich,1823925,2025-05-16,4,0000950170-25-074496,6000,6000,28985019,0.0207,6000,44400.0,,,P,1,C_3304a014-529e-431b-a2be-9087696a6be5,,TRUE
+1798749,JBIO,Tom Frohlich,1823925,2026-02-12,4,0001193125-26-052054,86331,86331,46004205,0.1877,78750,,1,1581,A,1,C_3304a014-529e-431b-a2be-9087696a6be5,,TRUE

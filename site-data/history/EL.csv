@@ -1,0 +1,10 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1001250,EL,Stéphane de La Faverie,1955038,2022-11-18,3,0001001250-22-000219,2662,2662,356812327,0.0007,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1001250,EL,Stéphane de La Faverie,1955038,2023-08-28,4,0001001250-23-000144,3170,3170,357690815,0.0009,508,53650.24,1,,AF,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1001250,EL,Stéphane de La Faverie,1955038,2023-11-01,4,0001001250-23-000194,6301,6301,357846593,0.0018,3131,386561.46,1,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1001250,EL,Stéphane de La Faverie,1955038,2024-08-27,4,0001001250-24-000147,6301,6301,358719184,0.0018,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1001250,EL,Stéphane de La Faverie,1955038,2024-11-01,4,0001001250-24-000200,11125,11125,358978026,0.0031,4774,400627.26,1,49,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1001250,EL,Stéphane de La Faverie,1955038,2025-02-24,4,0001001250-25-000022,11125,11125,359715445,0.0031,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1001250,EL,Stéphane de La Faverie,1955038,2025-08-28,4,0001628280-25-041471,11125,11125,359889444,0.0031,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1001250,EL,Stéphane de La Faverie,1955038,2025-11-03,4,0001955038-25-000003,15176,15176,360360240,0.0042,4051,475773.05,1,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1001250,EL,Stéphane de La Faverie,1955038,2026-02-27,4,0001955038-26-000002,18630,18630,361727043,0.0052,3454,254320.33,1,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

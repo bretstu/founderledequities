@@ -1,0 +1,6 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+885550,CACC,Vinayak R. Hegde,1698764,2021-05-03,3,0000885550-21-000063,0,0,16710422,0.0,,,,,,0,c-2,,TRUE
+885550,CACC,Vinayak R. Hegde,1698764,2021-07-21,4,0000885550-21-000091,0,0,16710422,0.0,,,,,,0,c-2,,TRUE
+885550,CACC,Vinayak R. Hegde,1698764,2024-09-04,4,0000885550-24-000104,92,92,12111173,0.0008,92,,1,,A,1,c-2,,TRUE
+885550,CACC,Vinayak R. Hegde,1698764,2025-06-04,4,0000885550-25-000063,502,502,11603475,0.0043,410,,1,,A,1,c-2,,TRUE
+885550,CACC,Vinayak R. Hegde,1698764,2025-11-13,4,0000885550-25-000128,140502,140502,11031544,1.2736,140000,,1,,A,1,c-2,,TRUE

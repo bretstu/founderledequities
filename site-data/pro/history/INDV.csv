@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1625297,INDV,Joseph Ciaffoni,1443841,2026-01-01,3,0001443841-26-000002,56000,56000,124853897,0.0449,,,,,,1,c-2,,TRUE
+1625297,INDV,Joseph Ciaffoni,1443841,2026-02-10,4,0001443841-26-000004,135976,135976,125065242,0.1087,79976,,1,,A,1,c-2,,TRUE
+1625297,INDV,Joseph Ciaffoni,1443841,2026-06-22,4,0001443841-26-000007,790330,790330,121922058,0.6482,654354,23472877.68,1,,FM,1,c-2,,TRUE

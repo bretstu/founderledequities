@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1811935,PTRN,David Wright,2086238,2025-09-12,4,0001628280-25-042396,390374,390374,176224923,0.2215,-109626,1534764.0,,,F,1,ptrn:SeriesACommonStockMember|ptrn:SeriesBCommonStockMember,,TRUE
+1811935,PTRN,David Wright,2086238,2025-09-18,3,0001628280-25-042032,500000,500000,176224923,0.2837,,,,109626,,1,ptrn:SeriesACommonStockMember|ptrn:SeriesBCommonStockMember,TRUE,TRUE
+1811935,PTRN,David Wright,2086238,2025-09-22,4,0001628280-25-042680,96808749,96808749,176224923,54.9348,96418375,122574003.72,8,-109626,JS,3,ptrn:SeriesACommonStockMember|ptrn:SeriesBCommonStockMember,,TRUE
+1811935,PTRN,David Wright,2086238,2026-03-23,4,0001811935-26-000018,97308749,97308749,176950987,54.9919,500000,,2,,A,3,ptrn:SeriesACommonStockMember|ptrn:SeriesBCommonStockMember,,TRUE

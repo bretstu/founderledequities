@@ -1,0 +1,4 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+BIO,12208,Norman Schwartz,940805,2015-09-14,2015-09-14,S,sale,2751,381011.29,138.4992,,,,,unknown,M,2,0,Bio-Rad A Common Stock,D,4,0001652252-15-000035,,https://www.sec.gov/Archives/edgar/data/12208/000165225215000035/edgar.xml
+BIO,12208,Norman Schwartz,940805,2015-09-14,2015-09-11,S,sale,1058,145329.84,137.3628,,,,,unknown,M,1,0,Bio-Rad A Common Stock,D,4,0001652252-15-000035,,https://www.sec.gov/Archives/edgar/data/12208/000165225215000035/edgar.xml
+BIO,12208,Norman Schwartz,940805,2015-09-10,2015-09-09,S,sale,1255,173945.01,138.6016,,,,,unknown,M,1,0,Bio-Rad A Common Stock,D,4,0001652252-15-000012,,https://www.sec.gov/Archives/edgar/data/12208/000165225215000012/edgar.xml

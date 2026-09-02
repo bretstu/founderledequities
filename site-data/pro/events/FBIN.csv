@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+FBIN,1519751,Jesse Singh,1594032,2026-08-10,2026-08-07,P,open-market purchase,19560,996261.22,50.9336,99.1635,39285,39285,,discretionary,,1,0,"Common Stock, Par Value $0.01",D,4,0001193125-26-342627,,https://www.sec.gov/Archives/edgar/data/1519751/000119312526342627/ownership.xml
+FBIN,1519751,Jesse Singh,1594032,2026-08-10,2026-08-06,P,open-market purchase,19725,1019080.73,51.6644,100.8436,39285,39285,0,discretionary,,2,0,"Common Stock, Par Value $0.01",D,4,0001193125-26-342627,,https://www.sec.gov/Archives/edgar/data/1519751/000119312526342627/ownership.xml

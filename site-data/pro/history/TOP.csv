@@ -1,0 +1,2 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1848275,TOP,Ka Fai Yuen,2121773,2026-03-18,3,0001213900-26-083885,0,0,37044475,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

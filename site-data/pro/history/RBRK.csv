@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1943896,RBRK,Bipul Sinha,1685768,2024-04-24,4,0001415889-24-011633,0,0,180064654,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1943896,RBRK,Bipul Sinha,1685768,2024-04-29,4,0001415889-24-011884,12342646,12342646,180064654,6.8546,1800000,,1,10542646,C,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1943896,RBRK,Bipul Sinha,1685768,2024-12-13,4,0001415889-24-029360,12031958,12031958,185243732,6.4952,-342000,81355260.5,4,31312,CGMS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1943896,RBRK,Bipul Sinha,1685768,2025-09-12,4,0001415889-25-024459,11291491,11291491,197458685,5.7184,-765807,46573483.41,3,25340,CGS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

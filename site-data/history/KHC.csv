@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1637459,KHC,Steve Cahillane,1416390,2026-01-01,3,0001416390-26-000003,1540,1540,1183655579,0.0001,,,,,,1,c-7,,TRUE
+1637459,KHC,Steve Cahillane,1416390,2026-01-30,4,0001416390-26-000006,233217,233217,1183655579,0.0197,231677,,1,,A,1,c-7,,TRUE
+1637459,KHC,Steve Cahillane,1416390,2026-03-01,4,0001416390-26-000008,416070,416070,1183744751,0.0351,182853,,1,,A,1,c-7,,TRUE
+1637459,KHC,Steve Cahillane,1416390,2026-05-12,4,0001416390-26-000012,636700,636700,1185777638,0.0537,213106,4999807.73,,7524,P,1,c-7,,TRUE

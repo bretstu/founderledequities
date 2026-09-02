@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+SAIC,1571123,James C. Reagan,1212425,2025-12-17,2025-12-16,P,open-market purchase,1000,100165.00,100.1650,3.9277,1000,26460,0,discretionary,,1,0,Common Stock,D,4,0001571123-25-000198,,https://www.sec.gov/Archives/edgar/data/1571123/000157112325000198/wk-form4_1765990808.xml
+SAIC,1571123,James C. Reagan,1212425,2025-03-31,2025-03-28,P,open-market purchase,450,50446.80,112.1040,12.1065,450,4167,0,discretionary,,1,0,Common Stock,D,4,0001571123-25-000048,,https://www.sec.gov/Archives/edgar/data/1571123/000157112325000048/wk-form4_1743452437.xml

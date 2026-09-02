@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1860160,FLY,Jason Kim,2078068,2025-08-06,3,0000950170-25-104410,0,0,146539263,0.0,,,,,,0,C_0917e902-d3ce-4d3d-ae6e-742e7e2fb809,,TRUE
+1860160,FLY,Jason Kim,2078068,2025-09-24,4,0001193125-25-300787,888889,888889,146539263,0.6066,888889,,1,,A,1,C_0917e902-d3ce-4d3d-ae6e-742e7e2fb809,,TRUE
+1860160,FLY,Jason Kim,2078068,2026-03-19,4,0001193125-26-117975,941725,941725,159952387,0.5888,52836,,1,,A,1,C_0917e902-d3ce-4d3d-ae6e-742e7e2fb809,,TRUE

@@ -1,0 +1,2 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+CAG,23217,John Brase,1807641,2026-07-21,2026-07-17,P,open-market purchase,35000,510632.50,14.5895,,35000,35000,0,discretionary,,1,0,Common Stock,D,4,0001807641-26-000007,,https://www.sec.gov/Archives/edgar/data/23217/000180764126000007/form4-07212026_100739.xml

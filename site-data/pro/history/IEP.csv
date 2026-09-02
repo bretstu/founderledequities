@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+813762,IEP,Ted Papapostolou,1817513,2020-03-31,3,0001567619-20-013112,0,0,214078558,0.0,,,,,,0,As_Of_8_4_2026_C3nsRdauF0WUTW94dFHc_A,,TRUE
+813762,IEP,Ted Papapostolou,1817513,2021-12-09,4,0001062993-21-012825,0,0,278605558,0.0,,,,,,0,As_Of_8_4_2026_C3nsRdauF0WUTW94dFHc_A,,TRUE
+813762,IEP,Ted Papapostolou,1817513,2024-09-26,4,0001062993-24-017024,0,0,475462962,0.0,,431447.08,1,,DM,1,As_Of_8_4_2026_C3nsRdauF0WUTW94dFHc_A,,TRUE
+813762,IEP,Ted Papapostolou,1817513,2026-08-14,4,0001012975-26-000802,0,0,710915093,0.0,,,,,,1,As_Of_8_4_2026_C3nsRdauF0WUTW94dFHc_A,,TRUE

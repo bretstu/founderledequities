@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1419612,SEDG,Shuki Nir,1587066,2024-12-05,4,0001178913-24-003933,117165,117165,57950134,0.2022,28450,,1,,A,1,C_20260803,,TRUE
+1419612,SEDG,Shuki Nir,1587066,2025-01-02,4,0001178913-25-000032,259056,259056,57950134,0.447,141891,,1,,A,1,C_20260803,,TRUE
+1419612,SEDG,Shuki Nir,1587066,2026-01-01,4,0001178913-26-000044,349936,349936,59800051,0.5852,90880,,1,,A,1,C_20260803,,TRUE

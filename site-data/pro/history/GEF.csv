@@ -1,0 +1,26 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+43920,GEF,Ole G. Rosgaard,1660979,2018-01-19,4,0001660979-18-000002,2415,2415,48265668,0.005,2415,,1,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2018-12-31,4,0001660979-19-000002,5415,5415,48265668,0.0112,3000,108330.0,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2019-01-16,4,0001660979-19-000004,17603,17603,48265668,0.0365,12188,,1,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2019-07-02,4,0001660979-19-000006,21374,21374,48265668,0.0443,3771,125000.0,,,I,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2020-02-28,4,0001660979-20-000002,29141,29141,48268668,0.0604,7892,,1,-124,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2020-03-16,4,0001660979-20-000004,29141,29141,48268668,0.0604,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2020-09-04,4,0001660979-20-000006,35891,35891,48449711,0.0741,6750,249547.5,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2020-12-17,4,0001660979-20-000008,35891,35891,48452711,0.0741,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2021-01-19,4,0001660979-21-000002,39965,39965,48452711,0.0825,4074,,1,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2021-12-16,4,0001660979-21-000004,39965,39965,48558649,0.0823,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2021-12-20,4,0001660979-21-000006,42955,42955,48558649,0.0885,2990,,1,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2022-12-14,4,0001660979-22-000002,42955,42955,47343438,0.0907,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2023-01-17,4,0001660979-23-000002,63458,63458,47343438,0.134,20503,,4,,AFM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2023-12-12,4,0001660979-23-000004,63458,63458,46805381,0.1356,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2024-01-16,4,0001660979-24-000002,86369,86369,46805381,0.1845,22553,,4,357,AFM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2024-03-08,4,0001660979-24-000004,86293,86293,47121156,0.1831,-75,652586.91,,,PS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2024-12-13,4,0001127602-24-029401,86293,86293,47181397,0.1829,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2025-01-16,4,0001127602-25-001608,136025,136025,47181397,0.2883,49353,,4,378,AFM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2025-06-09,4,0001127602-25-017261,106025,106025,47461098,0.2234,-30000,1972468.0,,,S,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2025-07-01,4,0001127602-25-018677,85994,85994,47461098,0.1812,-20031,1402170.0,,,S,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2025-07-03,4,0001127602-25-019026,82588,82588,47461098,0.174,-3406,238420.0,,,S,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2025-11-03,4,0000043920-25-000079,82588,82588,47501071,0.1739,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2025-12-15,4,0000043920-25-000122,73268,73268,47501071,0.1542,-9733,683645.92,,413,S,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2026-01-14,4,0000043920-26-000013,136915,136915,46286015,0.2958,63647,,4,,AFM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+43920,GEF,Ole G. Rosgaard,1660979,2026-08-03,4,0000043920-26-000105,96828,96828,46168321,0.2097,-40087,3474733.14,,,S,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

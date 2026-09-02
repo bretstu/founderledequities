@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+LZB,57131,Melinda D. Whittington,1595034,2026-06-24,2026-06-23,S,scheduled sale,7364,294560.74,40.0001,1.7693,-6224,408837,0,plan,AFM,1,0,Common Shares,D,4,0001595034-26-000001,,https://www.sec.gov/Archives/edgar/data/57131/000159503426000001/wk-form4_1782347374.xml
+LZB,57131,Melinda D. Whittington,1595034,2026-06-24,2026-06-22,S,scheduled sale,26639,1071921.39,40.2388,6.0310,99023,415061,0,plan,AFM,1,0,Common Shares,D,4,0001595034-26-000001,,https://www.sec.gov/Archives/edgar/data/57131/000159503426000001/wk-form4_1782347374.xml

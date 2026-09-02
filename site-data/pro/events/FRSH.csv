@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+FRSH,1544522,Dennis Woodside,1734438,2026-03-03,2026-03-02,P,open-market purchase,125000,993750.00,7.9500,3.9590,703,3282339,,discretionary,F,1,0,Class A Common Stock,D,4,0001544522-26-000040,,https://www.sec.gov/Archives/edgar/data/1544522/000154452226000040/form4.xml
+FRSH,1544522,Dennis Woodside,1734438,2025-11-12,2025-11-10,P,open-market purchase,176100,1991691.00,11.3100,7.9559,176100,2389544,0,discretionary,,1,0,Class A Common Stock,D,4,0001544522-25-000110,,https://www.sec.gov/Archives/edgar/data/1544522/000154452225000110/form4.xml

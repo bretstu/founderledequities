@@ -1,0 +1,10 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1840776,HGTY,McKeel O Hagerty,1897880,2021-12-02,3,0001104659-21-149267,0,0,14947500,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1840776,HGTY,McKeel O Hagerty,1897880,2022-04-01,4,0001840776-22-000054,1294593,1294593,333486120,0.3882,1294593,,5,,A,1,hgty:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE
+1840776,HGTY,McKeel O Hagerty,1897880,2023-04-01,4,0001840776-23-000037,1374685,1374685,335414531,0.4098,80092,,1,,A,1,hgty:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE
+1840776,HGTY,McKeel O Hagerty,1897880,2023-04-04,4,0001840776-23-000064,1313745,1313745,335414531,0.3917,-60940,510696.03,,,F,1,hgty:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE
+1840776,HGTY,McKeel O Hagerty,1897880,2023-04-06,4,0001840776-23-000085,1283855,1283855,335414531,0.3828,-29890,251097.21,,,F,1,hgty:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE
+1840776,HGTY,McKeel O Hagerty,1897880,2023-06-23,4,0001840776-23-000128,1283855,1283855,335414531,0.3828,,,,,,1,hgty:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE
+1840776,HGTY,McKeel O Hagerty,1897880,2024-04-01,4,0001840776-24-000055,1376751,1376751,336737192,0.4089,92896,,1,,A,1,hgty:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE
+1840776,HGTY,McKeel O Hagerty,1897880,2025-04-01,4,0001840776-25-000097,1120608,1120608,341749554,0.3279,-99234,901044.72,,-156909,F,1,hgty:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE
+1840776,HGTY,McKeel O Hagerty,1897880,2026-04-01,4,0001628280-26-023590,1037740,1037740,343354402,0.3022,-82868,883372.88,,,F,1,hgty:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE

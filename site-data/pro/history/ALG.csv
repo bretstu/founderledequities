@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+897077,ALG,Robert P. Hureau,1483898,2025-09-02,3,0001483898-25-000004,10988,10988,12110910,0.0907,,,,,,1,c-2,,TRUE
+897077,ALG,Robert P. Hureau,1483898,2025-11-13,4,0001483898-25-000006,11742,11742,12115428,0.0969,754,125510.55,,,P,1,c-2,,TRUE
+897077,ALG,Robert P. Hureau,1483898,2025-11-26,4,0001483898-25-000008,12046,12046,12115428,0.0994,304,49697.3,,,P,1,c-2,,TRUE
+897077,ALG,Robert P. Hureau,1483898,2026-03-09,4,0001483898-26-000002,22036,22036,12121294,0.1818,9990,75623.54,1,,AP,1,c-2,,TRUE

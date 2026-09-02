@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1693736,EQPT,Jabbok Schlacks,2091677,2026-01-22,3,0000950103-26-000859,21563962,21563962,266047147,8.1053,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1693736,EQPT,Jabbok Schlacks,2091677,2026-01-26,4,0000950103-26-001009,33091020,33091020,266047147,12.438,11527058,,9,,ADJ,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1693736,EQPT,Jabbok Schlacks,2091677,2026-06-15,4,0000950103-26-009152,33141020,33141020,252375097,13.1317,50000,1056039.0,,,P,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

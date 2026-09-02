@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2064947,WBI,Jason Long,2028425,2025-09-17,3,0001193125-25-206436,0,0,123455000,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2064947,WBI,Jason Long,2028425,2025-09-18,4,0001193125-25-211689,137500,137500,123455000,0.1114,137500,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2064947,WBI,Jason Long,2028425,2026-01-05,4,0001193125-26-005386,142500,142500,123455000,0.1154,5000,99200.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2064947,WBI,Jason Long,2028425,2026-08-04,4,0001193125-26-338415,187329,187329,123456209,0.1517,44829,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

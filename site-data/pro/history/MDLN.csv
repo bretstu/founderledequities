@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2046386,MDLN,James M. Boyle,2061052,2025-12-16,4,0001193125-26-096654,570928,570928,1313693412,0.0435,570928,,3,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2046386,MDLN,James M. Boyle,2061052,2025-12-17,3,0001193125-25-323247,570928,570928,1313693412,0.0435,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2046386,MDLN,James M. Boyle,2061052,2026-06-15,4,0001193125-26-274286,568558,568558,1313688164,0.0433,-2370,86765.7,,,F,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2046386,MDLN,James M. Boyle,2061052,2026-08-19,4,0001193125-26-361183,568558,568558,1314707492,0.0432,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

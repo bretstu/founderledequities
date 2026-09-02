@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1603145,XIFR,S. Alan Liu,2055465,2025-01-27,3,0001062993-25-001806,0,0,93534176,0.0,,,,,,0,c-2,,TRUE
+1603145,XIFR,S. Alan Liu,2055465,2025-02-18,4,0001062993-25-002840,65922,65922,93534176,0.0705,65922,,1,,A,1,c-2,,TRUE
+1603145,XIFR,S. Alan Liu,2055465,2026-02-09,4,0002055465-26-000002,60027,60027,93966346,0.0639,-5895,60011.1,,,F,1,c-2,,TRUE
+1603145,XIFR,S. Alan Liu,2055465,2026-02-17,4,0002055465-26-000004,118045,118045,93966346,0.1256,58018,,1,,A,1,c-2,,TRUE

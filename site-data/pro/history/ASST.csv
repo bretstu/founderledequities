@@ -1,0 +1,7 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1920406,ASST,Matthew Cole,2084252,2025-09-12,4,0000950103-25-011734,185185,9259,16624395,1.1139,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1920406,ASST,Matthew Cole,2084252,2025-10-01,4,0000950103-25-012847,7719607,385980,16624395,46.4354,7534422,18225820.0,3,,FGM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1920406,ASST,Matthew Cole,2084252,2025-12-15,4,0000950103-25-016161,8234802,411740,16624395,49.5344,515195,415998.58,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1920406,ASST,Matthew Cole,2084252,2026-01-13,4,0000950103-26-000473,8734802,436740,69158785,12.6301,500000,459350.0,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1920406,ASST,Matthew Cole,2084252,2026-03-19,4,0000950103-26-004428,8734802,8734802,3457939,252.6014,,,,8298062,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1920406,ASST,Matthew Cole,2084252,2026-08-07,4,0000950103-26-012094,8734802,8734802,85441903,10.2231,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

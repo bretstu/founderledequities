@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1806837,VERX,Christopher Young,1647655,2025-11-10,3,0001647655-25-000005,0,0,159527964,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1806837,VERX,Christopher Young,1647655,2025-12-01,4,0001647655-25-000007,0,0,159527964,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1806837,VERX,Christopher Young,1647655,2026-02-23,4,0001647655-26-000002,60000,60000,159956894,0.0375,60000,730794.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+912242,MAC,Jackson Hsieh,1684096,2024-03-01,3,0001628280-24-009153,30500,30500,215720093,0.0141,,,,,,1,c-2,,TRUE
+912242,MAC,Jackson Hsieh,1684096,2024-05-06,4,0000912242-24-000074,170500,170500,215750149,0.079,140000,1996820.0,,,P,1,c-2,,TRUE
+912242,MAC,Jackson Hsieh,1684096,2025-03-04,4,0000912242-25-000028,226500,226500,252496876,0.0897,56000,993832.0,,,P,1,c-2,,TRUE

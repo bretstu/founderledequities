@@ -1,0 +1,7 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1639723,NAVN,Ariel Cohen,1853730,2025-10-29,3,0001853730-25-000006,7550360,7550360,248644065,3.0366,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1639723,NAVN,Ariel Cohen,1853730,2025-10-31,4,0001853730-25-000009,6626028,6626028,248644065,2.6649,-924332,23108300.0,14,,CS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1639723,NAVN,Ariel Cohen,1853730,2026-03-20,4,0001853730-26-000003,6475021,6475021,250761014,2.5821,-151007,1302042.76,,,S,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1639723,NAVN,Ariel Cohen,1853730,2026-05-21,4,0001853730-26-000005,6767253,6767253,254331262,2.6608,292112,,1,120,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1639723,NAVN,Ariel Cohen,1853730,2026-06-22,4,0001853730-26-000009,6725834,6725834,254331262,2.6445,-41530,874821.14,,111,S,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1639723,NAVN,Ariel Cohen,1853730,2026-08-27,4,0001853730-26-000011,6332576,6332576,254331262,2.4899,-393378,11858025.77,6,120,CS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

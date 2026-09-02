@@ -103,11 +103,68 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir) -> int:
         trend_rows.append([t, "" if now is None else f"{now:.4f}",
                            "" if year_ago is None else f"{year_ago:.4f}",
                            direction])
+    # THE MASK EXTENDS TO EVERY FILE. trends.csv once carried pct_now for
+    # all 2,135 tickers publicly -- the "hidden" stakes readable out of a
+    # 46KB file. Public rows outside the free tier keep the direction
+    # (real, useful, unpriced); the numbers live behind /pro/.
     with open(os.path.join(out_dir, "trends.csv"), "w", newline="",
               encoding="utf-8") as fh:
         w = csv.writer(fh)
         w.writerow(["ticker", "pct_now", "pct_1y", "direction"])
+        for t, now, ago, d in trend_rows:
+            if t in sp or GENEROUS:
+                w.writerow([t, now, ago, d])
+            else:
+                w.writerow([t, "", "", d])
+    with open(os.path.join(out_dir, "pro", "trends.csv"), "w", newline="",
+              encoding="utf-8") as fh:
+        w = csv.writer(fh)
+        w.writerow(["ticker", "pct_now", "pct_1y", "direction"])
         w.writerows(trend_rows)
+
+    # ---- the lite history files: the page's synchronous brain ----
+    # Monthly resolution plus each series' first point, record low, and
+    # restated rows -- the lens math and sparklines need the shape, not
+    # every filing; the focus view fetches the full shard on demand.
+    def lite(rows):
+        keep, seen = [], set()
+        best_min, best_v = None, None
+        for r in rows:
+            v = None
+            try:
+                v = float(r.get("pct") or "")
+            except ValueError:
+                pass
+            if v is not None and (best_v is None or v < best_v):
+                best_min, best_v = r, v
+        by_month = {}
+        for r in rows:
+            by_month[r.get("date", "")[:7]] = r     # last of each month wins
+        chosen = [rows[0], rows[-1]] + list(by_month.values())
+        chosen += [r for r in rows if (r.get("restated") or "").strip()]
+        if best_min is not None:
+            chosen.append(best_min)
+        for r in sorted(chosen, key=lambda r: r.get("date", "")):
+            k = (r.get("date"), r.get("accession"))
+            if k not in seen:
+                seen.add(k)
+                keep.append(r)
+        return keep
+
+    lite_all, lite_sp = [], []
+    for t, rows in sorted(hist_by_t.items()):
+        rows.sort(key=lambda r: r.get("date", ""))
+        lt = lite(rows)
+        lite_all.extend(lt)
+        if t in sp:
+            lite_sp.extend(lt)
+    for path, rows in (("history-free-lite.csv", lite_sp),
+                       (os.path.join("pro", "history-lite.csv"), lite_all)):
+        with open(os.path.join(out_dir, path), "w", newline="",
+                  encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=hist_cols)
+            w.writeheader()
+            w.writerows(rows)
 
     # ---- event shards ----
     ev_by_t = defaultdict(list)
@@ -139,6 +196,9 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir) -> int:
                    for f in os.listdir(os.path.join(out_dir, s))),
                   default=(0, "-"))
     print(f"  largest shard       {biggest[1]}  {biggest[0] // 1024} KB")
+    print(f"  history-free-lite   {len(lite_sp)} rows, {_kb('history-free-lite.csv')} KB")
+    print(f"  pro/history-lite    {len(lite_all)} rows, "
+          f"{os.path.getsize(os.path.join(out_dir, 'pro', 'history-lite.csv')) // 1024} KB")
     print(f"  GENEROUS={GENEROUS}  (public pct on non-S&P rows)")
     return 0
 

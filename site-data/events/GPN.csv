@@ -1,0 +1,4 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+GPN,1123360,Cameron M. Bready,1461620,2020-11-12,2020-11-10,S,sale,17756,3446262.04,194.0900,15.3551,-17756,97880,0,unknown,,1,0,Common Stock,D,4,0001127602-20-028794,,https://www.sec.gov/Archives/edgar/data/1123360/000112760220028794/form4.xml
+GPN,1123360,Cameron M. Bready,1461620,2019-03-13,2019-03-11,S,sale,34308,4505669.64,131.3300,24.7675,-18308,104212,0,unknown,M,1,0,Common Stock,D,4,0001127602-19-011243,,https://www.sec.gov/Archives/edgar/data/1123360/000112760219011243/form4.xml
+GPN,1123360,Cameron M. Bready,1461620,2018-09-14,2018-09-12,S,sale,57737,7377470.68,127.7772,30.5353,-20879,131346,0,unknown,M,2,0,Common Stock,D,4,0001127602-18-027628,,https://www.sec.gov/Archives/edgar/data/1123360/000112760218027628/form4.xml

@@ -1,0 +1,8 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1820953,AFRM,Max Levchin,1539853,2021-01-13,3,0001209191-21-003525,735294,735294,257407451,0.2857,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1820953,AFRM,Max Levchin,1539853,2021-03-18,4,0001820953-21-000036,27220766,27220766,257407451,10.575,-361759,,3,26847231,CJ,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1820953,AFRM,Max Levchin,1539853,2025-08-18,4,0001628280-25-040931,27220766,27220766,325650314,8.3589,,1929684.65,,,MS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1820953,AFRM,Max Levchin,1539853,2025-08-22,4,0001628280-25-041070,27220766,27220766,325650314,8.3589,,21616891.3,,,MS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1820953,AFRM,Max Levchin,1539853,2025-08-28,4,0001539853-25-000004,27220766,27220766,325650314,8.3589,,64484634.91,,,MS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1820953,AFRM,Max Levchin,1539853,2025-09-22,4,0001628280-25-042655,27220766,27220766,325650314,8.3589,,90109526.63,,,MS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1820953,AFRM,Max Levchin,1539853,2026-01-05,4,0001628280-26-001248,27220766,27220766,333110651,8.1717,,86414447.52,,,MS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

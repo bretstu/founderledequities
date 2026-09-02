@@ -1,0 +1,3 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+874499,GPOR,Domenic J. Dell'Osso,1504988,2026-05-28,4,0001504988-26-000010,22749,22749,17969641,0.1266,22749,,1,,A,1,c-2,,TRUE
+874499,GPOR,Domenic J. Dell'Osso,1504988,2026-08-07,4,0001504988-26-000012,24349,24349,17683866,0.1377,1600,256976.0,,,P,1,c-2,,TRUE

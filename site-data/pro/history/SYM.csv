@@ -1,0 +1,9 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1837240,SYM,Richard B. Cohen,1933447,2022-06-07,4,0000899243-22-021738,385278611,385278611,41040000,938.788,385278611,,5,,AD,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+1837240,SYM,Richard B. Cohen,1933447,2022-07-19,4,0000899243-22-026489,396183087,396183087,552057744,71.7648,10904476,,4,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+1837240,SYM,Richard B. Cohen,1933447,2022-08-02,4,0001837240-23-000037,401635324,401635324,552057744,72.7524,5452237,,4,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+1837240,SYM,Richard B. Cohen,1933447,2023-07-24,4,0000899243-23-017568,784899501,784899501,555847570,141.2077,-17825312,500000001.6,6,401089489,JS,4,sym:CommonClassV1Member|sym:CommonClassV3Member|us-gaap:CommonClassAMember,,
+1837240,SYM,Richard B. Cohen,1933447,2023-12-13,4,0001837240-23-000212,776509851,776509851,557238761,139.3496,-1000000,,1,-7389650,G,4,sym:CommonClassV1Member|sym:CommonClassV3Member|us-gaap:CommonClassAMember,,
+1837240,SYM,Richard B. Cohen,1933447,2024-02-26,4,0001837240-24-000044,765041357,765041357,577058934,132.5759,-5000000,191612709.0,8,-6468494,JS,4,sym:CommonClassV1Member|sym:CommonClassV3Member|us-gaap:CommonClassAMember,,
+1837240,SYM,Richard B. Cohen,1933447,2025-06-12,4,0001837240-25-000199,613022857,613022857,589610540,103.9708,-166397479,,3,14378979,GJ,4,sym:CommonClassV1Member|sym:CommonClassV3Member|us-gaap:CommonClassAMember,,
+1837240,SYM,Richard B. Cohen,1933447,2025-12-11,4,0001933447-25-000005,404372149,404372149,591517950,68.3618,,,2,-208650708,GJ,4,sym:CommonClassV1Member|sym:CommonClassV3Member|us-gaap:CommonClassAMember,,

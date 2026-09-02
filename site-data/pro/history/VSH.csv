@@ -1,0 +1,23 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+103730,VSH,Joel Smejkal,1690381,2016-11-14,3,0001140361-16-087410,0,0,144445766,0.0,,,,,,1,us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2017-02-23,4,0001140361-17-009151,1091,1091,144445766,0.0008,1091,,1,,A,1,us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2018-03-06,4,0001140361-18-012265,2302,2302,144445766,0.0016,1211,,1,,A,1,us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2019-02-28,4,0001567619-19-005622,3753,3753,144445766,0.0026,1451,,1,,A,1,us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2020-01-01,4,0001567619-20-000150,3375,3375,144548708,0.0023,-378,8123.22,,,F,1,us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2020-02-13,4,0001567619-20-003398,5689,5689,144548708,0.0039,2314,20209.83,1,,AF,1,us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2020-02-19,4,0001567619-20-004572,2662,2662,144548708,0.0018,-3027,62447.01,,,S,1,us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2020-02-28,4,0001567619-20-005144,4289,4289,144548708,0.003,1627,,1,,A,1,us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2021-01-01,4,0001567619-21-000112,3870,3870,144730764,0.0027,-419,8752.91,,,F,1,us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2021-02-23,4,0001567619-21-004727,13424,13424,144730764,0.0093,9554,25458.62,2,,AF,1,us-gaap:CommonClassBMember|us-gaap:CommonStockMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2022-01-01,4,0001567619-22-000098,12922,12922,144902645,0.0089,-502,11144.4,,,F,1,vsh:ClassBConvertibleCommonStockMember|vsh:CommonStockParValue010PerShareMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2022-02-22,4,0001567619-22-005286,22814,22814,144902645,0.0157,9892,25041.97,2,,AF,1,vsh:ClassBConvertibleCommonStockMember|vsh:CommonStockParValue010PerShareMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2023-01-01,4,0001567619-23-000316,22250,22250,140459695,0.0158,-564,12114.72,,,F,1,vsh:ClassBConvertibleCommonStockMember|vsh:CommonStockParValue010PerShareMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2023-02-21,4,0001567619-23-003703,25699,25699,140459695,0.0183,3449,30042.3,1,,AF,1,vsh:ClassBConvertibleCommonStockMember|vsh:CommonStockParValue010PerShareMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2023-03-24,4,0000103730-23-000026,78965,78965,140459695,0.0562,53266,,1,,A,1,vsh:ClassBConvertibleCommonStockMember|vsh:CommonStockParValue010PerShareMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2024-01-01,4,0000103730-24-000013,71341,71341,137505248,0.0519,-7624,182747.28,,,F,1,vsh:ClassBConvertibleCommonStockMember|vsh:CommonStockParValue010PerShareMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2024-02-27,4,0000103730-24-000045,169136,169136,137505248,0.123,97795,67434.24,2,,AF,1,vsh:ClassBConvertibleCommonStockMember|vsh:CommonStockParValue010PerShareMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2025-01-02,4,0001062993-25-000413,152309,152309,135567009,0.1123,-16827,285049.38,,,F,1,vsh:ClassBConvertibleCommonStockMember|vsh:CommonStockParValue010PerShareMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2025-02-26,4,0001062993-25-004040,364434,364434,135567009,0.2688,212125,54414.0,2,,AF,1,vsh:ClassBConvertibleCommonStockMember|vsh:CommonStockParValue010PerShareMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2025-05-12,4,0001062993-25-009282,374434,374434,135554230,0.2762,10000,146958.0,,,P,1,vsh:ClassBConvertibleCommonStockMember|vsh:CommonStockParValue010PerShareMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2026-01-02,4,0001192482-26-000026,333343,333343,135794240,0.2455,-41091,595408.59,,,F,1,vsh:ClassBConvertibleCommonStockMember|vsh:CommonStockParValue010PerShareMember,,TRUE
+103730,VSH,Joel Smejkal,1690381,2026-02-25,4,0001192482-26-000092,505449,505449,135794240,0.3722,172106,,1,,A,1,vsh:ClassBConvertibleCommonStockMember|vsh:CommonStockParValue010PerShareMember,,TRUE

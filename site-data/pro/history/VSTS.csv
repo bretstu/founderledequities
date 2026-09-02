@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1967649,VSTS,Jim Barber,1571166,2025-06-02,4,0001213900-25-051267,478469,478469,131782772,0.3631,478469,,1,,A,1,c-2,,TRUE
+1967649,VSTS,Jim Barber,1571166,2025-12-03,4,0001213900-25-118813,642469,642469,131866818,0.4872,164000,1041964.13,,,P,1,c-2,,TRUE
+1967649,VSTS,Jim Barber,1571166,2025-12-09,4,0001213900-25-120694,782722,782722,131866818,0.5936,140253,,1,,A,1,c-2,,TRUE

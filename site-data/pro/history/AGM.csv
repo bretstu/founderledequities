@@ -1,0 +1,23 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+845877,AGM,Zachary N. Carpenter,1776941,2019-05-08,3,0000845877-19-000111,0,0,10700235,0.0,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2020-03-03,4,0000845877-20-000077,3186,3186,10712050,0.0297,3186,,2,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2020-03-05,4,0000845877-20-000083,3534,3534,10712050,0.033,348,25115.79,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2021-03-02,4,0000845877-21-000073,6697,6697,10737136,0.0624,3163,,2,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2021-03-31,4,0000845877-21-000103,6355,6355,10761923,0.0591,-342,34494.12,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2022-03-09,4,0000845877-22-000072,8063,8063,10766659,0.0749,1708,425254.8,2,,ADFMS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2022-03-31,4,0000845877-22-000102,7381,7381,10795012,0.0684,-682,75736.1,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2022-08-12,4,0000845877-22-000171,7904,7904,10797419,0.0732,523,598517.4,,,DFM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2023-03-09,4,0000845877-23-000069,10078,10078,10801798,0.0933,2174,,2,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2023-03-31,4,0000845877-23-000092,8716,8716,10832410,0.0805,-1471,191906.66,,109,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2023-06-06,4,0000845877-23-000144,9202,9202,10832410,0.0849,486,357314.84,,,DFM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2023-06-15,4,0000845877-23-000154,8716,8716,10832410,0.0805,-486,72464.3,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2023-11-20,4,0000845877-23-000215,8478,8478,10840852,0.0782,-238,40000.04,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2023-12-13,4,0000845877-23-000220,8843,8843,10840852,0.0816,365,311758.86,,,DFM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2024-03-05,4,0000845877-24-000071,10666,10666,10846478,0.0983,1823,,2,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2024-03-31,4,0000845877-24-000111,9380,9380,10880841,0.0862,-1326,261062.88,,40,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2024-11-07,4,0000845877-24-000249,9673,9673,10885803,0.0889,293,919766.27,,,DFMS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2025-03-06,4,0000845877-25-000082,11455,11455,10891565,0.1052,1782,,2,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2025-03-31,4,0000845877-25-000132,10825,10825,10933162,0.099,-1321,249114.18,,691,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2025-08-26,4,0000845877-25-000226,10714,10714,10933922,0.098,-111,300354.44,,,DFMS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2026-03-05,4,0000845877-26-000055,12811,12811,10856981,0.118,2097,,2,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+845877,AGM,Zachary N. Carpenter,1776941,2026-03-31,4,0001776941-26-000002,12213,12213,10848998,0.1126,-1323,190988.28,,725,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE

@@ -1,0 +1,8 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1809104,ALIT,Rohit Verma,1712263,2026-01-01,3,0001628280-26-001395,0,0,534502781,0.0,,,,,,1,alit:CommonClassBOneMember|alit:CommonClassBTwoMember|alit:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE
+1809104,ALIT,Rohit Verma,1712263,2026-01-07,4,0001628280-26-001398,922883,46144,534502781,0.1727,922883,,1,,A,1,alit:CommonClassBOneMember|alit:CommonClassBTwoMember|alit:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE
+1809104,ALIT,Rohit Verma,1712263,2026-02-24,4,0001628280-26-011828,1022883,51144,534502781,0.1914,100000,77040.0,,,P,1,alit:CommonClassBOneMember|alit:CommonClassBTwoMember|alit:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE
+1809104,ALIT,Rohit Verma,1712263,2026-03-12,4,0001628280-26-017418,1134883,56744,534502781,0.2123,112000,99680.0,,,P,1,alit:CommonClassBOneMember|alit:CommonClassBTwoMember|alit:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE
+1809104,ALIT,Rohit Verma,1712263,2026-03-16,4,0001628280-26-019540,4555202,227760,534502781,0.8522,3420319,,1,,A,1,alit:CommonClassBOneMember|alit:CommonClassBTwoMember|alit:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE
+1809104,ALIT,Rohit Verma,1712263,2026-03-25,4,0001628280-26-021536,4555202,227760,534502781,0.8522,,,,,,1,alit:CommonClassBOneMember|alit:CommonClassBTwoMember|alit:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE
+1809104,ALIT,Rohit Verma,1712263,2026-08-03,4,0001628280-26-053546,227760,227760,1346954,16.9093,,,,,,1,alit:CommonClassBOneMember|alit:CommonClassBTwoMember|alit:CommonClassVMember|us-gaap:CommonClassAMember,,TRUE

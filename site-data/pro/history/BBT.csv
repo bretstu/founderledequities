@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1108134,BBT,Paul A. Perrault,1250513,2025-09-01,3,0001250513-25-000009,235880,235880,46389917,0.5085,,,,,,1,c-2,,TRUE
+1108134,BBT,Paul A. Perrault,1250513,2025-09-19,4,0001250513-25-000011,253801,253801,46389917,0.5471,17921,,1,,A,1,c-2,,TRUE
+1108134,BBT,Paul A. Perrault,1250513,2026-06-16,4,0001628280-26-045246,290149,290149,83816086,0.3462,36348,,2,,A,1,c-2,,TRUE

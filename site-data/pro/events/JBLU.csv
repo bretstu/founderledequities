@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+JBLU,1158463,Joanna Geraghty,1742111,2020-03-06,2020-03-04,S,sale,2531,37965.00,15.0000,1.5208,-2531,163898,0,unknown,,1,0,Common Stock,D,4,0001179110-20-003239,,https://www.sec.gov/Archives/edgar/data/1158463/000117911020003239/edgar.xml
+JBLU,1158463,Joanna Geraghty,1742111,2020-03-04,2020-03-02,S,sale,12655,189571.72,14.9800,7.0665,-12655,166429,0,unknown,,5,0,Common Stock,D,4,0001179110-20-003126,,https://www.sec.gov/Archives/edgar/data/1158463/000117911020003126/edgar.xml

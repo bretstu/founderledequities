@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1275014,UCTT,James Xiao,2086234,2025-09-02,3,0000950103-25-011730,0,0,45343968,0.0,,,,,,0,c-2,,TRUE
+1275014,UCTT,James Xiao,2086234,2025-09-26,4,0000950103-25-012608,117948,117948,45343968,0.2601,117948,,1,,A,1,c-2,,TRUE
+1275014,UCTT,James Xiao,2086234,2026-05-22,4,0000950103-26-007861,149123,149123,44828352,0.3327,31175,,1,,A,1,c-2,,TRUE

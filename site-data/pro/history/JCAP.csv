@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2046042,JCAP,David Burton,2072023,2025-06-26,3,0001104659-25-063176,4201796,4201796,58266307,7.2114,,,,,,1,As_Of_8_13_2026_KZpkLh5qqE2ptupmLIov4A,,TRUE
+2046042,JCAP,David Burton,2072023,2025-06-27,4,0001104659-25-064146,3777500,3777500,58266307,6.4832,3777500,6364440.0,1,-4201796,AS,1,As_Of_8_13_2026_KZpkLh5qqE2ptupmLIov4A,,TRUE
+2046042,JCAP,David Burton,2072023,2026-01-09,4,0001104659-26-003826,3392500,3392500,58290473,5.82,-385000,7892500.0,,,S,1,As_Of_8_13_2026_KZpkLh5qqE2ptupmLIov4A,,TRUE

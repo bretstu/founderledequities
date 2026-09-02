@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2017526,FRNM,Adam Stone,1727440,2024-06-11,3,0001140361-24-029744,0,0,11067500,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+2017526,FRNM,Adam Stone,1727440,2024-06-13,4,0001140361-24-030027,286250,286250,11067500,2.5864,286250,2862500.0,,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+2017526,FRNM,Adam Stone,1727440,2026-07-20,4,0001727440-26-000003,2638750,2638750,10313492,25.5854,,,2,2352500,C,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,

@@ -1,0 +1,6 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1067983,BRK-B,Gregory E. Abel,1646348,2018-01-09,3,0001081316-18-000011,2368,2368,1387021309,0.0002,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+1067983,BRK-B,Gregory E. Abel,1646348,2021-06-22,4,0001081316-21-000023,2368,2368,1327210118,0.0002,,1267281.96,,,J,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+1067983,BRK-B,Gregory E. Abel,1646348,2022-09-29,4,0001081316-22-000039,2536,2536,1301726294,0.0002,168,68330561.48,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+1067983,BRK-B,Gregory E. Abel,1646348,2023-03-17,4,0001081316-23-000009,2769,2769,1301691078,0.0002,55,24599299.45,,178,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+1067983,BRK-B,Gregory E. Abel,1646348,2026-03-04,4,0001193125-26-092556,2686,2686,1390116959,0.0002,21,15308372.29,,-104,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,

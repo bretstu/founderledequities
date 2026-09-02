@@ -1,0 +1,6 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2021728,CBRS,Andrew D. Feldman,2039573,2026-05-13,4,0001628280-26-035738,14156621,14156621,226532567,6.2493,-107076,19809060.0,6,,FJ,2,cbrs:CommonClassNMember|us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2021728,CBRS,Andrew D. Feldman,2039573,2026-06-25,4,0001628280-26-046034,14138631,14138631,226532567,6.2413,-17990,3113282.92,2,,CS,2,cbrs:CommonClassNMember|us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2021728,CBRS,Andrew D. Feldman,2039573,2026-06-29,4,0001628280-26-046551,14138899,14138899,226532567,6.2414,268,,1,,J,2,cbrs:CommonClassNMember|us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2021728,CBRS,Andrew D. Feldman,2039573,2026-08-17,4,0001628280-26-058119,14112553,14112553,237564041,5.9405,-26346,5920936.65,3,,CJS,2,cbrs:CommonClassNMember|us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2021728,CBRS,Andrew D. Feldman,2039573,2026-08-21,4,0001628280-26-058961,14062673,14062673,237564041,5.9195,-49880,47338834.93,5,,CGJMS,2,cbrs:CommonClassNMember|us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

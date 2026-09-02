@@ -1,0 +1,2 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1518715,MCHB,C.J. Johnson,2102025,2025-09-02,3,0002102025-26-000002,0,0,18920808,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

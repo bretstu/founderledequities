@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1625101,PLSE,Paul A. LaViolette,1191249,2024-08-09,4,0001437749-24-026509,0,0,55225333,0.0,,,,,,0,i_2026-07-31,,TRUE
+1625101,PLSE,Paul A. LaViolette,1191249,2025-01-09,4,0001437749-25-001016,0,0,61516677,0.0,,,,,,0,i_2026-07-31,,TRUE
+1625101,PLSE,Paul A. LaViolette,1191249,2026-05-11,4,0001437749-26-016190,15000,15000,68225067,0.022,15000,295350.0,,,P,1,i_2026-07-31,,TRUE

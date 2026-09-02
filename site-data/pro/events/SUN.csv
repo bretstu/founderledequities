@@ -1,0 +1,4 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+SUN,1552275,Joseph Kim,1676729,2024-05-28,2024-05-23,P,open-market purchase,5000,252515.50,50.5031,1.1066,5000,456821,0,discretionary,,1,0,Common Units,I,4,0000950170-24-064893,,https://www.sec.gov/Archives/edgar/data/1552275/000095017024064893/ownership.xml
+SUN,1552275,Joseph Kim,1676729,2022-06-21,2022-06-16,P,open-market purchase,5000,177475.00,35.4950,1.4059,5000,360652,0,unknown,,1,0,Common Units,I,4,0001209191-22-038230,,https://www.sec.gov/Archives/edgar/data/1552275/000120919122038230/doc4.xml
+SUN,1552275,Joseph Kim,1676729,2020-03-12,2020-03-12,P,open-market purchase,11555,204079.79,17.6616,5.2946,11555,229795,0,unknown,,1,0,Common Units,D,4,0001209191-20-018668,,https://www.sec.gov/Archives/edgar/data/1552275/000120919120018668/doc4.xml

@@ -1,0 +1,5 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+RHI,315213,M. Keith Waddell,1191822,2018-04-27,2018-04-27,S,sale,100000,6067430.00,60.6743,7.3577,-100000,1259125,0,unknown,,1,0,Common Stock,D,4,0001628280-18-005280,,https://www.sec.gov/Archives/edgar/data/315213/000162828018005280/wf-form4_152487046757620.xml
+RHI,315213,M. Keith Waddell,1191822,2015-02-13,2015-02-11,S,sale,300000,18180510.00,60.6017,,,,,unknown,F,1,0,Common Stock,D,4,0001104659-15-010193,,https://www.sec.gov/Archives/edgar/data/315213/000110465915010193/a4.xml
+RHI,315213,M. Keith Waddell,1191822,2009-10-27,2009-10-26,S,sale,50000,1291461.41,25.8292,,,,,unknown,G,7,0,Common Stock,D,4,0001104659-09-060621,,https://www.sec.gov/Archives/edgar/data/315213/000110465909060621/a4.xml
+RHI,315213,M. Keith Waddell,1191822,2005-10-27,2005-10-25,S,sale,250000,6023512.00,24.0940,,,,,unknown,FM,23,1,Common Stock,D,4,0001104659-05-050570,,https://www.sec.gov/Archives/edgar/data/315213/000110465905050570/a4.xml

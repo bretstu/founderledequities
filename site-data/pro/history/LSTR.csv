@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+853816,LSTR,Frank A. Lonegro,1653042,2024-02-02,4,0001127602-24-003567,15891,15891,35716673,0.0445,15891,,2,,A,1,PAsOn07_20_2026,,TRUE
+853816,LSTR,Frank A. Lonegro,1653042,2025-01-31,4,0001127602-25-002927,19402,19402,35316073,0.0549,3511,419620.53,1,,AF,1,PAsOn07_20_2026,,TRUE
+853816,LSTR,Frank A. Lonegro,1653042,2026-01-30,4,0000853816-26-000018,23110,23110,34058726,0.0679,3708,459531.77,1,,AF,1,PAsOn07_20_2026,,TRUE

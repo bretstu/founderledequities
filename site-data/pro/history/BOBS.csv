@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2085187,BOBS,William G. Barton,1055887,2026-02-04,3,0001055887-26-000002,0,0,130627486,0.0,,,,,,0,c-2,,TRUE
+2085187,BOBS,William G. Barton,1055887,2026-02-12,4,0001628280-26-008102,0,0,130627486,0.0,,,,,,0,c-2,,TRUE
+2085187,BOBS,William G. Barton,1055887,2026-05-08,4,0001628280-26-034242,22850,22850,130627486,0.0175,22350,302788.0,,500,P,1,c-2,,TRUE

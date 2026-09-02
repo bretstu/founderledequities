@@ -1,0 +1,9 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1888447,EE,Steven Kobos,1907207,2022-04-12,3,0001140361-22-014209,0,0,108275556,0.0,,,,,,0,ee:ExcelerateEnergyIncMember,,
+1888447,EE,Steven Kobos,1907207,2022-04-13,4,0001140361-22-014743,0,0,108275556,0.0,,,,,,0,ee:ExcelerateEnergyIncMember,,
+1888447,EE,Steven Kobos,1907207,2022-04-18,4,0001140361-22-015183,265258,265258,108275556,0.245,265258,6366192.0,,,P,1,ee:ExcelerateEnergyIncMember,,
+1888447,EE,Steven Kobos,1907207,2023-03-31,4,0001209191-23-022879,323075,323075,108275556,0.2984,57817,,1,,A,1,ee:ExcelerateEnergyIncMember,,
+1888447,EE,Steven Kobos,1907207,2024-03-05,4,0001209191-24-004598,751220,751220,108284792,0.6937,105070,,1,323075,A,2,ee:ExcelerateEnergyIncMember|us-gaap:CommonClassAMember,,
+1888447,EE,Steven Kobos,1907207,2025-03-05,4,0000950170-25-034954,804703,804703,105890934,0.7599,53483,,1,,A,2,ee:ExcelerateEnergyIncMember|us-gaap:CommonClassBMember,,
+1888447,EE,Steven Kobos,1907207,2026-02-18,4,0001193125-26-285652,804703,804703,114066900,0.7055,,,,,,2,ee:ExcelerateEnergyIncMember|us-gaap:CommonClassBMember,,
+1888447,EE,Steven Kobos,1907207,2026-03-05,4,0001193125-26-099086,856679,856679,114066900,0.751,51976,,1,,A,2,ee:ExcelerateEnergyIncMember|us-gaap:CommonClassBMember,,

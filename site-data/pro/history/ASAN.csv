@@ -1,0 +1,6 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1477720,ASAN,Daniel Rogers,2075006,2025-07-21,4,0001477720-25-000152,1278090,1278090,235322187,0.5431,1278090,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1477720,ASAN,Daniel Rogers,2075006,2026-06-17,4,0001477720-26-000048,1932755,1932755,230509827,0.8385,654665,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1477720,ASAN,Daniel Rogers,2075006,2026-06-22,4,0002075006-26-000002,1905780,1905780,230509827,0.8268,-26975,179626.52,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1477720,ASAN,Daniel Rogers,2075006,2026-06-30,4,0002075006-26-000004,1891990,1891990,230509827,0.8208,-13790,95082.05,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1477720,ASAN,Daniel Rogers,2075006,2026-08-26,4,0002075006-26-000006,1925831,1925831,230509827,0.8355,33841,16550.0,1,,AS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

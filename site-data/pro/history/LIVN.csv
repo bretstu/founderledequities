@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1639691,LIVN,Vladimir Makatsaria,2012645,2024-03-01,3,0001639691-24-000029,0,0,53956158,0.0,,,,,,1,c-2,,TRUE
+1639691,LIVN,Vladimir Makatsaria,2012645,2024-03-30,4,0001639691-24-000046,0,0,53956158,0.0,,,,,,1,c-2,,TRUE
+1639691,LIVN,Vladimir Makatsaria,2012645,2025-03-30,4,0001639691-25-000028,4284,4284,54351765,0.0079,4284,197449.98,1,,FM,1,c-2,,TRUE
+1639691,LIVN,Vladimir Makatsaria,2012645,2026-03-30,4,0001639691-26-000024,14167,14167,54689876,0.0259,9883,683711.93,1,,FM,1,c-2,,TRUE

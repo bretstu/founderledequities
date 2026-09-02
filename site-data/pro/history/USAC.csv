@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1522727,USAC,M. Clint Green,2040724,2024-10-03,3,0002040724-24-000003,0,0,117007411,0.0,,,,,,0,c-2,,TRUE
+1522727,USAC,M. Clint Green,2040724,2024-12-05,4,0002040724-24-000004,84270,84270,117022833,0.072,84270,,1,,A,1,c-2,,TRUE
+1522727,USAC,M. Clint Green,2040724,2025-12-05,4,0002040724-25-000003,186795,186795,122685471,0.1523,102525,,1,,A,1,c-2,,TRUE

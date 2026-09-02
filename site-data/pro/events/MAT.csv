@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+MAT,63276,Ynon Kreiz,1708842,2026-02-12,2026-02-12,P,open-market purchase,65000,1009300.50,15.5277,3.7589,65000,1794217,0,discretionary,,1,0,Common Stock,D,4,0001708842-26-000005,,https://www.sec.gov/Archives/edgar/data/63276/000170884226000005/wk-form4_1770928784.xml
+MAT,63276,Ynon Kreiz,1708842,2019-02-25,2019-02-21,P,open-market purchase,71425,1001378.50,14.0200,,71425,71425,0,unknown,,1,0,Common Stock,D,4,0001523711-19-000015,,https://www.sec.gov/Archives/edgar/data/63276/000152371119000015/wf-form4_155112868352821.xml

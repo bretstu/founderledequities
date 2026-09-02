@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1361538,PRIM,Koti Vadlamudi,2097133,2025-11-10,4,0002097133-25-000007,0,0,54032351,0.0,,,,,,0,As_Of_7_31_2026_5Y7MDK5kLESBJ72xBCkPCA,,TRUE
+1361538,PRIM,Koti Vadlamudi,2097133,2026-03-01,4,0002097133-26-000002,0,0,54056502,0.0,,,,,,0,As_Of_7_31_2026_5Y7MDK5kLESBJ72xBCkPCA,,TRUE
+1361538,PRIM,Koti Vadlamudi,2097133,2026-05-27,4/A,0002097133-26-000006,7815,7815,54254935,0.0144,7815,1000004.27,,,P,1,As_Of_7_31_2026_5Y7MDK5kLESBJ72xBCkPCA,,TRUE

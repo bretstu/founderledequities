@@ -1,0 +1,6 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1821769,NVTS,Chris Allexandre,1607983,2025-09-01,3,0001607983-25-000006,0,0,183457686,0.0,,,,,,0,us-gaap:CommonClassAMember,,TRUE
+1821769,NVTS,Chris Allexandre,1607983,2025-09-03,4,0001607983-25-000007,800000,800000,183457686,0.4361,800000,,1,,A,1,us-gaap:CommonClassAMember,,TRUE
+1821769,NVTS,Chris Allexandre,1607983,2026-03-03,4,0001607983-26-000002,813323,813323,183457686,0.4433,13323,82477.48,1,,AS,1,us-gaap:CommonClassAMember,,TRUE
+1821769,NVTS,Chris Allexandre,1607983,2026-04-01,4,0001607983-26-000005,1085956,1085956,183457686,0.5919,272633,,1,,A,1,us-gaap:CommonClassAMember,,TRUE
+1821769,NVTS,Chris Allexandre,1607983,2026-05-27,4,0001104659-26-068287,1072633,1072633,183457686,0.5847,-13323,423804.63,,,S,1,us-gaap:CommonClassAMember,,TRUE

@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+RF,1281761,John M. Turner,1319060,2011-08-15,2011-08-15,P,open-market purchase,25000,112247.50,4.4899,,,,,unknown,,1,0,Common Stock,D,4,0001225208-11-019932,,https://www.sec.gov/Archives/edgar/data/1281761/000122520811019932/doc4.xml
+RF,1281761,John M. Turner,1319060,2011-08-01,2011-08-01,P,open-market purchase,50000,297000.00,5.9400,,,,,unknown,,1,0,Common Stock,D,4,0001225208-11-019026,,https://www.sec.gov/Archives/edgar/data/1281761/000122520811019026/doc4.xml

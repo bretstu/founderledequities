@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+CNS,1284812,Joseph M. Harvey,1299637,2005-02-14,2004-12-31,P,open-market purchase,1900,21242.00,11.1800,,,,,unknown,,1,0,"Common Stock, par value $0.01 per share",D,5,0001299585-05-000002,,https://www.sec.gov/Archives/edgar/data/1284812/000129958505000002/primary_doc.xml
+CNS,1284812,Joseph M. Harvey,1299637,2004-08-16,2004-08-12,P,open-market purchase,70000,910000.00,13.0000,,,,,unknown,A,1,0,"Common Stock, par value $.01 per share",D,4,0001005477-04-002984,,https://www.sec.gov/Archives/edgar/data/1284812/000100547704002984/edgar123.xml

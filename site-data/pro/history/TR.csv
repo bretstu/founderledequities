@@ -1,0 +1,8 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+98677,TR,Ellen R. Gordon,1250340,2016-12-06,4,0001179110-16-032636,41391607,55626858,59973735,69.0162,,4102999.5,,,PS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+98677,TR,Ellen R. Gordon,1250340,2021-08-19,4,0001179110-21-008335,46044147,53377785,67521285,68.192,,9864035.74,1,-2249072,J,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+98677,TR,Ellen R. Gordon,1250340,2022-12-31,5,0001415889-23-002148,47302464,53239339,68291391,69.2656,-120000,,3,-3384,G,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+98677,TR,Ellen R. Gordon,1250340,2023-07-28,4,0001415889-23-011603,48701529,53217475,69942442,69.6309,-20000,,1,-9,G,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+98677,TR,Ellen R. Gordon,1250340,2024-11-07,4,0001415889-24-026344,40710260,43189514,71445127,56.9812,-9452304,,2,-11,J,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+98677,TR,Ellen R. Gordon,1250340,2024-12-11,4,0001415889-24-029157,40689743,43167748,71445127,56.9524,-20517,,1,,G,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+98677,TR,Ellen R. Gordon,1250340,2026-05-08,4,0001250340-26-000002,43144739,43144739,75171181,57.3953,-23000,,1,-9,G,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,

@@ -1,0 +1,2 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+FUN,1999001,John Reilly,1671356,2026-08-12,2026-08-12,P,scheduled purchase,15713,248265.40,15.8000,5.5715,15713,297736,0,plan,,1,0,"Common Stock, par value $0.01 per share",D,4,0001671356-26-000005,,https://www.sec.gov/Archives/edgar/data/1999001/000167135626000005/wk-form4_1786567427.xml

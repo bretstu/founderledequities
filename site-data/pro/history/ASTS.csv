@@ -1,0 +1,10 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1780312,ASTS,Abel Avellan,1680225,2021-04-06,4,0001493152-21-008356,78163078,78163078,181529704,43.058,78163078,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1780312,ASTS,Abel Avellan,1680225,2024-11-20,4,0001493152-24-047047,78163078,78163078,289734975,26.9774,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1780312,ASTS,Abel Avellan,1680225,2025-11-19,4,0001493152-25-024722,78163078,78163078,367019330,21.2967,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1780312,ASTS,Abel Avellan,1680225,2025-12-02,4,0001493152-25-026052,156576156,156576156,367019330,42.6616,250000,,1,78163078,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1780312,ASTS,Abel Avellan,1680225,2026-03-24,4,0001493152-26-013024,156760531,156760531,382015228,41.0352,184375,,1,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1780312,ASTS,Abel Avellan,1680225,2026-03-31,4,0001493152-26-015012,156738041,156738041,388124572,40.3834,-22490,1863746.3,,,F,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1780312,ASTS,Abel Avellan,1680225,2026-05-30,4,0001493152-26-026925,156705287,156705287,388124572,40.375,-32754,3714631.14,,,F,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1780312,ASTS,Abel Avellan,1680225,2026-06-22,4,0001493152-26-029685,156705287,156705287,388124572,40.375,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
+1780312,ASTS,Abel Avellan,1680225,2026-08-17,4,0001493152-26-039319,156855287,156855287,389167494,40.3053,150000,,1,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE

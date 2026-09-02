@@ -1,0 +1,24 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1901440,ULS,Jennifer Scanlon,1426641,2024-04-12,3,0001628280-24-016080,0,0,200003693,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2024-04-16,4,0001628280-24-016764,89285,89285,200003693,0.0446,89285,2499980.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2024-05-01,4,0001493152-24-017802,89285,89285,200003693,0.0446,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2024-06-18,4,0001493152-24-024742,89285,89285,200003693,0.0446,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2024-09-09,4,0001493152-24-035911,89285,89285,200006949,0.0446,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2024-10-01,4,0001493152-24-039424,100527,100527,200117768,0.0502,11242,2680277.3,,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2024-10-25,4,0001493152-24-042901,100527,100527,200117768,0.0502,,,2,,G,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2024-12-09,4,0001493152-24-049698,100527,100527,200117768,0.0502,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2025-03-10,4,0001415889-25-007947,100527,100527,200174493,0.0502,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2025-04-01,4,0001415889-25-010121,179176,179176,200498949,0.0894,78649,9373034.25,,,AFM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2025-05-01,4,0001415889-25-012148,191017,191017,200498949,0.0953,11841,549917.02,2,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2025-06-09,4,0001415889-25-016707,191017,191017,200498949,0.0953,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2025-09-08,4,0001415889-25-024149,191017,191017,200882788,0.0951,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2025-12-08,4,0001426641-25-000006,191017,191017,200883870,0.0951,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2026-03-01,4,0000905148-26-001126,261148,261148,201042211,0.1299,69719,8240721.17,,412,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2026-03-12,4,0000905148-26-001300,261148,261148,201042211,0.1299,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2026-04-01,4,0000905148-26-001539,290059,290059,201563115,0.1439,28911,8935616.46,1,,AFMS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2026-05-01,4,0000905148-26-002104,289486,289486,201563115,0.1436,-573,2013513.37,1,,FMS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2026-05-15,4,0000905148-26-002526,278509,278509,201563115,0.1382,-11242,,1,265,G,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2026-06-01,4,0000905148-26-002804,266009,266009,201563115,0.132,-12500,1249982.81,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2026-06-08,4,0000905148-26-002896,266009,266009,201563115,0.132,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2026-07-01,4,0000905148-26-003153,253509,253509,201898173,0.1256,-12500,1240276.63,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1901440,ULS,Jennifer Scanlon,1426641,2026-08-03,4,0000905148-26-003480,241009,241009,201898173,0.1194,-12500,1151029.86,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

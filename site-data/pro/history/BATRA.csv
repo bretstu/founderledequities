@@ -1,0 +1,9 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1958140,BATRA,Terence F. McGuirk,1232631,2023-07-18,4,0001225208-23-007603,432306,432306,61719290,0.7004,432306,,1,,J,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,
+1958140,BATRA,Terence F. McGuirk,1232631,2023-12-08,4,0001225208-23-011012,465394,465394,61723829,0.754,33088,,1,,M,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,
+1958140,BATRA,Terence F. McGuirk,1232631,2024-08-21,4,0001104659-24-092247,465394,465394,61972169,0.751,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,
+1958140,BATRA,Terence F. McGuirk,1232631,2024-12-04,4,0001104659-24-126352,465394,465394,62138584,0.749,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,
+1958140,BATRA,Terence F. McGuirk,1232631,2024-12-11,4,0001104659-24-128470,490353,490353,62138584,0.7891,24959,805228.38,2,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,
+1958140,BATRA,Terence F. McGuirk,1232631,2024-12-20,4,0001104659-24-131410,490353,490353,62138584,0.7891,,,2,,G,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,
+1958140,BATRA,Terence F. McGuirk,1232631,2025-12-04,4,0001104659-25-119287,505341,505341,62923320,0.8031,14988,464023.56,1,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,
+1958140,BATRA,Terence F. McGuirk,1232631,2025-12-11,4,0001104659-25-121105,513695,513695,62923320,0.8164,8354,265647.36,1,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,

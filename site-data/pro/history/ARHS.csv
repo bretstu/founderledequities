@@ -1,0 +1,7 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1875444,ARHS,John Reed,1888118,2021-11-03,3,0000899243-21-043143,0,0,136946392,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1875444,ARHS,John Reed,1888118,2021-12-10,4,0001875444-21-000031,52546142,52546142,136946392,38.3699,11100,116550.0,,52535042,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1875444,ARHS,John Reed,1888118,2021-12-20,4,0001875444-21-000045,52124792,52124792,136946392,38.0622,-421350,,3,,CJ,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1875444,ARHS,John Reed,1888118,2022-01-03,4,0001875444-22-000003,45089359,45089359,140063217,32.1921,-7035433,,1,,G,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1875444,ARHS,John Reed,1888118,2022-05-13,4,0001888118-22-000002,45129359,45129359,140063217,32.2207,40000,247600.0,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1875444,ARHS,John Reed,1888118,2023-12-31,5,0001875444-24-000004,45089228,45089228,140285311,32.1411,869,7915.74,,-41000,L,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

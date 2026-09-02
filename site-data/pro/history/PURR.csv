@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2078856,PURR,David Schamis,1377409,2025-12-02,3,0001193125-25-313748,0,0,127025563,0.0,,,,,,0,C_23f6a4eb-7170-45aa-b239-a0dcdc80e0ac,,TRUE
+2078856,PURR,David Schamis,1377409,2025-12-04,4,0001193125-25-317198,95520,95520,127025563,0.0752,95520,,1,,J,1,C_23f6a4eb-7170-45aa-b239-a0dcdc80e0ac,,TRUE
+2078856,PURR,David Schamis,1377409,2026-02-09,4,0001193125-26-047189,136309,136309,127025563,0.1073,40789,,1,,A,1,C_23f6a4eb-7170-45aa-b239-a0dcdc80e0ac,,TRUE

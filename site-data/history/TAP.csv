@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+24545,TAP,Rahul Goyal,2089103,2025-10-01,4,0000024545-25-000027,64402,64402,187860909,0.0343,43450,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+24545,TAP,Rahul Goyal,2089103,2026-02-27,4,0000024545-26-000016,68390,68390,178155656,0.0384,3988,149223.54,1,,AF,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+24545,TAP,Rahul Goyal,2089103,2026-03-04,4,0000024545-26-000025,105365,105365,178155656,0.0591,36975,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

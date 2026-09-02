@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1756655,ARDT,David Caspers,1995952,2025-03-31,3,0001628280-25-016281,0,0,142750013,0.0,,,,,,0,c-2,,TRUE
+1756655,ARDT,David Caspers,1995952,2025-04-01,4,0001628280-25-016282,38288,38288,142750013,0.0268,38288,32165.6,2,,AF,1,c-2,,TRUE
+1756655,ARDT,David Caspers,1995952,2026-04-01,4,0001628280-26-023213,71277,71277,142902276,0.0499,32989,23270.28,1,,AF,1,c-2,,TRUE
+1756655,ARDT,David Caspers,1995952,2026-07-01,4,0001628280-26-046788,174930,174930,143350031,0.122,103653,,1,,A,1,c-2,,TRUE

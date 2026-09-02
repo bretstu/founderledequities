@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+INFQ,2007825,Matthew Kinsella,2109180,2026-05-27,2026-05-26,S,discretionary sale,112065,1743731.40,15.5600,19.1602,370937,472819,,discretionary,M,1,0,Common Stock,I,4,0002109180-26-000008,,https://www.sec.gov/Archives/edgar/data/2007825/000210918026000008/form4-05282026_120541.xml
+INFQ,2007825,Matthew Kinsella,2109180,2026-05-27,2026-05-22,S,discretionary sale,657889,11372209.80,17.2859,,370937,472819,595067,discretionary,M,4,0,Common Stock,DI,4,0002109180-26-000008,,https://www.sec.gov/Archives/edgar/data/2007825/000210918026000008/form4-05282026_120541.xml

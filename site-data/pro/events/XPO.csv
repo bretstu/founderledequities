@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+XPO,1166003,Mario Harik,1534839,2024-01-03,2023-12-31,S,discretionary sale,9383,821856.97,87.5900,,10023,133571,19406,discretionary,M,1,0,Common Stock,D,4,0001166003-24-000018,,https://www.sec.gov/Archives/edgar/data/1166003/000116600324000018/wk-form4_1704316884.xml
+XPO,1166003,Mario Harik,1534839,2021-02-19,2021-02-19,S,sale,30467,3628701.99,119.1027,19.7818,-88093,123548,0,unknown,,2,0,"Common Stock, par value $0.001 per share",D,4,0001166003-21-000038,,https://www.sec.gov/Archives/edgar/data/1166003/000116600321000038/wf-form4_161377293060708.xml

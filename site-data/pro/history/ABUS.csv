@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1447028,ABUS,Lindsay Androski,1936604,2025-02-24,3,0001447028-25-000061,0,0,189491685,0.0,,,,,,0,c-2,,TRUE
+1447028,ABUS,Lindsay Androski,1936604,2025-03-18,4,0001447028-25-000072,0,0,189491685,0.0,,,,,,0,c-2,,TRUE
+1447028,ABUS,Lindsay Androski,1936604,2026-02-02,4,0001447028-26-000008,28000,28000,192324017,0.0146,28000,,1,,A,1,c-2,,TRUE

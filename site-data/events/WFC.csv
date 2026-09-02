@@ -1,0 +1,2 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+WFC,72971,Charles W. Scharf,1195358,2020-03-16,2020-03-13,P,open-market purchase,173000,4963370.00,28.6900,,172723,177019,-277,unknown,,1,0,"Common Stock, $1 2/3 Par Value",D,4,0001127602-20-010727,,https://www.sec.gov/Archives/edgar/data/72971/000112760220010727/form4.xml

@@ -1,0 +1,4 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+PSN,275880,Carey A. Smith,1707270,2026-05-11,2026-05-08,P,open-market purchase,12500,624645.00,49.9716,2.1993,12500,580852,0,discretionary,,2,0,Common Stock,D,4,0001193125-26-216914,,https://www.sec.gov/Archives/edgar/data/275880/000119312526216914/ownership.xml
+PSN,275880,Carey A. Smith,1707270,2021-12-20,2021-12-16,P,open-market purchase,10000,309297.00,30.9297,16.3031,10000,71338,0,unknown,,1,0,Common Stock,D,4,0000899243-21-048981,,https://www.sec.gov/Archives/edgar/data/275880/000089924321048981/doc4.xml
+PSN,275880,Carey A. Smith,1707270,2020-08-12,2020-08-10,P,open-market purchase,7500,265367.25,35.3823,,9369,12419,1869,unknown,,1,0,Common Stock,D,4,0000899243-20-022127,,https://www.sec.gov/Archives/edgar/data/275880/000089924320022127/doc4.xml

@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1589526,BLBD,John Wyskiel,2055903,2025-02-17,3,0001589526-25-000031,0,0,32111078,0.0,,,,,,0,c-2,,TRUE
+1589526,BLBD,John Wyskiel,2055903,2025-02-18,4,0001589526-25-000036,102535,102535,32111078,0.3193,102535,,1,,A,1,c-2,,TRUE
+1589526,BLBD,John Wyskiel,2055903,2025-12-02,4,0002055903-25-000003,136419,136419,31714959,0.4301,33884,732462.9,2,,AF,1,c-2,,TRUE

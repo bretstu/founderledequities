@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+FIZZ,69891,Nick A. Caporella,1252767,2019-09-06,2019-03-18,P,open-market purchase,1650,99511.50,60.3100,0.0048,,34247886,,unknown,,1,0,Common Stock,I,4,0001437749-19-018018,,https://www.sec.gov/Archives/edgar/data/69891/000143774919018018/rdgdoc.xml
+FIZZ,69891,Nick A. Caporella,1252767,2019-09-06,2019-03-15,P,open-market purchase,1650,99495.00,60.3000,0.0048,,34247886,0,unknown,,1,0,Common Stock,I,4,0001437749-19-018018,,https://www.sec.gov/Archives/edgar/data/69891/000143774919018018/rdgdoc.xml

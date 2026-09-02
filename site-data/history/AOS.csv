@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+91142,AOS,Stephen M. Shafer,1771264,2024-03-18,4,0000091142-24-000099,0,0,147195095,0.0,,,,,,0,aos:CommonStockClassUndefinedMember|us-gaap:CommonClassAMember,,TRUE
+91142,AOS,Stephen M. Shafer,1771264,2025-02-10,4,0000091142-25-000031,0,0,143959166,0.0,,,,,,0,aos:CommonStockClassUndefinedMember|us-gaap:CommonClassAMember,,TRUE
+91142,AOS,Stephen M. Shafer,1771264,2025-07-01,4,0000091142-25-000088,0,0,140129580,0.0,,,,,,0,aos:CommonStockClassUndefinedMember|us-gaap:CommonClassAMember,,TRUE
+91142,AOS,Stephen M. Shafer,1771264,2026-02-09,4,0000091142-26-000034,0,0,138289917,0.0,,,,,,0,aos:CommonStockClassUndefinedMember|us-gaap:CommonClassAMember,,TRUE

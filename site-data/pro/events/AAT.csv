@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+AAT,1500217,Adam Wyll,1508167,2024-12-05,2024-12-03,S,scheduled sale,30238,853316.36,28.2200,8.6161,114630,320709,0,plan,A,1,0,"Common Stock, par value $0.01",I,4,0001500217-24-000068,,https://www.sec.gov/Archives/edgar/data/1500217/000150021724000068/wk-form4_1733407424.xml
+AAT,1500217,Adam Wyll,1508167,2020-12-07,2020-12-07,S,sale,8500,256700.00,30.2000,6.7071,21981,118232,,unknown,AF,1,0,"Common Stock, par value $0.01",D,4,0001500217-20-000094,,https://www.sec.gov/Archives/edgar/data/1500217/000150021720000094/wf-form4_160737961924377.xml

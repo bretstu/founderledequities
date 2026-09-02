@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2017206,MRP,Darren L. Richman,1594474,2025-02-07,3,0000950170-25-016462,0,0,166003497,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2017206,MRP,Darren L. Richman,1594474,2025-02-13,4,0000950170-25-022572,265000,265000,166003497,0.1596,265000,6001504.95,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2017206,MRP,Darren L. Richman,1594474,2026-05-11,4,0001193125-26-220813,500000,500000,166047927,0.3011,235000,6418320.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

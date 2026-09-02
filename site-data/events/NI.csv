@@ -1,0 +1,4 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+NI,1111711,Lloyd M. Yates,1311411,2026-05-26,2026-05-21,S,discretionary sale,19905,950065.65,47.7300,,-19736,519556,169,discretionary,,1,0,Common Stock,D,4,0001111711-26-000073,,https://www.sec.gov/Archives/edgar/data/1111711/000111171126000073/form4.xml
+NI,1111711,Lloyd M. Yates,1311411,2025-05-19,2025-05-16,S,discretionary sale,16127,627824.11,38.9300,,-16044,351747,83,discretionary,,1,0,Common Stock,D,4,0001127602-25-014916,,https://www.sec.gov/Archives/edgar/data/1111711/000112760225014916/form4.xml
+NI,1111711,Lloyd M. Yates,1311411,2023-08-25,2023-08-23,P,open-market purchase,40000,1057600.00,26.4400,,40387,131242,387,discretionary,,1,0,Common Stock,D,4,0001127602-23-023230,,https://www.sec.gov/Archives/edgar/data/1111711/000112760223023230/form4.xml

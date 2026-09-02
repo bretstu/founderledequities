@@ -1,0 +1,8 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2070849,BLLN,Oguzhan Atay,2088549,2025-11-05,3,0001193125-25-267676,2165108,2165108,45768760,4.7305,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2070849,BLLN,Oguzhan Atay,2088549,2025-11-07,4,0001193125-25-278140,2427542,2427542,45768760,5.3039,262434,,9,,CJ,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2070849,BLLN,Oguzhan Atay,2088549,2026-06-08,4,0002088549-26-000002,2405042,2405042,45995484,5.2289,-22500,3864945.43,3,,CGMS,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2070849,BLLN,Oguzhan Atay,2088549,2026-07-06,4,0002088549-26-000004,2392542,2392542,47187038,5.0703,-12500,4802879.11,,,MS,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2070849,BLLN,Oguzhan Atay,2088549,2026-07-09,4,0002088549-26-000006,2392542,2392542,47187038,5.0703,,1611275.72,,,MS,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2070849,BLLN,Oguzhan Atay,2088549,2026-08-03,4,0002070849-26-000052,2380042,2380042,47187038,5.0438,-12500,6258959.78,,,MS,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2070849,BLLN,Oguzhan Atay,2088549,2026-08-05,4,0002088549-26-000007,2217542,2217542,47187038,4.6995,,2374861.11,,-162500,MS,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

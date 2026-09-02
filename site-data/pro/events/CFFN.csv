@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+CFFN,1490906,John B. Dicus,1185016,2021-06-09,2021-06-08,S,sale,14595,189886.23,13.0104,1.0268,10593,1406845,0,unknown,M,4,0,CFFN common stock,D,4,0001490906-21-000042,,https://www.sec.gov/Archives/edgar/data/1490906/000149090621000042/wf-form4_162325905730918.xml
+CFFN,1490906,John B. Dicus,1185016,2010-12-23,2010-12-21,P,open-market purchase,50000,500000.00,10.0000,,,,,unknown,,1,0,Common Stock,D,4,0000927089-10-000329,,https://www.sec.gov/Archives/edgar/data/1490906/000092708910000329/primary_doc.xml

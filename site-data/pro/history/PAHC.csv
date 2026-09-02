@@ -1,0 +1,15 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1069899,PAHC,Daniel M. Bendheim,1601576,2017-08-14,4,0001144204-17-043763,0,0,40453608,0.0,,398439.9,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1069899,PAHC,Daniel M. Bendheim,1601576,2017-08-17,4,0001144204-17-044479,0,0,40453608,0.0,,257963.84,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1069899,PAHC,Daniel M. Bendheim,1601576,2018-03-05,4,0001144204-18-013456,0,0,40453608,0.0,,205493.4,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1069899,PAHC,Daniel M. Bendheim,1601576,2018-03-08,4,0001144204-18-014217,0,0,40453608,0.0,,1200735.57,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1069899,PAHC,Daniel M. Bendheim,1601576,2018-09-12,4,0001144204-18-049580,0,0,40453608,0.0,,140325.0,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1069899,PAHC,Daniel M. Bendheim,1601576,2019-01-03,4,0001144204-19-000965,0,0,40453608,0.0,,326800.0,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1069899,PAHC,Daniel M. Bendheim,1601576,2019-01-08,4,0001144204-19-001393,0,0,40453608,0.0,,221275.0,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1069899,PAHC,Daniel M. Bendheim,1601576,2019-01-16,4,0001144204-19-002146,0,0,40453608,0.0,,330425.0,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1069899,PAHC,Daniel M. Bendheim,1601576,2019-01-22,4,0001144204-19-002703,0,0,40453608,0.0,,325979.0,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1069899,PAHC,Daniel M. Bendheim,1601576,2019-01-28,4,0001144204-19-003872,0,0,40453608,0.0,,422175.7,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1069899,PAHC,Daniel M. Bendheim,1601576,2025-08-15,4,0001104659-25-080266,3964,3964,40533608,0.0098,3964,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1069899,PAHC,Daniel M. Bendheim,1601576,2026-07-01,4,0001104659-26-080332,3964,3964,40601603,0.0098,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1069899,PAHC,Daniel M. Bendheim,1601576,2026-08-04,4,0001104659-26-092227,3478,3478,40601603,0.0086,-486,17787.11,,,J,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1069899,PAHC,Daniel M. Bendheim,1601576,2026-08-06,4,0001104659-26-093378,15177,15177,40601603,0.0374,11699,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

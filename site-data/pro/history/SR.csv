@@ -1,0 +1,7 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1126956,SR,Scott E. Doyle,1699158,2024-01-15,3,0001562180-24-000535,0,0,56981304,0.0,,,,,,1,i_2024-01-29|sr:SpireAlabamaIncMember|sr:SpireMissouriMember,,TRUE
+1126956,SR,Scott E. Doyle,1699158,2024-01-17,4,0001562180-24-000536,2730,2730,56981304,0.0048,6150,359221.5,,-3420,A,1,i_2024-01-29|sr:SpireAlabamaIncMember|sr:SpireMissouriMember,,TRUE
+1126956,SR,Scott E. Doyle,1699158,2024-11-22,4,0001562180-24-007919,3420,3420,59755167,0.0057,,,,690,,1,i_2024-01-29|sr:SpireAlabamaIncMember|sr:SpireMissouriMember,,TRUE
+1126956,SR,Scott E. Doyle,1699158,2025-05-02,4,0001562180-25-003604,3420,3420,1998874,0.1711,,,,,,1,C_7c47a023-623a-4d9c-87a7-dd8c57aadbfa|sr:SpireAlabamaIncMember|sr:SpireMissouriMember,,TRUE
+1126956,SR,Scott E. Doyle,1699158,2025-11-18,4,0001699158-25-000005,9800,9800,61037003,0.0161,6380,549700.8,,,A,1,C_7c47a023-623a-4d9c-87a7-dd8c57aadbfa|sr:SpireAlabamaIncMember|sr:SpireMissouriMember,,TRUE
+1126956,SR,Scott E. Doyle,1699158,2026-01-20,4,0001699158-26-000002,8441,8441,61095462,0.0138,-1359,113598.81,,,F,1,C_32e09c70-ade0-42b1-abd2-bead3f882278|sr:SpireAlabamaIncMember|sr:SpireMissouriMember,,TRUE

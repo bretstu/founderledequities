@@ -1,0 +1,10 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1639825,PTON,Peter Stern,1431302,2025-01-01,3,0001639825-25-000006,0,0,389964496,0.0,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1639825,PTON,Peter Stern,1431302,2025-01-16,4,0001639825-25-000010,0,0,389964496,0.0,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1639825,PTON,Peter Stern,1431302,2025-09-15,4,0001431302-25-000004,130221,130221,407763539,0.0319,130221,1184149.68,1,,AS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1639825,PTON,Peter Stern,1431302,2025-09-24,4,0001431302-25-000006,130221,130221,407763539,0.0319,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1639825,PTON,Peter Stern,1431302,2025-11-15,4,0001431302-25-000008,158478,158478,417806472,0.0379,28257,228675.68,1,,MS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1639825,PTON,Peter Stern,1431302,2026-01-01,4,0001431302-26-000002,316559,316559,425489090,0.0744,158081,750896.14,1,,MS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1639825,PTON,Peter Stern,1431302,2026-02-15,4,0001431302-26-000005,344812,344812,425489090,0.081,28253,130213.93,1,,MS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1639825,PTON,Peter Stern,1431302,2026-05-15,4,0001431302-26-000007,374041,374041,432991925,0.0864,29229,161260.36,1,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1639825,PTON,Peter Stern,1431302,2026-08-15,4,0001431302-26-000009,403271,403271,438871801,0.0919,29230,171624.92,1,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

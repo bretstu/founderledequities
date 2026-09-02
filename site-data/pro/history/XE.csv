@@ -1,0 +1,2 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2088896,XE,J. Clay Sell,1994982,2026-04-24,3,0001104659-26-048690,3747172,3747172,406366108,0.9221,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

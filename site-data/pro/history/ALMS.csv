@@ -1,0 +1,6 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1847367,ALMS,Martin Babler,1435618,2024-06-27,4,0001415889-24-018589,90804,90804,54403302,0.1669,,,2,,AD,2,alms:CommonStockOtherThanNonVotingMember|us-gaap:NonvotingCommonStockMember,,TRUE
+1847367,ALMS,Martin Babler,1435618,2025-02-18,4,0001415889-25-004936,90804,90804,54407327,0.1669,,,,,,2,alms:VotingCommonStockMember|us-gaap:NonvotingCommonStockMember,,TRUE
+1847367,ALMS,Martin Babler,1435618,2025-04-01,4,0001415889-25-010049,106454,106454,54405544,0.1957,15650,100732.79,,,P,2,alms:VotingCommonStockMember|us-gaap:NonvotingCommonStockMember,,TRUE
+1847367,ALMS,Martin Babler,1435618,2025-07-29,4,0001415889-25-020801,109454,109454,104064302,0.1052,,,,3000,,2,alms:VotingCommonStockMember|us-gaap:NonvotingCommonStockMember,,TRUE
+1847367,ALMS,Martin Babler,1435618,2026-01-26,4,0001435618-26-000003,109454,109454,127199333,0.086,,,,,,2,alms:VotingCommonStockMember|us-gaap:NonvotingCommonStockMember,,TRUE

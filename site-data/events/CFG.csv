@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+CFG,759944,Bruce Van Saun,1199914,2026-07-28,2026-07-24,S,discretionary sale,129369,9323623.83,72.0700,,-150219,1119913,17500,discretionary,G,1,0,Common Stock,D,4,0000759944-26-000143,,https://www.sec.gov/Archives/edgar/data/759944/000075994426000143/wk-form4_1785270601.xml
+CFG,759944,Bruce Van Saun,1199914,2014-09-30,2014-09-29,P,open-market purchase,45000,967500.00,21.5000,,,,,unknown,,1,0,Common Stock,D,4,0001445305-14-004206,,https://www.sec.gov/Archives/edgar/data/759944/000144530514004206/wf-form4_141210669380396.xml

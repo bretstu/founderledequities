@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1817229,VOR,Jean-Paul Kress,1654979,2025-06-25,3,0001415889-25-018363,0,0,124959520,0.0,,,,,,0,C_1089cbc7-c3bd-48a3-964f-8eb3b605b970,,TRUE
+1817229,VOR,Jean-Paul Kress,1654979,2025-06-26,4,0001415889-25-018365,0,0,124959520,0.0,,,,,,0,C_1089cbc7-c3bd-48a3-964f-8eb3b605b970,,TRUE
+1817229,VOR,Jean-Paul Kress,1654979,2025-12-05,4,0001654979-25-000006,0,0,10410630,0.0,,,,,,0,C_1089cbc7-c3bd-48a3-964f-8eb3b605b970,,TRUE

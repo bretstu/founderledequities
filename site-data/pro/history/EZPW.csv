@@ -1,0 +1,22 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+876523,EZPW,Lachlan P. Given,1614771,2016-02-01,4,0001209191-16-095390,420000,420000,55445241,0.7575,420000,1310400.0,,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2016-03-31,4,0001209191-16-111954,420000,420000,55445241,0.7575,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2016-12-07,4,0001209191-16-154345,279487,279487,55445241,0.5041,-20513,232822.55,,-120000,F,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2016-12-23,4,0001209191-16-156780,279487,279487,55445241,0.5041,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2017-12-12,4,0001209191-17-065554,279487,279487,55445241,0.5041,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2018-11-13,4,0001209191-18-058675,308801,308801,55445241,0.5569,29314,1501863.36,,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2018-12-11,4,0001209191-18-062173,308801,308801,55445241,0.5569,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2019-12-05,4,0001614771-19-000002,370360,370360,55535235,0.6669,61559,525170.91,,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2020-12-15,4,0001614771-20-000002,387891,387891,55303019,0.7014,17531,13328153.28,1,,FJM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2021-01-18,4,0001614771-21-000002,387891,387891,55598759,0.6977,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2021-02-22,4,0001614771-21-000004,387891,387891,55598759,0.6977,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2021-10-13,4,0001614771-21-000006,387891,387891,56056609,0.692,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2021-11-17,4,0001614771-22-000004,436422,436422,56056609,0.7785,48531,717658.65,,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2022-03-07,4,0001614771-22-000002,436422,436422,56527760,0.772,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2022-11-16,4,0001614771-22-000006,483408,483408,56309154,0.8585,46986,269072.45,1,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2023-11-14,4,0001614771-23-000002,600656,600656,54717063,1.0977,117248,1948319.52,,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2023-11-20,4,0001614771-23-000004,600656,600656,54717063,1.0977,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2024-11-12,4/A,0001614771-24-000004,775814,775814,54465448,1.4244,-60766,715215.82,,235924,F,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2024-11-15,4,0001614771-24-000006,775814,775814,54465448,1.4244,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2025-11-12,4,0000876523-25-000088,775814,775814,60891622,1.2741,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+876523,EZPW,Lachlan P. Given,1614771,2025-11-19,4,0000876523-25-000107,1072327,1072327,60891622,1.761,296513,7289431.38,,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

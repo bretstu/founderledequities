@@ -1,0 +1,4 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+JKHY,779152,Gregory R. Adelson,1746071,2026-05-14,2026-05-14,P,open-market purchase,2000,266840.00,133.4200,10.5064,2000,21036,0,discretionary,,1,0,Common Stock,I,4,0000779152-26-000031,,https://www.sec.gov/Archives/edgar/data/779152/000077915226000031/wk-form4_1778794824.xml
+JKHY,779152,Gregory R. Adelson,1746071,2022-03-08,2022-03-07,S,sale,4400,815009.80,185.2295,,-4397,6239,3,unknown,,1,0,Common Stock,D,4,0000779152-22-000024,,https://www.sec.gov/Archives/edgar/data/779152/000077915222000024/wf-form4_164677459204599.xml
+JKHY,779152,Gregory R. Adelson,1746071,2019-11-06,2019-11-06,S,sale,786,115276.65,146.6624,,-623,7362,163,unknown,,1,0,Common Stock,D,4,0000779152-19-000083,,https://www.sec.gov/Archives/edgar/data/779152/000077915219000083/edgardoc.xml

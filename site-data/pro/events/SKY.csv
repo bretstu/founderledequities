@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+SKY,90896,Tim Larson,1867111,2024-08-13,2024-08-09,S,discretionary sale,5500,456500.00,83.0000,11.2705,-5500,43300,0,discretionary,,1,0,Common Stock,D,4,0000950170-24-095928,,https://www.sec.gov/Archives/edgar/data/90896/000095017024095928/ownership.xml
+SKY,90896,Tim Larson,1867111,2024-06-18,2024-06-14,S,discretionary sale,3500,251930.00,71.9800,6.6922,-3500,48800,0,discretionary,,1,0,Common Stock,D,4,0000950170-24-074625,,https://www.sec.gov/Archives/edgar/data/90896/000095017024074625/ownership.xml

@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+ARHS,1875444,John Reed,1888118,2022-05-16,2022-05-13,P,open-market purchase,40000,247600.00,6.1900,0.0887,40000,45129359,0,unknown,,1,0,Class A Common Stock,I,4,0001888118-22-000002,,https://www.sec.gov/Archives/edgar/data/1875444/000188811822000002/wf-form4_165274095998362.xml
+ARHS,1875444,John Reed,1888118,2021-12-15,2021-12-10,P,open-market purchase,11100,116550.00,10.5000,,52546142,52546142,52535042,unknown,,3,0,Class A Common Stock,DI,4,0001875444-21-000031,,https://www.sec.gov/Archives/edgar/data/1875444/000187544421000031/wf-form4_163961918783542.xml

@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+910073,FLG,Joseph Otting,1323101,2024-03-11,3,0000910073-24-000087,0,0,797921126,0.0,,,,,,0,c-5,,TRUE
+910073,FLG,Joseph Otting,1323101,2025-03-15,4,0000910073-25-000054,252951,252951,414720220,0.061,252951,,1,,A,1,c-5,,TRUE
+910073,FLG,Joseph Otting,1323101,2026-03-15,4,0001323101-26-000003,291874,291874,415993081,0.0702,38923,,2,,AF,1,c-5,,TRUE
+910073,FLG,Joseph Otting,1323101,2026-05-18,4,0001323101-26-000005,1041499,1041499,416815122,0.2499,749625,,1,,A,1,c-5,,TRUE

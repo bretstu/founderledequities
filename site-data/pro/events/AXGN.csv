@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+AXGN,805928,Michael Dale,1172346,2025-12-12,2025-12-10,S,discretionary sale,25000,750000.00,30.0000,28.2368,-25000,63537,0,discretionary,,1,0,Common Stock,D,4,0000805928-25-000171,,https://www.sec.gov/Archives/edgar/data/805928/000080592825000171/wk-form4_1765573574.xml
+AXGN,805928,Michael Dale,1172346,2025-12-10,2025-12-09,S,discretionary sale,61463,1918137.30,31.2080,40.9753,-61463,88537,0,discretionary,,1,0,Common Stock,D,4,0000805928-25-000167,,https://www.sec.gov/Archives/edgar/data/805928/000080592825000167/wk-form4_1765405262.xml

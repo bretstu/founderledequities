@@ -1,0 +1,6 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+O,726728,Sumit Roy,1529329,2018-08-06,2018-08-06,S,sale,18682,1074028.18,57.4900,21.0565,-18682,70041,0,unknown,,1,0,Common Stock,D,4,0000726728-18-000091,,https://www.sec.gov/Archives/edgar/data/726728/000072672818000091/edgardoc.xml
+O,726728,Sumit Roy,1529329,2017-03-22,2017-03-21,S,sale,14651,879353.02,60.0200,14.5830,-14651,85815,0,unknown,,1,0,Common Stock,D,4,0000726728-17-000048,,https://www.sec.gov/Archives/edgar/data/726728/000072672817000048/edgardoc.xml
+O,726728,Sumit Roy,1529329,2016-02-18,2016-02-17,S,sale,14830,883719.70,59.5900,16.1026,-14830,77267,0,unknown,,1,0,Common Stock,D,4,0001209191-16-099704,,https://www.sec.gov/Archives/edgar/data/726728/000120919116099704/doc4.xml
+O,726728,Sumit Roy,1529329,2014-12-22,2014-12-22,S,sale,7377,361177.92,48.9600,,,,,unknown,,1,0,Common Stock,D,4,0001209191-14-077498,,https://www.sec.gov/Archives/edgar/data/726728/000120919114077498/doc4.xml
+O,726728,Sumit Roy,1529329,2013-03-27,2013-03-26,S,sale,3450,154422.00,44.7600,,,,,unknown,,1,0,Common Stock,D,4,0001181431-13-019202,,https://www.sec.gov/Archives/edgar/data/726728/000118143113019202/rrd375302.xml

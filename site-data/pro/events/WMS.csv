@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+WMS,1604028,D. Scott Barbour,1716232,2025-11-13,2025-11-12,S,exercise and sell,80030,11920363.10,148.9487,,0,355138,0,discretionary,M,3,0,Common Stock,D,4,0001193125-25-280373,,https://www.sec.gov/Archives/edgar/data/1604028/000119312525280373/ownership.xml
+WMS,1604028,D. Scott Barbour,1716232,2024-05-29,2024-05-24,S,exercise and sell,85938,14961711.27,174.0989,,0,331818,0,discretionary,M,1,0,Common Stock,D,4,0000950170-24-065960,,https://www.sec.gov/Archives/edgar/data/1604028/000095017024065960/ownership.xml

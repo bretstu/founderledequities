@@ -1,0 +1,10 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1859392,GLXY,Michael Novogratz,1380615,2025-05-15,3,0000950103-25-006069,871866,871866,346765195,0.2514,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1859392,GLXY,Michael Novogratz,1380615,2025-05-19,4,0001380615-25-000005,203217866,203217866,346765195,58.6039,-2750000,,1,205096000,G,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1859392,GLXY,Michael Novogratz,1380615,2025-05-29,4,0001380615-25-000007,199844991,199844991,346765195,57.6312,-3372875,61040605.31,2,,CS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1859392,GLXY,Michael Novogratz,1380615,2025-06-09,4,0001380615-25-000009,195464024,195464024,346765195,56.3678,-4380967,79284550.28,2,,CS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1859392,GLXY,Michael Novogratz,1380615,2025-10-10,4,0001380615-25-000012,192464024,192464024,390610330,49.2726,-3000000,108000000.0,2,,CS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1859392,GLXY,Michael Novogratz,1380615,2026-02-03,4,0001380615-26-000002,192638286,192638286,389096394,49.5091,174262,,1,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1859392,GLXY,Michael Novogratz,1380615,2026-03-02,4,0001380615-26-000003,192564807,192564807,389096394,49.4903,-73479,1512932.61,,,F,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1859392,GLXY,Michael Novogratz,1380615,2026-05-13,4,0001628280-26-035221,190914807,190914807,389900100,48.9651,-1650000,,1,,G,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1859392,GLXY,Michael Novogratz,1380615,2026-06-01,4,0001380615-26-000006,190910124,190910124,389900100,48.9639,-4683,138523.14,,,F,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

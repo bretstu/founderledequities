@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+FTDR,1727263,William C. Cobb,1209172,2025-03-03,2025-03-03,P,open-market purchase,5000,211120.00,42.2240,5.8799,5000,90035,0,discretionary,,1,0,Common Stock,I,4,0000950170-25-030961,,https://www.sec.gov/Archives/edgar/data/1727263/000095017025030961/ownership.xml
+FTDR,1727263,William C. Cobb,1209172,2022-05-25,2022-05-23,P,open-market purchase,10000,255100.00,25.5100,32.4971,10000,40772,0,unknown,,1,0,Common Stock,I,4,0001209191-22-031849,,https://www.sec.gov/Archives/edgar/data/1727263/000120919122031849/doc4.xml

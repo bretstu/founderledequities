@@ -1,0 +1,6 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1621434,BSM,Fowler T. Carter,2057498,2025-02-21,3,0001621434-25-000052,45475,45475,225849035,0.0201,,,,,,1,bsm:CommonUnitsMember|bsm:CumulativeConvertiblePreferredUnitsMember,,TRUE
+1621434,BSM,Fowler T. Carter,2057498,2025-02-25,4,0001621434-25-000061,46779,46779,225849035,0.0207,1304,8340.72,1,,AF,1,bsm:CommonUnitsMember|bsm:CumulativeConvertiblePreferredUnitsMember,,TRUE
+1621434,BSM,Fowler T. Carter,2057498,2026-01-07,4,0002057498-26-000002,44268,44268,227045012,0.0195,-2511,33597.18,,,F,1,bsm:CommonUnitsMember|bsm:CumulativeConvertiblePreferredUnitsMember,,TRUE
+1621434,BSM,Fowler T. Carter,2057498,2026-02-04,4,0002057498-26-000004,124374,124374,227045012,0.0548,80106,,1,,A,1,bsm:CommonUnitsMember|bsm:CumulativeConvertiblePreferredUnitsMember,,TRUE
+1621434,BSM,Fowler T. Carter,2057498,2026-02-24,4,0002057498-26-000007,125379,125379,227045012,0.0552,1005,4949.75,1,,AF,1,bsm:CommonUnitsMember|bsm:CumulativeConvertiblePreferredUnitsMember,,TRUE

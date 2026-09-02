@@ -1,0 +1,4 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1965040,FTRE,Anshul Thakral,1801747,2025-08-04,4,0001127602-25-019946,0,0,90800000,0.0,,,,,,0,c-2,,TRUE
+1965040,FTRE,Anshul Thakral,1801747,2026-08-04,4,0001965040-26-000116,316797,316797,95100000,0.3331,316797,1913111.32,1,,MS,1,c-2,,TRUE
+1965040,FTRE,Anshul Thakral,1801747,2026-08-06,4,0001965040-26-000119,204940,204940,95100000,0.2155,-111857,2026284.44,,,S,1,c-2,,TRUE

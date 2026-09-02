@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+SBH,1368458,Denise Paulonis,1683382,2025-08-11,2025-08-08,P,open-market purchase,4500,52830.00,11.7400,1.2418,4500,366865,0,discretionary,,1,0,Common Stock,D,4,0001415889-25-021400,,https://www.sec.gov/Archives/edgar/data/1368458/000141588925021400/form4-08112025_060815.xml
+SBH,1368458,Denise Paulonis,1683382,2023-12-13,2023-12-12,P,open-market purchase,4000,45160.00,11.2900,2.3977,4000,170826,0,discretionary,,1,0,Common Stock,D,4,0000950170-23-070068,,https://www.sec.gov/Archives/edgar/data/1368458/000095017023070068/ownership.xml

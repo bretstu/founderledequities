@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+QS,1811414,Siva Sivaram,1587067,2025-10-28,2025-10-27,S,discretionary sale,90000,1534761.00,17.0529,1.9639,-120000,4492700,,discretionary,,1,0,Class A Common Stock,I,4,0001587067-25-000007,,https://www.sec.gov/Archives/edgar/data/1811414/000158706725000007/primarydocument.xml
+QS,1811414,Siva Sivaram,1587067,2025-10-28,2025-10-24,S,discretionary sale,30000,498306.00,16.6102,0.6633,-120000,4492700,0,discretionary,,1,0,Class A Common Stock,D,4,0001587067-25-000007,,https://www.sec.gov/Archives/edgar/data/1811414/000158706725000007/primarydocument.xml

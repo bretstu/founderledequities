@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+PCT,1830033,Dustin Olson,1847079,2023-11-13,2023-11-10,P,open-market purchase,68190,219571.80,3.2200,9.4851,68190,787109,0,discretionary,,1,0,Common Stock,D,4,0001847079-23-000019,,https://www.sec.gov/Archives/edgar/data/1830033/000184707923000019/wk-form4_1699921926.xml
+PCT,1830033,Dustin Olson,1847079,2022-12-05,2022-12-04,S,sale,1174,7642.74,6.5100,0.2420,-1174,484045,0,unknown,,1,0,Common Stock,D,4,0001847079-22-000027,,https://www.sec.gov/Archives/edgar/data/1830033/000184707922000027/wf-form4_167027441883259.xml

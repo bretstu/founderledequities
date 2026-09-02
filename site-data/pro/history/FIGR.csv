@@ -1,0 +1,12 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2064124,FIGR,Michael Tannenbaum,2079716,2025-07-31,4,0002079716-25-000008,4092576,4092576,213993559,1.9125,-1025698,25849025.0,1,,CFS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2064124,FIGR,Michael Tannenbaum,2079716,2025-09-10,3,0001628280-25-041905,5118274,5118274,213993559,2.3918,,,,1025698,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2064124,FIGR,Michael Tannenbaum,2079716,2025-09-12,4/A,0001493152-25-024508,4829366,4829366,213993559,2.2568,,,,-288908,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2064124,FIGR,Michael Tannenbaum,2079716,2025-11-18,4,0001493152-25-024510,3921366,3921366,213993559,1.8325,-908000,35588072.9,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2064124,FIGR,Michael Tannenbaum,2079716,2025-11-24,4,0001493152-25-025164,3791929,3791929,213993559,1.772,-129437,4587205.19,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2064124,FIGR,Michael Tannenbaum,2079716,2025-12-02,4,0001493152-25-026189,3641903,3641903,213993559,1.7019,-150026,5275103.29,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2064124,FIGR,Michael Tannenbaum,2079716,2026-03-03,4,0001493152-26-009016,3498129,3498129,216350326,1.6169,-143774,4272963.28,,,F,1,figr:BlockchainCommonStockMember|us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2064124,FIGR,Michael Tannenbaum,2079716,2026-04-23,4,0001493152-26-019162,3365268,3365268,221100849,1.5221,-132861,4280781.42,,,F,1,figr:BlockchainCommonStockMember|us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2064124,FIGR,Michael Tannenbaum,2079716,2026-04-28,4,0001493152-26-020776,3193641,3193641,221100849,1.4444,-171627,6124927.98,,,MS,1,figr:BlockchainCommonStockMember|us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2064124,FIGR,Michael Tannenbaum,2079716,2026-05-19,4,0001493152-26-024853,3193641,3193641,221100849,1.4444,,708837.94,,,MS,1,figr:BlockchainCommonStockMember|us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+2064124,FIGR,Michael Tannenbaum,2079716,2026-07-22,4,0001493152-26-034583,3045425,3045425,224377872,1.3573,-148216,4440124.64,,,F,1,figr:BlockchainCommonStockMember|us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

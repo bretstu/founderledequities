@@ -1,0 +1,4 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+DRVN,1804745,Daniel Rivera,1832731,2021-11-05,2021-11-05,S,sale,26173,840415.03,32.1100,5.1012,-41778,486907,,unknown,,1,0,Common Stock,D,4,0000950142-21-003614,,https://www.sec.gov/Archives/edgar/data/1804745/000095014221003614/es210199714_4-rivera.xml
+DRVN,1804745,Daniel Rivera,1832731,2021-11-05,2021-11-04,S,sale,1559,50012.72,32.0800,0.3192,-41778,486907,,unknown,,1,0,Common Stock,D,4,0000950142-21-003614,,https://www.sec.gov/Archives/edgar/data/1804745/000095014221003614/es210199714_4-rivera.xml
+DRVN,1804745,Daniel Rivera,1832731,2021-11-05,2021-11-03,S,sale,14046,452140.74,32.1900,2.8039,-41778,486907,0,unknown,,1,0,Common Stock,D,4,0000950142-21-003614,,https://www.sec.gov/Archives/edgar/data/1804745/000095014221003614/es210199714_4-rivera.xml

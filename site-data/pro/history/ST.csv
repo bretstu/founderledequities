@@ -1,0 +1,5 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1477294,ST,Stephan von Schuckmann,2050749,2025-01-01,4,0001477294-25-000006,123176,123176,149566230,0.0824,123176,,2,,A,1,c-2,,TRUE
+1477294,ST,Stephan von Schuckmann,2050749,2026-01-01,4,0002050749-26-000003,103788,103788,145678735,0.0712,-19388,645426.52,,,F,1,c-2,,TRUE
+1477294,ST,Stephan von Schuckmann,2050749,2026-03-06,4,0002050749-26-000006,118938,118938,145799544,0.0816,15150,501671.04,,,P,1,c-2,,TRUE
+1477294,ST,Stephan von Schuckmann,2050749,2026-04-01,4,0002050749-26-000008,230223,230223,145799544,0.1579,111285,,1,,A,1,c-2,,TRUE

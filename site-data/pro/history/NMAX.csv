@@ -1,0 +1,2 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+2026478,NMAX,Christopher Ruddy,1644499,2025-03-28,3,0001013762-25-004007,39239297,39239297,128190876,30.6101,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

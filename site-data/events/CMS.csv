@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+CMS,811156,Garrick J. Rochow,1635192,2017-08-21,2017-08-17,S,sale,2000,95610.00,47.8050,,-1787,64307,213,unknown,G,2,0,Common Stock,DI,4,0001246360-17-002617,,https://www.sec.gov/Archives/edgar/data/811156/000124636017002617/form.xml
+CMS,811156,Garrick J. Rochow,1635192,2015-04-29,2015-04-28,S,sale,10000,347600.00,34.7600,,,,,unknown,,1,0,Common Stock,D,4,0001246360-15-001864,,https://www.sec.gov/Archives/edgar/data/811156/000124636015001864/form.xml

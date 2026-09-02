@@ -1,0 +1,8 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1805284,RKT,Varun Krishna,1931906,2023-09-05,3,0001805284-23-000072,0,0,1977251267,0.0,,,,,,0,rkt:CommonClassDMember|us-gaap:CommonClassAMember,,TRUE
+1805284,RKT,Varun Krishna,1931906,2024-03-08,4,0001805284-24-000021,780252,780252,1985639415,0.0393,780252,,1,,A,1,rkt:CommonClassDMember|us-gaap:CommonClassAMember,,TRUE
+1805284,RKT,Varun Krishna,1931906,2024-09-09,4,0001805284-24-000160,721993,721993,1989448225,0.0363,-58259,1124981.29,,,F,1,rkt:CommonClassDMember|us-gaap:CommonClassAMember,,TRUE
+1805284,RKT,Varun Krishna,1931906,2025-03-07,4,0001805284-25-000035,1361260,1361260,1999805843,0.0681,639267,918744.43,1,,AF,1,rkt:CommonClassDMember|us-gaap:CommonClassAMember,,TRUE
+1805284,RKT,Varun Krishna,1931906,2025-09-07,4,0001805284-25-000099,1309178,1309178,2104519541,0.0622,-52082,1055181.32,,,F,1,rkt:CommonClassDMember|us-gaap:CommonClassAMember,,TRUE
+1805284,RKT,Varun Krishna,1931906,2025-09-08,4,0001805284-25-000114,1250919,1250919,2104519541,0.0594,-58259,1193144.32,,,F,1,rkt:CommonClassDMember|us-gaap:CommonClassAMember,,TRUE
+1805284,RKT,Varun Krishna,1931906,2026-03-07,4,0001805284-26-000030,2143922,2143922,2819815377,0.076,893003,1649597.95,1,,AF,1,rkt:CommonClassLMember|us-gaap:CommonClassAMember,,TRUE

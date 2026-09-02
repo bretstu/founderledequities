@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+SYM,1837240,Richard B. Cohen,1933447,2024-02-28,2024-02-26,S,discretionary sale,5000000,191612709.00,38.3225,,-11468494,765041357,-6468494,discretionary,,4,0,Class A Common Stock,I,4,0001837240-24-000044,,https://www.sec.gov/Archives/edgar/data/1837240/000183724024000044/wk-form4_1709174955.xml
+SYM,1837240,Richard B. Cohen,1933447,2023-07-27,2023-07-25,S,discretionary sale,17825312,500000001.60,28.0500,2.2206,383264177,784899501,,discretionary,,2,0,Class A Common Stock,I,4,0000899243-23-017568,,https://www.sec.gov/Archives/edgar/data/1837240/000089924323017568/doc4.xml

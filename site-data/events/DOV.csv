@@ -1,0 +1,4 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+DOV,29905,Richard J. Tobin,1681915,2026-02-20,2026-02-19,S,discretionary sale,76997,17917201.90,232.7000,,-540,295599,-540,discretionary,FM,1,0,Common Stock,D,4,0001829655-26-000020,,https://www.sec.gov/Archives/edgar/data/29905/000182965526000020/form4.xml
+DOV,29905,Richard J. Tobin,1681915,2024-08-23,2024-08-21,S,discretionary sale,25004,4549695.33,181.9587,,-24984,260415,20,discretionary,,1,0,Common Stock,D,4,0001062993-24-015609,,https://www.sec.gov/Archives/edgar/data/29905/000106299324015609/form4.xml
+DOV,29905,Richard J. Tobin,1681915,2022-03-04,2022-03-03,S,sale,31515,4945060.94,156.9113,,-31509,265197,6,unknown,,2,0,Common Stock,D,4,0001062993-22-006877,,https://www.sec.gov/Archives/edgar/data/29905/000106299322006877/form4.xml

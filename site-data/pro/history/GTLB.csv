@@ -1,0 +1,12 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1653482,GTLB,William Staples,1801655,2024-12-05,3,0001628280-24-051554,0,0,162300000,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1653482,GTLB,William Staples,1801655,2024-12-12,4,0001628280-24-051555,382348,382348,162300000,0.2356,382348,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1653482,GTLB,William Staples,1801655,2025-06-16,4,0001628280-25-032120,363424,363424,165200000,0.22,-18924,787806.12,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1653482,GTLB,William Staples,1801655,2025-09-15,4,0001653482-25-000027,352909,352909,166700000,0.2117,-10515,528904.5,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1653482,GTLB,William Staples,1801655,2025-12-15,4,0001653482-25-000071,342395,342395,168400000,0.2033,-10514,415513.28,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1653482,GTLB,William Staples,1801655,2025-12-31,4,0001653482-26-000006,345671,345671,168400000,0.2053,3276,124750.08,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1653482,GTLB,William Staples,1801655,2026-03-15,4,0001653482-26-000033,338641,338641,170100000,0.1991,-7030,159510.7,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1653482,GTLB,William Staples,1801655,2026-03-31,4,0001653482-26-000044,344651,344651,170100000,0.2026,6010,128342.35,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1653482,GTLB,William Staples,1801655,2026-04-29,4,0001653482-26-000074,781065,781065,170100000,0.4592,436414,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1653482,GTLB,William Staples,1801655,2026-06-17,4,0001653482-26-000124,754640,754640,168900000,0.4468,-26425,748091.75,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1653482,GTLB,William Staples,1801655,2026-06-30,4,0001653482-26-000141,758828,758828,168900000,0.4493,4188,122959.68,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

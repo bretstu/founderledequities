@@ -1,0 +1,26 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1726978,GSHD,Mark K. Miller,1737949,2018-04-26,4,0000950103-18-005530,0,0,36288491,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2020-08-20,4,0001726978-20-000302,0,0,36538304,0.0,,100122.0,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2020-08-25,4,0001726978-20-000305,0,0,36538304,0.0,,1063582.0,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2020-08-26,4,0001726978-20-000307,0,0,36538304,0.0,,1823988.71,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2020-08-27,4,0001726978-20-000308,0,0,36538304,0.0,,231857.92,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2020-11-03,4,0001726978-20-000358,0,0,36657158,0.0,,1325800.0,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2020-11-04,4,0001726978-20-000365,0,0,36657158,0.0,,1353134.0,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2020-11-05,4,0001726978-20-000368,0,0,36657158,0.0,,627667.87,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2020-11-06,4,0001726978-20-000372,0,0,36657158,0.0,,721258.16,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2021-01-04,4,0001726978-21-000006,0,0,36759371,0.0,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2022-05-13,4,0001726978-22-000070,0,0,37127244,0.0,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2022-10-31,4,0001726978-22-000124,8000,8000,21147289,0.0378,8000,320092.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2022-11-02,4,0001726978-22-000126,10000,10000,21147289,0.0473,2000,78500.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2023-01-03,4,0001726978-23-000002,10000,10000,37509779,0.0267,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2023-08-02,4,0001726978-23-000093,12000,12000,37693923,0.0318,2000,128000.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2023-08-14,4,0001726978-23-000101,15000,15000,37693923,0.0398,3000,189750.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2024-01-02,4,0001726978-24-000002,15000,15000,37948755,0.0395,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2024-02-26,4,0001726978-24-000019,20000,20000,37948755,0.0527,5000,369275.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2024-04-29,4,0001726978-24-000048,30000,30000,37990682,0.079,10000,580650.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2024-07-01,4,0001726978-24-000060,30000,30000,36955769,0.0812,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2024-11-06,4,0001726978-24-000107,30000,30000,37108697,0.0808,,7407268.67,,,MS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2025-01-02,4,0001726978-25-000003,30000,30000,37303246,0.0804,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2025-11-28,4,0001737949-25-000004,35000,35000,36844270,0.095,5000,361700.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2026-01-02,4,0001737949-26-000002,35000,35000,36588779,0.0957,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
+1726978,GSHD,Mark K. Miller,1737949,2026-05-14,4,0001726978-26-000047,40000,40000,35606054,0.1123,5000,184450.0,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

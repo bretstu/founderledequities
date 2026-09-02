@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+ASH,1674862,Guillermo Novo,1434813,2025-02-03,2025-01-31,P,open-market purchase,31294,2010326.56,64.2400,24.6919,31294,158032,0,discretionary,,1,0,Common Stock,I,4,0000950170-25-012349,,https://www.sec.gov/Archives/edgar/data/1674862/000095017025012349/ownership.xml
+ASH,1674862,Guillermo Novo,1434813,2020-02-07,2020-02-06,P,open-market purchase,12900,1010715.00,78.3500,,12900,12900,0,unknown,,1,0,Common Stock,D,4,0001127602-20-004207,,https://www.sec.gov/Archives/edgar/data/1674862/000112760220004207/form4.xml

@@ -1,0 +1,8 @@
+cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
+1022321,GEL,Grant E. Sims,1006306,2016-04-09,4,0001022321-16-000173,2954650,2954650,122579218,2.4104,,1205795.25,1,,DM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+1022321,GEL,Grant E. Sims,1006306,2016-04-12,4,0001022321-16-000181,2954650,2954650,122579218,2.4104,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+1022321,GEL,Grant E. Sims,1006306,2017-04-08,4,0001022321-17-000049,2953650,2953650,122579218,2.4096,,361329.72,1,-1000,DM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+1022321,GEL,Grant E. Sims,1006306,2017-04-11,4,0001022321-17-000069,2953650,2953650,122579218,2.4096,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+1022321,GEL,Grant E. Sims,1006306,2017-11-09,4,0001022321-17-000141,2997913,2997913,122579218,2.4457,44263,1014793.15,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+1022321,GEL,Grant E. Sims,1006306,2021-08-09,4,0001022321-21-000057,3007913,3007913,122579218,2.4539,10000,83761.0,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
+1022321,GEL,Grant E. Sims,1006306,2026-04-14,4,0001006306-26-000002,3007913,3007913,122464318,2.4562,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,

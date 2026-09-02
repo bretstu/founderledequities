@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+DHI,882184,Paul J. Romanowski,1887085,2023-05-18,2023-05-17,S,exercise and sell,40000,4486524.00,112.1631,,0,84268,0,discretionary,M,1,0,Common Stock,D,4,0001062993-23-011551,,https://www.sec.gov/Archives/edgar/data/882184/000106299323011551/form4.xml
+DHI,882184,Paul J. Romanowski,1887085,2022-12-22,2022-12-21,S,exercise and sell,30000,2690433.00,89.6811,,0,76185,0,unknown,M,1,0,Common Stock,D,4,0000882184-22-000221,,https://www.sec.gov/Archives/edgar/data/882184/000088218422000221/edgar.xml

@@ -1,0 +1,4 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+DTE,936340,Joi Harris,1891662,2024-02-26,2024-02-23,S,discretionary sale,3000,325470.00,108.4900,,-2971,23456,28,discretionary,,1,0,Common Stock,D,4,0000936340-24-000086,,https://www.sec.gov/Archives/edgar/data/936340/000093634024000086/wk-form4_1708977687.xml
+DTE,936340,Joi Harris,1891662,2022-08-04,2022-08-02,S,sale,1800,234234.00,130.1300,,-1674,12066,126,unknown,,1,0,Common Stock,D,4,0000936340-22-000182,,https://www.sec.gov/Archives/edgar/data/936340/000093634022000182/wf-form4_165964350014412.xml
+DTE,936340,Joi Harris,1891662,2022-03-02,2022-03-02,S,sale,1650,199600.50,120.9700,,-1624,13740,25,unknown,,1,0,Common Stock,D,4,0000936340-22-000087,,https://www.sec.gov/Archives/edgar/data/936340/000093634022000087/wf-form4_164624274331591.xml

@@ -1,0 +1,3 @@
+ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
+MAC,912242,Jackson Hsieh,1684096,2025-03-05,2025-03-04,P,open-market purchase,56000,993832.00,17.7470,32.8446,56000,226500,0,discretionary,,1,0,Common Stock,D,4,0000912242-25-000028,,https://www.sec.gov/Archives/edgar/data/912242/000091224225000028/wk-form4_1741207206.xml
+MAC,912242,Jackson Hsieh,1684096,2024-05-06,2024-05-06,P,open-market purchase,140000,1996820.00,14.2630,459.0164,140000,170500,0,discretionary,,1,0,Common Stock,D,4,0000912242-24-000074,,https://www.sec.gov/Archives/edgar/data/912242/000091224224000074/wk-form4_1715023219.xml
