@@ -35,8 +35,10 @@ def numbers(panel_p, sp_p, prices_p, founders_p):
                 founders.add(r["ticker"].upper())
     except OSError:
         pass
-    total = open_n = above5 = 0
-    founder_value = 0.0
+    # THE HERO'S OWN STRIP, BY THE HERO'S OWN RULES: everything over the
+    # open (S&P) set, so the card says exactly what a visitor then sees.
+    total = open_n = above5 = led = 0
+    led_value = all_value = 0.0
     for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
         t = (r.get("ticker") or "").upper()
         try:
@@ -45,23 +47,32 @@ def numbers(panel_p, sp_p, prices_p, founders_p):
         except ValueError:
             continue
         total += 1
-        if t in sp:
-            open_n += 1
-            if pct > 5:
-                above5 += 1
-        # the free hero's figure: founders in the open (S&P) set, so the card
-        # says the number a visitor then sees, not a larger one they cannot
-        if t in sp and t in founders and t in prices:
-            founder_value += sh * prices[t]
-    return dict(total=total, open=open_n, above5=above5, founder_value=founder_value)
+        if t not in sp:
+            continue
+        open_n += 1
+        if pct > 5:
+            above5 += 1
+        val = sh * prices[t] if t in prices else 0.0
+        all_value += val
+        if t in founders:
+            led += 1
+            led_value += val
+    return dict(total=total, open=open_n, above5=above5, led=led,
+                led_value=led_value, share=round(100 * led_value / all_value) if all_value else 0)
 
 
 def money(v):
-    if v >= 1e12:
-        return f"${v/1e12:.2f}T"
-    if v >= 1e9:
-        return f"${v/1e9:.0f}B"
-    return f"${v/1e6:.0f}M"
+    """The page's money(): $1.03T, $27.3B, $903M -- same rounding, so the
+    card and the hero never disagree by a cent of formatting."""
+    for div, suf, dp in ((1e12, "T", 2), (1e9, "B", 1), (1e6, "M", 1)):
+        if v < div * 0.9995:
+            continue
+        x = v / div
+        s = f"{x:.0f}" if x >= 100 else f"{x:.{dp}f}"
+        if float(s) >= 1000 and div < 1e12:
+            continue
+        return "$" + s.rstrip("0").rstrip(".") + suf
+    return f"${v:,.0f}"
 
 
 def draw(n, out, fonts_dir):
@@ -103,16 +114,19 @@ def draw(n, out, fonts_dir):
     d.text((72, y + 88), "own more than 5% of the", font=big, fill=INK)
     d.text((72, y + 176), "company they run.", font=big, fill=INK)
 
-    # the strip of facts
-    d.line((72, 470, W - 72, 470), fill=LINE, width=2)
-    facts = [(f"{n['total']:,}", "US public companies"),
-             (money(n["founder_value"]), "held by founders who run them"),
-             ("SEC EDGAR", "every number computed, never estimated")]
+    # the hero's stat strip, the same three numbers in the same order
+    d.line((72, 452, W - 72, 452), fill=LINE, width=2)
+    facts = [(f"{n['led']}", "Founder-led companies", BLUE),
+             (money(n["led_value"]), "Held by those founders", INK),
+             (f"{n['share']}%", "Of all chief-executive wealth", INK)]
     x = 72
-    for val, lab in facts:
-        d.text((x, 496), val, font=disp(34, 700), fill=INK)
-        d.text((x, 546), lab.upper(), font=mono(14), fill=MUT)
-        x += max(d.textlength(val, font=disp(34, 700)), d.textlength(lab.upper(), font=mono(14))) + 64
+    for val, lab, col in facts:
+        d.text((x, 474), val, font=disp(34, 700), fill=col)
+        d.text((x, 522), lab.upper(), font=mono(13), fill=MUT)
+        x += max(d.textlength(val, font=disp(34, 700)), d.textlength(lab.upper(), font=mono(13))) + 56
+    # the footer: how much is measured, and where it comes from
+    d.text((72, 578), f"{n['total']:,} US public companies · every number computed from SEC EDGAR, never estimated",
+           font=mono(14), fill=FAINT)
     im.save(out, "PNG", optimize=True)
     return out
 
@@ -126,8 +140,8 @@ def main(panel_p, sp_p, prices_p, founders_p, out):
     except Exception as exc:  # noqa: BLE001 - never fail a deploy over a picture
         print(f"  og image: not drawn ({exc.__class__.__name__}: {exc}); keeping the existing one")
         return 0
-    print(f"  og image: {n['above5']} of {n['open']} above 5%, {n['total']:,} companies, "
-          f"{money(n['founder_value'])} founder-held -> {out}")
+    print(f"  og image: {n['above5']} of {n['open']} above 5%; {n['led']} founder-led, "
+          f"{money(n['led_value'])}, {n['share']}% of the wealth; {n['total']:,} companies -> {out}")
     return 0
 
 
