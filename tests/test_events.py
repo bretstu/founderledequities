@@ -192,3 +192,15 @@ def test_a_residue_too_small_to_change_the_answer_states_it_with_a_caution():
     # an unchanged stake is never given a percentage, however small the residue
     ex = _e(shares=10_000, holding_after=90_000, net_change=0.0, residue=1.0, other_codes="M")
     assert ex.pct_approx is None
+
+
+def test_a_trade_before_registration_is_a_catch_up_not_an_insider_trade():
+    """Musk's 11,390 SpaceX shares: traded 2026-04-02, on a Form 4 filed
+    2026-06-17; the issuer's first Section 16 filing was the Form 3 at
+    registration in May. Pre-registration. A trade after it is not."""
+    pre = _e(traded="2026-04-02", filed="2026-06-17", registered="2026-05-20")
+    assert pre.pre_registration
+    post = _e(traded="2026-06-15", filed="2026-06-17", registered="2026-05-20")
+    assert not post.pre_registration
+    unknown = _e(traded="2026-04-02", filed="2026-06-17", registered="")
+    assert not unknown.pre_registration, "no registration date asserts nothing"

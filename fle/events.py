@@ -123,6 +123,24 @@ class Event:
     other_codes: str = ""              # A/M/F/C/G in the same filing
     price_flag: str = ""
     url: str = ""
+    registered: str = ""               # the issuer's first Section 16 filing date
+
+    @property
+    def pre_registration(self) -> bool:
+        """A trade dated before the issuer's first Section 16 filing.
+
+        Section 16 reporting begins at registration, and the first Form 4
+        after the Form 3 catches up on everything since: tenders,
+        conversions, the odd sale at the private price. Musk's 11,390
+        SpaceX shares went on 2 April 2026, seven weeks before the S-1, on
+        a Form 4 filed 17 June. Real, on a filing he signed, and nothing to
+        do with what he has done as a public-company chief executive -- so
+        it is recorded, badged, and kept out of every summary, like a sale
+        that did not move the stake. For a company public since the 2003
+        electronic filings the date is ancient and nothing is touched.
+        """
+        return bool(self.registered) and bool(self.traded) \
+            and self.traded < self.registered
 
     @property
     def label(self) -> str:
@@ -352,6 +370,12 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
         return []
     accs = {f.get("accessionNumber") for f in own.get("_filings", [])}
     mine = [f for f in ordered if f.get("accessionNumber") in accs]
+    # when Section 16 reporting began for this issuer: the earliest such
+    # filing on its feed, amendments and all -- the boundary that tells a
+    # public-company trade from a pre-registration catch-up
+    registered = min((f.get("filingDate") or "" for f in subs.get("_filings", [])
+                      if f.get("form") in SECTION16 and f.get("filingDate")),
+                     default="")
     if max_filings:
         mine = mine[-max_filings:]
     hist_rows = (history or {}).get(int(issuer_cik), [])
@@ -408,6 +432,7 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                 holding_after=after, net_change=net, residue=resid,
                 other_codes="".join(others),
                 url=_doc_url(issuer_cik, acc, f.get("primaryDocument") or ""),
+                registered=registered,
             ))
     return out
 

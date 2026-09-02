@@ -797,7 +797,8 @@ EVENT_COLUMNS = ["ticker", "cik", "ceo", "owner_cik", "filed", "traded",
                  "code", "label", "shares", "value", "avg_price",
                  "pct_of_holding", "pct_approx", "net_change", "holding_after", "residue",
                  "plan", "other_codes", "rows", "unpriced_rows", "securities",
-                 "direct", "form", "accession", "price_flag", "url"]
+                 "direct", "form", "accession", "price_flag", "url",
+                 "registered", "pre_ipo"]
 
 
 def cmd_events(args) -> int:
@@ -861,7 +862,8 @@ def cmd_events(args) -> int:
                 "" if e.holding_after is None else f"{e.holding_after:.0f}",
                 "" if e.residue is None else f"{e.residue:.0f}",
                 e.plan, e.other_codes, e.rows, e.unpriced_rows, e.securities,
-                e.direct, e.form, e.accession, e.price_flag, e.url])
+                e.direct, e.form, e.accession, e.price_flag, e.url,
+                e.registered, "1" if e.pre_registration else ""])
 
     buys = sum(1 for e in out if e.buy)
     flagged = sum(1 for e in out if e.residue)

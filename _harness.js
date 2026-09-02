@@ -61,7 +61,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,nFilings,evBadge,unchangedKind,pctOf,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,soldTickers,sparkline,lastTrades,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,nFilings,evBadge,unchangedKind,pctOf,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,soldTickers,sparkline,lastTrades,exportTable,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -111,7 +111,7 @@ const P=runPage();
   const firstSell=sides.indexOf("sells"),lastBuy=sides.lastIndexOf("buys");
   assert(firstSell<0||lastBuy<firstSell,"purchases lead the day, then stake reductions");
   if(allDay.length>rows.length){
-    assert(els["#actday"]._html.includes("Also filed:")&&els["#actday"]._html.includes("left the stake unchanged"),
+    assert(els["#actday"]._html.includes("Also filed:")&&els["#actday"]._html.includes("kept apart"),
       "a day with unchanged-stake sales says so in one line beneath the strip");
     assert(P.dayText(newest,rows).includes("Also filed:"),"and the copy text carries the same line");
   }else assert(!els["#actday"]._html.includes("Also filed:"),"and a day without them has no such line");
@@ -326,7 +326,7 @@ const P=runPage();
   // drawer with events present -- and the trade date leads there
   openDrawer("TSLA");
   assert(els["#drawer"]._html.includes("Latest trades"), "drawer prefers filed events");
-  {const lag={tk:"SPCX",ceo:"Elon Musk",c:"S",lb:"discretionary sale",pl:"discretionary",fd:"2026-06-17",td:"2026-04-02",sh:11390,v:1.2e6,pc:0.002,ha:5e8,nc:-11390,rs:0,u:"https://sec.gov/z"};
+  {const lag={tk:"SPCX",ceo:"Elon Musk",c:"S",lb:"discretionary sale",pl:"discretionary",fd:"2026-06-17",td:"2026-04-02",sh:11390,v:1.2e6,pc:0.002,ha:5e8,nc:-11390,rs:0,u:"https://sec.gov/z",pre:false,reg:"2026-05-20"};
    const row=evTable([lag],false);
    assert(/class="adate"[^>]*>2026-06-17<span class="atd">traded 2026-04-02/.test(row),"the trade table leads with the filing date and shows the trade date beneath when it differs");
    assert(row.includes("filed 76 days after the trade"),"and names a lag past two business days");
@@ -338,6 +338,16 @@ const P=runPage();
    openDrawer("SPCX");
    assert(/class="adate"[^>]*>2026-04-02</.test(els["#drawer"]._html),"the drawer's latest trades lead with the trade date");
    assert(P.dayText("2026-06-17",[lag]).includes("(traded 2026-04-02)"),"the copy text names the trade date when it is not the filing day");
+   // and as the pipeline now labels it -- a pre-registration trade -- it is kept apart everywhere
+   const pre={...lag,pre:true};
+   assert(P.unchangedKind(pre)==="pre"&&P.evSide(pre)==="exsell","a pre-registration trade sits with the kept-apart pile");
+   assert(P.evBadge(pre).t==="PRE-IPO"&&P.evBadge(pre).n.includes("2026-05-20"),"badged PRE-IPO with the registration date");
+   assert(P.evPctCell(pre).includes("pre-IPO"),"no percentage against the public-company stake");
+   P.EVENTS=[pre];P.renderTable();
+   const trow=els["#tbody"]._html;
+   assert(trow.includes("no trade that moved the public-company stake")&&trow.includes("never sold"),"the screener shows no last trade and never-sold for a company whose only sale predates registration");
+   assert(!P.soldTickers().has("SPCX"),"and it is not a seller");
+   assert(P.dayText("2026-06-17",[pre]).includes("sold (pre-IPO)"),"the copy text says pre-IPO");
    P.PANEL=before;P.EVENTS=savedE;}
 
   // ---- the screener: three-year change, last trade, never sold ----
@@ -361,15 +371,22 @@ const P=runPage();
   assert(order[0]==="UPX"&&order[1]==="DNX"&&order[2]==="NOH","sorted by three-year change: the riser, the faller, then the record too short to say: "+order.join(",")+" d3="+P.PANEL.map(r=>r.d3).join(","));
   assert(/UPX[\s\S]*?class="d3 up"[\s\S]*?<b>\+4\.1<\/b>/.test(tb),"the riser reads +4.1 pts in green, from the point on or before the horizon");
   assert(/DNX[\s\S]*?class="d3 down"[\s\S]*?<b>−4\.5<\/b>/.test(tb),"the faller reads −4.5 pts in red");
-  assert((tb.match(/class="spark"/g)||[]).length===2,"a sparkline for each row with a record, none for the short one");
+  assert(!tb.includes('class="spark"'),"no chart preview in the screener -- the number says it, the drawer draws it");
+  assert(tb.includes('class="n num c-mc"'),"a market cap column");
   const rowOf=tk=>{const i=tb.indexOf(`onclick="openDrawer('${tk}')"`);const j=tb.indexOf("</tr>",i);return tb.slice(i,j);};
   assert(rowOf("UPX").includes("never sold")&&!rowOf("DNX").includes("never sold"),"never sold marks the one who never reduced a stake — options cashed don't count");
   assert(rowOf("NOH").includes("never sold"),"a short record with no sale on file is never-sold too");
   assert(rowOf("DNX").includes('class="abadge down"')&&rowOf("DNX").includes("SOLD")&&rowOf("UPX").includes("BOUGHT"),"the last trade that moved the stake, badged");
-  assert(rowOf("NOH").includes("no trade that moved the stake"),"and an honest dash where there is none");
+  assert(rowOf("NOH").includes("no trade that moved the public-company stake"),"and an honest dash where there is none");
   state.tbH=true;P.renderTable();
   const held=[...els["#tbody"]._html.matchAll(/onclick="openDrawer\('([A-Z]+)'\)"/g)].map(m=>m[1]);
   assert(held.join(",")==="UPX,NOH","the Never sold switch keeps only those who never did: "+held.join(","));
+  // the export: the rows as shown, every field, quoted where it must be
+  const csv=P.exportTable();
+  const hdr=csv.split("\n")[0];
+  assert(hdr.startsWith("ticker,company,chief_executive,founder,ownership_pct,shares_held,shares_outstanding,close,stake_value,market_cap,change_3y_pts"),"the CSV carries the fields the page does not show: "+hdr.slice(0,60));
+  assert(csv.split("\n").length===3&&csv.includes("UPX")&&csv.includes("NOH")&&!csv.includes("DNX"),"and only the rows as filtered");
+  assert(csv.split("\n")[1].split(",").length===hdr.split(",").length,"every row has every column");
   state.tbH=false;state.sort={key:"d3",dir:1};P.renderTable();
   const asc=[...els["#tbody"]._html.matchAll(/onclick="openDrawer\('([A-Z]+)'\)"/g)].map(m=>m[1]);
   assert(asc[0]==="DNX"&&asc[2]==="NOH","ascending puts the faller first and the short record still last");

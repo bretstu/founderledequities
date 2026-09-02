@@ -149,6 +149,22 @@ select:disabled{opacity:.45;cursor:not-allowed}
   /* a sticky cell cannot carry a collapsed border, so it is drawn inset */
   border-bottom:none;box-shadow:inset 0 -1px 0 var(--ink)}
 table{width:100%;border-collapse:collapse}
+/* THE SCREENER IS THE WIDTH OF THE PAGE. Fixed layout, every column with a
+   width, the two text columns truncating; nothing scrolls sideways. */
+table.screen{table-layout:fixed}
+table.screen th,table.screen td{overflow:hidden}
+table.screen thead th{text-overflow:ellipsis}
+.tscroll{overflow-x:hidden}
+.w-rk{width:36px}.w-co{width:16%}.w-ceo{width:18%}.w-own{width:13%}.w-val{width:8%}.w-mc{width:8.5%}.w-d3{width:8%}.w-lt{width:13.5%}.w-asof{width:8%}.w-conf{width:9.5%}
+table.screen thead th,table.screen tbody td{padding-left:8px;padding-right:8px}
+table.screen thead th .arr{width:.7em}
+td.c-co .nm,td.ceo .cn{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+td.ceo .fb{vertical-align:2px}
+.c-mc{white-space:nowrap}
+@media(max-width:1100px){.h-asof,.c-asof,.w-asof{display:none}.w-co{width:22%}}
+@media(max-width:980px){.h-mc,.c-mc,.w-mc{display:none}.w-lt{width:16%}}
+@media(max-width:760px){.h-conf,.c-conf,.w-conf,.h-lt,.c-lt,.w-lt,.h-d3,.c-d3,.w-d3{display:none}.w-co{width:34%}.w-ceo{width:26%}.w-own{width:20%}.w-val{width:14%}
+  table.screen .tbar{display:none}table.screen .tpct{min-width:0}table.screen thead th,table.screen tbody td{padding-left:8px;padding-right:8px}}
 thead th{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-align:left;padding:10px 12px;border-bottom:1px solid var(--ink);white-space:nowrap}
 thead th.sortable{cursor:pointer;user-select:none}
 thead th.sortable:hover{color:var(--ink)}
@@ -160,9 +176,12 @@ tbody tr:hover{background:var(--wash)}
 td.rk{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:right;width:44px}
 td .tk{font-family:var(--mono);font-weight:600;font-size:13px}
 td .nm{font-size:12px;color:var(--mut)}
-td.ceo{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cell-own{display:flex;align-items:center;gap:12px;min-width:180px}
-.tbar{flex:1;height:4px;background:var(--line2);border-radius:2px;overflow:hidden;min-width:60px}
+td.ceo{white-space:nowrap;overflow:hidden}
+td.ceo .ceow{display:flex;align-items:center;gap:8px;min-width:0}
+td.ceo .cn{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+td.ceo .fb{flex:none;margin-left:0}
+.cell-own{display:flex;align-items:center;gap:10px}
+.tbar{flex:1;height:4px;background:var(--line2);border-radius:2px;overflow:hidden;min-width:40px}
 .tbar i{display:block;height:100%;background:var(--blue)}
 .tpct{font-family:var(--mono);font-weight:600;font-size:13.5px;min-width:64px;text-align:right}
 .tarr{font-size:10px;margin-left:6px;vertical-align:1px}.tarr.up{color:#0B8A3E}.tarr.down{color:#C23B3B}.tarr.flat{color:var(--faint)}
@@ -178,18 +197,18 @@ td.src a:hover{color:var(--blue)}
 .tfoot{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 4px 0;font-size:12.5px;color:var(--mut);flex-wrap:wrap}
 .more{font-weight:700;font-size:13px;border:1px solid var(--ink);border-radius:9px;padding:8px 16px}
 .more:hover{background:var(--ink);color:#fff}
-@media(max-width:980px){.h-out,.c-out,.h-asof,.c-asof{display:none}}
-@media(max-width:760px){.h-sh,.c-sh,.h-conf,.c-conf,.h-src,.c-src,.h-ceo,td.ceo,.h-lt,.c-lt{display:none}}
+
 /* the screener's two new cells */
-.c-d3 .d3{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;font-family:var(--mono);font-size:12px}
+.c-d3 .d3{display:inline-flex;align-items:baseline;gap:3px;white-space:nowrap;font-family:var(--mono);font-size:12.5px}
 .c-d3 .d3 b{font-weight:600}
 .c-d3 .d3 small{font-size:10px;color:var(--faint);margin-left:-4px}
 .c-d3 .d3.up b,.c-d3 .d3.up .spark{color:#0b7a4b}
 .c-d3 .d3.down b,.c-d3 .d3.down .spark{color:#c22a2a}
 .c-d3 .d3.flat b,.c-d3 .d3.flat .spark{color:var(--mut)}
 .c-d3 .spark{display:block;flex:none}
-.c-d3 .ns{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);background:var(--wash);border-radius:4px;padding:2px 6px;margin-left:2px}
+.c-lt .ns{display:inline-block;font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);background:var(--wash);border-radius:4px;padding:2px 6px;margin-top:4px}
 .c-lt .lt{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.chip.export{margin-left:auto}
 .c-lt .ltd{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 
 /* ---------- trends ---------- */
@@ -663,21 +682,32 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     <span class="fsw" id="fchip" role="switch" aria-checked="false" tabindex="0"
         title="only companies still run by a person the proxy names as a founder">Founders only<span class="tr"><i></i></span></span>
     <span class="fsw" id="hchip" role="switch" aria-checked="false" tabindex="0"
-        title="not one stake-reducing sale on record since 2016 — options cashed and units converted the same day don't count against anyone">Never sold<span class="tr"><i></i></span></span>
+        title="not one stake-reducing sale on record since the company was public — options cashed and units converted the same day don't count against anyone">Never sold<span class="tr"><i></i></span></span>
+    <button class="chip export" onclick="exportTable()" title="the rows as filtered and sorted, every field, as a CSV">Export CSV ↓</button>
   </div>
+  <!-- NO HORIZONTAL SCROLL. Ten columns, fixed widths that add up to the
+       page, the two text columns truncating rather than the table growing.
+       Shares held and shares outstanding left the page for the drawer and
+       the export -- a screen reads size as value and market cap, not as
+       share counts. The chart preview left too: a sixty-pixel line of a
+       record the walk has not finished repairing looked wrong more often
+       than it looked informative, and the number beside it said the same
+       thing. -->
   <div class="tscroll">
-  <table>
+  <table class="screen">
+    <colgroup>
+      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-d3"><col class="w-lt"><col class="w-asof"><col class="w-conf">
+    </colgroup>
     <thead><tr>
       <th class="n">№</th>
       <th class="sortable" data-key="co">Company<span class="arr"></span></th>
       <th class="sortable h-ceo" data-key="ceo">Chief executive<span class="arr"></span></th>
       <th class="sortable" data-key="pct">Ownership<span class="arr"></span></th>
-      <th class="sortable h-d3" data-key="d3" title="the stake now against the stake three years ago, in percentage points, with the record between">3-yr change<span class="arr"></span></th>
-      <th class="sortable h-lt" data-key="lt" title="the newest trade that moved the stake">Last trade<span class="arr"></span></th>
-      <th class="sortable n" data-key="val">Value<span class="arr"></span></th>
-      <th class="sortable n h-sh" data-key="sh">Shares held<span class="arr"></span></th>
-      <th class="sortable n h-out" data-key="out">Outstanding<span class="arr"></span></th>
-      <th class="sortable h-asof" data-key="asof">As of<span class="arr"></span></th>
+      <th class="sortable n" data-key="val" title="the stake's value: shares held at the latest close">Value<span class="arr"></span></th>
+      <th class="sortable n h-mc" data-key="mcap" title="market capitalization: shares outstanding at the latest close">Mkt cap<span class="arr"></span></th>
+      <th class="sortable n h-d3" data-key="d3" title="the stake now against the stake three years ago, in percentage points">3-yr chg<span class="arr"></span></th>
+      <th class="sortable h-lt" data-key="lt" title="the newest trade that moved the public-company stake, on its trade date">Last trade<span class="arr"></span></th>
+      <th class="sortable h-asof" data-key="asof" title="the filing the holding was last stated on">As of<span class="arr"></span></th>
       <th class="sortable h-conf" data-key="conf">Confidence<span class="arr"></span></th>
     </tr></thead>
     <tbody id="tbody"></tbody>
@@ -902,7 +932,8 @@ function mapEvents(recs){
     td:(r.traded||"").slice(0,10),c:r.code||"",lb:r.label||"",
     sh:num(r.shares)||0,v:num(r.value),ap:num(r.avg_price),
     pc:num(r.pct_of_holding),pa:num(r.pct_approx),nc:num(r.net_change),ha:num(r.holding_after),
-    rs:num(r.residue),pl:r.plan||"unknown",u:r.url||"",fl:r.price_flag||"",acc:r.accession||""
+    rs:num(r.residue),pl:r.plan||"unknown",u:r.url||"",fl:r.price_flag||"",acc:r.accession||"",
+    pre:String(r.pre_ipo||"")==="1",reg:r.registered||""
   })).filter(e=>e.tk&&e.fd).sort((a,b)=>a.fd<b.fd?1:-1);
 }
 
@@ -1026,6 +1057,9 @@ function applyPrices(){
   for(const r of PANEL){
     r.price=PRICES[r.tk]||null;
     r.val=r.price?r.sh*r.price:null;
+    /* the company's size at the same close: what a screen sorts and
+       filters on beside the stake */
+    r.mcap=r.price&&r.out?r.out*r.price:null;
   }
 }
 
@@ -1351,6 +1385,32 @@ function trendArrow(tk){
   const t=d==="up"?"stake higher than a year ago":d==="down"?"stake lower than a year ago":"stake roughly flat over a year";
   return `<span class="tarr ${d}" title="${t}">${g}</span>`;
 }
+function exportTable(){
+  /* THE TABLE, AS FILTERED AND SORTED, WITH EVERY FIELD. The page shows
+     ten columns; the file carries the share counts, the close, the
+     baseline date and the filing link too, so a reader can take the whole
+     open set into a spreadsheet and screen it their own way. */
+  const rows=state._rows||[];
+  const cols=["ticker","company","chief_executive","founder","ownership_pct","shares_held","shares_outstanding",
+              "close","stake_value","market_cap","change_3y_pts","change_3y_since","last_trade_date","last_trade",
+              "last_trade_value","never_sold","holding_as_of","confidence","form4_url"];
+  const q=v=>{v=v===null||v===undefined?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const lines=[cols.join(",")];
+  for(const r of rows){
+    const f=fInfo(r.tk);
+    lines.push([r.tk,r.co,r.ceo,f?f.f:"",r.pct===null?"":r.pct.toFixed(4),r.sh,r.out,r.price?r.price.toFixed(2):"",
+      r.val?Math.round(r.val):"",r.mcap?Math.round(r.mcap):"",r.d3===null||r.d3===undefined?"":r.d3.toFixed(2),r.d3base||"",
+      r.ltev?(r.ltev.td||r.ltev.fd):"",r.ltev?evBadge(r.ltev).t.replace("&amp;","&"):"",r.ltev&&r.ltev.v?Math.round(r.ltev.v):"",
+      r.ns?"yes":"",r.asof||"",r.conf||"",r.form4||""].map(q).join(","));
+  }
+  const csv=lines.join("\n");
+  const name=`founderledequities-${new Date().toISOString().slice(0,10)}.csv`;
+  if(typeof Blob==="undefined"||typeof URL==="undefined"||!URL.createObjectURL||!document.createElement)return csv;
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download=name;
+  document.body.appendChild(a);a.click();a.remove();
+  return csv;
+}
 function sparkline(tk,days){
   /* THE RECORD, AT A GLANCE. Sixty pixels of the cleaned history over the
      horizon, no axes: enough to see a climb, a cliff or a flat line, and
@@ -1408,33 +1468,33 @@ function renderTable(){
     if(key==="conf"){va=CONF[va]||0;vb=CONF[vb]||0;}
     /* a company with no three-year record sorts below every real change,
        whichever way the column points */
-    if(key==="d3"){const na=va===null||va===undefined,nb=vb===null||vb===undefined;
+    if(key==="d3"||key==="mcap"||key==="val"){const na=va===null||va===undefined,nb=vb===null||vb===undefined;
       if(na!==nb)return na?1:-1;if(na)return 0;}
     if(typeof va==="string"||typeof vb==="string")
       return String(va||"").localeCompare(String(vb||""))*dir;
     return ((va||0)-(vb||0))*dir;
   });
   const total=rows.length;
+  state._rows=rows;
 
   $("#tbody").innerHTML=rows.map((r,i)=>{
     return `<tr onclick="openDrawer('${r.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${r.tk}')">
      <td class="rk">${String(i+1).padStart(2,"0")}</td>
-     <td><div class="tk">${r.tk}</div><div class="nm">${r.co}</div></td>
-     <td class="ceo h-ceo">${r.ceo}${fBadge(r.tk)}</td>
+     <td class="c-co"><div class="tk">${r.tk}</div><div class="nm" title="${r.co.replace(/"/g,"&quot;")}">${r.co}</div></td>
+     <td class="ceo h-ceo"><span class="ceow"><span class="cn" title="${r.ceo.replace(/"/g,"&quot;")}">${r.ceo}</span>${fBadge(r.tk)}</span></td>
      <td><div class="cell-own">${r.masked
         ?`<div class="tbar" title="measured from this company's filings — in the sealed universe; the S&P 500 is open in full"><i style="width:0.75%"></i></div><div class="tpct" style="color:var(--faint)" title="measured from this company's filings — in the sealed universe; the S&P 500 is open in full">${SEAL}${trendArrow(r.tk)}</div>`
         :r.units
         ?`<div class="tbar" title="ownership held as exchangeable partnership units, not common stock — a percent of common cannot describe it; open the record for the filing's own words"><i style="width:0.75%"></i></div><div class="tpct" style="color:var(--faint)">units</div>`
         :`<div class="tbar" title="${r.pct.toFixed(2)}% of the company — the bar is drawn on a 0–100% scale${r.src13?" — from "+r.src13+", not Section 16 filings":""}"><i style="width:${Math.max(0.75,r.pct)}%"></i></div><div class="tpct">${r.pct.toFixed(r.pct<1?3:2)}%${trendArrow(r.tk)}${r.src13?`<span style="color:var(--faint)" title="stake from ${r.src13}; this issuer's insiders file no U.S. transaction reports"> †</span>`:""}</div>`}</div></td>
-     <td class="c-d3">${r.d3===null||r.d3===undefined
+     <td class="n num" title="${r.val?'$'+fmt(r.val)+' — '+fmt(r.sh)+' shares at $'+(r.price||0).toFixed(2):''}">${r.val?money(r.val):"—"}</td>
+     <td class="n num c-mc" title="${r.mcap?'$'+fmt(r.mcap)+' — '+fmt(r.out)+' shares outstanding at $'+(r.price||0).toFixed(2):''}">${r.mcap?money(r.mcap):"—"}</td>
+     <td class="n c-d3">${r.d3===null||r.d3===undefined
         ?`<span class="nopr" title="${HIST[r.tk]?"fewer than two points in the cleaned record":"no walkable filing history"}">—</span>`
-        :`<span class="d3 ${r.d3>0.05?"up":r.d3<-0.05?"down":"flat"}" title="${r.d3>=0?"+":""}${r.d3.toFixed(2)} percentage points since ${r.d3base}">${sparkline(r.tk,H3)}<b>${r.d3>=0?"+":"−"}${Math.abs(r.d3).toFixed(Math.abs(r.d3)<1?2:1)}</b><small>pts</small></span>`}${r.ns?` <span class="ns" title="never sold a share that reduced the stake, in the record since 2016">never sold</span>`:""}</td>
+        :`<span class="d3 ${r.d3>0.05?"up":r.d3<-0.05?"down":"flat"}" title="${r.d3>=0?"+":""}${r.d3.toFixed(2)} percentage points since ${r.d3base}"><b>${r.d3>=0?"+":"−"}${Math.abs(r.d3).toFixed(Math.abs(r.d3)<1?2:1)}</b><small>pts</small></span>`}</td>
      <td class="c-lt">${r.ltev
         ?`<span class="lt" title="${r.ltev.ceo} — ${money(r.ltev.v||0)}, ${r.ltev.lb}, traded ${r.ltev.td||r.ltev.fd}, filed ${r.ltev.fd}${lagNote(r.ltev)}"><span class="abadge ${evBadge(r.ltev).k}">${evBadge(r.ltev).t}</span><span class="ltd">${r.ltev.td||r.ltev.fd}</span></span>`
-        :`<span class="nopr" title="no trade that moved the stake on record since 2016">—</span>`}</td>
-     <td class="n num" title="${r.val?'$'+fmt(r.val):''}">${r.val?money(r.val):"—"}</td>
-     <td class="n num c-sh" title="${r.sh!==null?fmt(r.sh):''}">${r.sh!==null?compact(r.sh):"—"}</td>
-     <td class="n num c-out" title="${r.out?fmt(r.out):""}">${r.out?compact(r.out):"—"}</td>
+        :`<span class="nopr" title="no trade that moved the public-company stake on record">—</span>`}${r.ns?`<span class="ns" title="never sold a share that reduced the stake, since the company was public">never sold</span>`:""}</td>
      <td class="asof c-asof">${r.asof||"—"}</td>
      <td class="c-conf"><span class="conf"><span class="dot ${r.conf}"></span>${r.conf}</span></td>
     </tr>`}).join("");
@@ -1802,8 +1862,19 @@ function coOf(tk){const r=PANEL.find(p=>p.tk===tk);return r?r.co:"";}
    position is zero before and after); "sale, position unchanged" is a day
    the filing does not explain. All three sit apart from the ranking. */
 const UNCHANGED={"exercise and sell":"exercise","convert and sell":"convert","sale, position unchanged":"","purchase, position unchanged":"bought"};
-function unchangedKind(e){return (e.c==="S"||e.c==="P")&&e.lb in UNCHANGED?UNCHANGED[e.lb]:null;}
+/* A PRE-REGISTRATION TRADE IS KEPT APART THE SAME WAY. Section 16 reporting
+   begins at registration and the first Form 4 catches up on everything
+   since; a tender or a sale at the private price is real and on a filing
+   the person signed, and says nothing about what they did as a public-
+   company chief executive. Badged, one click away, not ranked, not the
+   last trade, not a sale for never-sold. */
+function unchangedKind(e){
+  if(e.pre)return"pre";
+  return (e.c==="S"||e.c==="P")&&e.lb in UNCHANGED?UNCHANGED[e.lb]:null;
+}
 function evBadge(e){
+  if(e.pre)return{t:"PRE-IPO",k:"neu",
+    n:`traded before the company's first ownership filing (${e.reg}) — a pre-registration transaction reported in the catch-up Form 4, not a trade in the public stock`};
   if(e.lb==="purchase, position unchanged")return{t:"UNCHANGED",k:"neu",
     n:"shares bought and the position on record left where it was — this measurement did not register them; open the filing"};
   if(e.c==="P")return{t:"BOUGHT",k:"up",
@@ -1867,6 +1938,7 @@ function pctWhy(e){
   return "the position before this trade computes to zero, and a percentage of nothing is not a number";
 }
 function evPctCell(e){
+  if(e.pre)return '<span class="nopr" title="before the company was public — not measured against the public-company stake">pre-IPO</span>';
   if(unchangedKind(e)!==null)return '<span class="nopr" title="the shares sold did not come out of the position on record — a percentage of a stake that did not move is not a number">unchanged</span>';
   const p=pctOf(e);
   if(!p)return `<span class="nopr" title="${pctWhy(e)}">—</span>`;
@@ -2084,11 +2156,11 @@ function dayAlso(day){
      the filing accounted for rather than missing */
   const ex=EVENTS.filter(e=>e.fd===day&&unchangedKind(e)!==null);
   if(!ex.length)return"";
+  const nP=ex.filter(e=>unchangedKind(e)==="pre").length;
   const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nB=ex.filter(e=>unchangedKind(e)==="bought").length;
-  const kinds=[nM?"options cashed":"",nC?"units converted":"",nB?"a purchase the position did not register":"",ex.length-nM-nC-nB?"source not in the filing":""].filter(Boolean).join(", ");
-  const nS=ex.length-nB;
-  const what=[nS?`${nS} sale${nS===1?"":"s"}`:"",nB?`${nB} purchase${nB===1?"":"s"}`:""].filter(Boolean).join(" and ");
-  return `Also filed: ${what} that left the stake unchanged (${kinds}), ${money(ex.reduce((t,e)=>t+((e.fl?0:e.v)||0),0))}`;
+  const kinds=[nP?"before the company was public":"",nM?"options cashed":"",nC?"units converted":"",nB?"a purchase the position did not register":"",ex.length-nP-nM-nC-nB?"source not in the filing":""].filter(Boolean).join(", ");
+  const n=ex.length;
+  return `Also filed: ${n} trade${n===1?"":"s"} kept apart (${kinds}), ${money(ex.reduce((t,e)=>t+((e.fl?0:e.v)||0),0))}`;
 }
 function dayText(day,rows){
   /* the day as plain text, one line per trade in the strip's own words.
@@ -2097,7 +2169,7 @@ function dayText(day,rows){
   for(const e of rows){
     const side=evSide(e);
     const uk=unchangedKind(e);
-    const what=side==="buys"?"bought":uk==="exercise"?"cashed options for":uk==="convert"?"converted and sold":uk==="bought"?"bought (position unchanged)":uk===""?"sold (position unchanged)":"sold";
+    const what=side==="buys"?"bought":uk==="pre"?(e.c==="P"?"bought (pre-IPO)":"sold (pre-IPO)"):uk==="exercise"?"cashed options for":uk==="convert"?"converted and sold":uk==="bought"?"bought (position unchanged)":uk===""?"sold (position unchanged)":"sold";
     const man=side==="exsell"?"stake unchanged":e.pl==="plan"?"10b5-1 plan":e.pl==="discretionary"?"discretionary":"";
     const pp=pctOf(e);
     const pc=(!pp||side==="exsell")?"":(side==="buys"?" +":" −")+(pp.approx?"≈":"")+(pp.v>=100?"100%+":pp.v.toFixed(pp.v<1?2:1)+"%")+" of stake";
@@ -2244,12 +2316,12 @@ function actNote(){
   /* ONE SENTENCE FOR THE SECTION: what was kept out, and where it is */
   const ex=evBase().filter(e=>evSide(e)==="exsell");
   if(!ex.length)return"";
+  const nP=ex.filter(e=>unchangedKind(e)==="pre").length;
   const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nB=ex.filter(e=>unchangedKind(e)==="bought").length;
-  const kinds=[nM?"options cashed":"",nC?"units converted and sold":"",nB?"purchases the position did not register":""].filter(Boolean).join(", ")||"shares from outside the filing";
+  const kinds=[nM?"options cashed":"",nC?"units converted and sold":"",nB?"purchases the position did not register":"",nP?`${nP} traded before the company was public`:""].filter(Boolean).join(", ")||"shares from outside the filing";
   const win={30:"the last 30 days",90:"the last 90 days",365:"the last 12 months"}[state.ev.win]||"this window";
-  const nS=ex.length-nB;
-  const what=[nS?`${nS.toLocaleString()} sale${nS===1?"":"s"}`:"",nB?`${nB} purchase${nB===1?"":"s"}`:""].filter(Boolean).join(" and ");
-  return `Kept out of everything above: ${what} in ${win} that left the measured stake where it was — ${kinds}. <a onclick="setView('exsell')">They are in the table →</a>`;
+  const n=ex.length;
+  return `Kept out of everything above: ${n.toLocaleString()} trade${n===1?"":"s"} in ${win} that did not move the public-company stake — ${kinds}. <a onclick="setView('exsell')">They are in the table →</a>`;
 }
 function renderCols(){
   const el=$("#actcols");if(!el)return;
@@ -2262,7 +2334,7 @@ function renderFeed(){
   const el=$("#actwrap");if(!el)return;
   const v=state.ev.view;
   const tv=$("#tview");
-  if(tv)tv.innerHTML={buys:"Bought",sells:"Sold",exsell:"Stake unchanged",day:"Filed "+niceDay(dayShown())}[v]
+  if(tv)tv.innerHTML={buys:"Bought",sells:"Sold",exsell:"Kept apart",day:"Filed "+niceDay(dayShown())}[v]
     +`<em>${v==="day"?"every filing that day":({30:"last 30 days",90:"last 90 days",365:"last 12 months"}[state.ev.win]||"")+(v!=="exsell"&&v!=="day"&&state.ev.kinds[v].length===1?" · "+(state.ev.kinds[v][0]==="plan"?"planned only":"discretionary only"):"")}</em>`;
   const evs=evFiltered();
   const CAP=200;
@@ -2278,7 +2350,7 @@ function renderFeed(){
   const part=(n,one,many,v)=>n?`${n.toLocaleString()} ${n===1?one:many}${v?" "+money(v):""}`:"";
   const parts=[part(buys.length,"purchase","purchases",sum(buys)),
                part(cut.length,"stake reduction","stake reductions",sum(cut)),
-               part(cashed.length,"trade that left the stake unchanged","trades that left the stake unchanged",sum(cashed))].filter(Boolean);
+               part(cashed.length,"trade kept apart","trades kept apart",sum(cashed))].filter(Boolean);
   /* AN EMPTY RESULT KEEPS THE TABLE'S FRAME.
      Collapsing to one line of text made the whole section jump and read
      as broken. The headers stay, the frame stays its height, and the
