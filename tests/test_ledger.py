@@ -3050,3 +3050,90 @@ def test_numbered_class_designators_do_not_collide():
     assert title_letter("Class B Convertible Common Stock") == ("class", "B")
     # two different numbered designators in one title is unclear, not a guess
     assert title_letter("Class V-1 and Class V-3 Common Stock") is None
+
+
+# --- a catch-up Form 4 that spans the Form 3 -------------------------------
+
+
+def test_spacex_a_catch_up_form_4_sorts_by_its_newest_transaction():
+    """SpaceX, June 2026. The Form 3 (11 June, registration) states 526M
+    Class A. The Form 4 filed 17 June reports 2 February through 15 June --
+    the IPO-day conversions among them -- and closes at 842M. The feed's
+    reportDate for that Form 4 is 2 February, its EARLIEST transaction;
+    ordered by it, the Form 3 was the newer word and the conversions never
+    counted. Ordered by the newest transaction each filing reports, the
+    Form 4 speaks for 15 June and settles the position."""
+    from fle.ledger import build_ledger, period_end
+    from fle.history import build_history
+
+    OWNER = ('<reportingOwner><reportingOwnerId><rptOwnerCik>0001494730</rptOwnerCik>'
+             '<rptOwnerName>Musk Elon</rptOwnerName></reportingOwnerId>'
+             '<reportingOwnerRelationship><isOfficer>1</isOfficer>'
+             '<officerTitle>CEO</officerTitle></reportingOwnerRelationship></reportingOwner>')
+    ISS = '<issuer><issuerCik>0001494730</issuerCik></issuer>'
+
+    def hold(bal):
+        return (f'<nonDerivativeHolding><securityTitle><value>Class A Common Stock</value>'
+                f'</securityTitle><postTransactionAmounts><sharesOwnedFollowingTransaction>'
+                f'<value>{bal}</value></sharesOwnedFollowingTransaction></postTransactionAmounts>'
+                f'<ownershipNature><directOrIndirectOwnership><value>I</value>'
+                f'</directOrIndirectOwnership><natureOfOwnership><value>By Elon Musk Revocable Trust'
+                f'</value></natureOfOwnership></ownershipNature></nonDerivativeHolding>')
+
+    def txn(date, code, moved, bal):
+        return (f'<nonDerivativeTransaction><securityTitle><value>Class A Common Stock</value>'
+                f'</securityTitle><transactionDate><value>{date}</value></transactionDate>'
+                f'<transactionCoding><transactionCode>{code}</transactionCode></transactionCoding>'
+                f'<transactionAmounts><transactionShares><value>{moved}</value></transactionShares>'
+                f'<transactionAcquiredDisposedCode><value>{"D" if code == "S" else "A"}</value>'
+                f'</transactionAcquiredDisposedCode></transactionAmounts>'
+                f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{bal}</value>'
+                f'</sharesOwnedFollowingTransaction></postTransactionAmounts>'
+                f'<ownershipNature><directOrIndirectOwnership><value>I</value>'
+                f'</directOrIndirectOwnership><natureOfOwnership><value>By Elon Musk Revocable Trust'
+                f'</value></natureOfOwnership></ownershipNature></nonDerivativeTransaction>')
+
+    form3 = f'<ownershipDocument>{ISS}{OWNER}{hold(526_165_420)}</ownershipDocument>'
+    form4 = (f'<ownershipDocument>{ISS}{OWNER}'
+             + txn("2026-02-02", "A", 511_289_725, 551_349_985)
+             + txn("2026-04-02", "S", 11_390, 526_165_900)
+             + txn("2026-06-15", "C", 282_614_850, 808_780_270)
+             + txn("2026-06-15", "C", 33_311_400, 842_091_670)
+             + '</ownershipDocument>')
+    docs = {"f3": form3, "f4": form4}
+    feed = [
+        {"form": "3", "accessionNumber": "f3", "filingDate": "2026-06-11",
+         "reportDate": "2026-06-11", "primaryDocument": "d.xml"},
+        {"form": "4", "accessionNumber": "f4", "filingDate": "2026-06-17",
+         "reportDate": "2026-02-02", "primaryDocument": "d.xml"},   # the feed's date: the EARLIEST trade
+    ]
+
+    class _Edgar:
+        def submissions(self, cik):
+            return {"_filings": feed}
+
+        def filing_index(self, cik, acc):
+            return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+
+        def get(self, url, use_cache=True, **kw):
+            for k in docs:
+                if k in url:
+                    return docs[k]
+            raise KeyError(url)
+
+    # the moment each filing speaks for
+    assert period_end(_Edgar(), 1494730, feed[0]) == "2026-06-11"
+    assert period_end(_Edgar(), 1494730, feed[1]) == "2026-06-15"
+
+    # the panel: the Form 4's closing balance, dated the day it happened
+    led = build_ledger(_Edgar(), 1494730, owner_cik="1494730", share_classes=1)
+    assert led.total == 842_091_670, "the IPO-day conversions count"
+    assert led.last_filing == "2026-06-15"
+
+    # the walk: the Form 3 is the earlier moment, the Form 4 the later; the
+    # stake goes UP at the IPO, not down
+    hist = build_history(_Edgar(), 1494730, "1494730", list(feed))
+    dates = [s.date for s in hist.snapshots]
+    assert dates == sorted(dates) and dates[-1] == "2026-06-15", dates
+    assert hist.snapshots[-1].shares == 842_091_670
+    assert hist.snapshots[0].shares <= hist.snapshots[-1].shares, "no phantom decline"

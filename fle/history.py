@@ -320,7 +320,14 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
     # An amendment restates its whole report; the original beside it would
     # count the period twice. See displace_amended.
     mine = displace_amended(mine)
-    ordered = sorted(mine, key=lambda f: (_period(f),
+    # BY THE MOMENT EACH FILING SPEAKS FOR. A Form 4's reportDate is its
+    # earliest transaction; a catch-up spanning February to June sorts by
+    # June, or the Form 3 between them is taken as the newer word. See
+    # ledger.period_end, which the panel uses for the same reason.
+    from .ledger import period_end
+    ends: dict = {}
+    ordered = sorted(mine, key=lambda f: (period_end(client, issuer_cik, f, ends),
+                                          f.get("filingDate") or "",
                                           f.get("accessionNumber") or ""))
 
     period_acc: dict = {}        # class -> the period's filings, chained
@@ -350,7 +357,7 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
             hist.skipped_issuer += 1
             continue
 
-        when = _period(f)
+        when = period_end(client, issuer_cik, f, ends)
         if when != current_period:
             current_period = when
             period_acc, period_prev = {}, {}

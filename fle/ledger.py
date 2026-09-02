@@ -408,6 +408,49 @@ class _Unread(Exception):
     read its filings must not conclude that the person is absent."""
 
 
+_DATE = re.compile(r"<transactionDate>\s*<value>\s*(\d{4}-\d{2}-\d{2})")
+
+
+def period_end(client, cik: int, f: dict, memo: dict | None = None) -> str:
+    """The moment a filing SPEAKS FOR: the newest transaction it reports, or
+    its period of report when it reports none.
+
+    THE FEED'S reportDate IS A FORM 4's EARLIEST TRANSACTION. Ordering by
+    it put SpaceX's catch-up Form 4 -- filed 17 June 2026, reporting
+    2 February through 15 June, the IPO-day conversions of six series of
+    preferred among them -- BEFORE the Form 3 of 11 June, so the Form 3's
+    pre-conversion balances were taken as the newest word and 316 million
+    shares that converted on 15 June never counted. The walk stood at
+    33.76% on a stake that was 36.2%. Any catch-up Form 4 spanning the
+    Form 3 date sorts wrong under that key; sorting by the LATEST
+    transaction in the document puts each filing at the moment it
+    describes.
+
+    Read with a regex over the raw document rather than a parse -- the
+    documents are on disk, the walk parses them once later, and this must
+    stay cheap enough to run over every filing a person has. Capped at the
+    filing date: a filing cannot report a trade after it was filed.
+
+    `memo` is one walk's own dictionary, so a filing is read once per walk
+    and nothing outlives it."""
+    acc = f.get("accessionNumber") or ""
+    base = f.get("reportDate") or f.get("filingDate") or ""
+    if memo is not None and acc in memo:
+        return memo[acc]
+    filed = f.get("filingDate") or "9999-12-31"
+    end = base
+    try:
+        raw = client.get(_doc_url(cik, acc, f.get("primaryDocument", "")))
+        for d in _DATE.findall(raw):
+            if d <= filed and d > end:
+                end = d
+    except Exception:  # noqa: BLE001 -- unreadable: the feed's date stands
+        pass
+    if memo is not None:
+        memo[acc] = end
+    return end
+
+
 def _parse(client, cik: int, f: dict, unread: list | None = None):
     url = _doc_url(cik, f.get("accessionNumber", ""), f.get("primaryDocument", ""))
     try:
@@ -880,8 +923,15 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
     led.classes = sorted(letters.values())
 
     # ------------------------------------------------------------------
-    # THE WALK. Newest first. The first filing to report a group settles it;
-    # every older mention of that group is history, not a correction.
+    # THE WALK. Newest first -- by the moment each filing speaks for, not
+    # the feed's earliest-transaction date (see period_end). The first
+    # filing to report a group settles it; every older mention of that
+    # group is history, not a correction.
+    ends: dict = {}
+    mine = sorted(mine, key=lambda f: (period_end(client, issuer_cik, f, ends),
+                                       f.get("filingDate") or "",
+                                       f.get("accessionNumber") or ""),
+                  reverse=True)
     todo = mine if max_filings is None else mine[:max_filings]
     for i, f in enumerate(todo):
         if on_progress:
@@ -899,7 +949,7 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
             led.issuers_seen[got] = led.issuers_seen.get(got, 0) + 1
             continue
 
-        when = f.get("reportDate") or f.get("filingDate") or ""
+        when = period_end(client, issuer_cik, f, ends)
         form = f.get("form") or ""
         acc = f.get("accessionNumber") or ""
         led.filings_read += 1
