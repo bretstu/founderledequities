@@ -898,7 +898,9 @@ async function loadData(){
       if(r.ok){const j=await r.json();state.pro=!!j.pro;state.acct=j.email||"";}}catch(e){}
   /* the full universe when it is published; today's sp500.csv otherwise --
      the same page serves both eras */
-  await fetchFirst(["universe.csv","sp500.csv"],
+  await fetchFirst(state.pro
+      ?["/pro/universe.csv","universe.csv","sp500.csv"]
+      :["universe.csv","sp500.csv"],
     t=>{const p=mapPanel(parseCSV(t));
         if(!p.length)return false;
         PANEL=p;state.live.panel=true;return true;});
