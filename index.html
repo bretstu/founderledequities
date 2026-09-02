@@ -432,7 +432,10 @@ td.asrc a:hover{color:var(--blue)}
 .adate .atd{display:block;font-size:10px;color:var(--faint);margin-top:2px}
 .atk{font-family:var(--mono);font-weight:600;font-size:13px}
 .aceo{font-size:12px;color:var(--mut);margin-left:9px}
-.abadge{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.07em;padding:4px 9px;border-radius:5px}
+/* ONE BOX FOR EVERY BADGE. BOUGHT is two letters wider than SOLD and a
+   column of them raggedly staggered the figures beside them; every badge
+   is now the same width, its word centred, wherever it appears. */
+.abadge{display:inline-block;box-sizing:border-box;min-width:62px;text-align:center;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.07em;padding:4px 8px;border-radius:5px}
 .abadge.up{background:var(--blue);color:#fff}
 .abadge.soft{background:var(--wash);color:var(--blue)}
 .abadge.down{background:#C13A2E;color:#fff}
