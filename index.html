@@ -578,7 +578,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
 </div></div>
 
 <section class="hero"><div class="wrap">
-  <h1 id="thesis"><b>20</b> of 500 CEOs own more than 5% of the company they run.</h1>
+  <h1 id="thesis"><b>20</b> of 500 chief executives own more than 5% of the company they run.</h1>
   <div class="herostats" id="herostats"></div>
 </div></section>
 
@@ -1347,7 +1347,11 @@ function renderHero(){
      500; Pro = everything. The sealed remainder is one stated fact (the
      subline), never a component of a statistic. */
   const OPEN=PANEL.filter(r=>!r.masked);
-  $("#thesis").innerHTML=`<b>${above5}</b> of ${open} CEOs own more than 5% of the company they run.`+
+  /* THE HERO IS A SENTENCE, NOT A LABEL. "2098 CEOs" is a run of glyphs
+     that all look like a code; the word has a shape the digits do not, and
+     the count gets its comma. CEO stays the label everywhere a reader
+     scans; here, read once, the words are the words. */
+  $("#thesis").innerHTML=`<b>${above5}</b> of ${open.toLocaleString()} chief executives own more than 5% of the company they run.`+
     (sealed?`<span style="color:var(--faint);font-size:0.55em;display:block;margin-top:10px;font-weight:400">${sealed.toLocaleString()} more companies measured <button class="gopro" onclick="openPro()" style="font-size:12.5px;padding:7px 14px;margin-left:14px;vertical-align:middle">Go Pro</button></span>`:"");
 
   // WHAT THE SITE IS ACTUALLY ABOUT, said with the numbers we have.

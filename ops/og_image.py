@@ -110,8 +110,8 @@ def draw(n, out, fonts_dir):
     num = f"{n['above5']}"
     d.text((72, y), num, font=big, fill=BLUE)
     x = 72 + d.textlength(num + " ", font=big)
-    d.text((x, y), f"of {n['open']} CEOs own", font=big, fill=INK)
-    d.text((72, y + 88), "more than 5% of the", font=big, fill=INK)
+    d.text((x, y), f"of {n['open']:,} chief executives", font=big, fill=INK)
+    d.text((72, y + 88), "own more than 5% of the", font=big, fill=INK)
     d.text((72, y + 176), "company they run.", font=big, fill=INK)
 
     # the hero's stat strip, the same three numbers in the same order

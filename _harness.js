@@ -588,8 +588,10 @@ const P=runPage();
    assert(!about.includes("Until that page exists"),"About no longer promises a page that now exists");
    /* CEO wherever a reader scans; "chief executive" only inside About's prose */
    const visible=idx.replace(/<!--[\s\S]*?-->/g,"").replace(/\/\*[\s\S]*?\*\//g,"").replace(/^\s*\/\/.*$/gm,"");
-   assert(!/chief executive/i.test(visible),"no label on the page says chief executive: "+(visible.match(/.{0,40}chief executive.{0,40}/i)||[""])[0]);
-   assert(head.includes("what every CEO owns")&&idx.includes("The wealthiest CEOs")&&idx.includes('data-key="ceo">CEO<'),"the hero, the board and the screener say CEO");}
+   const labels=visible.replace(/of \$\{open\.toLocaleString\(\)\} chief executives own/g,"").replace(/of 500 chief executives own/g,"");
+   assert(!/chief executive/i.test(labels),"no label on the page says chief executive: "+(labels.match(/.{0,40}chief executive.{0,40}/i)||[""])[0]);
+   assert(idx.includes("${open.toLocaleString()} chief executives own"),"the hero is a sentence: the word, and the count with its comma");
+   assert(head.includes("what every CEO owns")&&idx.includes("The wealthiest CEOs")&&idx.includes('data-key="ceo">CEO<'),"the title, the board and the screener say CEO");}
   assert(idx.includes("mailto:hello@founderledequities.com?subject=Refund"),
     "the refund promise carries its address");
   assert(idx.includes('"/api/hit"')&&idx.includes("fle_nohit")&&idx.includes('hit("view","page")'),
