@@ -533,7 +533,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
      side by side, and the feed underneath carries everything. -->
 <section class="activitysec" id="activity"><div class="wrap">
   <div class="shead">
-    <h2>Recent activity <span class="protag" id="acttag">PRO</span></h2>
+    <h2>Recent activity</h2>
     <div class="r" id="actsub"></div>
   </div>
   <div id="actspot"></div>
@@ -588,7 +588,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
      so this view is different tomorrow. -->
 <section class="trends" id="trends"><div class="wrap">
   <div class="shead">
-    <h2>Trajectories <span class="protag" id="trendtag">PRO</span></h2>
+    <h2>Trajectories</h2>
     <div class="r" id="trendsub"></div>
   </div>
   <div class="controls hide" id="tjctl">
@@ -628,7 +628,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="controls">
     <label class="search">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input id="q" type="search" placeholder="Search company, ticker, or chief executive" aria-label="Search">
+      <input id="q" type="search" placeholder="Search all 2,135 companies — ticker, name, or chief executive" aria-label="Search">
     </label>
     <button class="chip on" data-min="0">All</button>
     <button class="chip" data-min="1">&gt; 1%</button>
@@ -1323,7 +1323,7 @@ function renderTable(){
      <td><div class="tk">${r.tk}</div><div class="nm">${r.co}</div></td>
      <td class="ceo h-ceo">${r.ceo}${fBadge(r.tk)}</td>
      <td><div class="cell-own">${r.masked
-        ?`<div class="tbar" title="this company is outside the free tier — the stake is measured and waiting"><i style="width:0.75%"></i></div><div class="tpct" style="color:var(--faint)">PRO ${SEAL}${trendArrow(r.tk)}</div>`
+        ?`<div class="tbar" title="measured from this company's filings — in the sealed universe; the S&P 500 is open in full"><i style="width:0.75%"></i></div><div class="tpct" style="color:var(--faint)" title="measured from this company's filings — in the sealed universe; the S&P 500 is open in full">${SEAL}${trendArrow(r.tk)}</div>`
         :r.units
         ?`<div class="tbar" title="ownership held as exchangeable partnership units, not common stock — a percent of common cannot describe it; open the record for the filing's own words"><i style="width:0.75%"></i></div><div class="tpct" style="color:var(--faint)">units</div>`
         :`<div class="tbar" title="${r.pct.toFixed(2)}% of the company — the bar is drawn on a 0–100% scale${r.src13?" — from "+r.src13+", not Section 16 filings":""}"><i style="width:${Math.max(0.75,r.pct)}%"></i></div><div class="tpct">${r.pct.toFixed(r.pct<1?3:2)}%${trendArrow(r.tk)}${r.src13?`<span style="color:var(--faint)" title="stake from ${r.src13}; this issuer's insiders file no U.S. transaction reports"> †</span>`:""}</div>`}</div></td>
@@ -1333,8 +1333,11 @@ function renderTable(){
      <td class="asof c-asof">${r.asof||"—"}</td>
      <td class="c-conf"><span class="conf"><span class="dot ${r.conf}"></span>${r.conf}</span></td>
     </tr>`}).join("");
+  const sealedN=rows.filter(r=>r.masked).length;
   $("#tcount").textContent=
-    `${total} compan${total===1?"y":"ies"} · scroll the table${state.live.panel?"":" · embedded sample — serve sp500.csv beside this file to load all 500"}`;
+    `${total} compan${total===1?"y":"ies"}`+
+    (sealedN?` · the S&P 500 open in full · ${sealedN.toLocaleString()} more behind the seal ${SEAL}`:"")+
+    ` · scroll the table${state.live.panel?"":" · embedded sample — serve sp500.csv beside this file to load all 500"}`;
   document.querySelectorAll("th.sortable").forEach(th=>{
     const on=th.dataset.key===state.sort.key;
     th.querySelector(".arr").textContent=on?(state.sort.dir<0?" ↓":" ↑"):"";
@@ -1542,7 +1545,7 @@ const TJSUB={
 };
 function renderTrends(){
   if(!$("#tgrid"))return;
-  $("#trendtag").textContent="";
+
   $("#tjctl").classList.remove("hide");
   $("#tjctl").classList.remove("gated");
   $("#tjgate").classList.add("hide");
@@ -2118,7 +2121,7 @@ function renderActivity(){
   $("#actctl").classList.remove("hide");
   $("#actctl").classList.remove("gated");
   $("#actgate").classList.add("hide");
-  $("#acttag").textContent="";
+
   /* ONE SENTENCE OF ORIENTATION, NOT A GLOSSARY.
      The tooltips define the terms; this line gives a first-time reader the
      reading itself -- the one fact that makes the whole feed legible. */
@@ -2135,7 +2138,7 @@ function openDrawer(tk){
   $("#drawer").innerHTML=`
    <div class="dhead">
      <button class="dclose" onclick="closeDrawer()" aria-label="Close">✕</button>
-     <div class="tk">${r.tk}${r.masked?" · PRO UNIVERSE":" · S&P 500"}</div>
+     <div class="tk">${r.tk}${r.masked?` · ${SEAL} SEALED UNIVERSE`:" · S&P 500"}</div>
      <h3>${r.co}</h3>
      <div class="ce">${r.ceo} — Chief Executive ${fBadge(r.tk)}</div>
      ${fInfo(r.tk)&&fInfo(r.tk).f==="yes"&&fInfo(r.tk).ev?`<div class="dnote" style="margin:14px 0 0">“${fInfo(r.tk).ev.slice(0,280)}” <span style="color:var(--faint)">— ${fInfo(r.tk).src}</span></div>`:""}

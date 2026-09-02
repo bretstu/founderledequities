@@ -6,12 +6,12 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 1297996,DLR,Andrew P. Power,1641275,2018-03-09,4,0001297996-18-000055,0,0,205743377,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
 1297996,DLR,Andrew P. Power,1641275,2019-01-09,4,0001297996-19-000010,0,0,206282023,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
 1297996,DLR,Andrew P. Power,1641275,2019-02-21,4,0001297996-19-000042,0,0,207823842,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
-1297996,DLR,Andrew P. Power,1641275,2019-12-02,4,0001297996-19-000173,0,0,208720408,0.0,,2636192.21,2,,MS,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
+1297996,DLR,Andrew P. Power,1641275,2019-12-02,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2019-12-02', moved_here=True, opening={('D', ''): 0.0}, rows=4, as_of='2019-12-02', accession='0001297996-19-000173', table='I')",0,0,208720408,0.0,,2636192.21,2,,MS,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
 1297996,DLR,Andrew P. Power,1641275,2020-01-13,4,0001297996-20-000025,0,0,208720408,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
 1297996,DLR,Andrew P. Power,1641275,2020-02-19,4,0001415889-20-000446,0,0,208720408,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
-1297996,DLR,Andrew P. Power,1641275,2020-03-30,4,0001415889-20-000906,0,0,209039061,0.0,,1750000.0,1,,MS,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
-1297996,DLR,Andrew P. Power,1641275,2020-04-08,4,0001415889-20-000991,0,0,209039061,0.0,,2562500.0,2,,MS,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
-1297996,DLR,Andrew P. Power,1641275,2020-10-08,4,0001415889-20-002453,0,0,268994774,0.0,,2402500.0,1,,MS,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
+1297996,DLR,Andrew P. Power,1641275,2020-03-30,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2020-03-30', moved_here=True, opening={('D', ''): 0.0}, rows=2, as_of='2020-03-30', accession='0001415889-20-000906', table='I')",0,0,209039061,0.0,,1750000.0,1,,MS,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
+1297996,DLR,Andrew P. Power,1641275,2020-04-08,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2020-04-08', moved_here=True, opening={('D', ''): 0.0}, rows=4, as_of='2020-04-08', accession='0001415889-20-000991', table='I')",0,0,209039061,0.0,,2562500.0,2,,MS,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
+1297996,DLR,Andrew P. Power,1641275,2020-10-08,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2020-10-08', moved_here=True, opening={('D', ''): 0.0}, rows=2, as_of='2020-10-08', accession='0001415889-20-002453', table='I')",0,0,268994774,0.0,,2402500.0,1,,MS,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
 1297996,DLR,Andrew P. Power,1641275,2021-01-01,4,0001415889-21-000161,0,0,280165183,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
 1297996,DLR,Andrew P. Power,1641275,2021-02-25,4,0001415889-21-001122,0,0,281121062,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
 1297996,DLR,Andrew P. Power,1641275,2021-12-31,5,0001415889-22-001340,0,0,283787456,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
@@ -28,7 +28,7 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 1297996,DLR,Andrew P. Power,1641275,2025-01-01,4,0001415889-25-000504,0,0,331712606,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
 1297996,DLR,Andrew P. Power,1641275,2025-01-11,4,0001415889-25-001437,0,0,331712606,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
 1297996,DLR,Andrew P. Power,1641275,2025-03-14,4,0001415889-25-008476,0,0,336644245,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
-1297996,DLR,Andrew P. Power,1641275,2025-09-12,4,0001641275-25-000007,0,0,341050435,0.0,,10158996.14,2,,MS,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
+1297996,DLR,Andrew P. Power,1641275,2025-09-12,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2025-09-12', moved_here=True, opening={('D', ''): 0.0}, rows=4, as_of='2025-09-12', accession='0001641275-25-000007', table='I')",0,0,341050435,0.0,,10158996.14,2,,MS,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
 1297996,DLR,Andrew P. Power,1641275,2025-09-18,4,0001641275-25-000011,0,0,341050435,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
 1297996,DLR,Andrew P. Power,1641275,2026-01-01,4,0001641275-26-000002,0,0,343501552,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE
 1297996,DLR,Andrew P. Power,1641275,2026-01-15,4,0001641275-26-000008,0,0,343501552,0.0,,,,,,1,As_Of_7_29_2026_VWMN6ziBjkekfHNTDVo7Gg,,TRUE

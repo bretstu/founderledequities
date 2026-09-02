@@ -1,12 +1,12 @@
 cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-79879,PPG,Timothy M. Knavish,1669058,2016-03-01,3,0001209191-16-107497,23689,23689,236292889,0.01,,,,,,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2016-03-01,3,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=23689.938000000002, last_txn={}, holdings=23689.938000000002, hold_by_vehicle={('D', ''): 19165.0, ('I', 'employer401kplan'): 4524.938}, filed='2016-03-01', moved_here=False, opening={('D', ''): 19165.0, ('I', 'employer401kplan'): 4524.938}, rows=2, as_of='2016-03-01', accession='0001209191-16-107497', table='I')",23689,23689,236292889,0.01,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2016-03-11,4,0001209191-16-116966,23689,23689,236292889,0.01,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2016-06-10,4,0001209191-16-127531,23689,23689,236292889,0.01,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2016-08-04,4,0001209191-16-135827,14756,14756,236292889,0.0062,,1560692.48,,-8933,MS,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2016-08-04,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=14756.2264, last_txn={('D', ''): 10206.0}, holdings=4550.2264, hold_by_vehicle={('I', '401kplan'): 4550.2264}, filed='2016-08-04', moved_here=True, opening={('D', ''): 10206.0, ('I', '401kplan'): 4550.2264}, rows=4, as_of='2016-08-04', accession='0001209191-16-135827', table='I')",14756,14756,236292889,0.0062,,1560692.48,,-8933,MS,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2016-09-12,4,0001209191-16-141324,14756,14756,236292889,0.0062,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2016-12-12,4,0001209191-16-154939,14756,14756,236292889,0.0062,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2017-01-31,4,0001209191-17-006612,14756,14756,236292889,0.0062,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2017-02-15,4,0001209191-17-011877,14978,14978,236292889,0.0063,185,11571.0,1,37,AF,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2017-02-15,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=14978.313, last_txn={('D', ''): 10391.0}, holdings=4587.313, hold_by_vehicle={('I', '401kplan'): 4587.313}, filed='2017-02-15', moved_here=True, opening={('D', ''): 10206.0, ('I', '401kplan'): 4587.313}, rows=3, as_of='2017-02-15', accession='0001209191-17-011877', table='I')",14978,14978,236292889,0.0063,185,11571.0,1,37,AF,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2017-02-28,4,0001209191-17-015718,14978,14978,236292889,0.0063,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2017-03-10,4,0001209191-17-020115,14978,14978,236292889,0.0063,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2017-03-31,4,0001209191-17-024088,14978,14978,236292889,0.0063,,,,,,1,c-6,,TRUE
@@ -21,9 +21,9 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 79879,PPG,Timothy M. Knavish,1669058,2017-10-31,4,0001209191-17-058636,14978,14978,236292889,0.0063,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2017-11-30,4,0001209191-17-063489,14978,14978,236292889,0.0063,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2017-12-12,4,0001209191-17-065745,14978,14978,236292889,0.0063,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2017-12-31,5,0001209191-18-005812,10291,10291,236292889,0.0044,-100,,1,-4587,G,1,c-6,TRUE,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2017-12-31,5,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=10291.0, last_txn={('D', ''): 10291.0}, holdings=0.0, hold_by_vehicle={}, filed='2017-12-31', moved_here=True, opening={('D', ''): 10391.0}, rows=1, as_of='2017-11-15', accession='0001209191-18-005812', table='I')",10291,10291,236292889,0.0044,-100,,1,-4587,G,1,c-6,TRUE,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2018-01-31,4,0001209191-18-006788,10291,10291,236292889,0.0044,,,,,,1,c-6,TRUE,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2018-02-14,4,0001209191-18-010792,15060,15060,236292889,0.0064,123,7328.16,1,4646,AF,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2018-02-14,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=15060.313, last_txn={('D', ''): 10414.0}, holdings=4646.313, hold_by_vehicle={('I', '401kplan'): 4646.313}, filed='2018-02-14', moved_here=True, opening={('D', ''): 10291.0, ('I', '401kplan'): 4646.313}, rows=3, as_of='2018-02-14', accession='0001209191-18-010792', table='I')",15060,15060,236292889,0.0064,123,7328.16,1,4646,AF,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2018-02-28,4,0001209191-18-015744,15060,15060,236292889,0.0064,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2018-03-12,4,0001209191-18-019637,15060,15060,236292889,0.0064,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2018-03-29,4,0001209191-18-022323,15060,15060,236292889,0.0064,,,,,,1,c-6,,TRUE
@@ -51,7 +51,7 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 79879,PPG,Timothy M. Knavish,1669058,2019-01-15,4,0001209191-19-004216,15060,15060,236292889,0.0064,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2019-01-31,4,0001209191-19-006361,15060,15060,236292889,0.0064,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2019-02-15,4,0001209191-19-010927,15060,15060,236292889,0.0064,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2019-02-20,4,0001209191-19-012466,16577,16577,236292889,0.007,1437,66282.96,2,79,AF,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2019-02-20,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=16577.0, last_txn={('D', ''): 11851.0}, holdings=4726.0, hold_by_vehicle={('I', '401kplan'): 4726.0}, filed='2019-02-20', moved_here=True, opening={('D', ''): 10414.0, ('I', '401kplan'): 4726.0}, rows=4, as_of='2019-02-20', accession='0001209191-19-012466', table='I')",16577,16577,236292889,0.007,1437,66282.96,2,79,AF,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2019-02-28,4,0001209191-19-014855,16577,16577,236292889,0.007,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2019-03-12,4,0001209191-19-019104,16577,16577,236292889,0.007,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2019-03-15,4,0001209191-19-019891,16577,16577,236292889,0.007,,,,,,1,c-6,,TRUE
@@ -79,7 +79,7 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 79879,PPG,Timothy M. Knavish,1669058,2020-01-15,4,0001209191-20-003905,16577,16577,235755928,0.007,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2020-01-31,4,0001209191-20-006261,16577,16577,235755928,0.007,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2020-02-14,4,0001209191-20-010227,16577,16577,235755928,0.007,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2020-02-19,4,0001209191-20-011466,18819,18819,235755928,0.008,2172,106731.36,2,70,AF,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2020-02-19,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=18819.0, last_txn={('D', ''): 14023.0}, holdings=4796.0, hold_by_vehicle={('I', '401kplan'): 4796.0}, filed='2020-02-19', moved_here=True, opening={('D', ''): 11851.0, ('I', '401kplan'): 4796.0}, rows=4, as_of='2020-02-19', accession='0001209191-20-011466', table='I')",18819,18819,235755928,0.008,2172,106731.36,2,70,AF,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2020-02-28,4,0001209191-20-015046,18819,18819,235755928,0.008,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2020-03-12,4,0001209191-20-019197,18819,18819,235755928,0.008,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2020-03-31,4,0001209191-20-022170,18819,18819,235923428,0.008,,,,,,1,c-6,,TRUE
@@ -93,7 +93,7 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 79879,PPG,Timothy M. Knavish,1669058,2020-07-15,4,0001209191-20-042689,18819,18819,235977363,0.008,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2020-07-31,4,0001209191-20-044446,18819,18819,235977363,0.008,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2020-08-14,4,0001209191-20-046896,18819,18819,235977363,0.008,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2020-08-31,4,0001209191-20-048919,18872,18872,235977363,0.008,,3291175.8,,53,MS,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2020-08-31,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=18872.709, last_txn={('D', ''): 14023.0}, holdings=4849.709, hold_by_vehicle={('I', '401kplan'): 4849.709}, filed='2020-08-31', moved_here=True, opening={('D', ''): 14023.0, ('I', '401kplan'): 4849.709}, rows=4, as_of='2020-08-31', accession='0001209191-20-048919', table='I')",18872,18872,235977363,0.008,,3291175.8,,53,MS,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2020-09-11,4,0001209191-20-050400,18872,18872,235977363,0.008,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2020-09-15,4,0001209191-20-050798,18872,18872,235977363,0.008,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2020-09-30,4,0001209191-20-052851,18872,18872,236204417,0.008,,,,,,1,c-6,,TRUE
@@ -107,14 +107,14 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 79879,PPG,Timothy M. Knavish,1669058,2021-01-15,4,0001209191-21-004491,18872,18872,236788855,0.008,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2021-01-29,4,0001209191-21-006833,18872,18872,236788855,0.008,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2021-02-12,4,0001209191-21-011170,18872,18872,236788855,0.008,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2021-02-17,4,0001209191-21-012277,21622,21622,236788855,0.0091,2717,151489.4,2,32,AF,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2021-02-17,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=21622.484, last_txn={('D', ''): 16740.0}, holdings=4882.484, hold_by_vehicle={('I', '401kplan'): 4882.484}, filed='2021-02-17', moved_here=True, opening={('D', ''): 14023.0, ('I', '401kplan'): 4882.484}, rows=4, as_of='2021-02-17', accession='0001209191-21-012277', table='I')",21622,21622,236788855,0.0091,2717,151489.4,2,32,AF,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2021-02-26,4,0001209191-21-015811,21622,21622,236788855,0.0091,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2021-03-12,4,0001209191-21-020932,21622,21622,236788855,0.0091,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2021-03-31,4,0001209191-21-024448,21622,21622,237091179,0.0091,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2021-04-15,4,0001209191-21-027196,21622,21622,237091179,0.0091,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2021-04-30,4,0001209191-21-029675,21622,21622,237091179,0.0091,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2021-05-14,4,0001209191-21-033370,21622,21622,237091179,0.0091,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2021-05-24,4,0001209191-21-035928,21619,21619,237091179,0.0091,,6579803.87,,-2,MS,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2021-05-24,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=21619.75, last_txn={('D', ''): 16740.0}, holdings=4879.75, hold_by_vehicle={('I', '401kplan'): 4879.75}, filed='2021-05-24', moved_here=True, opening={('D', ''): 16740.0, ('I', '401kplan'): 4879.75}, rows=4, as_of='2021-05-24', accession='0001209191-21-035928', table='I')",21619,21619,237091179,0.0091,,6579803.87,,-2,MS,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2021-05-28,4,0001209191-21-037099,21619,21619,237091179,0.0091,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2021-06-11,4,0001209191-21-040691,21619,21619,237091179,0.0091,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2021-06-15,4,0001209191-21-041612,21619,21619,237091179,0.0091,,,,,,1,c-6,,TRUE
@@ -136,7 +136,7 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 79879,PPG,Timothy M. Knavish,1669058,2022-01-14,4,0001209191-22-003425,21619,21619,235998952,0.0092,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2022-01-31,4,0001209191-22-006572,21619,21619,235998952,0.0092,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2022-02-15,4,0001209191-22-010847,21619,21619,235998952,0.0092,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2022-02-16,4,0001209191-22-011449,26131,26131,235998952,0.0111,4447,272302.91,2,64,AF,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2022-02-16,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=26131.121, last_txn={('D', ''): 21187.0}, holdings=4944.121, hold_by_vehicle={('I', '401kplan'): 4944.121}, filed='2022-02-16', moved_here=True, opening={('D', ''): 16740.0, ('I', '401kplan'): 4944.121}, rows=4, as_of='2022-02-16', accession='0001209191-22-011449', table='I')",26131,26131,235998952,0.0111,4447,272302.91,2,64,AF,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2022-02-28,4,0001209191-22-015035,26131,26131,235998952,0.0111,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2022-03-11,4,0001209191-22-018900,26131,26131,235998952,0.0111,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2022-03-15,4,0001209191-22-019603,26131,26131,235998952,0.0111,,,,,,1,c-6,,TRUE
@@ -165,7 +165,7 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 79879,PPG,Timothy M. Knavish,1669058,2023-01-01,4,0001209191-23-000136,26131,26131,235179993,0.0111,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2023-01-13,4,0001209191-23-003414,26131,26131,235179993,0.0111,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2023-01-31,4,0001209191-23-005847,26131,26131,235179993,0.0111,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2023-02-15,4,0001209191-23-010385,29173,29173,235179993,0.0124,2935,156854.88,1,107,AF,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2023-02-15,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=29173.260000000002, last_txn={('D', ''): 24122.0}, holdings=5051.26, hold_by_vehicle={('I', '401kplan'): 5051.26}, filed='2023-02-15', moved_here=True, opening={('D', ''): 21187.0, ('I', '401kplan'): 5051.26}, rows=3, as_of='2023-02-15', accession='0001209191-23-010385', table='I')",29173,29173,235179993,0.0124,2935,156854.88,1,107,AF,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2023-02-28,4,0001209191-23-014451,29173,29173,235179993,0.0124,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2023-03-10,4,0001209191-23-018149,29173,29173,235179993,0.0124,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2023-03-15,4,0001209191-23-019199,29173,29173,235179993,0.0124,,,,,,1,c-6,,TRUE
@@ -193,15 +193,15 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 79879,PPG,Timothy M. Knavish,1669058,2023-12-29,4,0000079879-24-000002,29173,29173,235800000,0.0124,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2024-01-12,4,0000079879-24-000008,29173,29173,235254665,0.0124,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2024-01-31,4,0000079879-24-000034,29173,29173,235254665,0.0124,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2024-02-14,4,0000079879-24-000046,34346,34346,235254665,0.0146,5082,294350.1,2,90,AF,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2024-02-14,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=34346.25, last_txn={('D', ''): 29204.0}, holdings=5142.25, hold_by_vehicle={('I', '401kplan'): 5142.25}, filed='2024-02-14', moved_here=True, opening={('D', ''): 24122.0, ('I', '401kplan'): 5142.25}, rows=4, as_of='2024-02-14', accession='0000079879-24-000046', table='I')",34346,34346,235254665,0.0146,5082,294350.1,2,90,AF,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2024-02-21,4,0000079879-24-000057,34346,34346,235254665,0.0146,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2024-02-29,4,0000079879-24-000064,38912,38912,235254665,0.0165,4568,,1,-1,A,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2024-02-29,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=38912.729999999996, last_txn={('D', ''): 33772.0}, holdings=5140.73, hold_by_vehicle={('I', '401kplan'): 5140.73}, filed='2024-02-29', moved_here=True, opening={('D', ''): 29204.0, ('I', '401kplan'): 5140.73}, rows=2, as_of='2024-02-29', accession='0000079879-24-000064', table='I')",38912,38912,235254665,0.0165,4568,,1,-1,A,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2024-03-12,4,0000079879-24-000083,38912,38912,235254665,0.0165,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2024-03-15,4,0000079879-24-000086,38912,38912,235254665,0.0165,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2024-03-29,4,0000079879-24-000090,38912,38912,235254665,0.0165,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2024-04-15,4,0001628280-24-016317,38912,38912,234500000,0.0166,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2024-04-30,4,0000079879-24-000115,38912,38912,234500000,0.0166,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2024-05-08,4,0000079879-24-000117,41002,41002,234500000,0.0175,2061,274614.65,,28,P,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2024-05-08,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=41002.12, last_txn={('D', ''): 35833.0}, holdings=5169.12, hold_by_vehicle={('I', '401kplan'): 5169.12}, filed='2024-05-08', moved_here=True, opening={('D', ''): 33772.0, ('I', '401kplan'): 5169.12}, rows=2, as_of='2024-05-08', accession='0000079879-24-000117', table='I')",41002,41002,234500000,0.0175,2061,274614.65,,28,P,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2024-05-15,4,0000079879-24-000120,41002,41002,234500000,0.0175,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2024-05-31,4,0000079879-24-000125,41002,41002,234500000,0.0175,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2024-06-12,4,0000079879-24-000136,41002,41002,234500000,0.0175,,,,,,1,c-6,,TRUE
@@ -223,8 +223,8 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 79879,PPG,Timothy M. Knavish,1669058,2024-12-31,4,0000079879-25-000002,41002,41002,226953559,0.0181,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2025-01-15,4,0000079879-25-000010,41002,41002,226953559,0.0181,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2025-01-31,4,0000079879-25-000021,41002,41002,226953559,0.0181,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2025-02-14,4,0000079879-25-000027,41095,41095,226953559,0.0181,,1135056.0,,93,MS,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2025-02-19,4,0000079879-25-000040,46647,46647,226953559,0.0206,5550,258806.64,1,1,AF,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2025-02-14,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=41095.75, last_txn={('D', ''): 35833.0}, holdings=5262.75, hold_by_vehicle={('I', '401kplan'): 5262.75}, filed='2025-02-14', moved_here=True, opening={('D', ''): 35833.0, ('I', '401kplan'): 5262.75}, rows=3, as_of='2025-02-14', accession='0000079879-25-000027', table='I')",41095,41095,226953559,0.0181,,1135056.0,,93,MS,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2025-02-19,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=46647.37, last_txn={('D', ''): 41383.0}, holdings=5264.37, hold_by_vehicle={('I', '401kplan'): 5264.37}, filed='2025-02-19', moved_here=True, opening={('D', ''): 35833.0, ('I', '401kplan'): 5264.37}, rows=3, as_of='2025-02-19', accession='0000079879-25-000040', table='I')",46647,46647,226953559,0.0206,5550,258806.64,1,1,AF,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2025-02-25,4,0000079879-25-000048,46647,46647,226953559,0.0206,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2025-02-28,4,0000079879-25-000055,46647,46647,226953559,0.0206,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2025-03-12,4,0000079879-25-000071,46647,46647,226953559,0.0206,,,,,,1,c-6,,TRUE
@@ -254,7 +254,7 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 79879,PPG,Timothy M. Knavish,1669058,2026-01-15,4,0001669058-26-000001,46647,46647,223494714,0.0209,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2026-01-30,4,0000079879-26-000032,46647,46647,223494714,0.0209,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2026-02-13,4,0000079879-26-000040,46647,46647,223494714,0.0209,,,,,,1,c-6,,TRUE
-79879,PPG,Timothy M. Knavish,1669058,2026-02-18,4,0000079879-26-000054,62293,62293,223494714,0.0279,15522,1267879.5,1,124,AF,1,c-6,,TRUE
+79879,PPG,Timothy M. Knavish,1669058,2026-02-18,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=62293.54, last_txn={('D', ''): 56905.0}, holdings=5388.54, hold_by_vehicle={('I', '401kplan'): 5388.54}, filed='2026-02-18', moved_here=True, opening={('D', ''): 41383.0, ('I', '401kplan'): 5388.54}, rows=3, as_of='2026-02-18', accession='0000079879-26-000054', table='I')",62293,62293,223494714,0.0279,15522,1267879.5,1,124,AF,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2026-02-24,4,0000079879-26-000072,62293,62293,223494714,0.0279,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2026-02-27,4,0000079879-26-000079,62293,62293,223494714,0.0279,,,,,,1,c-6,,TRUE
 79879,PPG,Timothy M. Knavish,1669058,2026-03-12,4,0000079879-26-000107,62293,62293,223494714,0.0279,,,,,,1,c-6,,TRUE

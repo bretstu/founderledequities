@@ -1,0 +1,21 @@
+[0;1;38:5:185mWarning: The unit file, source configuration file or drop-ins of fle-refresh.service changed on disk. Run 'systemctl daemon-reload' to reload units.[0m
+○ fle-refresh.service - Founder Led Equities nightly rebuild and deploy
+     Loaded: loaded (]8;;file://bret-SER8/etc/systemd/system/fle-refresh.service\/etc/systemd/system/fle-refresh.service]8;;\; static[0;1;32m[0m)
+     Active: inactive (dead) since Sat 2026-08-29 02:42:26 EDT; 4h 45min ago
+ Invocation: d8f2d9da3dcb43d9a24d716f50d610fe
+TriggeredBy: [0;1;32m●[0m fle-refresh.timer
+    Process: 53861 ExecStart=/usr/bin/python3 -m fle.cli refresh --dir /home/bretstu/projects/founderledequities (code=exited, status=0/SUCCESS)
+   Main PID: 53861 (code=exited, status=0/SUCCESS)
+   Mem peak: 8G
+        CPU: 1min 35.907s
+
+Aug 29 02:42:23 bret-SER8 python3[53916]: Uploading... (9/10)
+Aug 29 02:42:24 bret-SER8 python3[53916]: Uploading... (10/10)
+Aug 29 02:42:24 bret-SER8 python3[53916]: ✨ Success! Uploaded 3 files (7 already uploaded) (2.11 sec)
+Aug 29 02:42:24 bret-SER8 python3[53916]: ✨ Uploading Functions bundle
+Aug 29 02:42:25 bret-SER8 python3[53916]: 🌎 Deploying...
+Aug 29 02:42:26 bret-SER8 python3[53916]: ✨ Deployment complete! Take a peek over at https://1091dd19.founderledequities.pages.dev
+Aug 29 02:42:26 bret-SER8 python3[53861]: [2026-08-29 02:42:26] deployed
+Aug 29 02:42:26 bret-SER8 systemd[1]: fle-refresh.service: Deactivated successfully.
+Aug 29 02:42:26 bret-SER8 systemd[1]: Finished fle-refresh.service - Founder Led Equities nightly rebuild and deploy.
+Aug 29 02:42:26 bret-SER8 systemd[1]: [0;1;39m[0;1;31m[0;1;39mfle-refresh.service: Consumed 1min 35.907s CPU time over 5min 49.935s wall clock time, 8G memory peak.[0m

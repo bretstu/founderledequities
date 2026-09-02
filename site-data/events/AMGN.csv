@@ -1,4 +1,2 @@
 ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
 AMGN,318154,Robert A. Bradway,1396482,2016-03-04,2016-03-02,S,sale,20000,2929566.00,146.4783,4.7247,133376,403303,0,unknown,AFM,1,0,Common Stock,D,4,0001127602-16-045126,,https://www.sec.gov/Archives/edgar/data/318154/000112760216045126/form4.xml
-AMGN,318154,Robert A. Bradway,1396482,2015-02-12,2015-02-11,S,sale,22000,3359116.20,152.6871,,,,,unknown,FM,1,0,Common Stock,D,4,0001127602-15-005887,,https://www.sec.gov/Archives/edgar/data/318154/000112760215005887/form4.xml
-AMGN,318154,Robert A. Bradway,1396482,2014-05-12,2014-05-12,P,open-market purchase,894,99919.25,111.7665,,,,,unknown,,1,0,Common Stock,D,4,0001127602-14-017221,,https://www.sec.gov/Archives/edgar/data/318154/000112760214017221/form4.xml

@@ -9,7 +9,7 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 1065280,NFLX,Ted Sarandos,1393838,2016-08-01,4,0001190725-16-000472,0,0,428725388,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2016-09-01,4,0001190725-16-000497,0,0,428725388,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2016-10-03,4,0001190725-16-000518,0,0,429145023,0.0,,,,,,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2016-10-18,4,0001190725-16-000529,0,0,429145023,0.0,,15892836.68,,,MS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2016-10-18,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2016-10-18', moved_here=True, opening={('D', ''): 0.0}, rows=12, as_of='2016-10-18', accession='0001190725-16-000529', table='I')",0,0,429145023,0.0,,15892836.68,,,MS,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2016-11-01,4,0001190725-16-000550,0,0,429145023,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2016-12-01,4,0001190725-16-000572,0,0,429145023,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2017-01-03,4,0001190725-17-000012,0,0,429145023,0.0,,,,,,1,c-2,,TRUE
@@ -19,7 +19,7 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 1065280,NFLX,Ted Sarandos,1393838,2017-05-01,4,0001190725-17-000117,0,0,430993429,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2017-06-01,4,0001190725-17-000144,0,0,430993429,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2017-07-03,4,0001065280-17-000030,0,0,431749744,0.0,,,,,,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2017-07-18,4,0001065280-17-000052,0,0,431749744,0.0,,41669777.38,,,MS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2017-07-18,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2017-07-18', moved_here=True, opening={('D', ''): 0.0}, rows=18, as_of='2017-07-18', accession='0001065280-17-000052', table='I')",0,0,431749744,0.0,,41669777.38,,,MS,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2017-08-01,4,0001065280-17-000082,0,0,431749744,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2017-09-01,4,0001065280-17-000116,0,0,431749744,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2017-10-02,4,0001065280-17-000155,0,0,432731130,0.0,,,,,,1,c-2,,TRUE
@@ -27,13 +27,13 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 1065280,NFLX,Ted Sarandos,1393838,2017-12-01,4,0001065280-17-000264,0,0,432731130,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2018-01-02,4,0001065280-18-000024,0,0,432731130,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2018-02-01,4,0001065280-18-000104,0,0,433948461,0.0,,,,,,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2018-02-08,4,0001065280-18-000111,0,0,433948461,0.0,,60426613.09,,,MS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2018-02-08,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2018-02-08', moved_here=True, opening={('D', ''): 0.0}, rows=18, as_of='2018-02-08', accession='0001065280-18-000111', table='I')",0,0,433948461,0.0,,60426613.09,,,MS,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2018-03-01,4,0001065280-18-000144,0,0,433948461,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2018-04-02,4,0001065280-18-000198,0,0,434657303,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2018-05-01,4,0001065280-18-000229,0,0,434657303,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2018-06-01,4,0001065280-18-000286,0,0,434657303,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2018-07-02,4,0001065280-18-000333,0,0,435457505,0.0,,,,,,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2018-07-23,4,0001065280-18-000366,0,0,435457505,0.0,,58433880.83,,,MS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2018-07-23,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2018-07-23', moved_here=True, opening={('D', ''): 0.0}, rows=16, as_of='2018-07-23', accession='0001065280-18-000366', table='I')",0,0,435457505,0.0,,58433880.83,,,MS,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2018-08-01,4,0001065280-18-000404,0,0,435457505,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2018-09-04,4,0001065280-18-000453,0,0,435457505,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2018-10-01,4,0001065280-18-000525,0,0,436084995,0.0,,,,,,1,c-2,,TRUE
@@ -59,12 +59,12 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 1065280,NFLX,Ted Sarandos,1393838,2020-06-01,4,0001065280-20-000243,0,0,439780618,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2020-07-01,4,0001065280-20-000292,0,0,441015443,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2020-08-03,4,0001065280-20-000331,0,0,441015443,0.0,,,,,,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2020-08-06,4,0001065280-20-000358,0,0,441015443,0.0,,16120655.06,,,MS,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2020-08-10,4,0001065280-20-000361,0,0,441015443,0.0,,7736400.0,,,MS,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2020-08-11,4,0001065280-20-000363,0,0,441015443,0.0,,14308753.02,,,MS,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2020-08-13,4,0001065280-20-000365,0,0,441015443,0.0,,13169177.56,,,MS,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2020-08-17,4,0001065280-20-000369,0,0,441015443,0.0,,12115052.0,,,MS,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2020-08-19,4,0001065280-20-000373,0,0,441015443,0.0,,9345972.12,,,MS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2020-08-06,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2020-08-06', moved_here=True, opening={('D', ''): 0.0}, rows=8, as_of='2020-08-06', accession='0001065280-20-000358', table='I')",0,0,441015443,0.0,,16120655.06,,,MS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2020-08-10,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2020-08-10', moved_here=True, opening={('D', ''): 0.0}, rows=2, as_of='2020-08-10', accession='0001065280-20-000361', table='I')",0,0,441015443,0.0,,7736400.0,,,MS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2020-08-11,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2020-08-11', moved_here=True, opening={('D', ''): 0.0}, rows=8, as_of='2020-08-11', accession='0001065280-20-000363', table='I')",0,0,441015443,0.0,,14308753.02,,,MS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2020-08-13,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2020-08-13', moved_here=True, opening={('D', ''): 0.0}, rows=8, as_of='2020-08-13', accession='0001065280-20-000365', table='I')",0,0,441015443,0.0,,13169177.56,,,MS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2020-08-17,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2020-08-17', moved_here=True, opening={('D', ''): 0.0}, rows=6, as_of='2020-08-17', accession='0001065280-20-000369', table='I')",0,0,441015443,0.0,,12115052.0,,,MS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2020-08-19,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2020-08-19', moved_here=True, opening={('D', ''): 0.0}, rows=4, as_of='2020-08-19', accession='0001065280-20-000373', table='I')",0,0,441015443,0.0,,9345972.12,,,MS,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2020-09-01,4,0001065280-20-000403,0,0,441015443,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2020-10-01,4,0001065280-20-000430,0,0,441795008,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2020-11-02,4,0001065280-20-000485,0,0,441795008,0.0,,,,,,1,c-2,,TRUE
@@ -79,8 +79,8 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 1065280,NFLX,Ted Sarandos,1393838,2021-08-02,4,0001065280-21-000279,0,0,442595888,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2021-09-01,4,0001065280-21-000311,0,0,442595888,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2021-10-01,4,0001065280-21-000348,0,0,442952194,0.0,,,,,,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2021-10-04,4,0001065280-21-000361,0,0,442952194,0.0,,63723455.62,,,MS,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2021-11-01,4,0001065280-21-000388,4481,44810,442952194,0.001,4481,,1,,A,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2021-10-04,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2021-10-04', moved_here=True, opening={('D', ''): 0.0}, rows=14, as_of='2021-10-04', accession='0001065280-21-000361', table='I')",0,0,442952194,0.0,,63723455.62,,,MS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2021-11-01,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=4481.0, last_txn={('D', ''): 4481.0}, holdings=0.0, hold_by_vehicle={}, filed='2021-11-01', moved_here=True, opening={('D', ''): 0.0}, rows=1, as_of='2021-11-01', accession='0001065280-21-000388', table='II')",4481,44810,442952194,0.001,4481,,1,,A,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2021-12-01,4,0001065280-21-000430,4481,44810,442952194,0.001,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2022-01-03,4,0001065280-22-000022,4481,44810,443963107,0.001,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2022-02-01,4,0001065280-22-000059,4481,44810,443963107,0.001,,,,,,1,c-2,,TRUE
@@ -102,27 +102,27 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 1065280,NFLX,Ted Sarandos,1393838,2023-06-01,4,0001065280-23-000171,4481,44810,444536878,0.001,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2023-07-03,4,0001065280-23-000183,4481,44810,443146751,0.001,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2023-08-01,4,0001065280-23-000205,4481,44810,443146751,0.001,,,,,,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2023-08-04,4,0001065280-23-000217,0,0,443146751,0.0,,32335477.53,,-44810,MS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2023-08-04,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=0.0, last_txn={('D', ''): 0.0}, holdings=0.0, hold_by_vehicle={}, filed='2023-08-04', moved_here=True, opening={('D', ''): 0.0}, rows=11, as_of='2023-08-04', accession='0001065280-23-000217', table='I')",0,0,443146751,0.0,,32335477.53,,-44810,MS,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2023-09-01,4,0001065280-23-000235,0,0,443146751,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2023-10-02,4,0001065280-23-000259,0,0,437679669,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2023-11-01,4,0001065280-23-000293,0,0,437679669,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2023-12-01,4,0001065280-23-000321,0,0,437679669,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2024-01-02,4,0001065280-24-000019,0,0,432759584,0.0,,,,,,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2024-01-25,4,0001065280-24-000042,0,0,432759584,0.0,,,,,,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2024-02-05,4,0001065280-24-000076,1278,12780,432759584,0.0003,1278,738546.84,1,,FM,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2024-02-09,4,0001065280-24-000079,1278,12780,432759584,0.0003,,44706836.28,,,MS,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2024-05-03,4,0001065280-24-000155,2556,25560,430964991,0.0006,1278,761832.1,1,,FM,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2024-08-05,4,0001065280-24-000230,2556,25560,429164615,0.0006,,1562443.07,1,,FMS,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2024-11-04,4,0001065280-24-000325,2556,25560,427458114,0.0006,,1973024.42,1,,FMS,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2025-01-07,4,0001065280-25-000027,13141,131410,427757100,0.0031,10585,8954577.45,1,,AF,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2024-02-05,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=1278.0, last_txn={('D', ''): 1278.0}, holdings=0.0, hold_by_vehicle={}, filed='2024-02-05', moved_here=True, opening={('D', ''): 0.0}, rows=2, as_of='2024-02-05', accession='0001065280-24-000076', table='I')",1278,12780,432759584,0.0003,1278,738546.84,1,,FM,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2024-02-09,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=1278.0, last_txn={('D', ''): 1278.0}, holdings=0.0, hold_by_vehicle={}, filed='2024-02-09', moved_here=True, opening={('D', ''): 1278.0}, rows=10, as_of='2024-02-09', accession='0001065280-24-000079', table='I')",1278,12780,432759584,0.0003,,44706836.28,,,MS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2024-05-03,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=2556.0, last_txn={('D', ''): 2556.0}, holdings=0.0, hold_by_vehicle={}, filed='2024-05-03', moved_here=True, opening={('D', ''): 1278.0}, rows=2, as_of='2024-05-03', accession='0001065280-24-000155', table='I')",2556,25560,430964991,0.0006,1278,761832.1,1,,FM,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2024-08-05,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=2556.0, last_txn={('D', ''): 2556.0}, holdings=0.0, hold_by_vehicle={}, filed='2024-08-05', moved_here=True, opening={('D', ''): 2556.0}, rows=3, as_of='2024-08-05', accession='0001065280-24-000230', table='I')",2556,25560,429164615,0.0006,,1562443.07,1,,FMS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2024-11-04,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=2556.0, last_txn={('D', ''): 2556.0}, holdings=0.0, hold_by_vehicle={}, filed='2024-11-04', moved_here=True, opening={('D', ''): 2556.0}, rows=3, as_of='2024-11-04', accession='0001065280-24-000325', table='I')",2556,25560,427458114,0.0006,,1973024.42,1,,FMS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2025-01-07,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=13141.0, last_txn={('D', ''): 13141.0}, holdings=0.0, hold_by_vehicle={}, filed='2025-01-07', moved_here=True, opening={('D', ''): 2556.0}, rows=2, as_of='2025-01-07', accession='0001065280-25-000027', table='I')",13141,131410,427757100,0.0031,10585,8954577.45,1,,AF,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2025-01-23,4,0001065280-25-000039,13141,131410,427757100,0.0031,,,,,,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2025-01-30,4,0001065280-25-000070,212204,2122040,427757100,0.0496,,216278991.82,,1990630,MS,1,c-2,TRUE,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2025-02-03,4,0001065280-25-000097,15168,151680,427757100,0.0035,2027,1963287.6,2,-1990630,FM,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2025-05-05,4,0001065280-25-000237,15168,151680,425683210,0.0036,,4635828.2,2,,FMS,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2025-08-04,4,0001065280-25-000356,15168,151680,424926346,0.0036,,4680197.26,2,,FMS,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2025-11-03,4,0001065280-25-000442,15168,151680,423732334,0.0036,,4462547.26,2,,FMS,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2026-01-07,4,0001065280-26-000030,257492,257492,4222162150,0.0061,105812,9210765.2,1,,AF,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2025-01-30,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=212204.0, last_txn={}, holdings=212204.0, hold_by_vehicle={('D', ''): 212204.0}, filed='2025-01-30', moved_here=True, opening={('D', ''): 212204.0}, rows=23, as_of='2025-01-30', accession='0001065280-25-000069', table='I')",212204,2122040,427757100,0.0496,,216278991.82,,1990630,MS,1,c-2,TRUE,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2025-02-03,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=15168.0, last_txn={('D', ''): 15168.0}, holdings=0.0, hold_by_vehicle={}, filed='2025-02-03', moved_here=True, opening={('D', ''): 13141.0}, rows=4, as_of='2025-02-03', accession='0001065280-25-000097', table='I')",15168,151680,427757100,0.0035,2027,1963287.6,2,-1990630,FM,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2025-05-05,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=15168.0, last_txn={('D', ''): 15168.0}, holdings=0.0, hold_by_vehicle={}, filed='2025-05-05', moved_here=True, opening={('D', ''): 15168.0}, rows=5, as_of='2025-05-05', accession='0001065280-25-000237', table='I')",15168,151680,425683210,0.0036,,4635828.2,2,,FMS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2025-08-04,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=15168.0, last_txn={('D', ''): 15168.0}, holdings=0.0, hold_by_vehicle={}, filed='2025-08-04', moved_here=True, opening={('D', ''): 15168.0}, rows=5, as_of='2025-08-04', accession='0001065280-25-000356', table='I')",15168,151680,424926346,0.0036,,4680197.26,2,,FMS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2025-11-03,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=15168.0, last_txn={('D', ''): 15168.0}, holdings=0.0, hold_by_vehicle={}, filed='2025-11-03', moved_here=True, opening={('D', ''): 15168.0}, rows=5, as_of='2025-11-03', accession='0001065280-25-000442', table='I')",15168,151680,423732334,0.0036,,4462547.26,2,,FMS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2026-01-07,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=257492.0, last_txn={('D', ''): 257492.0}, holdings=0.0, hold_by_vehicle={}, filed='2026-01-07', moved_here=True, opening={('D', ''): 151680.0}, rows=2, as_of='2026-01-07', accession='0001065280-26-000030', table='I')",257492,257492,4222162150,0.0061,105812,9210765.2,1,,AF,1,c-2,,TRUE
 1065280,NFLX,Ted Sarandos,1393838,2026-01-22,4,0001065280-26-000042,257492,257492,4222162150,0.0061,,,,,,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2026-02-03,4,0001065280-26-000076,284804,284804,4222162150,0.0067,27312,2240809.76,3,,FM,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2026-05-04,4,0001065280-26-000169,284804,284804,4212794271,0.0068,,4895243.28,3,,FMS,1,c-2,,TRUE
-1065280,NFLX,Ted Sarandos,1393838,2026-08-03,4,0001065280-26-000234,178954,178954,4163939676,0.0043,-105850,11675204.27,3,,FMS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2026-02-03,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=284804.0, last_txn={('D', ''): 284804.0}, holdings=0.0, hold_by_vehicle={}, filed='2026-02-03', moved_here=True, opening={('D', ''): 257492.0}, rows=6, as_of='2026-02-03', accession='0001065280-26-000076', table='I')",284804,284804,4222162150,0.0067,27312,2240809.76,3,,FM,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2026-05-04,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=284804.0, last_txn={('D', ''): 284804.0}, holdings=0.0, hold_by_vehicle={}, filed='2026-05-04', moved_here=True, opening={('D', ''): 284804.0}, rows=9, as_of='2026-05-04', accession='0001065280-26-000169', table='I')",284804,284804,4212794271,0.0068,,4895243.28,3,,FMS,1,c-2,,TRUE
+1065280,NFLX,Ted Sarandos,1393838,2026-08-03,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=178954.0, last_txn={('D', ''): 178954.0}, holdings=0.0, hold_by_vehicle={}, filed='2026-08-03', moved_here=True, opening={('D', ''): 284804.0}, rows=9, as_of='2026-08-03', accession='0001065280-26-000234', table='I')",178954,178954,4163939676,0.0043,-105850,11675204.27,3,,FMS,1,c-2,,TRUE

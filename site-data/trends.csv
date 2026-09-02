@@ -47,7 +47,7 @@ ADPT,,,down
 ADSK,0.0962,0.0814,up
 ADT,,,up
 ADUS,,,up
-AEE,0.0705,0.0780,down
+AEE,0.0068,,
 AEHR,,,down
 AEIS,,,down
 AEO,,,down
@@ -74,7 +74,7 @@ AIP,,,down
 AIR,,,up
 AIT,,,down
 AIZ,0.2749,0.2020,up
-AJG,0.3612,0.3665,flat
+AJG,0.0989,0.0993,flat
 AKAM,1.8886,1.7366,up
 AKR,,,down
 AKTS,,,
@@ -156,7 +156,7 @@ AR,,,down
 ARCB,,,up
 ARDT,,,up
 ARE,0.3402,0.2610,up
-ARES,2.4610,2.4964,flat
+ARES,0.3787,0.3926,down
 ARHS,,,flat
 ARLO,,,down
 ARLP,,,flat
@@ -248,7 +248,7 @@ BEAM,,,down
 BELFA,,,down
 BEN,1.3504,1.2426,up
 BETA,,,
-BF-B,0.0059,0.0115,down
+BF-B,0.0059,0.0105,down
 BFAM,,,up
 BFC,,,down
 BFH,,,up
@@ -1733,7 +1733,7 @@ SONO,,,up
 SOUN,,,up
 SPB,,,up
 SPCX,,,
-SPG,0.0025,0.0191,down
+SPG,0.0000,0.0000,flat
 SPGI,0.0093,0.0056,up
 SPH,,,up
 SPHR,,,up
@@ -2040,7 +2040,6 @@ WMT,0.0100,0.0085,up
 WOLF,,,up
 WOR,,,up
 WPC,,,flat
-WRB,24.4447,19.2075,up
 WRBY,,,down
 WS,,,up
 WSBC,,,down
@@ -2070,7 +2069,6 @@ XHR,,,up
 XIFR,,,up
 XMTR,,,up
 XNCR,,,up
-XOM,0.0469,0.0405,up
 XPEL,,,flat
 XPO,,,up
 XRAY,,,up

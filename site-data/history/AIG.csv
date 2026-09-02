@@ -1,2 +1,2 @@
 cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-5272,AIG,Eric Andersen,1697695,2026-02-16,4,0001697695-26-000007,186400,186400,536559663,0.0347,186400,,2,,A,1,c-2,,TRUE
+5272,AIG,Eric Andersen,1697695,2026-02-16,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=186400.0, last_txn={('D', ''): 186400.0}, holdings=0.0, hold_by_vehicle={}, filed='2026-02-16', moved_here=True, opening={('D', ''): 0.0}, rows=2, as_of='2026-02-16', accession='0001697695-26-000007', table='I')",186400,186400,536559663,0.0347,186400,,2,,A,1,c-2,,TRUE

@@ -6,5 +6,5 @@ cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outsta
 1944048,KVUE,Kirk L. Perry,1685154,2025-06-30,4,0001628280-25-033922,0,0,1919909938,0.0,,,,,,0,c-2,,TRUE
 1944048,KVUE,Kirk L. Perry,1685154,2025-07-31,4,0001944048-25-000170,0,0,1919909938,0.0,,,,,,0,c-2,,TRUE
 1944048,KVUE,Kirk L. Perry,1685154,2025-10-01,4,0001944048-25-000189,0,0,1919069920,0.0,,,,,,0,c-2,,TRUE
-1944048,KVUE,Kirk L. Perry,1685154,2025-12-15,4/A,0001193125-25-331155,62554,62554,1915802170,0.0033,-56007,963880.47,,118561,F,1,c-2,,TRUE
+1944048,KVUE,Kirk L. Perry,1685154,2025-12-15,4/A,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=62554.65, last_txn={('D', ''): 62554.65}, holdings=0.0, hold_by_vehicle={}, filed='2025-12-15', moved_here=True, opening={('D', ''): 118561.65}, rows=1, as_of='2025-12-15', accession='0001193125-25-331155', table='I')",62554,62554,1915802170,0.0033,-56007,963880.47,,118561,F,1,c-2,,TRUE
 1944048,KVUE,Kirk L. Perry,1685154,2026-03-02,4,0001944048-26-000048,62554,62554,1916732090,0.0033,,,,,,1,c-2,,TRUE

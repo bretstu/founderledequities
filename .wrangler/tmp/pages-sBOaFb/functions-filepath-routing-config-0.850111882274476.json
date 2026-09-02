@@ -1,0 +1,69 @@
+{
+  "routes": [
+    {
+      "routePath": "/api/activate",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/activate.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/checkout",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/checkout.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/login",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/login.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/login",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/login.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/me",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/me.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/portal",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/portal.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/webhook",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/webhook.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/pro/:path*",
+      "mountPath": "/pro",
+      "method": "",
+      "module": [
+        "pro/[[path]].js:onRequest"
+      ]
+    }
+  ],
+  "baseURL": "/"
+}

@@ -1,3 +1,2 @@
 ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
 KIM,879101,Conor C. Flynn,1576790,2016-05-10,2016-05-09,S,sale,58300,1732710.98,29.7206,,2382,430208,2188,unknown,GM,1,0,Common Stock,D,4,0001576790-16-000008,,https://www.sec.gov/Archives/edgar/data/879101/000157679016000008/primary_doc.xml
-KIM,879101,Conor C. Flynn,1576790,2013-07-01,2013-06-28,S,sale,2000,43060.00,21.5300,,,,,unknown,,1,0,Common Stock,D,4,0001576790-13-000003,,https://www.sec.gov/Archives/edgar/data/879101/000157679013000003/primary_doc.xml
