@@ -165,6 +165,17 @@ const P=runPage();
   if(mixed)assert(sellHtml.includes('class="seg disc"')&&sellHtml.includes('class="seg plan"'),
     "a person who sold both ways gets both segments: "+mixed.tk);
   assert(sellHtml.includes("Top 8 of")||S365.people.length<=8,"the footer counts the people beyond the top");
+  // the founder mark: present exactly where the proxy says yes
+  assert(!/repeating-linear-gradient/.test(idxsrc.slice(idxsrc.indexOf("recent activity ----------"))),
+    "planned is the badge's light tint, not stripes -- one vocabulary for one fact");
+  const fy=[...B365.people,...S365.people].find(p=>{const i=P.fInfo(p.tk);return i&&i.f==="yes";});
+  const fn=[...B365.people,...S365.people].find(p=>{const i=P.fInfo(p.tk);return !i||i.f!=="yes";});
+  const both=evColumn("buys")+evColumn("sells");
+  const esc=x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  if(fy)assert(new RegExp('class="fm lead"[^<]*<\\/span>'+esc(fy.ceo)).test(both),"a founder gets the diamond, leading the name: "+fy.ceo);
+  if(fn)assert(!new RegExp('<\\/span>'+esc(fn.ceo)+"<small").test(both),"a hired chief executive does not: "+fn.ceo);
+  assert(both.includes("◆</span>founder")||!state.live.founders,"and the key explains the mark");
+  assert(sellHtml.includes("the largest ")||exs.length===0,"the options-cashed line names its largest");
   setWin(30);
 
   // ---- manner chips are per column and independent ----

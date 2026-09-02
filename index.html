@@ -307,10 +307,13 @@ td.src a:hover{color:var(--blue)}
 .acol.sell .abar .who small{color:#C13A2E}
 .abar .trk{height:18px;background:var(--panel);border-radius:3px;display:flex;overflow:hidden}
 .abar .seg{height:100%;background:var(--blue);flex:none}
-.abar .seg.plan{background:repeating-linear-gradient(135deg,var(--blue) 0 3px,rgba(27,52,224,.28) 3px 7px)}
+/* ONE COLOUR FOR ONE FACT. The badges already say 10b5-1 with a light
+   tint of the same colour; the bars said it with stripes, a second
+   vocabulary for the same thing. Now the light tint everywhere. */
+.abar .seg.plan{background:rgba(27,52,224,.36)}
 .abar .seg.unknown{background:rgba(27,52,224,.35)}
 .acol.sell .abar .seg{background:#C13A2E}
-.acol.sell .abar .seg.plan{background:repeating-linear-gradient(135deg,#C13A2E 0 3px,rgba(193,58,46,.28) 3px 7px)}
+.acol.sell .abar .seg.plan{background:rgba(193,58,46,.36)}
 .acol.sell .abar .seg.unknown{background:rgba(193,58,46,.35)}
 .abar .amt{text-align:right;white-space:nowrap;font-family:var(--mono);font-size:12px;line-height:1.3}
 .abar .amt b{font-weight:600;color:var(--ink);display:block;font-size:13px}
@@ -326,9 +329,18 @@ td.src a:hover{color:var(--blue)}
 .acol .af{margin-top:auto;padding-top:12px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--faint)}
 .acol .af .key{display:flex;gap:10px;align-items:center}
 .acol .af .key i{display:inline-block;width:14px;height:9px;border-radius:2px;vertical-align:-1px;margin-right:4px;background:var(--blue)}
-.acol .af .key i.plan{background:repeating-linear-gradient(135deg,var(--blue) 0 3px,rgba(27,52,224,.28) 3px 7px)}
+.acol .af .key i.plan{background:rgba(27,52,224,.36)}
 .acol.sell .af .key i{background:#C13A2E}
-.acol.sell .af .key i.plan{background:repeating-linear-gradient(135deg,#C13A2E 0 3px,rgba(193,58,46,.28) 3px 7px)}
+.acol.sell .af .key i.plan{background:rgba(193,58,46,.36)}
+/* THE FOUNDER MARK. The site exists to tell founders from hired hands, so
+   the section says which is which -- quietly: one small diamond after the
+   name, the column's own colour, the proxy sentence on hover, and nothing
+   at all where the proxy is ambiguous. */
+.fm{font-size:9px;color:var(--blue);margin-left:5px;vertical-align:1px;cursor:help}
+/* in a bar the mark leads the name, so a long name's ellipsis never eats it */
+.fm.lead{margin-left:0;margin-right:5px}
+.acol.sell .fm,.drwho .fm.dn{color:#C13A2E}
+.acol .af .key .fm{margin-left:0;margin-right:4px}
 .acol .af a{color:var(--mut);text-decoration:none;font-weight:600;cursor:pointer}
 .acol .af a:hover{color:var(--blue)}
 /* OPTIONS CASHED IS A STATED LINE, NOT A CHIP. It is a real sale of real
@@ -1034,6 +1046,11 @@ function wireSw(id,flip){
   const el=document.querySelector("#"+id);if(!el)return;
   el.addEventListener("click",flip);
   el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}});
+}
+function fMark(tk,cls){
+  const i=fInfo(tk);
+  if(!i||i.f!=="yes")return"";
+  return `<span class="fm${cls?" "+cls:""}" title="founder — ${(i.ev||"named a founder in the proxy").replace(/"/g,"&quot;").slice(0,300)}">◆</span>`;
 }
 function fBadge(tk){
   const i=fInfo(tk);
@@ -2077,7 +2094,7 @@ function evTable(rows,sortable,emptyMsg){
     const plan=e.pl==="plan"?"10b5-1":e.pl==="discretionary"?"discretionary":"";
     return `<tr onclick="openDrawer('${e.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
      <td class="adate" title="traded ${e.td}${e.td!==e.fd?" — filings lag trades by up to two business days":""}">${e.fd}</td>
-     <td><span class="atk">${e.tk}</span><span class="aceo">${e.ceo||coOf(e.tk)}</span></td>
+     <td><span class="atk">${e.tk}</span><span class="aceo">${e.ceo||coOf(e.tk)}${fMark(e.tk,e.c==="P"?"":"dn")}</span></td>
      <td><span class="abadge ${b.k}" title="${b.n} — select for more like this"
        onclick="event.stopPropagation();setKind('${e.c==="P"?"buys":sellKind(e)}')"
        role="button" tabindex="0" onkeydown="if(event.key==='Enter'){event.stopPropagation();setKind('${e.c==="P"?"buys":sellKind(e)}')}"
@@ -2181,7 +2198,7 @@ function renderDay(){
     const man=side==="exsell"?"":e.pl==="plan"?" · 10b5-1":e.pl==="discretionary"?" · discretionary":"";
     return `<div class="dayrow" onclick="openDrawer('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
       <span class="abadge ${b.k}" title="${b.n}">${b.t}</span>
-      <span class="drwho"><span class="atk">${e.tk}</span>${e.ceo||coOf(e.tk)}</span>
+      <span class="drwho"><span class="atk">${e.tk}</span>${e.ceo||coOf(e.tk)}${fMark(e.tk,side==="buys"?"":"dn")}</span>
       <span class="drv"><b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>${pc}${man}${e.u?`<a href="${e.u}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing itself, on EDGAR">4 ↗</a>`:""}</span>
     </div>`;};
   el.innerHTML=`<div class="dayb">
@@ -2263,7 +2280,7 @@ function evColumn(side){
       :`<span title="${fmt(p.sh)} shares against the position before the first of these trades">${p.pc>=100?(sell?"sold more than they held":"multiplied their stake"):(sell?"−":"+")+(p.pc>=1?p.pc.toFixed(p.pc<10?1:0):p.pc.toFixed(2))+"% of stake"}</span>`;
     return `<div class="abar" onclick="openDrawer('${p.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${p.tk}')"
       title="${p.ceo} — ${p.n} filing${p.n===1?"":"s"}, ${fmt(p.sh)} shares, latest ${p.latest}. Open the full record.">
-      <div class="who">${p.ceo}<small>${p.tk}${p.n>1?` · ${p.n} filings`:""}</small></div>
+      <div class="who">${fMark(p.tk,"lead")}${p.ceo}<small>${p.tk}${p.n>1?` · ${p.n} filings`:""}</small></div>
       <div class="trk">${segs||(p.sh?`<span class="seg unknown" style="width:2%" title="unpriced"></span>`:"")}</div>
       <div class="amt"><b>${p.priced?money(p.v):`<span class="nopr" title="the filing reports no price on these rows">${compact(p.sh)} sh</span>`}</b>${pc}</div>
     </div>`;};
@@ -2273,8 +2290,11 @@ function evColumn(side){
     const ex=evBase().filter(e=>evSide(e)==="exsell");
     const exv=ex.reduce((t,e)=>t+((e.fl?0:e.v)||0),0);
     const who=new Set(ex.map(e=>e.tk+"|"+e.ceo)).size;
+    /* a face for the line: the largest, so a reader knows whose pay it
+       mostly was without the line becoming a ranking */
+    const big=[...ex].filter(e=>!e.fl).sort((a,b)=>(b.v||0)-(a.v||0))[0];
     cash=`<div class="acash">${ex.length
-      ?`<b>Options cashed, kept apart:</b> ${ex.length.toLocaleString()} filing${ex.length===1?"":"s"} by ${who} chief executive${who===1?"":"s"}, ${money(exv)} — options exercised and the shares sold the same day. Compensation converted to cash; the stakes did not move, so they are not ranked here. <a onclick="setView('exsell')">See them →</a>`
+      ?`<b>Options cashed, kept apart:</b> ${ex.length.toLocaleString()} filing${ex.length===1?"":"s"} by ${who} chief executive${who===1?"":"s"}, ${money(exv)}${big&&big.v?` — the largest ${big.ceo||coOf(big.tk)} (${big.tk}), ${money(big.v)}`:""}. Options exercised and the shares sold the same day: compensation converted to cash, the stakes did not move, so they are not ranked here. <a onclick="setView('exsell')">See them →</a>`
       :`<b>Options cashed:</b> none in ${win}.`}</div>`;
   }
   return `<div class="acol${sell?" sell":""}">
@@ -2286,7 +2306,7 @@ function evColumn(side){
     </div>
     ${top.length?top.map(bar).join(""):`<div class="aempty">${ks.length?`No chief executive of these companies ${sell?"reduced a stake":"bought shares"}${ks.length===1?` ${ks[0]==="plan"?"under a plan":"at their own discretion"}`:""} in ${win}.`:"Both manners are off — select one to see the column."}</div>`}
     <div class="af">
-      <span class="key"><span><i></i>discretionary</span><span><i class="plan"></i>10b5-1 plan</span></span>
+      <span class="key"><span><i></i>discretionary</span><span><i class="plan"></i>10b5-1 plan</span>${state.live.founders?`<span><span class="fm">◆</span>founder</span>`:""}</span>
       ${pool.length?`<a onclick="setView('${side}')">${people.length>N?`Top ${N} of ${people.length} · `:""}all ${pool.length.toLocaleString()} filing${pool.length===1?"":"s"} →</a>`:""}
     </div>
     ${cash}
