@@ -55,7 +55,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},loadData,nFilings,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,tjLens,soldTickers,renderTrends,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},loadData,nFilings,evBadge,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,tjLens,soldTickers,renderTrends,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -159,11 +159,19 @@ const P=runPage();
   assert(!S365.people.some(p=>p.v>1e11)&&!B365.people.some(p=>p.v>1e11),"a flagged price is worth nothing in a bar");
   // the exercise-and-sell rows are apart
   const exs=P.evBase().filter(e=>P.evSide(e)==="exsell");
-  assert(exs.length>0&&!S365.pool.some(e=>e.lb==="exercise and sell"),"options cashed never enter the sell ranking");
+  assert(exs.length>0&&!S365.pool.some(e=>e.lb in {"exercise and sell":1,"convert and sell":1,"sale, position unchanged":1}),
+    "a sale that left the stake unchanged never enters the sell ranking, whatever its label");
   const sellHtml=evColumn("sells");
-  assert(sellHtml.includes("Options cashed, kept apart")&&sellHtml.includes("setView('exsell')"),
-    "the sell column states the options cashed and opens them on request");
-  assert(!evColumn("buys").includes("Options cashed"),"the buy column has no such line");
+  assert(sellHtml.includes("kept apart")&&sellHtml.includes("setView('exsell')"),
+    "the sell column states the unchanged-stake sales and opens them on request");
+  assert(!evColumn("buys").includes("kept apart"),"the buy column has no such line");
+  assert(!sellHtml.includes("compensation converted"),"the line no longer calls units compensation");
+  // a converted-and-sold row (Schwarzman-shaped) is apart, badged, and never called options
+  const conv={tk:"BX",ceo:"S",c:"S",lb:"convert and sell",pl:"discretionary",sh:1,v:1,fd:"2026-01-01",td:"2026-01-01",pc:null,ha:0,nc:0,rs:null};
+  assert(P.sellKind(conv)==="exsell"&&P.evSide(conv)==="exsell","a conversion-and-sale sits with the unchanged-stake sales");
+  assert(P.evBadge(conv).t==="CONVERTED"&&!P.evBadge(conv).n.includes("compensation"),"and is badged as a conversion, not compensation");
+  assert(P.evPctCell(conv).includes("unchanged"),"and states no percentage");
+  assert(P.dayText("2026-01-01",[conv]).includes("converted and sold"),"and the copy text says converted");
   assert((sellHtml.match(/class="abar"/g)||[]).length<=8,"at most eight bars per column");
   assert(sellHtml.includes('class="seg plan"')||sellHtml.includes('class="seg disc"'),
     "a bar is segmented by manner");

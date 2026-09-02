@@ -143,9 +143,33 @@ class Event:
             # The claim "position unchanged" is only made when history could
             # account for the whole day. A day carrying unexplained residue
             # gets the plain label and the residue flag instead.
-            return "exercise and sell"
+            #
+            # AND "EXERCISE" IS ONLY CLAIMED WHEN THE FILING SHOWS ONE. A
+            # sale that left the common position where it was used to be
+            # called exercise-and-sell on that fact alone. Blackstone's
+            # chief executive holds no common at all: his sales are
+            # partnership units exchanged into shares and sold the same
+            # day, the common position is zero before and after, and the
+            # site called $649m of units "options cashed" and, on the page,
+            # "compensation". The codes in the same filing tell the three
+            # cases apart: M is an option exercise, C a conversion or
+            # exchange, and neither means the shares came from somewhere
+            # this filing does not show -- said as such, not guessed.
+            if "M" in self.other_codes:
+                return "exercise and sell"
+            if "C" in self.other_codes:
+                return "convert and sell"
+            return "sale, position unchanged"
         return {"plan": "scheduled sale",
                 "discretionary": "discretionary sale"}.get(self.plan, "sale")
+
+    @property
+    def unchanged_kind(self) -> str:
+        """"exercise", "convert", "" -- or None when the stake moved."""
+        if not (self.stake_unchanged and not self.residue):
+            return None
+        return "exercise" if "M" in self.other_codes else \
+               "convert" if "C" in self.other_codes else ""
 
     @property
     def stake_unchanged(self) -> bool:

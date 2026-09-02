@@ -612,9 +612,10 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
        Direction is no longer a chip: the columns are the direction. Each
        column carries its own two manner chips (Discretionary, Planned),
        both on by default, so the two sides read as the same instrument.
-       Options cashed is not a third manner of reducing a stake -- the
-       stake does not move -- so it sits as a stated line beneath the sell
-       column rather than as a chip that only one side has. The old gate
+       A sale that leaves the measured stake where it was (options
+       cashed, units converted) is not a third manner of reducing a stake
+       -- the stake does not move -- so it sits as a stated line beneath
+       the sell column rather than as a chip that only one side has. The old gate
        cover is kept, hidden, so the seal stays the only gate on the page. -->
   <div class="controls actctl" id="actctl">
     <div class="gatecover hide" id="actgate" role="button" tabindex="0"
@@ -1542,7 +1543,7 @@ function soldTickers(){
      exercise-and-sell doesn't count against anyone, because the stake did
      not move; that is the whole point of telling the two apart */
   const out=new Set();
-  for(const e of EVENTS)if(e.c==="S"&&e.lb!=="exercise and sell")out.add(e.tk);
+  for(const e of EVENTS)if(e.c==="S"&&unchangedKind(e)===null)out.add(e.tk);
   return out;
 }
 function tjPool(){
@@ -1925,12 +1926,23 @@ function lockedBlock(inner,msg,cls){
    <button class="lockbtn" onclick="openPro()">Unlock</button></div></div>`;
 }
 function coOf(tk){const r=PANEL.find(p=>p.tk===tk);return r?r.co:"";}
+/* THREE LABELS, ONE FACT: the measured stake did not move. "exercise and
+   sell" is options cashed; "convert and sell" is units or a convertible
+   exchanged into shares and sold (Schwarzman, every time -- his common
+   position is zero before and after); "sale, position unchanged" is a day
+   the filing does not explain. All three sit apart from the ranking. */
+const UNCHANGED={"exercise and sell":"exercise","convert and sell":"convert","sale, position unchanged":""};
+function unchangedKind(e){return e.c==="S"&&e.lb in UNCHANGED?UNCHANGED[e.lb]:null;}
 function evBadge(e){
   if(e.c==="P")return{t:"BOUGHT",k:"up",
     n:e.pl==="plan"?"a purchase made under a pre-set 10b5-1 plan — rarer still than an open-market buy"
      :"an open-market purchase — their own money, at the market's price"};
   if(e.lb==="exercise and sell")return{t:"EX &amp; SELL",k:"neu",
     n:"options exercised and the shares sold the same day — compensation cashed; the stake did not move"};
+  if(e.lb==="convert and sell")return{t:"CONVERTED",k:"neu",
+    n:"units or a convertible exchanged into shares and sold the same day — the common-stock position this site measures did not move, though the holder's economic stake did"};
+  if(e.lb==="sale, position unchanged")return{t:"UNCHANGED",k:"neu",
+    n:"shares sold and the position left where it was — this filing does not show where the shares came from; open it"};
   if(e.pl==="discretionary")return{t:"SOLD",k:"down",
     n:"a sale NOT marked as pre-scheduled — their decision, their timing"};
   if(e.pl==="plan")return{t:"SOLD",k:"dsoft",
@@ -1956,7 +1968,7 @@ function pctWhy(e){
   return "the position before this trade computes to zero, and a percentage of nothing is not a number";
 }
 function evPctCell(e){
-  if(e.lb==="exercise and sell")return '<span class="nopr" title="the same shares were exercised and sold — a percentage of a stake that did not move is not a number">unchanged</span>';
+  if(unchangedKind(e)!==null)return '<span class="nopr" title="the shares sold did not come out of the position on record — a percentage of a stake that did not move is not a number">unchanged</span>';
   if(e.pc===null||e.pc===undefined)return `<span class="nopr" title="${pctWhy(e)}">—</span>`;
   if(e.pc>=100)return `<span title="${Math.round(e.pc).toLocaleString()}% — the trade was many times the position on record before it">≥100%</span>`;
   return e.pc.toFixed(e.pc<1?2:1)+"%";
@@ -1977,7 +1989,7 @@ function sellKind(e){
      Discretionary is a real view, not an empty intersection. "unknown"
      is not a fourth kind of behaviour -- it is the absence of a checkbox
      that did not exist before April 2023. */
-  if(e.c==="S"&&e.lb==="exercise and sell")return"exsell";
+  if(unchangedKind(e)!==null)return"exsell";
   if(e.c!=="S"&&e.c!=="P")return"";
   return e.pl==="plan"?"plan":e.pl==="discretionary"?"disc":"unknown";
 }
@@ -2167,7 +2179,8 @@ function dayText(day,rows){
   const L=[`Chief executive trades filed ${niceDay(day)} (${dayScope()}):`];
   for(const e of rows){
     const side=evSide(e);
-    const what=side==="buys"?"bought":side==="exsell"?"cashed options for":"sold";
+    const uk=unchangedKind(e);
+    const what=side==="buys"?"bought":uk==="exercise"?"cashed options for":uk==="convert"?"converted and sold":uk===""?"sold (position unchanged)":"sold";
     const man=side==="exsell"?"stake unchanged":e.pl==="plan"?"10b5-1 plan":e.pl==="discretionary"?"discretionary":"";
     const pc=(e.pc===null||e.pc===undefined||side==="exsell")?"":(side==="buys"?" +":" −")+(e.pc>=100?"100%+":e.pc.toFixed(e.pc<1?2:1)+"%")+" of stake";
     L.push(`${e.ceo||coOf(e.tk)} (${e.tk}) ${what} ${e.v&&!e.fl?money(e.v):compact(e.sh)+" sh"}${pc}${man?", "+man:""}`);
@@ -2305,9 +2318,12 @@ function evColumn(side){
     /* a face for the line: the largest, so a reader knows whose pay it
        mostly was without the line becoming a ranking */
     const big=[...ex].filter(e=>!e.fl).sort((a,b)=>(b.v||0)-(a.v||0))[0];
+    const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nO=ex.length-nM-nC;
+    const kinds=[nM?`${nM} options cashed`:"",nC?`${nC} converted and sold`:"",nO?`${nO} unexplained by the filing`:""].filter(Boolean).join(", ");
+    const bigWhat=big?(unchangedKind(big)==="convert"?"units converted":unchangedKind(big)==="exercise"?"options cashed":"position unchanged"):"";
     cash=`<div class="acash">${ex.length
-      ?`<b>Options cashed, kept apart:</b> ${tradesAndFilings(ex)} by ${who} chief executive${who===1?"":"s"}, ${money(exv)}${big&&big.v?` — the largest ${big.ceo||coOf(big.tk)} (${big.tk}), ${money(big.v)}`:""}. Options exercised and the shares sold the same day: compensation converted to cash, the stakes did not move, so they are not ranked here. <a onclick="setView('exsell')">See them →</a>`
-      :`<b>Options cashed:</b> none in ${win}.`}</div>`;
+      ?`<b>Sold without moving the stake, kept apart:</b> ${tradesAndFilings(ex)} by ${who} chief executive${who===1?"":"s"}, ${money(exv)} (${kinds})${big&&big.v?` — the largest ${big.ceo||coOf(big.tk)} (${big.tk}), ${money(big.v)}, ${bigWhat}`:""}. Options exercised, or units exchanged, and the shares sold the same day: the common-stock position this site measures ended where it began, so these are not ranked as stake reductions. <a onclick="setView('exsell')">See them →</a>`
+      :`<b>Sold without moving the stake:</b> none in ${win}.`}</div>`;
   }
   return `<div class="acol${sell?" sell":""}">
     <div class="ah"><span class="at">${sell?"Sold":"Bought"}</span>
@@ -2334,7 +2350,7 @@ function renderFeed(){
   const el=$("#actwrap");if(!el)return;
   const v=state.ev.view;
   const tv=$("#tview");
-  if(tv)tv.innerHTML={buys:"Bought",sells:"Sold",exsell:"Options cashed",day:"Filed "+niceDay(dayShown())}[v]
+  if(tv)tv.innerHTML={buys:"Bought",sells:"Sold",exsell:"Sold, stake unchanged",day:"Filed "+niceDay(dayShown())}[v]
     +`<em>${v==="day"?"every filing that day":({30:"last 30 days",90:"last 90 days",365:"last 12 months"}[state.ev.win]||"")+(v!=="exsell"&&v!=="day"&&state.ev.kinds[v].length===1?" · "+(state.ev.kinds[v][0]==="plan"?"planned only":"discretionary only"):"")}</em>`;
   const evs=evFiltered();
   const CAP=200;
@@ -2350,7 +2366,7 @@ function renderFeed(){
   const part=(n,one,many,v)=>n?`${n.toLocaleString()} ${n===1?one:many}${v?" "+money(v):""}`:"";
   const parts=[part(buys.length,"purchase","purchases",sum(buys)),
                part(cut.length,"stake reduction","stake reductions",sum(cut)),
-               part(cashed.length,"day of options cashed","days of options cashed",sum(cashed))].filter(Boolean);
+               part(cashed.length,"sale that left the stake unchanged","sales that left the stake unchanged",sum(cashed))].filter(Boolean);
   /* AN EMPTY RESULT KEEPS THE TABLE'S FRAME.
      Collapsing to one line of text made the whole section jump and read
      as broken. The headers stay, the frame stays its height, and the
@@ -2419,7 +2435,7 @@ function openDrawer(tk){
       const evs=EVENTS.filter(e=>e.tk===r.tk).slice(0,5);
       if(evs.length)return `<div class="dsec"><h4>Latest trades</h4>`+evs.map(e=>{
         const b=evBadge(e);
-        const stk=e.lb==="exercise and sell"?"stake unchanged"
+        const stk=unchangedKind(e)!==null?"stake unchanged"
           :(e.pc!==null&&e.pc!==undefined?(e.pc>=100?"≥100% of stake":e.pc.toFixed(1)+"% of stake"):"");
         return `<div class="drow"><span class="adate">${e.fd}</span>
           <span class="abadge ${b.k}" title="${b.n}">${b.t}</span>

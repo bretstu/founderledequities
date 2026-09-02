@@ -58,10 +58,28 @@ def test_percent_is_of_the_position_before_the_trade():
 def test_an_exercise_and_sell_prints_no_percentage():
     """28.43% of a stake that did not move is arithmetically right and
     communicatively false. John May exercised and sold the same shares."""
-    e = _e(holding_after=44_082, net_change=0.0, residue=0.0)
+    e = _e(holding_after=44_082, net_change=0.0, residue=0.0, other_codes="M")
     assert e.stake_unchanged
     assert e.pct_of_holding is None
     assert e.label == "exercise and sell"
+
+
+def test_an_unchanged_stake_is_only_an_exercise_when_the_filing_shows_one():
+    """Schwarzman holds no common: his sales are partnership units exchanged
+    and sold the same day, and the common position is zero before and
+    after. That is not options being cashed, and the label must not say so
+    on the position alone -- the filing's other codes decide."""
+    units = _e(holding_after=0.0, net_change=0.0, residue=0.0, other_codes="C")
+    assert units.stake_unchanged and units.pct_of_holding is None
+    assert units.label == "convert and sell"
+    assert units.unchanged_kind == "convert"
+    bare = _e(holding_after=44_082, net_change=0.0, residue=0.0, other_codes="")
+    assert bare.label == "sale, position unchanged"
+    assert bare.unchanged_kind == ""
+    both = _e(holding_after=44_082, net_change=0.0, residue=0.0, other_codes="CM")
+    assert both.label == "exercise and sell", "an exercise in the filing outranks a conversion"
+    moved = _e(holding_after=44_082, net_change=-500.0, residue=0.0, other_codes="M")
+    assert moved.unchanged_kind is None and moved.label != "exercise and sell"
 
 
 def test_a_day_with_residue_asserts_neither_net_nor_percentage():
