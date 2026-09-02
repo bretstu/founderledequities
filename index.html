@@ -343,13 +343,19 @@ td.src a:hover{color:var(--blue)}
 .acol .af .key .fm{margin-left:0;margin-right:4px}
 .acol .af a{color:var(--mut);text-decoration:none;font-weight:600;cursor:pointer}
 .acol .af a:hover{color:var(--blue)}
-/* OPTIONS CASHED IS A STATED LINE, NOT A CHIP. It is a real sale of real
-   shares and a stake that did not move, so it belongs under Sold and
-   outside the ranking; the line says what it is and opens the table. */
-.acol .acash{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:12px;color:var(--mut);line-height:1.55}
-.acol .acash b{font-weight:600;color:var(--ink)}
-.acol .acash a{color:var(--mut);font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
-.acol .acash a:hover{color:var(--blue)}
+/* SALES THAT DID NOT MOVE A STAKE ARE OFF THE PAGE AND ONE CLICK AWAY.
+   The site's question is ownership. Options cashed and units converted
+   are real sales of real shares and the measured stake ends where it
+   began; they used to earn a paragraph under Sold explaining why they
+   were not ranked. Now nothing above ranks, lists or sums them, one
+   sentence for the whole section says how many were kept out, and the
+   table holds every one -- the record stays complete, the page stops
+   explaining. */
+.actnote{margin:10px 2px 0;font-size:12.5px;color:var(--mut);line-height:1.6}
+.actnote a{color:var(--mut);font-weight:600;text-decoration:none;cursor:pointer}
+.actnote a:hover{color:var(--blue)}
+.dayalso{padding:9px 0 4px;border-top:1px solid var(--line2);font-size:12.5px;color:var(--faint);cursor:pointer}
+.dayalso:hover{color:var(--blue)}
 .acttable{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
 .acttop{justify-content:space-between}
 .tview{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
@@ -629,6 +635,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
         title="only companies still run by a person the proxy names as a founder">Founders only<span class="tr"><i></i></span></span>
   </div>
   <div class="actcols" id="actcols"></div>
+  <div class="actnote" id="actnote"></div>
   <!-- THE TABLE IS A DRAWER, NOT A WALL. It opens from a column footer, a
        badge, or the day strip, already narrowed to what was asked for. The
        search box is static markup so it never loses focus to a re-render:
@@ -2028,7 +2035,7 @@ function evMatch(e){
   const v=state.ev.view;
   if(!v)return true;
   const side=evSide(e);
-  if(v==="day")return e.fd===dayShown();
+  if(v==="day")return e.fd===dayShown();   /* the whole day, unchanged rows included */
   if(v==="exsell")return side==="exsell";
   if(v==="buys"||v==="sells")return side===v&&mannerOK(e,v);
   return true;
@@ -2151,8 +2158,10 @@ function filingDays(){
   const s=new Set();for(const e of EVENTS)s.add(e.fd);
   return [...s].sort();
 }
-function dayRows(day){
-  return EVENTS.filter(e=>e.fd===day).sort((a,b)=>{
+function dayRows(day,all){
+  /* the strip lists trades that moved a stake; the table (all=true) holds
+     every trade of the day, the unchanged ones badged for what they are */
+  return EVENTS.filter(e=>e.fd===day&&(all||unchangedKind(e)===null)).sort((a,b)=>{
     const sa=evSide(a),sb=evSide(b);
     const r={buys:0,sells:1,exsell:2,"":3};
     if(r[sa]!==r[sb])return r[sa]-r[sb];
@@ -2173,6 +2182,16 @@ function niceDay(d){
   const t=Date.parse(d+"T00:00:00Z");if(isNaN(t))return d;
   return new Date(t).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:"UTC"});
 }
+function dayAlso(day){
+  /* the sales that did not move a stake, said in one line: how many, and
+     which kinds, so a reader checking the strip against a headline finds
+     the filing accounted for rather than missing */
+  const ex=EVENTS.filter(e=>e.fd===day&&unchangedKind(e)!==null);
+  if(!ex.length)return"";
+  const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length;
+  const kinds=[nM?"options cashed":"",nC?"units converted":"",ex.length-nM-nC?"source not in the filing":""].filter(Boolean).join(", ");
+  return `Also filed: ${ex.length} sale${ex.length===1?"":"s"} that left the stake unchanged (${kinds}), ${money(ex.reduce((t,e)=>t+((e.fl?0:e.v)||0),0))}`;
+}
 function dayText(day,rows){
   /* the day as plain text, for pasting: one line per filing, the same
      words the strip uses, so what gets posted is what the page shows */
@@ -2185,6 +2204,7 @@ function dayText(day,rows){
     const pc=(e.pc===null||e.pc===undefined||side==="exsell")?"":(side==="buys"?" +":" −")+(e.pc>=100?"100%+":e.pc.toFixed(e.pc<1?2:1)+"%")+" of stake";
     L.push(`${e.ceo||coOf(e.tk)} (${e.tk}) ${what} ${e.v&&!e.fl?money(e.v):compact(e.sh)+" sh"}${pc}${man?", "+man:""}`);
   }
+  const also=dayAlso(day);if(also)L.push(also+".");
   L.push(`Every filing linked: https://founderledequities.com/?day=${day}#activity`);
   return L.join("\n");
 }
@@ -2237,8 +2257,9 @@ function renderDay(){
         <a href="?day=${day}#activity" title="a link to exactly this day">permalink</a>
       </span>
     </div>
-    ${rows.length?rows.slice(0,CAP).map(row).join(""):`<div class="dayempty">No chief executive of these companies filed a trade on ${day?niceDay(day):"this day"}.</div>`}
+    ${rows.length?rows.slice(0,CAP).map(row).join(""):`<div class="dayempty">No chief executive of these companies filed a trade that moved a stake on ${day?niceDay(day):"this day"}.</div>`}
     ${rows.length>CAP?`<div class="dayrow" onclick="setView('day')" style="justify-content:flex-start;color:var(--mut);font-size:12.5px"><span></span><span>+ ${rows.length-CAP} more trade${rows.length-CAP===1?"":"s"} — open the day as a table →</span></div>`:""}
+    ${dayAlso(day)?`<div class="dayalso" onclick="setView('day')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')setView('day')" title="every trade of the day as a table, these included">${dayAlso(day)} →</div>`:""}
   </div>`;
 }
 
@@ -2310,21 +2331,6 @@ function evColumn(side){
       <div class="amt"><b>${p.priced?money(p.v):`<span class="nopr" title="the filing reports no price on these rows">${compact(p.sh)} sh</span>`}</b>${pc}</div>
     </div>`;};
   const win={30:"the last 30 days",90:"the last 90 days",365:"the last 12 months"}[state.ev.win]||"this window";
-  let cash="";
-  if(sell){
-    const ex=evBase().filter(e=>evSide(e)==="exsell");
-    const exv=ex.reduce((t,e)=>t+((e.fl?0:e.v)||0),0);
-    const who=new Set(ex.map(e=>e.tk+"|"+e.ceo)).size;
-    /* a face for the line: the largest, so a reader knows whose pay it
-       mostly was without the line becoming a ranking */
-    const big=[...ex].filter(e=>!e.fl).sort((a,b)=>(b.v||0)-(a.v||0))[0];
-    const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nO=ex.length-nM-nC;
-    const kinds=[nM?`${nM} options cashed`:"",nC?`${nC} converted and sold`:"",nO?`${nO} unexplained by the filing`:""].filter(Boolean).join(", ");
-    const bigWhat=big?(unchangedKind(big)==="convert"?"units converted":unchangedKind(big)==="exercise"?"options cashed":"position unchanged"):"";
-    cash=`<div class="acash">${ex.length
-      ?`<b>Sold without moving the stake, kept apart:</b> ${tradesAndFilings(ex)} by ${who} chief executive${who===1?"":"s"}, ${money(exv)} (${kinds})${big&&big.v?` — the largest ${big.ceo||coOf(big.tk)} (${big.tk}), ${money(big.v)}, ${bigWhat}`:""}. Options exercised, or units exchanged, and the shares sold the same day: the common-stock position this site measures ended where it began, so these are not ranked as stake reductions. <a onclick="setView('exsell')">See them →</a>`
-      :`<b>Sold without moving the stake:</b> none in ${win}.`}</div>`;
-  }
   return `<div class="acol${sell?" sell":""}">
     <div class="ah"><span class="at">${sell?"Sold":"Bought"}</span>
       <span class="an">${pool.length?`<b>${people.length}</b> ${sell?"reduced a stake":"bought"} · <b>${pool.length.toLocaleString()}</b> trade${pool.length===1?"":"s"} · <b>${money(total)}</b>`:"—"}</span></div>
@@ -2337,12 +2343,21 @@ function evColumn(side){
       <span class="key"><span><i></i>discretionary</span><span><i class="plan"></i>10b5-1 plan</span>${state.live.founders?`<span><span class="fm">◆</span>founder</span>`:""}</span>
       ${pool.length?`<a onclick="setView('${side}')">${people.length>N?`Top ${N} of ${people.length} · `:""}all ${pool.length.toLocaleString()} trade${pool.length===1?"":"s"} →</a>`:""}
     </div>
-    ${cash}
   </div>`;
+}
+function actNote(){
+  /* ONE SENTENCE FOR THE SECTION: what was kept out, and where it is */
+  const ex=evBase().filter(e=>evSide(e)==="exsell");
+  if(!ex.length)return"";
+  const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length;
+  const kinds=[nM?"options cashed":"",nC?"units converted":""].filter(Boolean).join(" or ")||"shares from outside the filing";
+  const win={30:"the last 30 days",90:"the last 90 days",365:"the last 12 months"}[state.ev.win]||"this window";
+  return `Kept out of everything above: ${ex.length.toLocaleString()} sale${ex.length===1?"":"s"} in ${win} that left the stake where it was — ${kinds}, and the shares sold the same day. <a onclick="setView('exsell')">They are in the table →</a>`;
 }
 function renderCols(){
   const el=$("#actcols");if(!el)return;
   el.innerHTML=evColumn("buys")+evColumn("sells");
+  const n=$("#actnote");if(n)n.innerHTML=actNote();
   document.querySelectorAll(".chip.win").forEach(c=>c.classList.toggle("on",c.dataset.win===state.ev.win));
   paintSw("evf",state.ev.f);
 }

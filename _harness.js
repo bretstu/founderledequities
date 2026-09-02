@@ -94,18 +94,26 @@ const P=runPage();
   const newest=EVENTS.reduce((m,e)=>e.fd>m?e.fd:m,"");
   assert(dayShown()===newest,"the strip shows the newest filing day, not the calendar: "+newest);
   const rows=dayRows(newest);
-  assert(rows.length>0&&rows.every(e=>e.fd===newest),"and every filing on it: "+rows.length);
+  assert(rows.length>0&&rows.every(e=>e.fd===newest),"and every stake-moving trade on it: "+rows.length);
+  assert(rows.every(e=>P.unchangedKind(e)===null),"the strip lists only trades that moved a stake");
+  const allDay=dayRows(newest,true);
+  assert(allDay.length>=rows.length&&allDay.every(e=>e.fd===newest),"the day's table holds every trade: "+allDay.length);
   const sides=rows.map(P.evSide);
   const firstSell=sides.indexOf("sells"),lastBuy=sides.lastIndexOf("buys");
-  assert(firstSell<0||lastBuy<firstSell,"purchases lead the day, then stake reductions, then options cashed");
+  assert(firstSell<0||lastBuy<firstSell,"purchases lead the day, then stake reductions");
+  if(allDay.length>rows.length){
+    assert(els["#actday"]._html.includes("Also filed:")&&els["#actday"]._html.includes("left the stake unchanged"),
+      "a day with unchanged-stake sales says so in one line beneath the strip");
+    assert(P.dayText(newest,rows).includes("Also filed:"),"and the copy text carries the same line");
+  }else assert(!els["#actday"]._html.includes("Also filed:"),"and a day without them has no such line");
   const dayHtml=els["#actday"]._html;
   assert(dayHtml.includes("Filed <b>")&&dayHtml.includes("permalink")&&dayHtml.includes("copy as text"),
     "the strip carries a readable date, a permalink and a copy control");
   assert((dayHtml.match(/class="dayrow"/g)||[]).length>=Math.min(rows.length,12),"one row per filing, capped at twelve");
   assert(dayHtml.includes("openDrawer(")&&dayHtml.includes("sec.gov"),"day rows are doors and carry filing links");
   const txt=dayText(newest,rows);
-  assert(txt.split("\n").length===rows.length+2&&txt.includes("?day="+newest),
-    "the copy text is one line per filing plus a headline and the permalink");
+  assert(txt.split("\n").length===rows.length+2+(allDay.length>rows.length?1:0)&&txt.includes("?day="+newest),
+    "the copy text is one line per trade, a headline, the also-filed line when there is one, and the permalink");
   assert(!txt.includes("null")&&!txt.includes("undefined"),"and prints no holes");
   const days=filingDays();
   gotoDay(days[days.length-2]);
@@ -162,10 +170,16 @@ const P=runPage();
   assert(exs.length>0&&!S365.pool.some(e=>e.lb in {"exercise and sell":1,"convert and sell":1,"sale, position unchanged":1}),
     "a sale that left the stake unchanged never enters the sell ranking, whatever its label");
   const sellHtml=evColumn("sells");
-  assert(sellHtml.includes("kept apart")&&sellHtml.includes("setView('exsell')"),
-    "the sell column states the unchanged-stake sales and opens them on request");
-  assert(!evColumn("buys").includes("kept apart"),"the buy column has no such line");
-  assert(!sellHtml.includes("compensation converted"),"the line no longer calls units compensation");
+  assert(!sellHtml.includes("kept apart")&&!sellHtml.includes("Options cashed"),
+    "the sell column carries no paragraph about unchanged-stake sales");
+  renderCols();
+  const note=els["#actnote"]._html;
+  assert(exs.length?(note.includes("Kept out of everything above")&&note.includes("setView('exsell')")):note==="",
+    "one sentence for the section says what was kept out and opens the table");
+  assert(!note.includes("compensation"),"and never calls units compensation");
+  const aboutTxt=require("fs").readFileSync("about.html","utf8");
+  assert(aboutTxt.includes("does not move the stake is recorded")&&aboutTxt.includes("partnership units"),
+    "the About page discloses the rule and its known limit");
   // a converted-and-sold row (Schwarzman-shaped) is apart, badged, and never called options
   const conv={tk:"BX",ceo:"S",c:"S",lb:"convert and sell",pl:"discretionary",sh:1,v:1,fd:"2026-01-01",td:"2026-01-01",pc:null,ha:0,nc:0,rs:null};
   assert(P.sellKind(conv)==="exsell"&&P.evSide(conv)==="exsell","a conversion-and-sale sits with the unchanged-stake sales");
@@ -189,7 +203,6 @@ const P=runPage();
   if(fy)assert(new RegExp('class="fm lead"[^<]*<\\/span>'+esc(fy.ceo)).test(both),"a founder gets the diamond, leading the name: "+fy.ceo);
   if(fn)assert(!new RegExp('<\\/span>'+esc(fn.ceo)+"<small").test(both),"a hired chief executive does not: "+fn.ceo);
   assert(both.includes("◆</span>founder")||!state.live.founders,"and the key explains the mark");
-  assert(sellHtml.includes("the largest ")||exs.length===0,"the options-cashed line names its largest");
   setWin(30);
 
   // ---- manner chips are per column and independent ----
