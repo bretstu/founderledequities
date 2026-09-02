@@ -825,6 +825,48 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
 
 const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
 
+
+/* ---------------- what real people do here ----------------
+   THE PAGE COUNTS ITS OWN VISITORS. The host counts every request for the
+   HTML -- crawlers, scanners, unfurlers -- and reported thousands of
+   "unique visitors" for a site with no customers. Nothing below fires
+   unless a browser ran this script, which is very nearly the definition of
+   a person. No cookie, no email, no IP address: a random id the browser
+   keeps for itself, a session id per tab, and what was looked at and
+   clicked, sent in small batches to /api/hit. ?nohit=1 once in the address
+   bar switches the owner's own browser off. */
+const HIT=(()=>{
+  const ok=typeof navigator!=="undefined"&&typeof localStorage!=="undefined"&&typeof sessionStorage!=="undefined"
+    &&typeof location!=="undefined"&&!/^(localhost|127\.)/.test(location.hostname||"")&&!!navigator.sendBeacon;
+  const rid=()=>Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10);
+  let vid="",sid="",off=true;
+  if(ok){try{
+    if(/[?&]nohit=1/.test(location.search))localStorage.setItem("fle_nohit","1");
+    off=localStorage.getItem("fle_nohit")==="1";
+    vid=localStorage.getItem("fle_vid")||(localStorage.setItem("fle_vid",rid()),localStorage.getItem("fle_vid"));
+    sid=sessionStorage.getItem("fle_sid")||(sessionStorage.setItem("fle_sid",rid()),sessionStorage.getItem("fle_sid"));
+  }catch(e){off=true;}}
+  const q=[];let timer=null;
+  const flush=()=>{
+    timer=null;if(!q.length||off||!ok)return;
+    const batch=q.splice(0,60);
+    try{navigator.sendBeacon("/api/hit",new Blob([JSON.stringify({vid,sid,pro:!!state.pro,
+      device:(typeof innerWidth==="number"&&innerWidth<760)?"mobile":"desktop",events:batch})],{type:"application/json"}));}catch(e){}
+  };
+  const hit=(kind,name,detail)=>{
+    if(off||!ok)return;
+    q.push({kind,name:String(name||"").slice(0,40),detail:String(detail===undefined||detail===null?"":detail).slice(0,80),
+      path:(location.pathname||"")+(location.search||"")+(location.hash||""),ref:kind==="view"?(document.referrer||""):""});
+    if(!timer)timer=setTimeout(flush,3000);
+  };
+  if(ok){
+    addEventListener("pagehide",flush);
+    document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flush();});
+  }
+  return {hit,flush,get off(){return off}};
+})();
+function hit(kind,name,detail){HIT.hit(kind,name,detail);}
+
 /* ---------------- embedded fallback (real pipeline output) ------ */
 const SAMPLE=[
  {tk:"ECHO",co:"EchoStar",ceo:"Charles W. Ergen",pct:50.667,sh:147184017,out:290490708,asof:"2026-07-31",conf:"low",cik:1415404,note:"Reconciled to EchoStar's own 10-K/A ownership table to within 181 shares; the residual is options, excluded by design."},
@@ -1042,7 +1084,9 @@ function fOnly(tk,on){
 }
 function paintSw(id,on){
   const el=document.querySelector("#"+id);if(!el)return;
-  el.classList.toggle("hide",!state.live.founders);
+  /* a founders switch needs the founders file; the never-sold switch
+     needs the trade feed, which is always there */
+  el.classList.toggle("hide",id==="hchip"?!state.live.events:!state.live.founders);
   el.classList.toggle("on",!!on);
   el.setAttribute("aria-checked",on?"true":"false");
 }
@@ -2546,6 +2590,41 @@ wireSw("evf",()=>{state.ev.f=!state.ev.f;renderCols();if(state.ev.view)renderFee
    the post was about, whatever day it is read */
 {const m=/[?&]day=(\d{4}-\d{2}-\d{2})/.exec(location.search);if(m)state.ev.day=m[1];}
 
+/* THE ACTIONS THAT SAY WHAT A READER WANTED. Each is wrapped, not edited,
+   so the count is one line per action and the action itself is untouched. */
+{
+  const wrap=(name,kind,label,arg)=>{const o=globalThis[name];if(typeof o!=="function")return;
+    globalThis[name]=function(...a){hit(kind,label,arg?arg(...a):"");return o.apply(this,a);};};
+  wrap("openDrawer","open","drawer",tk=>tk);
+  wrap("openPro","click","gopro");
+  wrap("signIn","click","signin");
+  wrap("exportTable","click","export");
+  wrap("setView","table","view",v=>v||"close");
+  wrap("setWin","window","days",w=>w);
+  wrap("gotoDay","day","strip",d=>d||"newest");
+  wrap("toggleKind","click","manner",(side,k)=>side+":"+k);
+  /* chips, switches, column heads and filing links are wired with listeners,
+     so one delegated listener counts them by what they say */
+  if(typeof document!=="undefined"&&document.addEventListener){
+    document.addEventListener("click",e=>{
+      const t=e.target&&e.target.closest?e.target.closest("button.chip,.fsw,th.sortable,a[href*='sec.gov'],a[href='/api/checkout']"):null;
+      if(!t)return;
+      const sec=(t.closest("section")||{}).id||"";
+      if(t.matches("a[href='/api/checkout']"))return hit("click","checkout");
+      if(t.matches("a[href*='sec.gov']"))return hit("click","filing",(t.closest("tr,.dayrow,.drow,.abar")||{}).textContent?.match(/\b[A-Z]{1,5}(?:[.-][A-Z])?\b/)?.[0]||"");
+      if(t.matches("th.sortable"))return hit("sort",sec,t.dataset.key||t.textContent.trim());
+      if(t.matches(".fsw"))return hit("switch",sec,t.id);
+      if(t.matches("button.chip"))return hit("click","chip",sec+":"+t.textContent.replace(/\s*\d[\d,]*\s*$/,"").trim().slice(0,30));
+    },true);
+  }
+  /* the sections, the first time each comes into view in a session */
+  if(typeof IntersectionObserver!=="undefined"){
+    const seen=new Set();
+    const io=new IntersectionObserver(es=>{for(const x of es){if(x.isIntersecting&&!seen.has(x.target.id)){seen.add(x.target.id);hit("section",x.target.id);}}},{threshold:0.25});
+    for(const id of ["board","activity","perfsec","table"]){const el=document.getElementById(id);if(el)io.observe(el);}
+  }
+  hit("view","page");
+}
 syncDev();
 PANEL=SAMPLE;HIST=SAMPLE_HIST;EVENTS=EVSAMPLE;applyPrices();renderAll();   /* instant paint from sample */
 loadData();                                   /* then swap in the live CSVs */

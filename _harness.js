@@ -577,6 +577,10 @@ const P=runPage();
     "a pasted link unfurls as a card");
   assert(idx.includes("mailto:hello@founderledequities.com?subject=Refund"),
     "the refund promise carries its address");
+  assert(idx.includes('"/api/hit"')&&idx.includes("fle_nohit")&&idx.includes('hit("view","page")'),
+    "the page counts its own visitors, and the owner can switch it off");
+  assert(!idx.includes("document.cookie"),"and sets no cookie to do it");
+  assert(about.includes("without cookies"),"About says so");
   assert(idx.includes("Latest filing")&&idx.includes("EVENTS.reduce"),
     "the header dates the newest filing read, not the newest that moved a stake");
   const terms=require("fs").readFileSync("terms.html","utf8");
