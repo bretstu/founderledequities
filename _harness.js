@@ -575,6 +575,13 @@ const P=runPage();
     "sign-in and the account portal are reachable");
   assert(idx.includes('og:title')&&idx.includes('twitter:card')&&idx.includes('rel="canonical"'),
     "a pasted link unfurls as a card");
+  {const head=idx.slice(0,idx.indexOf("</head>"));
+   assert(!/S&P 500 CEO ownership/.test(head)&&!/Every S&P 500 chief executive/.test(head),"the title and descriptions no longer describe an S&P-only site");
+   assert(/2,100\+/.test(head),"and say how many companies the site covers");
+   const box=idx.slice(idx.indexOf('id="promodal"'),idx.indexOf("</script>",idx.indexOf('id="promodal"')));
+   assert(!box.includes("all 500 companies")&&box.includes('id="mcount"')&&box.includes("more companies"),
+     "the Pro box sells the other companies, with the count filled from the data");
+   assert(!about.includes("Until that page exists"),"About no longer promises a page that now exists");}
   assert(idx.includes("mailto:hello@founderledequities.com?subject=Refund"),
     "the refund promise carries its address");
   assert(idx.includes('"/api/hit"')&&idx.includes("fle_nohit")&&idx.includes('hit("view","page")'),

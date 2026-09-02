@@ -26,7 +26,7 @@ for r in rows: print("  "+"  ".join(str(r.get(c,"")).ljust(w[i]) for i,c in enum
 
 echo "== visits by day (since $SINCE) =="
 q "SELECT day, COUNT(DISTINCT vid) AS visitors, COUNT(DISTINCT sid) AS sessions,
-          SUM(kind='view') AS pageviews, SUM(pro)>0 AS any_pro
+          SUM(kind='view') AS pageviews, COUNT(DISTINCT CASE WHEN pro=1 THEN sid END) AS pro_sessions
    FROM hits WHERE day>='$SINCE' GROUP BY day ORDER BY day DESC"
 
 echo; echo "== where they came from (page views) =="
