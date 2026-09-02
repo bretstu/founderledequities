@@ -51,9 +51,14 @@ q "SELECT kind||' '||name AS action, detail, COUNT(*) AS times
 
 echo; echo "== the funnel =="
 q "SELECT (SELECT COUNT(DISTINCT sid) FROM hits WHERE day>='$SINCE') AS sessions,
-          (SELECT COUNT(DISTINCT sid) FROM hits WHERE day>='$SINCE' AND kind='click' AND name='gopro') AS clicked_go_pro,
+          (SELECT COUNT(DISTINCT sid) FROM hits WHERE day>='$SINCE' AND kind='click' AND name='gopro') AS opened_pro_box,
+          (SELECT COUNT(DISTINCT sid) FROM hits WHERE day>='$SINCE' AND kind='click' AND name='checkout') AS clicked_checkout,
           (SELECT COUNT(DISTINCT sid) FROM hits WHERE day>='$SINCE' AND kind='click' AND name='signin') AS clicked_sign_in,
           (SELECT COUNT(DISTINCT sid) FROM hits WHERE day>='$SINCE' AND pro=1) AS pro_sessions"
+
+echo; echo "== which Go Pro button opened the box =="
+q "SELECT detail AS where_on_page, COUNT(DISTINCT sid) AS sessions, COUNT(*) AS times
+   FROM hits WHERE kind='click' AND name='gopro' AND day>='$SINCE' GROUP BY 1 ORDER BY 2 DESC"
 
 echo; echo "== countries and devices =="
 q "SELECT country, device, COUNT(DISTINCT sid) AS sessions FROM hits WHERE kind='view' AND day>='$SINCE'

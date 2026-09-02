@@ -2596,7 +2596,6 @@ wireSw("evf",()=>{state.ev.f=!state.ev.f;renderCols();if(state.ev.view)renderFee
   const wrap=(name,kind,label,arg)=>{const o=globalThis[name];if(typeof o!=="function")return;
     globalThis[name]=function(...a){hit(kind,label,arg?arg(...a):"");return o.apply(this,a);};};
   wrap("openDrawer","open","drawer",tk=>tk);
-  wrap("openPro","click","gopro");
   wrap("signIn","click","signin");
   wrap("exportTable","click","export");
   wrap("setView","table","view",v=>v||"close");
@@ -2607,10 +2606,14 @@ wireSw("evf",()=>{state.ev.f=!state.ev.f;renderCols();if(state.ev.view)renderFee
      so one delegated listener counts them by what they say */
   if(typeof document!=="undefined"&&document.addEventListener){
     document.addEventListener("click",e=>{
-      const t=e.target&&e.target.closest?e.target.closest("button.chip,.fsw,th.sortable,a[href*='sec.gov'],a[href='/api/checkout']"):null;
+      const t=e.target&&e.target.closest?e.target.closest("button.chip,.fsw,th.sortable,a[href*='sec.gov'],a[href='/api/checkout'],.gopro,.gatecover,[onclick*='openPro']"):null;
       if(!t)return;
-      const sec=(t.closest("section")||{}).id||"";
+      const scn=t.closest("section");
+      const sec=(scn&&(scn.id||(scn.className||"").split(" ")[0]))||(t.closest(".top")?"nav":t.closest("#drawer")?"drawer":t.closest(".modal")?"modal":"");
       if(t.matches("a[href='/api/checkout']"))return hit("click","checkout");
+      /* WHICH Go Pro: the nav button, the hero's "more companies", a sealed
+         row in the drawer, a locked cover -- the section it sits in says */
+      if(t.matches(".gopro,.gatecover,[onclick*='openPro']"))return hit("click","gopro",sec||"page");
       if(t.matches("a[href*='sec.gov']"))return hit("click","filing",(t.closest("tr,.dayrow,.drow,.abar")||{}).textContent?.match(/\b[A-Z]{1,5}(?:[.-][A-Z])?\b/)?.[0]||"");
       if(t.matches("th.sortable"))return hit("sort",sec,t.dataset.key||t.textContent.trim());
       if(t.matches(".fsw"))return hit("switch",sec,t.id);
