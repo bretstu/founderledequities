@@ -22,3 +22,9 @@ __pycache__/
 *.pyc
 .env
 node_modules/
+.wrangler/
+public/
+site-data/
+*.log
+history.csv.pre-*
+history-state.json
