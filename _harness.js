@@ -435,6 +435,15 @@ const P=runPage();
   assert(P.cleanHist("MUSKX").length===5,
     "violent moves with reconciled filings (unexplained empty, as Musk's really are) all survive");
   // the pipeline's restated column outranks the V-heuristic entirely
+  // a stake above 100% is the denominator lagging a purchase of new issuance, and leaves the math
+  P.HIST={SMMTX:[["2022-06-01",9.1,60e6,"",null,null,null,false],
+                 ["2023-03-06",274.36,552e6,"P",395e6,376e6,null,false],
+                 ["2024-01-02",78.81,552e6,"",null,null,null,false],
+                 ["2026-06-12",76.47,610e6,"",null,null,null,false]]};
+  const sm=P.cleanHist("SMMTX");
+  assert(sm.length===3&&!sm.some(p=>p[1]>100),"a point above 100% is a known lie and leaves the cleaned series");
+  assert(Math.abs(P.trajStats("SMMTX",1095).d-(76.47-78.81))<1e-9||P.trajStats("SMMTX",1095).base<=100,
+    "and the three-year change is measured from the next real point");
   P.HIST={COL:[["2020-01-01",2.0,2700000,"",null,null,null,false],
                ["2021-01-01",0.03,40000,"",null,null,-2660000,true],
                ["2021-01-05",0.031,42000,"",null,null,null,true],

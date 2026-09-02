@@ -1565,6 +1565,16 @@ function cleanHist(tk){
        row shape, was always true, and switched the fallback off while
        reused rows carried no marks: the craters came back. */
     if(p[7]){continue;}
+    /* 3. MORE THAN THE COMPANY. A stake above 100% is not a holding; it is
+          the denominator lagging the numerator. Summit, 2023-03-06:
+          Duggan bought 376M newly issued shares in a rights offering and
+          the walk's share count was still the cover page from before it
+          -- 552M over 201M, 274%, until the next 10-Q caught up. The
+          walk's fix is to floor the count at the holding after a purchase
+          of new issuance (the repair list); until then the point is a
+          known lie and leaves the math, like the craters. The focus view
+          still draws it and says why. */
+    if(p[1]>100){continue;}
     if(!HIST._restCol&&prev&&next){
       const a=prev[1],b=p[1],c=next[1],u=p[6]||0,sh=p[2]||0;
       const neighboursAgree=Math.abs(a-c)<=0.25*Math.max(a,c);
