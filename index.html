@@ -155,15 +155,21 @@ table.screen{table-layout:fixed}
 table.screen th,table.screen td{overflow:hidden}
 table.screen thead th{text-overflow:ellipsis}
 .tscroll{overflow-x:hidden}
-.w-rk{width:36px}.w-co{width:16%}.w-ceo{width:18%}.w-own{width:13%}.w-val{width:8%}.w-mc{width:8.5%}.w-d3{width:8%}.w-lt{width:13.5%}.w-asof{width:8%}.w-conf{width:9.5%}
+.w-rk{width:36px}.w-co{width:15.5%}.w-ceo{width:15%}.w-own{width:12.5%}.w-val{width:8%}.w-mc{width:8.5%}.w-d3{width:10%}.w-lt{width:17.5%}.w-ns{width:8.5%}.w-conf{width:9.5%}
+table.screen thead th{letter-spacing:.06em}
+table.screen thead th .arr{width:auto}
+table.screen .c-lt .lt{gap:6px}
+thead th.c,td.c{text-align:center}
+.c-ns .nsy{display:inline-block;font-weight:700;color:#0b7a4b;font-size:14px}
+.c-lt .ltv{font-family:var(--mono);font-weight:600;font-size:12.5px;color:var(--ink)}
 table.screen thead th,table.screen tbody td{padding-left:8px;padding-right:8px}
 table.screen thead th .arr{width:.7em}
 td.c-co .nm,td.ceo .cn{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 td.ceo .fb{vertical-align:2px}
 .c-mc{white-space:nowrap}
-@media(max-width:1100px){.h-asof,.c-asof,.w-asof{display:none}.w-co{width:22%}}
+@media(max-width:1100px){.h-ns,.c-ns,.w-ns{display:none}.w-co{width:22%}}
 @media(max-width:980px){.h-mc,.c-mc,.w-mc{display:none}.w-lt{width:16%}}
-@media(max-width:760px){.h-conf,.c-conf,.w-conf,.h-lt,.c-lt,.w-lt,.h-d3,.c-d3,.w-d3{display:none}.w-co{width:34%}.w-ceo{width:26%}.w-own{width:20%}.w-val{width:14%}
+@media(max-width:760px){.h-conf,.c-conf,.w-conf,.h-lt,.c-lt,.w-lt,.h-d3,.c-d3,.w-d3,.h-ns,.c-ns,.w-ns{display:none}.w-co{width:34%}.w-ceo{width:26%}.w-own{width:20%}.w-val{width:14%}
   table.screen .tbar{display:none}table.screen .tpct{min-width:0}table.screen thead th,table.screen tbody td{padding-left:8px;padding-right:8px}}
 thead th{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-align:left;padding:10px 12px;border-bottom:1px solid var(--ink);white-space:nowrap}
 thead th.sortable{cursor:pointer;user-select:none}
@@ -696,7 +702,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="tscroll">
   <table class="screen">
     <colgroup>
-      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-d3"><col class="w-lt"><col class="w-asof"><col class="w-conf">
+      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-d3"><col class="w-lt"><col class="w-ns"><col class="w-conf">
     </colgroup>
     <thead><tr>
       <th class="n">№</th>
@@ -705,9 +711,9 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
       <th class="sortable" data-key="pct">Ownership<span class="arr"></span></th>
       <th class="sortable n" data-key="val" title="the stake's value: shares held at the latest close">Value<span class="arr"></span></th>
       <th class="sortable n h-mc" data-key="mcap" title="market capitalization: shares outstanding at the latest close">Mkt cap<span class="arr"></span></th>
-      <th class="sortable n h-d3" data-key="d3" title="the stake now against the stake three years ago, in percentage points">3-yr chg<span class="arr"></span></th>
-      <th class="sortable h-lt" data-key="lt" title="the newest trade that moved the public-company stake, on its trade date">Last trade<span class="arr"></span></th>
-      <th class="sortable h-asof" data-key="asof" title="the filing the holding was last stated on">As of<span class="arr"></span></th>
+      <th class="sortable n h-d3" data-key="d3" title="the ownership percentage now against three years ago">3-yr change<span class="arr"></span></th>
+      <th class="sortable h-lt" data-key="lt" title="the newest trade that moved the public-company stake: what, how much, and the trade date">Last trade<span class="arr"></span></th>
+      <th class="sortable c h-ns" data-key="ns" title="not one stake-reducing sale since the company was public">Never sold<span class="arr"></span></th>
       <th class="sortable h-conf" data-key="conf">Confidence<span class="arr"></span></th>
     </tr></thead>
     <tbody id="tbody"></tbody>
@@ -1445,8 +1451,8 @@ function renderTable(){
   for(const r of PANEL){
     if(r.masked)continue;
     const st=HIST[r.tk]?trajStats(r.tk,H3):null;
-    r.d3=st?st.d:null;                         /* points, over three years */
-    r.d3base=st?st.baseDate:"";
+    r.d3=st?st.d:null;                         /* change in the ownership %, over three years */
+    r.d3base=st?st.baseDate:"";r.d3from=st?st.base:null;
     const lt=last[r.tk];
     r.lt=lt?(lt.td||lt.fd):"";r.ltev=lt||null;   /* sorts by the trade date */
     r.ns=!sold.has(r.tk)&&!!HIST[r.tk];        /* never sold, on a record that exists */
@@ -1468,6 +1474,7 @@ function renderTable(){
     if(key==="conf"){va=CONF[va]||0;vb=CONF[vb]||0;}
     /* a company with no three-year record sorts below every real change,
        whichever way the column points */
+    if(key==="ns"){va=va?1:0;vb=vb?1:0;}
     if(key==="d3"||key==="mcap"||key==="val"){const na=va===null||va===undefined,nb=vb===null||vb===undefined;
       if(na!==nb)return na?1:-1;if(na)return 0;}
     if(typeof va==="string"||typeof vb==="string")
@@ -1491,11 +1498,13 @@ function renderTable(){
      <td class="n num c-mc" title="${r.mcap?'$'+fmt(r.mcap)+' — '+fmt(r.out)+' shares outstanding at $'+(r.price||0).toFixed(2):''}">${r.mcap?money(r.mcap):"—"}</td>
      <td class="n c-d3">${r.d3===null||r.d3===undefined
         ?`<span class="nopr" title="${HIST[r.tk]?"fewer than two points in the cleaned record":"no walkable filing history"}">—</span>`
-        :`<span class="d3 ${r.d3>0.05?"up":r.d3<-0.05?"down":"flat"}" title="${r.d3>=0?"+":""}${r.d3.toFixed(2)} percentage points since ${r.d3base}"><b>${r.d3>=0?"+":"−"}${Math.abs(r.d3).toFixed(Math.abs(r.d3)<1?2:1)}</b><small>pts</small></span>`}</td>
+        :Math.abs(r.d3)>100
+        ?`<span class="pwarn" title="the record's three-year-ago point (${r.d3from.toFixed(1)}%) is not reconciled — a stake above 100% is a walk error, not a holding; the row's current figure stands, this comparison does not">⚠</span>`
+        :`<span class="d3 ${r.d3>0.05?"up":r.d3<-0.05?"down":"flat"}" title="ownership ${r.d3from.toFixed(2)}% on ${r.d3base} → ${r.pct.toFixed(2)}% now"><b>${r.d3>=0?"+":"−"}${Math.abs(r.d3).toFixed(Math.abs(r.d3)<1?2:1)}%</b></span>`}</td>
      <td class="c-lt">${r.ltev
-        ?`<span class="lt" title="${r.ltev.ceo} — ${money(r.ltev.v||0)}, ${r.ltev.lb}, traded ${r.ltev.td||r.ltev.fd}, filed ${r.ltev.fd}${lagNote(r.ltev)}"><span class="abadge ${evBadge(r.ltev).k}">${evBadge(r.ltev).t}</span><span class="ltd">${r.ltev.td||r.ltev.fd}</span></span>`
-        :`<span class="nopr" title="no trade that moved the public-company stake on record">—</span>`}${r.ns?`<span class="ns" title="never sold a share that reduced the stake, since the company was public">never sold</span>`:""}</td>
-     <td class="asof c-asof">${r.asof||"—"}</td>
+        ?`<span class="lt" title="${r.ltev.ceo} — ${r.ltev.lb}, ${fmt(r.ltev.sh)} shares, traded ${r.ltev.td||r.ltev.fd}, filed ${r.ltev.fd}${lagNote(r.ltev)}"><span class="abadge ${evBadge(r.ltev).k}">${evBadge(r.ltev).t}</span><b class="ltv">${r.ltev.v&&!r.ltev.fl?(r.ltev.v>=1e6?money(r.ltev.v):"$"+compact(r.ltev.v)):compact(r.ltev.sh)+" sh"}</b><span class="ltd">${r.ltev.td||r.ltev.fd}</span></span>`
+        :`<span class="nopr" title="no trade that moved the public-company stake on record">—</span>`}</td>
+     <td class="c c-ns">${r.ns?`<span class="nsy" title="never sold a share that reduced the stake, since the company was public">✓</span>`:`<span class="nopr">·</span>`}</td>
      <td class="c-conf"><span class="conf"><span class="dot ${r.conf}"></span>${r.conf}</span></td>
     </tr>`}).join("");
   const sealedN=PANEL.filter(r=>r.masked).length;
