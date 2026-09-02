@@ -55,181 +55,213 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},loadData,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,syncChips,toggleDir,toggleKind,setKind,trajStats,tjLens,soldTickers,renderTrends,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},loadData,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,tjLens,soldTickers,renderTrends,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
   await P.loadData();
-  const {state,EVENTS,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,toggleDir,toggleKind}=P;
+  const {state,EVENTS,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,toggleKind,setView,setWin,evAgg,evColumn,renderCols,dayShown,dayRows,dayText,gotoDay,filingDays}=P;
   const assert=(c,m)=>{if(!c){console.error("FAIL:",m);process.exit(1);}console.log("ok:",m);};
+  const idxsrc=require("fs").readFileSync("index.html","utf8");
 
   assert(state.live.panel && state.live.events, "panel + events loaded live (history.csv not in zip: hist="+state.live.hist+")");
   assert(EVENTS.length>12000, "events loaded: "+EVENTS.length);
 
-  // free view: THE SEAL IS THE ONLY GATE -- the free feed is the full
-  // instrument over the free tier's companies, no sample, no lock
+  // ---- the seal is the only gate ----
   state.pro=false; renderActivity();
-  const freeHtml=els["#actwrap"]._html;
-  assert(!freeHtml.includes("FREE — EVERY PURCHASE"), "no purchase-sample teaser in the free feed");
-  assert(!freeHtml.includes("locked"), "no lock in the free feed");
-  assert(freeHtml.includes("efoot")||freeHtml.includes("purchase"), "the free feed is the full table");
-  const idxsrc=require("fs").readFileSync("index.html","utf8");
-  // the seal is the only gate: no section may toggle features by tier
   assert(!idxsrc.includes('classList.toggle("gated",!state.pro)'),
     "no section gates its controls by tier");
   assert(idxsrc.includes('classList.add("hide")')&&idxsrc.includes('id="tjgate"'),
     "the old gate covers exist but stay hidden");
-  assert(!/class="blurred"/.test(freeHtml), "the old blur treatment is gone");
-  // NVDA has history in the free files: its chart renders open for
-  // everyone -- free lacks companies, never features
+  const freeCols=els["#actcols"]._html;
+  assert(freeCols.includes("Bought")&&freeCols.includes("Sold"),"both columns render for a free reader");
+  assert(!freeCols.includes("locked")&&!/class="blurred"/.test(freeCols),"no lock, no blur in the free view");
   assert(P.chartBlock("NVDA").includes("chartbox")||P.chartBlock("NVDA").includes("No trajectory"),
     "a free reader gets the real chart when the data is theirs");
-  assert(!freeHtml.includes("One row per filing"), "the methodology note is gone");
-  assert(els["#actspot"]._html.includes("Buying")&&els["#actspot"]._html.includes("Selling down"), "both spotlight rows render");
+  assert(els["#actday"]._html.includes("S&P 500"),"the free day strip names its scope: the S&P 500");
+  // the harness maps /pro/universe.csv onto the root file, which may carry
+  // sealed rows or none; the pro file never does, so it is unsealed by hand
+  state.pro=true; const sealedPanel=P.PANEL; P.PANEL=sealedPanel.map(r=>({...r,masked:false})); renderActivity();
+  assert(els["#actday"]._html.includes("companies")&&!els["#actday"]._html.includes("S&P 500"),
+    "the pro day strip names the whole universe");
+  // a pro session over a free-shaped file (sealed rows present) is still the S&P
+  P.PANEL=sealedPanel.map(r=>({...r,masked:r.masked||r.tk==="ZZZ-SEALED"}));
+  P.PANEL.push({tk:"ZZZ-SEALED",co:"Sealed",ceo:"x",pct:null,sh:null,masked:true});renderActivity();
+  assert(els["#actday"]._html.includes("S&P 500"),"a pro reader over a sealed file is told the S&P, not a false universe");
+  P.PANEL=sealedPanel; renderActivity();
 
-  // pro view, default window
-  state.pro=true; renderActivity();
-  let proHtml=els["#actwrap"]._html;
-  assert(proHtml.includes("escroll"), "pro feed renders");
-  const evs90=evFiltered();
-  assert(evs90.length>200 && evs90.length<2000, "90d window plausible: "+evs90.length);
+  // ---- the day strip ----
+  const newest=EVENTS.reduce((m,e)=>e.fd>m?e.fd:m,"");
+  assert(dayShown()===newest,"the strip shows the newest filing day, not the calendar: "+newest);
+  const rows=dayRows(newest);
+  assert(rows.length>0&&rows.every(e=>e.fd===newest),"and every filing on it: "+rows.length);
+  const sides=rows.map(P.evSide);
+  const firstSell=sides.indexOf("sells"),lastBuy=sides.lastIndexOf("buys");
+  assert(firstSell<0||lastBuy<firstSell,"purchases lead the day, then stake reductions, then options cashed");
+  const dayHtml=els["#actday"]._html;
+  assert(dayHtml.includes("Filed <b>")&&dayHtml.includes("permalink")&&dayHtml.includes("copy as text"),
+    "the strip carries a readable date, a permalink and a copy control");
+  assert((dayHtml.match(/class="dayrow"/g)||[]).length>=Math.min(rows.length,12),"one row per filing, capped at twelve");
+  assert(dayHtml.includes("openDrawer(")&&dayHtml.includes("sec.gov"),"day rows are doors and carry filing links");
+  const txt=dayText(newest,rows);
+  assert(txt.split("\n").length===rows.length+2&&txt.includes("?day="+newest),
+    "the copy text is one line per filing plus a headline and the permalink");
+  assert(!txt.includes("null")&&!txt.includes("undefined"),"and prints no holes");
+  const days=filingDays();
+  gotoDay(days[days.length-2]);
+  assert(dayShown()===days[days.length-2]&&els["#actday"]._html.includes("newest"),
+    "a pinned earlier day shows a way back to the newest");
+  gotoDay("");
+  assert(dayShown()===newest,"and clearing the pin returns to it");
+  // a day with no filings is an honest empty, not an error
+  gotoDay("2019-01-01");
+  assert(els["#actday"]._html.includes("No chief executive")||dayRows("2019-01-01").length>0,
+    "a day nobody filed says so");
+  gotoDay("");
 
-  // every chip is independent; nothing selects or clears anything else
-  const reset=()=>{state.ev.dir="";state.ev.kinds=[];};
-  reset();
-  const total=evFiltered().length;
-  assert(total>200,"nothing selected shows everything: "+total);
+  // ---- the two columns: one bar per person ----
+  assert(state.ev.win==="30","the window opens at 30 days");
+  const B=evAgg("buys"),S=evAgg("sells");
+  assert(B.pool.every(e=>e.c==="P"),"the buy column holds purchases only: "+B.pool.length);
+  assert(S.pool.every(e=>e.c==="S"&&P.sellKind(e)!=="exsell"),"the sell column holds stake reductions only: "+S.pool.length);
+  const keys=B.people.map(p=>p.tk+"|"+p.ceo);
+  assert(new Set(keys).size===keys.length,"no chief executive twice in a column");
+  assert(B.people.reduce((t,p)=>t+p.n,0)===B.pool.length,"every filing folds into exactly one person");
+  for(let i=1;i<B.people.length;i++)assert(B.people[i-1].v>=B.people[i].v,"people rank by value, largest first");
+  // THESE CHECKS RUN AGAINST THE REAL FEED, SO THEY ASSERT PROPERTIES,
+  // NOT PARTICULAR PEOPLE. Every 10b5-1 seller files more than once a
+  // year, so a twelve-month window always holds a repeat filer somewhere.
+  setWin(365);
+  const S365=evAgg("sells"),B365=evAgg("buys");
+  const rep=[...B365.people,...S365.people].find(p=>p.n>=2);
+  assert(rep&&rep.n>=2,"a repeat filer is one bar with a filing count: "+(rep&&rep.tk+" x"+rep.n));
+  assert(evColumn(rep.n>=2&&B365.people.includes(rep)?"buys":"sells").includes(rep.n+" filings"),
+    "and the bar says how many filings it folds");
+  // the aggregate share of stake follows the pipeline's rule
+  const one=[...B365.people,...S365.people].find(p=>p.n===1&&p.pc!==null);
+  if(one){const side=B365.people.includes(one)?"buys":"sells";
+    const e=P.evBase().find(e=>e.tk===one.tk&&P.evSide(e)===side);
+    assert(Math.abs(one.pc-e.pc)<0.01,"a single filing's aggregate equals the feed's own percentage: "+one.tk);}
+  // a person the pipeline declined a percentage for is declined here too,
+  // with the same reason (Blackstone whenever Schwarzman bought this year)
+  const und=[...B365.people,...S365.people].find(p=>p.pc===null);
+  assert(!und||und.why.length>20,"an unstated share of stake carries its reason: "+(und&&und.tk));
+  const bx=B365.people.find(p=>p.tk==="BX");
+  if(bx)assert(bx.pc===null&&bx.why.includes("partnership units"),
+    "Blackstone's aggregate declines a percentage and says why");
+  else console.log("  (no Blackstone purchase in twelve months; partnership-units case not exercised)");
+  assert(!S365.people.some(p=>p.v>1e11)&&!B365.people.some(p=>p.v>1e11),"a flagged price is worth nothing in a bar");
+  // the exercise-and-sell rows are apart
+  const exs=P.evBase().filter(e=>P.evSide(e)==="exsell");
+  assert(exs.length>0&&!S365.pool.some(e=>e.lb==="exercise and sell"),"options cashed never enter the sell ranking");
+  const sellHtml=evColumn("sells");
+  assert(sellHtml.includes("Options cashed, kept apart")&&sellHtml.includes("setView('exsell')"),
+    "the sell column states the options cashed and opens them on request");
+  assert(!evColumn("buys").includes("Options cashed"),"the buy column has no such line");
+  assert((sellHtml.match(/class="abar"/g)||[]).length<=8,"at most eight bars per column");
+  assert(sellHtml.includes('class="seg plan"')||sellHtml.includes('class="seg disc"'),
+    "a bar is segmented by manner");
+  const mixed=S365.people.slice(0,8).find(p=>p.seg.disc>0&&p.seg.plan>0);
+  if(mixed)assert(sellHtml.includes('class="seg disc"')&&sellHtml.includes('class="seg plan"'),
+    "a person who sold both ways gets both segments: "+mixed.tk);
+  assert(sellHtml.includes("Top 8 of")||S365.people.length<=8,"the footer counts the people beyond the top");
+  setWin(30);
 
-  toggleDir("buys");
-  assert(evFiltered().every(e=>e.c==="P"),"Bought alone: "+evFiltered().length);
-  toggleDir("buys");
-  assert(evFiltered().length===total,"clicking Bought again clears it");
-
-  // the reported bug, both directions of it:
-  toggleDir("sells");
-  toggleKind("disc");
-  assert(state.ev.dir==="sells"&&state.ev.kinds.includes("disc"),
-    "Sold stays lit when Discretionary narrows it");
-  assert(evFiltered().every(e=>P.sellKind(e)==="disc"),
-    "and the feed is discretionary sales: "+evFiltered().length);
-  reset();
-  toggleKind("disc");
-  assert(state.ev.dir==="","Discretionary alone does NOT light Sold — the reader moves the chips");
-  assert(evFiltered().every(e=>P.sellKind(e)==="disc"),
-    "Discretionary alone shows discretionary trades of both directions");
-
-  // Bought + Discretionary is a real view now: buys carry their manner
-  toggleDir("buys");
-  assert(state.ev.dir==="buys"&&state.ev.kinds.includes("disc"),
-    "Bought and Discretionary can both be on");
-  const discBuys=evFiltered();
-  assert(discBuys.length>0&&discBuys.every(e=>e.c==="P"&&e.pl==="discretionary"),
-    "and together they return the discretionary purchases — the rows' own label, now filterable");
-
-  // a combination that is REALLY empty stays an honest empty, not a repair
-  toggleKind("disc");toggleKind("exsell");
-  assert(evFiltered().length===0,
-    "Bought + Options-cashed is empty by definition — exercise-and-sell is a sale");
-  P.renderFeed();
-  const emptyHtml=els["#actwrap"]._html;
-  assert(emptyHtml.includes("escroll")&&emptyHtml.includes("eempty"),
-    "the empty result keeps the table frame, message inside it");
-  toggleKind("exsell");
-  assert(emptyHtml.includes("<thead"),"and the column heads stay");
-  reset();
-
-  // manner is multi-select and the three manners partition Sold
-  toggleKind("disc");toggleKind("plan");
-  const both=evFiltered();
-  assert(both.every(e=>["disc","plan"].includes(P.sellKind(e))),
-    "Discretionary + Planned combine: "+both.length);
-  reset();
-  toggleDir("sells");
-  const sells=evFiltered().length;
-  let tally=0;
-  for(const k of ["disc","plan","exsell"]){
-    state.ev.kinds=[k];tally+=evFiltered().length;
-  }
-  assert(tally===sells,"the three manners partition Sold exactly ("+sells+")");
-  assert(!(state.ev.kinds=["disc"],evFiltered()).some(e=>e.lb==="exercise and sell"),
-    "compensation never files under Discretionary");
-  reset();
-
-  // the window no longer reaches the full decade
-  state.ev.win="365";
-  const yr=evFiltered();
-  assert(yr.length<EVENTS.length&&yr.length>500,"twelve months is the widest window: "+yr.length);
+  // ---- manner chips are per column and independent ----
+  const before=evAgg("sells").pool.length;
+  toggleKind("sells","plan");
+  assert(state.ev.kinds.sells.length===1&&state.ev.kinds.sells[0]==="disc","turning Planned off leaves Discretionary on the sell side");
+  assert(evAgg("sells").pool.every(e=>e.pl==="discretionary"),"and the sell column is discretionary only");
+  assert(state.ev.kinds.buys.length===2&&evAgg("buys").pool.length===B.pool.length,"the buy column did not move");
+  toggleKind("sells","disc");
+  assert(evAgg("sells").pool.length===0&&evColumn("sells").includes("Both manners are off"),
+    "both chips off is an honest empty with the frame kept");
+  toggleKind("sells","disc");toggleKind("sells","plan");
+  assert(evAgg("sells").pool.length===before,"restoring both restores the column exactly");
+  // inside 12 months every sale is classified, so both-on equals all
+  setWin(365);
+  const yr=P.evBase();
   assert(!yr.some(e=>e.c==="S"&&P.sellKind(e)==="unknown"),
-    "and inside it every sale is classified — the checkbox exists after April 2023");
-  state.ev.win="90";
+    "inside twelve months every sale is classified — the checkbox exists after April 2023");
+  const b365=evAgg("buys").pool.length;
+  assert(b365>=B.pool.length,"a wider window holds at least as much");
+  const w90=P.evBase().length;setWin(90);
+  assert(P.evBase().length<=w90&&els["#actctl"]&&true,"the window chips narrow the pool");
+  setWin(30);
+  assert(evAgg("buys").pool.length===B.pool.length,"and 30 days returns to the opening view");
+
+  // ---- the table opens on request, narrowed ----
+  assert(state.ev.view===""&&!(els["#actwrap"]&&els["#actwrap"]._html.includes("escroll")),"the table starts closed — nothing rendered into it yet");
+  setView("buys");
+  assert(state.ev.view==="buys"&&evFiltered().every(e=>e.c==="P"),"opening from the buy column shows purchases: "+evFiltered().length);
+  let proHtml=els["#actwrap"]._html;
+  assert(proHtml.includes("escroll")&&proHtml.includes("efoot")&&proHtml.includes("purchase"),"the table renders with its footer");
+  setView("sells");
+  assert(evFiltered().every(e=>e.c==="S"&&P.sellKind(e)!=="exsell"),"the sell view is stake reductions");
+  setView("exsell");
+  assert(evFiltered().length>0&&evFiltered().every(e=>e.lb==="exercise and sell"),"the options-cashed view is exactly those rows");
+  setView("day");
+  assert(evFiltered().every(e=>e.fd===newest),"the day view is the strip as a table");
+  setView("");
+  assert(state.ev.view==="","close closes");
+  // a badge in a row opens the table on its own kind
+  setView("sells");
+  const badgeRow=evTable(evFiltered().slice(0,5),true);
+  assert(/setKind\('(plan|disc|exsell|buys)'\)/.test(badgeRow),"a row badge filters to its own kind");
+  P.setKind("plan");
+  assert(state.ev.view==="sells"&&state.ev.kinds.sells.length===1&&state.ev.kinds.sells[0]==="plan"
+    &&evFiltered().every(e=>e.pl==="plan"),"a Planned badge narrows the sell side to planned");
+  state.ev.kinds.sells=["disc","plan"];
+  // an empty result keeps the frame
+  state.ev.q="zzzz-no-such-company";P.renderFeed();
+  const emptyHtml=els["#actwrap"]._html;
+  assert(emptyHtml.includes("escroll")&&emptyHtml.includes("eempty")&&emptyHtml.includes("<thead"),
+    "the empty result keeps the table frame, message inside it");
+  state.ev.q="";
 
   // the Nadella decimal-shift error must not top the value sort
+  setWin(365);setView("sells");
   state.ev.sort={key:"v",dir:-1}; const top=evFiltered()[0];
   assert(!top.fl, "largest-value sort excludes flagged prices (top: "+top.tk+" "+money(top.v)+")");
   const msft=EVENTS.find(e=>e.tk==="MSFT"&&e.td==="2020-09-01"&&e.fl);
   assert(msft && msft.fl, "the $189bn filer error is flagged");
   assert(evValCell(msft).includes("⚠"), "and shown with a caution, as filed");
-
-  // pct blowups render capped
   const tko=EVENTS.find(e=>e.tk==="TKO"&&e.pc>100);
   assert(tko && evPctCell(tko).includes("≥100%"), "13,111% renders as ≥100%");
+  const exs1=EVENTS.find(e=>e.lb==="exercise and sell");
+  assert(evPctCell(exs1).includes("unchanged"), "exercise-and-sell shows stake unchanged");
 
-  // exercise-and-sell renders as unchanged
-  const exs=EVENTS.find(e=>e.lb==="exercise and sell");
-  assert(evPctCell(exs).includes("unchanged"), "exercise-and-sell shows stake unchanged");
-
-  // search
-  state.ev.win="365"; state.ev.sort={key:"fd",dir:-1}; state.ev.q="musk";
-  const musk=evFiltered();
+  // search reaches by surname
+  // search reaches by surname across every side of the window
+  setWin(365);setView("");state.ev.sort={key:"fd",dir:-1}; state.ev.q="musk";
+  const musk=P.evBase();
   assert(musk.length>0 && musk.every(e=>e.tk==="TSLA"), "search by surname reaches Musk: "+musk.length);
-  state.ev.win="90";
-  state.ev.q="";
+  state.ev.q="";setView("sells");
 
-  // sorting is by column head now
+  // sorting is by column head
   P.sortTape("v"); assert(state.ev.sort.key==="v"&&state.ev.sort.dir===-1,"first click on a number head sorts descending");
   P.sortTape("v"); assert(state.ev.sort.dir===1,"second click flips it");
   P.sortTape("co"); assert(state.ev.sort.key==="co"&&state.ev.sort.dir===1,"a text head starts ascending");
   const alpha=evFiltered(); assert(alpha[0].tk<=alpha[alpha.length-1].tk,"company sort is alphabetical");
   P.sortTape("pc"); const bypc=evFiltered();
-  assert(bypc[0].pc>=(bypc[50].pc||0),"share-of-stake sorts high to low");
+  assert(bypc[0].pc>=(bypc[Math.min(50,bypc.length-1)].pc||0),"share-of-stake sorts high to low");
   state.ev.sort={key:"fd",dir:-1};
+  setWin(30);setView("");
 
   // money() must not print a thousand million
   assert(money(999959042)==="$1B","999,959,042 reads as $1B, not $1000M");
   assert(money(2.5e6)==="$2.5M"&&money(4.5e9)==="$4.5B","the ordinary cases still read right");
 
-  // one card per person
-  const spotHtml=els["#actspot"]._html;
-  const names=[...spotHtml.matchAll(/class="who">([^<]+)</g)].map(m=>m[1]);
-  assert(names.length===10,"ten cards, five per row");
-  const buyNames=names.slice(0,5), sellNames=names.slice(5);
-  assert(new Set(buyNames).size===5,"no chief executive twice in the buy row: "+buyNames.join(", "));
-  assert(new Set(sellNames).size===5,"nor in the sell row: "+sellNames.join(", "));
-  assert((spotHtml.match(/class="stk/g)||[]).length===10,"every card states its share of stake, or says why it cannot");
-  assert(spotHtml.includes("partnership units rather than issued stock"),
-    "and the Blackstone case explains itself on hover");
-  const amts=[...spotHtml.matchAll(/class="amt">([^<]+)</g)].map(m=>m[1]);
-  assert(amts.every(a=>/[MB]$/.test(a)),"every card is a trade of real size: "+amts.join(", "));
-  assert((spotHtml.match(/class="spot sell"/g)||[]).length===5,"the sell row is styled as sales");
-  assert(!spotHtml.includes("EX &amp; SELL")&&!/unchanged/.test(spotHtml),
-    "no exercise-and-sell reaches the sell row");
-
-  // the badge is a filter
-  const badgeRow=evTable(evFiltered().slice(0,5),true);
-  assert(/setKind\('(plan|disc|exsell|buys)'\)/.test(badgeRow),"a row badge filters to its own kind");
-
   // feed table markup for a real slice
+  setView("sells");
   const t=evTable(evFiltered().slice(0,50),true);
   assert(t.includes("openDrawer(") && t.includes("sec.gov"), "rows are doors and carry filing links");
   assert(t.includes("sortTape('v')"), "the value head is clickable");
+  setView("");
 
   // drawer with events present
   openDrawer("TSLA");
   assert(els["#drawer"]._html.includes("Latest trades"), "drawer prefers filed events");
-
-  // spotlight picks are purchases with clean prices
-  const spot=els["#actspot"]._html;
-  assert(!spot.includes("⚠"), "neither row features a flagged price");
 
   // ---- trajectories ----
   // synthetic history: up, down, a fresh record low, and a zero-led record

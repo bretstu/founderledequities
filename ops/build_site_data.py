@@ -27,9 +27,22 @@ from collections import defaultdict
 
 GENEROUS = False   # True: public universe.csv carries every pct unmasked
 
+# EVERY COLUMN THE PAGE READS, OR THE PAGE READS A HOLE. The universe
+# promotion moved the page from sp500.csv (the full panel) to this list, and
+# the first cut of this list dropped five columns mapPanel consumes:
+# shares_as_of (every "As of" cell became "—"), operating_partnership
+# (Blackstone printed 0.000% instead of "partnership units"), cautions (the
+# drawer's raw flags lost half their text), and the two exclusion columns
+# (the curated-exclusion note vanished). They are back. The mask below
+# decides which of them a sealed row may carry.
 LIST_COLS = ["ticker", "cik", "company", "ceo", "pct", "shares",
-             "outstanding", "confidence", "stake_source", "problems",
-             "flags", "error", "form4_url", "cover_url", "masked"]
+             "outstanding", "shares_as_of", "confidence", "stake_source",
+             "problems", "cautions", "excluded_shares", "excluded_detail",
+             "operating_partnership", "flags", "error", "form4_url",
+             "cover_url", "masked"]
+# what a sealed row must not carry: anything that states or bounds the stake
+MASKED_COLS = ("pct", "shares", "form4_url", "cover_url",
+               "excluded_shares", "excluded_detail")
 
 
 def _overlay(base_rows, fresh_path, sp, key="ticker"):
@@ -71,7 +84,7 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
                 row = []
                 for c in LIST_COLS[:-1]:
                     v = r.get(c, "") or ""
-                    if masked and c in ("pct", "shares", "form4_url", "cover_url"):
+                    if masked and c in MASKED_COLS:
                         v = ""
                     row.append(v)
                 row.append(masked)
