@@ -42,13 +42,19 @@ global.fetch=async(name)=>{
     }
     return {ok:true,text:async()=>rows};
   }
+  // THE SERVED FILES FIRST. site-data/ is what deploy.sh publishes -- the
+  // free files cut by the S&P list at its root, the full ones under pro/ --
+  // so the harness reads the tiers the site actually serves when they
+  // exist, and the root files (a fixture folder) otherwise.
+  const first=(...cands)=>{for(const c of cands)if(fs.existsSync(c))return c;return null;};
   if(n.startsWith("/pro/")){
     const f=n.replace("/pro/","");
-    const t=require("fs").readFileSync("./"+f,"utf8");
-    return {ok:true,text:async()=>t};
+    const p=first("./site-data/pro/"+f,"./site-data/"+f,"./"+f);
+    if(!p)throw new Error("missing "+n);
+    return {ok:true,text:async()=>fs.readFileSync(p,"utf8")};
   }
-  const p="./"+name;
-  if(!fs.existsSync(p))throw new Error("missing "+name);
+  const p=first("./site-data/"+n,"./"+n);
+  if(!p)throw new Error("missing "+name);
   const t=fs.readFileSync(p,"utf8");
   return {ok:true,text:async()=>t};
 };
@@ -515,7 +521,7 @@ const P=runPage();
 
   // ---- the free file: every S&P event, the seal is the only gate ----
   {
-    const freeCsv=require("fs").readFileSync("events-free.csv","utf8");
+    const freeCsv=require("fs").readFileSync(require("fs").existsSync("site-data/events-free.csv")?"site-data/events-free.csv":"events-free.csv","utf8");
     const lines=freeCsv.trim().split("\n");
     const head=lines[0].split(",");
     const iCode=head.indexOf("code");

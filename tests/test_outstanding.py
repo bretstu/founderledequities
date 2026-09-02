@@ -6,7 +6,7 @@ class _C:
     def __init__(self, payload):
         self.payload = payload
 
-    def get_json(self, url):
+    def get_json(self, url, use_cache=True, max_age=None):
         return self.payload
 
 
@@ -56,7 +56,7 @@ def test_an_empty_concept_falls_through_to_the_filing():
     """An empty or 404 concept is the multi-class signal, not a dead end --
     so it must reach the filing rather than give up."""
     class _NoFilings:
-        def get_json(self, url):
+        def get_json(self, url, use_cache=True, max_age=None):
             return {"units": {"shares": []}}
 
         def submissions(self, cik):

@@ -47,19 +47,25 @@ def _stale_feeds() -> int:
     return sum(c.stale_served for c in _CLIENTS)
 
 
-def fresh_checkpoint(path: str) -> bool:
-    """Remove a staged panel checkpoint so tonight's panel is tonight's.
+def rotate_checkpoint(checkpoint: str, prior: str, universe: str) -> bool:
+    """Move a FINISHED checkpoint aside as the prior; leave an unfinished one.
 
-    The checkpoint exists to resume a cold run that was interrupted. Left in
-    _staging/ between nights, it made every night a resume of Aug 28: the
-    panel finished in the same second it started and nothing was asked of
-    EDGAR. A nightly recompute over a warm cache is a few minutes. Returns
-    whether there was one to remove.
+    Finished means it holds a row for every member of the universe. A
+    checkpoint short of that is a night that died, and resuming it is what
+    checkpoints are for. Returns whether a rotation happened.
     """
-    if os.path.exists(path):
-        os.remove(path)
-        return True
-    return False
+    from .panel import _load
+    if not os.path.exists(checkpoint):
+        return False
+    try:
+        want = {m.cik for m in read_universe(universe)}
+    except OSError:
+        want = set()
+    have = set(_load(checkpoint))
+    if want and not want <= have:
+        return False                     # unfinished: resume it
+    os.replace(checkpoint, prior)
+    return True
 
 
 def _tick(i, n):
@@ -555,10 +561,17 @@ def cmd_panel(args) -> int:
                  if row.get("owner_name") and not row.get("is_officer") else ""))
 
     try:
+        from .panel import _load as _load_rows
+        prior_path = getattr(args, "prior", None)
+        prior = _load_rows(prior_path) if prior_path else {}
+        if prior:
+            print(f"  prior rows: {len(prior)} from {prior_path} -- a company "
+                  f"whose feeds show nothing new keeps its row")
         rows = run_panel(client, members, args.checkpoint, redo=args.redo,
                          exclusions=read_exclusions(args.exclusions),
                          on_row=row_done, on_filing=on_filing,
-                         workers=max(1, int(getattr(args, "workers", 1) or 1)))
+                         workers=max(1, int(getattr(args, "workers", 1) or 1)),
+                         prior=prior)
     except KeyboardInterrupt:
         _clear()
         print("  interrupted; the checkpoint keeps every finished company")
@@ -1161,7 +1174,14 @@ def cmd_refresh(args) -> int:
     if snap:
         members_path, evidence_path, taken = snap
         age = (datetime.date.today() - taken).days
-        if age >= 90:
+        # THE QUARTERLY RE-SNAPSHOT IS OPT-IN. It reads every registrant's
+        # feed and prices them all -- hours, unattended, on a night nobody
+        # chose. Until its cadence is designed, the nightly says how old the
+        # snapshot is and leaves it; FLE_UNIVERSE_RESNAPSHOT=1 turns it on.
+        if age >= 90 and os.environ.get("FLE_UNIVERSE_RESNAPSHOT") != "1":
+            log(f"universe: snapshot {taken} is {age} days old (re-snapshot "
+                f"is off; set FLE_UNIVERSE_RESNAPSHOT=1 to take a new one)")
+        elif age >= 90:
             log(f"universe: snapshot {taken} is {age} days old; taking a new one")
             if run("universe", lambda: cmd_market_universe(ns(
                     min_cap=1e9, exit_cap=8e8, prior=evidence_path,
@@ -1179,17 +1199,22 @@ def cmd_refresh(args) -> int:
                    os.path.join(args.dir, "about.html"),
                    path("universe.html"))
 
-    # 1 -- the panel, from scratch every night. A leftover checkpoint is a
-    # finished night, and resuming it asks EDGAR nothing (see fresh_checkpoint).
-    if fresh_checkpoint(path("panel.jsonl")):
-        log("panel: cleared yesterday's checkpoint")
+    # 1 -- the panel. LAST NIGHT'S CHECKPOINT BECOMES TONIGHT'S PRIOR: a
+    # finished checkpoint resumed as-is asks EDGAR nothing (five nights of
+    # that, once), so it is moved aside and tonight starts empty -- and the
+    # panel reads it as `prior`, carrying every company whose feeds show no
+    # new relevant filing and recomputing the rest. An unfinished
+    # checkpoint (a night that died) is left in place to resume.
+    ck, prior = path("panel.jsonl"), path("panel-prior.jsonl")
+    if rotate_checkpoint(ck, prior, args.universe):
+        log("panel: last night's checkpoint is tonight's prior")
     # Each stage gets exactly what its own command reads. These defaults
     # mirror the parser's; a stage that grew an option and was not added
     # here used to die mid-run, hours in.
     if run("panel", lambda: cmd_panel(ns(
             universe=args.universe, out=path("sp500.csv"), limit=None,
             tickers=None, ciks=None, redo="none",
-            checkpoint=path("panel.jsonl"), workers=args.workers))):
+            checkpoint=ck, prior=prior, workers=args.workers))):
         return 1
 
     # 2 -- the gate
@@ -1283,19 +1308,15 @@ def cmd_refresh(args) -> int:
     # counts on the gated filter chips are all computed from them, and a
     # tease of "Sold 0" would gut the free page. The decade archive, the
     # thing Pro actually sells, deploys behind the gate.
-    free_cut = (datetime.date.today()
-                - datetime.timedelta(days=90)).isoformat()
-    _write_variant(path("events.csv"), path("events-free.csv"),
-                   lambda row: row.get("code") == "P"
-                   or (row.get("filed") or "") >= free_cut)
-    _write_variant(path("history.csv"), path("history-free.csv"),
-                   lambda row: row.get("ticker") in FREE_HISTORY_TICKERS)
+    # (The free-tier variants once written here are the deploy's job now:
+    # ops/build_site_data.py cuts the free files from these full ones by the
+    # S&P list, and it is the only place that rule lives.)
 
-    # 7 -- publish, atomically
+    # 7 -- publish, atomically. sp500.csv is the panel's historical name;
+    # under the market-cap universe it holds every member.
     published = []
     for name in ("sp500.csv", "history.csv", "prices.csv", "founders.csv",
-                 "events.csv", "events-free.csv", "history-free.csv",
-                 "universe.html"):
+                 "events.csv", "universe.html"):
         src = path(name)
         if os.path.exists(src) and os.path.getsize(src) > 0:
             os.replace(src, os.path.join(live, name))
@@ -2146,6 +2167,9 @@ def main(argv=None) -> int:
     pn.add_argument("--limit", type=int, default=None,
                     help="first N in ticker order -- the same N every time")
     pn.add_argument("--redo", default="none", choices=["none", "failed", "all"])
+    pn.add_argument("--prior", default=None,
+                    help="a finished checkpoint from a previous run; rows whose "
+                         "feeds show no new relevant filing are carried over")
     pn.add_argument("--workers", type=int, default=1,
                     help="companies identified concurrently; the checkpoint "
                          "is appended under a lock either way")

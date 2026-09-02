@@ -84,3 +84,15 @@ def test_list_files_carry_what_the_page_reads(tmp_path):
     # the pro file is unmasked
     assert pro["ZZZ"]["masked"] == "0" and pro["ZZZ"]["pct"] == "12.5"
     assert pro["ZZZ"]["excluded_shares"] == "50"
+
+
+def test_the_deploy_passes_the_live_files_and_the_member_list():
+    """No overlay: the nightly's own files are the site's data, and the S&P
+    list decides only what is open. A root copy of the full panel would
+    publish every sealed stake."""
+    sh = (HERE / "ops" / "deploy.sh").read_text()
+    assert "sp500.csv history.csv events.csv founders.csv" in sh
+    assert "universe-data/" not in sh.replace("# ", "")  or "u-panel.csv" not in sh
+    assert 'cp "$f" public/' not in sh.split("legacy")[-1] or "sp500.csv history-free.csv" not in sh
+    assert "for f in sp500.csv history-free.csv" not in sh
+    assert "universe.html public/" in sh

@@ -12,7 +12,7 @@ import types
 import pytest
 
 from fle import edgar
-from fle.cli import fresh_checkpoint
+from fle.cli import rotate_checkpoint
 
 
 class _Resp:
@@ -84,11 +84,92 @@ def test_submissions_uses_the_age_rule(tmp_path):
     assert edgar.SUBMISSIONS_MAX_AGE <= 24 * 3600, "at most a day: the nightly must see yesterday"
 
 
-def test_the_refresh_starts_from_a_clean_checkpoint(tmp_path):
-    ck = tmp_path / "panel.jsonl"
-    assert fresh_checkpoint(str(ck)) is False
+def test_a_finished_checkpoint_becomes_the_prior_and_an_unfinished_one_resumes(tmp_path):
+    """Resumed as-is, a finished checkpoint asks EDGAR nothing. Moved aside
+    as the prior, it is what lets the panel carry unchanged companies. A
+    checkpoint short of the universe is a night that died, and stays."""
+    uni = tmp_path / "u.csv"
+    uni.write_text("cik,ticker,company,added\n1,A,A Co,\n2,B,B Co,\n")
+    ck, prior = tmp_path / "panel.jsonl", tmp_path / "panel-prior.jsonl"
+    assert rotate_checkpoint(str(ck), str(prior), str(uni)) is False
     ck.write_text('{"cik": 1}\n')
-    assert fresh_checkpoint(str(ck)) is True and not ck.exists()
+    assert rotate_checkpoint(str(ck), str(prior), str(uni)) is False and ck.exists(), \
+        "one of two members: unfinished, left to resume"
+    ck.write_text('{"cik": 1}\n{"cik": 2}\n')
+    assert rotate_checkpoint(str(ck), str(prior), str(uni)) is True
+    assert prior.exists() and not ck.exists()
+
+
+# ---------------------------------------------------------------- the prior
+
+class _Feeds:
+    """A client whose submissions feeds are dictated by the test."""
+    def __init__(self, feeds):
+        self.feeds, self.asked = feeds, []
+
+    def submissions(self, cik):
+        self.asked.append(cik)
+        return {"_filings": self.feeds.get(cik, [])}
+
+
+def _f(form, date, acc):
+    return {"form": form, "filingDate": date, "accessionNumber": acc}
+
+
+def test_a_company_with_nothing_new_keeps_its_row(tmp_path, monkeypatch):
+    """The whole point of the universe nightly: two small feed requests per
+    company, and a recompute only for the ones that filed something that
+    could move the row."""
+    import fle.panel as P
+    from fle.universe import Member
+    built = []
+    def _build(client, cik, company="", ticker="", exclusions=None, on_progress=None):
+        built.append(cik)
+        from fle.ownership import Ownership
+        return Ownership(cik=cik, company=company)
+    monkeypatch.setattr(P, "build", _build)
+    feeds = {1: [_f("4", "2026-08-01", "0001-26-1"), _f("8-K", "2026-09-02", "0001-26-9")],
+             2: [_f("4", "2026-08-01", "0002-26-1")],
+             77: [_f("4", "2026-07-01", "0077-26-1")]}
+    client = _Feeds(feeds)
+    prior = {1: {"cik": 1, "ticker": "A", "owner_cik": "77", "settled": True,
+                 "fingerprint": "2026-08-01 0001-26-1 | 2026-07-01 0077-26-1", "pct": 5.0},
+             2: {"cik": 2, "ticker": "B", "owner_cik": "", "settled": True,
+                 "fingerprint": "2026-08-01 0002-26-1", "pct": 1.0}}
+    ck = tmp_path / "p.jsonl"
+    rows = P.run_panel(client, [Member(1, "A", "A Co"), Member(2, "B", "B Co")],
+                       str(ck), prior=prior)
+    assert built == [], "an 8-K is not a filing that moves a row"
+    assert [r["pct"] for r in rows] == [5.0, 1.0], "both rows carried, fingerprints and all"
+    assert set(client.asked) == {1, 77, 2}, "the issuer feeds and the one known owner feed were read"
+
+    # a new Form 4 on the issuer's feed forces a recompute, and the new row
+    # carries the new fingerprint
+    feeds[2].append(_f("4", "2026-09-02", "0002-26-5"))
+    ck.unlink()
+    rows = P.run_panel(client, [Member(2, "B", "B Co")], str(ck), prior=prior)
+    assert built == [2]
+    assert rows[0]["fingerprint"] == "2026-09-02 0002-26-5"
+
+    # a new 10-Q moves the denominator: recompute
+    feeds[1].append(_f("10-Q", "2026-09-02", "0001-26-7"))
+    ck.unlink()
+    P.run_panel(client, [Member(1, "A", "A Co")], str(ck), prior=prior)
+    assert built == [2, 1]
+
+    # an error row or an unsettled row is never carried
+    ck.unlink()
+    P.run_panel(client, [Member(2, "B", "B Co")], str(ck),
+                prior={2: {"cik": 2, "settled": False, "fingerprint": "x"}})
+    assert built == [2, 1, 2]
+
+
+def test_the_fingerprint_forms_are_the_ones_that_move_a_row():
+    from fle.panel import FINGERPRINT_FORMS
+    for f in ("4", "4/A", "10-Q", "10-K", "20-F", "SC 13G/A"):
+        assert f in FINGERPRINT_FORMS
+    for f in ("8-K", "424B2", "DEF 14A"):
+        assert f not in FINGERPRINT_FORMS
 
 
 # ---------------------------------------------------------------- the gate

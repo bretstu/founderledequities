@@ -6,19 +6,20 @@
 # stands in front of EVERY request with the subscription check (a catch-all,
 # so the sharded tree under pro/ is gated by construction).
 #
-# THE UNIVERSE SHAPE. universe-data/ holds the full-universe snapshot (the
-# staging CSVs, static until the universe gets its own refresh cadence).
-# The nightly keeps rebuilding the S&P files exactly as it always has, and
-# build_site_data.py overlays those FRESH S&P rows onto the snapshot before
-# every deploy: the 500 stay current daily, the remainder is honestly frozen.
+# ONE REFRESH, ONE LIST. The nightly rebuilds the whole universe into the
+# root files (sp500.csv is the panel's historical name; it holds every
+# member). The S&P list is passed here for ONE purpose: deciding which rows
+# are open at the root and which sit sealed under /pro/. The overlay of a
+# fresh S&P onto a frozen snapshot is gone with the snapshot.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+SP_LIST="${FLE_SP_LIST:-universe/sp500-2026-08-25.csv}"
+
 # ---- 1. the site's data, generated fresh ----
 python3 ops/build_site_data.py \
-  universe-data/u-panel.csv universe-data/u-history.csv \
-  universe-data/u-events.csv universe-data/u-founders.csv \
-  sp500.csv site-data/ .
+  sp500.csv history.csv events.csv founders.csv \
+  "$SP_LIST" site-data/
 
 # ---- 1b. price the whole universe ----
 # Polygon's grouped-daily endpoint returns the entire market in ONE call;
@@ -83,16 +84,18 @@ fi
 rm -rf public && mkdir -p public
 cp index.html about.html public/
 [ -f terms.html ] && cp terms.html public/
+# the universe page: every member, the snapshot date, the rules. The About
+# page has linked to it since the promotion; it deploys now.
+[ -f universe.html ] && cp universe.html public/
 
 # ---- 2. free tier, at the root: the generator's output plus prices ----
 cp -r site-data/. public/
 for f in prices.csv perf.csv; do
   [ -s "$f" ] && cp "$f" public/
 done
-# legacy names one release longer, so any cached page still finds its files
-for f in sp500.csv history-free.csv; do
-  [ -s "$f" ] && cp "$f" public/
-done
+# NO ROOT COPY OF sp500.csv. It was kept one release for cached pages; under
+# the universe it is the whole unmasked panel, and a copy at the root would
+# publish every sealed stake. The page's fallbacks find universe.csv.
 
 # ---- 3. sanity before the world sees it ----
 # the free root must never carry an unmasked universe: the root file and the

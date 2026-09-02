@@ -214,7 +214,14 @@ def _is_stale(client, cik: int, newest: str, months: int = 8) -> bool:
 def shares_outstanding(client, cik: int) -> Outstanding:
     """The cover-page count, summed across classes, with its history."""
     try:
-        data = client.get_json(CONCEPT.format(cik=int(cik)))
+        # THE CONCEPT API IS A FEED, NOT A DOCUMENT: it gains a fact every
+        # 10-Q. Cached forever, the denominator never moved after the first
+        # read. It ages with the submissions feeds now; and since the panel
+        # recomputes a company only when a periodic filing has landed, this
+        # is fetched only when it can have changed.
+        from .config import SUBMISSIONS_MAX_AGE
+        data = client.get_json(CONCEPT.format(cik=int(cik)),
+                               max_age=SUBMISSIONS_MAX_AGE)
     except Exception:  # noqa: BLE001
         # 404 here means the filer tags per class. Read the filing instead.
         return from_latest_filing(client, cik)

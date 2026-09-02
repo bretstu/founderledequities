@@ -83,19 +83,71 @@ def _append(path: str, row: dict) -> None:
         fh.write(json.dumps(row, default=str) + "\n")
 
 
+# THE FILINGS THAT CAN MOVE A ROW. Forms 3/4/5 move the numerator; the
+# periodic reports move the denominator (and name the chief executive);
+# 20-F/40-F are the foreign equivalents; 13D/13G are the fallback stake for
+# filers exempt from Section 16. A new 8-K or prospectus cannot change the
+# answer and does not trigger a recompute.
+FINGERPRINT_FORMS = ("3", "4", "5", "3/A", "4/A", "5/A",
+                     "10-K", "10-Q", "10-K/A", "10-Q/A",
+                     "20-F", "40-F", "20-F/A", "40-F/A",
+                     "SC 13D", "SC 13D/A", "SC 13G", "SC 13G/A")
+_SECTION16 = ("3", "4", "5", "3/A", "4/A", "5/A")
+
+
+def _newest(subs: dict, forms) -> str:
+    best = ("", "")
+    for f in subs.get("_filings", []):
+        if f.get("form") in forms:
+            k = (f.get("filingDate") or "", f.get("accessionNumber") or "")
+            if k > best:
+                best = k
+    return f"{best[0]} {best[1]}".strip()
+
+
+def feed_fingerprint(client, cik: int, owner_cik=None) -> str:
+    """The newest filing that could change this company's row, on the
+    issuer's feed and on the executive's own. Two small requests; both
+    feeds are read by the recompute anyway, so a company that does get
+    recomputed pays nothing extra."""
+    fp = _newest(client.submissions(int(cik)), FINGERPRINT_FORMS)
+    if owner_cik:
+        try:
+            own = client.submissions(int(str(owner_cik).lstrip("0") or 0))
+            fp += " | " + _newest(own, _SECTION16)
+        except Exception:  # noqa: BLE001 - an unreadable owner feed forces a recompute
+            fp += " | ?"
+    return fp
+
+
+def _reusable(row: dict) -> bool:
+    """A prior row worth carrying: it produced a figure, settled, and
+    carries the fingerprint that says what it was computed from."""
+    return bool(row.get("fingerprint")) and not row.get("error") \
+        and bool(row.get("settled"))
+
+
 def run_panel(client, members, checkpoint: str, redo: str = "none",
               on_row=None, on_filing=None, exclusions=None,
-              workers: int = 1) -> list[dict]:
+              workers: int = 1, prior: dict | None = None) -> list[dict]:
     """-> every row, finished or resumed.
 
     `redo` is "none" (skip anything done), "failed" (retry errors and rows
     that did not settle), or "all".
+
+    `prior` is last run's finished rows, by CIK. RECOMPUTE ONLY WHAT
+    CHANGED: a company whose feeds show no new filing that could move its
+    row (see FINGERPRINT_FORMS) keeps last run's row, fingerprint and all.
+    Reading the two feeds is the whole cost -- some 4,300 small requests for
+    the universe, a quarter of an hour -- against recomputing 2,135 rows.
+    Errors and unsettled rows are never carried; they are retried.
     """
     done = _load(checkpoint)
     if redo == "all":
         done = {}
         if os.path.exists(checkpoint):
             os.remove(checkpoint)
+    prior = prior or {}
 
     import threading
     from concurrent.futures import ThreadPoolExecutor
@@ -104,30 +156,49 @@ def run_panel(client, members, checkpoint: str, redo: str = "none",
     lock = threading.Lock()
     todo, rows_by_cik = [], {}
     for i, m in enumerate(members, 1):
-        prior = done.get(m.cik)
-        if prior and redo == "failed":
-            stale = prior.get("error") or not prior.get("settled")
+        already = done.get(m.cik)
+        if already and redo == "failed":
+            stale = already.get("error") or not already.get("settled")
             if not stale:
-                rows_by_cik[m.cik] = prior
+                rows_by_cik[m.cik] = already
                 if on_row:
-                    on_row(i, len(members), prior, True)
+                    on_row(i, len(members), already, True)
                 continue
-        elif prior:
-            rows_by_cik[m.cik] = prior
+        elif already:
+            rows_by_cik[m.cik] = already
             if on_row:
-                on_row(i, len(members), prior, True)
+                on_row(i, len(members), already, True)
             continue
         todo.append((i, m))
 
     n_done = len(rows_by_cik)
+    carried = 0
 
     def one(item):
         """Identify one company. The client is shared -- its rate limiter
         is a lock, so N threads together still respect the SEC's pace --
         and the checkpoint is appended under a lock, one full line at a
         time, exactly as the sequential loop did."""
-        nonlocal n_done
+        nonlocal n_done, carried
         i, m = item
+        old = prior.get(m.cik)
+        fp = None
+        if old is not None and _reusable(old):
+            try:
+                fp = feed_fingerprint(client, m.cik, old.get("owner_cik"))
+            except Stopped:
+                return None
+            except Exception:  # noqa: BLE001 - a feed that will not read means recompute
+                fp = None
+            if fp is not None and fp == old.get("fingerprint"):
+                with lock:
+                    _append(checkpoint, old)
+                    rows_by_cik[m.cik] = old
+                    n_done += 1
+                    carried += 1
+                    if on_row:
+                        on_row(n_done, len(members), old, True)
+                return None
         try:
             # per-filing progress is per-thread noise when interleaved;
             # only the single-threaded run narrates at that grain
@@ -150,6 +221,14 @@ def run_panel(client, members, checkpoint: str, redo: str = "none",
                    checked_shares="", checked_by="", note="")
         row.setdefault("form4_url", "")
         row.setdefault("cover_url", "")
+        # the fingerprint is taken from the same feeds the recompute just
+        # read (served from the hours-old cache), so it describes exactly
+        # what this row was computed from -- never a filing that landed
+        # between the compute and the stamp
+        try:
+            row["fingerprint"] = feed_fingerprint(client, m.cik, row.get("owner_cik"))
+        except Exception:  # noqa: BLE001
+            row["fingerprint"] = ""
         with lock:
             _append(checkpoint, row)
             rows_by_cik[m.cik] = row
@@ -186,6 +265,9 @@ def run_panel(client, members, checkpoint: str, redo: str = "none",
         ex.shutdown(wait=True)
 
     rows = [rows_by_cik[m.cik] for m in members if m.cik in rows_by_cik]
+    if prior:
+        print(f"  {carried} carried over unchanged, "
+              f"{len(rows) - carried - len(done)} recomputed")
     return rows
 
 
