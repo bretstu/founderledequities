@@ -94,11 +94,24 @@ def main(panel_p, hist_p, founders_p, prod_p) -> int:
         last = {}
         for r in hist_rows:
             last[r["ticker"]] = r
+        # the walk never writes FALSE: an unsettled company's rows carry a
+        # BLANK matches_panel. Divergent = last row is anything but TRUE.
         bad = [t for t, r in sorted(last.items())
-               if (r.get("matches_panel") or "").upper() in ("FALSE", "0", "NO")]
+               if (r.get("matches_panel") or "").upper() != "TRUE"]
         print(f"\n== walk: {len(last)} companies, {len(bad)} do not end on "
               f"the panel's figure ==")
-        print("  " + ", ".join(bad[:40]) + (" ..." if len(bad) > 40 else ""))
+        pmap = {r["ticker"]: _f(r.get("pct")) for r in panel}
+        gaps = []
+        for t in bad:
+            w, p = _f(last[t].get("pct")), pmap.get(t)
+            if w is not None and p is not None:
+                gaps.append((abs(p - w), t, p, w))
+        gaps.sort(reverse=True)
+        for g, t, p, w in gaps[:15]:
+            print(f"   {t:6} panel {p:8.3f}%  walk {w:8.3f}%  gap {g:.3f}")
+        rest = [t for t in bad if t not in {x[1] for x in gaps[:15]}]
+        if rest:
+            print("   also: " + ", ".join(rest[:30]) + (" ..." if len(rest) > 30 else ""))
     else:
         print("\n== walk section skipped: no matches_panel column ==")
 
