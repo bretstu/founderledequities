@@ -180,6 +180,23 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir) -> int:
             w.writeheader()
             w.writerows(rows)
 
+    # ---- the aggregate event files the feed loads ----
+    # THE SEAL IS THE ONLY GATE: the free file is the S&P's ENTIRE event
+    # archive -- every sale, every year -- not a windowed teaser. Pro adds
+    # companies, never features.
+    with open(events_p, encoding="utf-8-sig") as src:
+        rdr = csv.DictReader(src)
+        cols = rdr.fieldnames
+        all_rows = list(rdr)
+    for path, rows in (("events-free.csv",
+                        [r for r in all_rows if r.get("ticker") in sp]),
+                       (os.path.join("pro", "events.csv"), all_rows)):
+        with open(os.path.join(out_dir, path), "w", newline="",
+                  encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=cols)
+            w.writeheader()
+            w.writerows(rows)
+
     # ---- manifest ----
     def _n(sub):
         p = os.path.join(out_dir, sub)
@@ -199,6 +216,10 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir) -> int:
     print(f"  history-free-lite   {len(lite_sp)} rows, {_kb('history-free-lite.csv')} KB")
     print(f"  pro/history-lite    {len(lite_all)} rows, "
           f"{os.path.getsize(os.path.join(out_dir, 'pro', 'history-lite.csv')) // 1024} KB")
+    print(f"  events-free.csv     "
+          f"{sum(1 for r in all_rows if r.get('ticker') in sp)} rows, "
+          f"{_kb('events-free.csv')} KB (full S&P archive)")
+    print(f"  pro/events.csv      {len(all_rows)} rows")
     print(f"  GENEROUS={GENEROUS}  (public pct on non-S&P rows)")
     return 0
 

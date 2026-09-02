@@ -66,21 +66,24 @@ const P=runPage();
   assert(state.live.panel && state.live.events, "panel + events loaded live (history.csv not in zip: hist="+state.live.hist+")");
   assert(EVENTS.length>12000, "events loaded: "+EVENTS.length);
 
-  // free view
+  // free view: THE SEAL IS THE ONLY GATE -- the free feed is the full
+  // instrument over the free tier's companies, no sample, no lock
   state.pro=false; renderActivity();
   const freeHtml=els["#actwrap"]._html;
-  assert(freeHtml.includes("FREE — EVERY PURCHASE"), "free view carries the purchase sample");
-  assert(freeHtml.includes("locked tall"), "free view carries the lock");
+  assert(!freeHtml.includes("FREE — EVERY PURCHASE"), "no purchase-sample teaser in the free feed");
+  assert(!freeHtml.includes("locked"), "no lock in the free feed");
+  assert(freeHtml.includes("efoot")||freeHtml.includes("purchase"), "the free feed is the full table");
   const idxsrc=require("fs").readFileSync("index.html","utf8");
-  assert(idxsrc.includes('id="actgate"')&&idxsrc.includes("gatecover"),
-    "the free controls carry a gate cover that opens the Pro sheet");
-  assert(idxsrc.includes('$("#actctl").classList.toggle("gated",!state.pro)'),
-    "and the controls render gated, not hidden, for free readers");
-  assert(idxsrc.includes('id="tjgate"')&&idxsrc.includes('$("#tjctl").classList.toggle("gated",!state.pro)'),
-    "the trajectory controls carry the same gate");
+  // the seal is the only gate: no section may toggle features by tier
+  assert(!idxsrc.includes('classList.toggle("gated",!state.pro)'),
+    "no section gates its controls by tier");
+  assert(idxsrc.includes('classList.add("hide")')&&idxsrc.includes('id="tjgate"'),
+    "the old gate covers exist but stay hidden");
   assert(!/class="blurred"/.test(freeHtml), "the old blur treatment is gone");
-  assert(P.chartBlock("NVDA").includes("locked tall"),
-    "and the drawer's locked chart uses the same one");
+  // NVDA has history in the free files: its chart renders open for
+  // everyone -- free lacks companies, never features
+  assert(P.chartBlock("NVDA").includes("chartbox")||P.chartBlock("NVDA").includes("No trajectory"),
+    "a free reader gets the real chart when the data is theirs");
   assert(!freeHtml.includes("One row per filing"), "the methodology note is gone");
   assert(els["#actspot"]._html.includes("Buying")&&els["#actspot"]._html.includes("Selling down"), "both spotlight rows render");
 
@@ -422,29 +425,20 @@ const P=runPage();
   for(const t of ["$5 per month","7 days","hello@founderledequities.com","not investment advice"])
     assert(terms.toLowerCase().includes(t.toLowerCase()),"terms.html carries: "+t);
 
-  // ---- the free file holds exactly what the free page shows ----
+  // ---- the free file: every S&P event, the seal is the only gate ----
   {
     const freeCsv=require("fs").readFileSync("events-free.csv","utf8");
     const lines=freeCsv.trim().split("\n");
     const head=lines[0].split(",");
-    const iCode=head.indexOf("code"), iFiled=head.indexOf("filed");
-    // the window is measured from the FIXTURE's newest filing, not from
-    // the wall clock: a static fixture ages past any Date.now() cut and
-    // the test starts failing at midnight through no one's fault
-    let maxFiled="";
-    for(const l of lines.slice(1)){const d=l.split(",")[iFiled];if(d>maxFiled)maxFiled=d;}
-    const cut=new Date(new Date(maxFiled+"T00:00:00Z").getTime()-92*86400e3).toISOString().slice(0,10);
-    let buys=0,sells=0,oldSells=0;
+    const iCode=head.indexOf("code");
+    let buys=0,sells=0;
     for(const l of lines.slice(1)){
       const c=l.split(",");
       if(c[iCode]==="P")buys++;
-      else if(c[iCode]==="S"){sells++;if(c[iFiled]<cut)oldSells++;}
+      else if(c[iCode]==="S")sells++;
     }
     assert(buys>500,"the free file keeps every purchase: "+buys);
-    assert(sells>100,"and the recent sales the cards need: "+sells);
-    assert(oldSells===0,"but not one sale older than the window — the archive stays gated");
-    const fullBuys=(require("fs").readFileSync("events.csv","utf8").match(/,P,/g)||[]).length;
-    assert(buys>=fullBuys*0.9,"every purchase means every purchase");
+    assert(sells>100,"and every sale — free means the whole S&P record: "+sells);
   }
 
   console.log("\nALL RENDER PATHS PASS");
