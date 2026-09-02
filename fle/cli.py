@@ -1198,10 +1198,21 @@ def cmd_refresh(args) -> int:
         before=path("sp500.csv", staged=False), after=path("sp500.csv"),
         limit=12, out=path("panel-diff.csv")))
     if gate and not args.force:
-        log("REFUSING TO PUBLISH -- a verified holding moved. "
-            "Yesterday's data is still live. Re-run with --force to override "
-            "once the change has been checked by hand.")
-        return 2
+        moves = anchor_moves(path("sp500.csv", staged=False), path("sp500.csv"))
+        bad = sorted(t for t, v in moves.items() if v == "unexplained")
+        if bad:
+            log(f"REFUSING TO PUBLISH -- a verified holding moved with no "
+                f"newer filing to explain it: {', '.join(bad)}. Yesterday's "
+                f"data is still live. Re-run with --force to override once "
+                f"the change has been checked by hand.")
+            return 2
+        for t, v in sorted(moves.items()):
+            if v == "explained":
+                log(f"verified holding {t} moved on a new filing; publishing. "
+                    f"Update ANCHORS in fle/cli.py once the figure is checked.")
+            else:
+                log(f"verified holding {t} still differs from its constant "
+                    f"(unchanged tonight); ANCHORS in fle/cli.py is stale")
 
     # 3 -- history, reusing companies that have not filed
     if run("history", lambda: cmd_history(ns(
@@ -1247,7 +1258,10 @@ def cmd_refresh(args) -> int:
             no_escalate=False, no_llm=False)))
     else:
         log(f"founders: {age:.1f} days old, skipping (weekly)")
-        shutil.copyfile(fpath, path("founders.csv"))
+        # copy2, not copyfile: a plain copy takes tonight's date, is
+        # published, and reads as one day old again tomorrow -- so the
+        # weekly re-read never came. The date must travel with the file.
+        shutil.copy2(fpath, path("founders.csv"))
 
     # 6.2 -- performance, weekly: monthly closes move monthly
     ppath = path("perf.csv", staged=False)
@@ -1258,7 +1272,7 @@ def cmd_refresh(args) -> int:
             founders=path("founders.csv"), out=path("perf.csv"))))
     else:
         log(f"perf: {page:.1f} days old, skipping (weekly)")
-        shutil.copyfile(ppath, path("perf.csv"))
+        shutil.copy2(ppath, path("perf.csv"))
 
     # 6.5 -- free variants. The paywall is only as real as the files behind
     # it: with everything at public URLs, a blur is an honour system. The
@@ -1352,6 +1366,69 @@ def _heartbeat(log, ok: bool) -> None:
         log(f"heartbeat failed: {exc.__class__.__name__}")
 
 
+# Verified outside the pipeline; see VERIFIED in the dashboards.
+ANCHORS = {"TSLA": 1123324786, "META": 342463325, "DELL": 294263250,
+           "COIN": 25640144, "XYZ": 48844566, "LYV": 4188167,
+           "ECHO": 147184017, "SMCI": 66396146, "FOXA": 86776627}
+
+
+def anchor_moves(before_path: str, after_path: str) -> dict:
+    """What to make of each verified holding that differs from its figure.
+
+    THE GATE MUST TELL A FILING FROM A RULE CHANGE. It compares the new
+    panel to nine share counts verified by hand, and any difference used to
+    refuse the night -- which catches the rule change that quietly breaks
+    Musk, and also catches Musk filing a Form 4, and after one real trade
+    would have refused every night until the constants were edited by hand.
+
+    Three verdicts per anchor that differs from its verified figure:
+      explained  -- the new panel's figure was last stated on a NEWER
+                    filing than the old panel's: the person filed, and the
+                    number followed. Publish, and say so.
+      carried    -- the figure is unchanged from last night: the difference
+                    is inherited from a move already explained. Publish, and
+                    remind the operator the constant is stale.
+      unexplained -- the figure moved and no newer filing states it: the
+                    rules moved, not the person. Refuse.
+    """
+    def read(path):
+        out = {}
+        try:
+            with open(path, encoding="utf-8-sig") as fh:
+                for row in csv.DictReader(fh):
+                    t = (row.get("ticker") or "").strip().upper()
+                    if t:
+                        out[t] = row
+        except FileNotFoundError:
+            pass
+        return out
+
+    def num(row, col):
+        try:
+            return float((row.get(col) or "").replace(",", ""))
+        except (ValueError, AttributeError):
+            return None
+
+    old, new = read(before_path), read(after_path)
+    verdict = {}
+    for t, want in ANCHORS.items():
+        n = new.get(t)
+        if n is None:
+            continue
+        got = num(n, "shares")
+        if got is None or abs(got - want) <= 0.5:
+            continue
+        o = old.get(t)
+        before = num(o, "shares") if o else None
+        if before is not None and abs(before - got) <= 0.5:
+            verdict[t] = "carried"
+        elif o and (n.get("shares_as_of") or "") > (o.get("shares_as_of") or ""):
+            verdict[t] = "explained"
+        else:
+            verdict[t] = "unexplained"
+    return verdict
+
+
 def cmd_diff(args) -> int:
     """Two panels, side by side, so a rule change can be inspected.
 
@@ -1361,11 +1438,6 @@ def cmd_diff(args) -> int:
     proxies and outside data -- so that a regression in them is impossible
     to miss.
     """
-    # Verified outside the pipeline; see VERIFIED in the dashboards.
-    ANCHORS = {"TSLA": 1123324786, "META": 342463325, "DELL": 294263250,
-               "COIN": 25640144, "XYZ": 48844566, "LYV": 4188167,
-               "ECHO": 147184017, "SMCI": 66396146, "FOXA": 86776627}
-
     def read(path):
         """A panel keyed by ticker, or nothing if the file is not there.
 

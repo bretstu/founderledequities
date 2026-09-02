@@ -54,8 +54,14 @@ def fetch_prices(client, tickers, api_key: str | None,
     rows = []
     for _ in range(8):
         try:
+            # NEVER FROM THE CACHE. Asked for a day before its close, Polygon
+            # answers with no results, and a cached empty answer was that
+            # day's answer forever: the walk stepped back past every day
+            # first asked for too early and priced a Sep 2 site at the Aug
+            # 28 close. One request per attempt, a handful a night.
             data = client.get_json(GROUPED.format(date=when.isoformat(),
-                                                  key=api_key))
+                                                  key=api_key),
+                                   use_cache=False)
         except Exception as e:  # noqa: BLE001
             out.note = (f"grouped-daily request failed: {e}; the endpoint "
                         "needs a Polygon plan with aggregate access")

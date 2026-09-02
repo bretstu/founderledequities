@@ -89,3 +89,64 @@ def test_the_refresh_starts_from_a_clean_checkpoint(tmp_path):
     assert fresh_checkpoint(str(ck)) is False
     ck.write_text('{"cik": 1}\n')
     assert fresh_checkpoint(str(ck)) is True and not ck.exists()
+
+
+# ---------------------------------------------------------------- the gate
+
+def _panel(path, rows):
+    import csv as _csv
+    with open(path, "w", newline="") as fh:
+        w = _csv.DictWriter(fh, fieldnames=["ticker", "shares", "shares_as_of"])
+        w.writeheader()
+        w.writerows(rows)
+
+
+def test_the_gate_tells_a_filing_from_a_rule_change(tmp_path):
+    from fle.cli import anchor_moves, ANCHORS
+    tsla = ANCHORS["TSLA"]
+    before = tmp_path / "before.csv"
+    after = tmp_path / "after.csv"
+    # the person filed: a newer filing states a new figure -> explained
+    _panel(before, [dict(ticker="TSLA", shares=tsla, shares_as_of="2026-06-17")])
+    _panel(after, [dict(ticker="TSLA", shares=tsla + 1000, shares_as_of="2026-09-02")])
+    assert anchor_moves(str(before), str(after)) == {"TSLA": "explained"}
+    # the same filing, a different figure -> the rules moved -> unexplained
+    _panel(after, [dict(ticker="TSLA", shares=tsla + 1000, shares_as_of="2026-06-17")])
+    assert anchor_moves(str(before), str(after)) == {"TSLA": "unexplained"}
+    # the night after an explained move: unchanged from last night -> carried
+    _panel(before, [dict(ticker="TSLA", shares=tsla + 1000, shares_as_of="2026-09-02")])
+    _panel(after, [dict(ticker="TSLA", shares=tsla + 1000, shares_as_of="2026-09-02")])
+    assert anchor_moves(str(before), str(after)) == {"TSLA": "carried"}
+    # a figure that matches its constant is not a move at all
+    _panel(after, [dict(ticker="TSLA", shares=tsla, shares_as_of="2026-09-02")])
+    assert anchor_moves(str(before), str(after)) == {}
+    # no baseline at all (first run) and a figure off its constant -> unexplained
+    _panel(after, [dict(ticker="META", shares=1, shares_as_of="2026-09-02")])
+    assert anchor_moves(str(tmp_path / "missing.csv"), str(after)) == {"META": "unexplained"}
+
+
+def test_weekly_copies_keep_their_date(tmp_path):
+    """copyfile stamped the weekly file with tonight's date; published, it
+    read as one day old again tomorrow, and the weekly re-read never came."""
+    import shutil
+    src = tmp_path / "founders.csv"; src.write_text("ticker,founder\n")
+    old = time.time() - 6 * 86400
+    os.utime(src, (old, old))
+    dst = tmp_path / "staged.csv"
+    shutil.copy2(src, dst)
+    assert abs(os.path.getmtime(dst) - old) < 2, "the date travels with the file"
+    import inspect
+    from fle import cli
+    assert "copy2(fpath" in inspect.getsource(cli.cmd_refresh) and \
+           "copyfile(fpath" not in inspect.getsource(cli.cmd_refresh)
+
+
+def test_polygon_days_are_never_cached(tmp_path):
+    """A day asked for before its close comes back empty; cached, it stayed
+    empty forever and the site priced Sep 2 at the Aug 28 close."""
+    import inspect
+    from fle import prices
+    src = inspect.getsource(prices.fetch_prices)
+    assert "use_cache=False" in src
+    assert edgar.SUBMISSIONS_MAX_AGE <= 4 * 3600, \
+        "a run by hand in the evening must not blind the 02:30 nightly"

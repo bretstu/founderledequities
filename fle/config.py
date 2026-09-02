@@ -62,6 +62,8 @@ SEC_DATA = "https://data.sec.gov"
 # the per-company list of filings is not, and a nightly that reads it from a
 # clockless cache reads nothing new, ever (production did exactly that for
 # five nights after the universe promotion, deploying the same data each
-# time and calling it success). Twelve hours: fresh once a night, and a
-# same-day rerun by hand costs no requests.
-SUBMISSIONS_MAX_AGE = float(os.environ.get("FLE_SUBMISSIONS_MAX_AGE") or 12 * 3600)
+# time and calling it success). Four hours: EDGAR accepts filings until
+# 22:00 ET and the nightly runs at 02:30, so a run by hand as late as the
+# evening still leaves the nightly asking afresh; a rerun within the hour
+# costs no requests.
+SUBMISSIONS_MAX_AGE = float(os.environ.get("FLE_SUBMISSIONS_MAX_AGE") or 4 * 3600)

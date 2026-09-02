@@ -1148,7 +1148,7 @@ def test_prices_translate_the_dash_to_polygons_dot():
     from fle.prices import fetch_prices
 
     class _Poly:
-        def get_json(self, url):
+        def get_json(self, url, use_cache=True, max_age=None):
             assert "2026-08-25" in url
             return {"results": [{"T": "TSLA", "c": 331.29},
                                 {"T": "BF.B", "c": 27.5},
@@ -1168,7 +1168,7 @@ def test_prices_walk_back_over_a_weekend():
     from fle.prices import fetch_prices
 
     class _Poly:
-        def get_json(self, url):
+        def get_json(self, url, use_cache=True, max_age=None):
             if "2026-08-23" in url or "2026-08-22" in url:   # Sun, Sat
                 return {"results": []}
             return {"results": [{"T": "TSLA", "c": 331.29}]}
@@ -2431,7 +2431,7 @@ def test_echostar_index_json_omits_the_documents_it_holds():
     class _Client(EdgarClient):
         def __init__(self):
             self.fetched = []
-        def get_json(self, url, use_cache=True):
+        def get_json(self, url, use_cache=True, max_age=None):
             return WRAPPERS_ONLY
         def get(self, url, use_cache=True):
             self.fetched.append(url)
@@ -2464,7 +2464,7 @@ def test_a_complete_index_json_is_left_alone():
     class _Client(EdgarClient):
         def __init__(self):
             self.fetched = []
-        def get_json(self, url, use_cache=True):
+        def get_json(self, url, use_cache=True, max_age=None):
             return COMPLETE
         def get(self, url, use_cache=True):
             self.fetched.append(url)
