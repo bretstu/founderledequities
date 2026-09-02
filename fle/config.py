@@ -57,3 +57,11 @@ MAX_REQUESTS_PER_SECOND = float(os.environ.get("FLE_RATE") or 8)
 
 SEC_BASE = "https://www.sec.gov"
 SEC_DATA = "https://data.sec.gov"
+
+# HOW OLD A SUBMISSIONS FEED MAY BE. Filings are immutable and cache forever;
+# the per-company list of filings is not, and a nightly that reads it from a
+# clockless cache reads nothing new, ever (production did exactly that for
+# five nights after the universe promotion, deploying the same data each
+# time and calling it success). Twelve hours: fresh once a night, and a
+# same-day rerun by hand costs no requests.
+SUBMISSIONS_MAX_AGE = float(os.environ.get("FLE_SUBMISSIONS_MAX_AGE") or 12 * 3600)

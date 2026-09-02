@@ -939,7 +939,7 @@ function mapEvents(recs){
     td:(r.traded||"").slice(0,10),c:r.code||"",lb:r.label||"",
     sh:num(r.shares)||0,v:num(r.value),ap:num(r.avg_price),
     pc:num(r.pct_of_holding),nc:num(r.net_change),ha:num(r.holding_after),
-    rs:num(r.residue),pl:r.plan||"unknown",u:r.url||"",fl:r.price_flag||""
+    rs:num(r.residue),pl:r.plan||"unknown",u:r.url||"",fl:r.price_flag||"",acc:r.accession||""
   })).filter(e=>e.tk&&e.fd).sort((a,b)=>a.fd<b.fd?1:-1);
 }
 
@@ -2113,6 +2113,18 @@ function ago(d){
   if(days<365){const m=Math.round(days/30);return m+(m===1?" month ago":" months ago");}
   const y=Math.floor(days/365);return y+(y===1?" year ago":" years ago");
 }
+function nFilings(evs){
+  /* A ROW IS A TRADE, NOT A FILING. The feed holds one row per (filing,
+     code, day), and one Form 4 often covers two trade days -- Kurtz's
+     10b5-1 files every other day for the two days before. Twenty rows were
+     ten documents, and the page called them twenty filings. Rows are
+     "trades"; "filings" counts distinct accession numbers. */
+  const s=new Set();for(const e of evs)s.add(e.acc||e.u||(e.tk+e.fd));return s.size;
+}
+function tradesAndFilings(evs){
+  const n=evs.length,f=nFilings(evs);
+  return `${n.toLocaleString()} trade${n===1?"":"s"}${f!==n?` in ${f.toLocaleString()} filing${f===1?"":"s"}`:""}`;
+}
 function dayShown(){
   /* the day strip shows the newest filing day in the feed unless a
      permalink asked for another. "Yesterday" is deliberately not the rule:
@@ -2152,7 +2164,7 @@ function niceDay(d){
 function dayText(day,rows){
   /* the day as plain text, for pasting: one line per filing, the same
      words the strip uses, so what gets posted is what the page shows */
-  const L=[`Chief executive filings, ${niceDay(day)} (${dayScope()}):`];
+  const L=[`Chief executive trades filed ${niceDay(day)} (${dayScope()}):`];
   for(const e of rows){
     const side=evSide(e);
     const what=side==="buys"?"bought":side==="exsell"?"cashed options for":"sold";
@@ -2203,7 +2215,7 @@ function renderDay(){
     </div>`;};
   el.innerHTML=`<div class="dayb">
     <div class="dayh">
-      <span class="dt">Filed <b>${day?niceDay(day):"—"}</b> · ${rows.length} filing${rows.length===1?"":"s"} · ${scope}</span>
+      <span class="dt">Filed <b>${day?niceDay(day):"—"}</b> · ${tradesAndFilings(rows)} · ${scope}</span>
       <span class="dn">
         ${prev?`<button onclick="gotoDay('${prev}')" title="the previous filing day">‹ ${prev}</button>`:""}
         ${next?`<button onclick="gotoDay('${next}')" title="the next filing day">${next} ›</button>`:""}
@@ -2213,7 +2225,7 @@ function renderDay(){
       </span>
     </div>
     ${rows.length?rows.slice(0,CAP).map(row).join(""):`<div class="dayempty">No chief executive of these companies filed a trade on ${day?niceDay(day):"this day"}.</div>`}
-    ${rows.length>CAP?`<div class="dayrow" onclick="setView('day')" style="justify-content:flex-start;color:var(--mut);font-size:12.5px"><span></span><span>+ ${rows.length-CAP} more — open the day as a table →</span></div>`:""}
+    ${rows.length>CAP?`<div class="dayrow" onclick="setView('day')" style="justify-content:flex-start;color:var(--mut);font-size:12.5px"><span></span><span>+ ${rows.length-CAP} more trade${rows.length-CAP===1?"":"s"} — open the day as a table →</span></div>`:""}
   </div>`;
 }
 
@@ -2253,7 +2265,7 @@ function evAgg(side){
       else why="the position before the first trade computes to zero, and a percentage of nothing is not a number";
     }
     const priced=evs.some(e=>!e.fl&&e.v);
-    return {tk:p.tk,ceo:p.ceo,n:evs.length,v,sh,seg,pc,why,priced,
+    return {tk:p.tk,ceo:p.ceo,n:evs.length,evs,v,sh,seg,pc,why,priced,
             latest:evs[evs.length-1].fd,flagged:evs.some(e=>e.fl)};
   });
   people.sort((a,b)=>b.v-a.v||b.sh-a.sh);
@@ -2279,8 +2291,8 @@ function evColumn(side){
     const pc=p.pc===null?`<span class="q" title="${p.why}">share of stake not stated</span>`
       :`<span title="${fmt(p.sh)} shares against the position before the first of these trades">${p.pc>=100?(sell?"sold more than they held":"multiplied their stake"):(sell?"−":"+")+(p.pc>=1?p.pc.toFixed(p.pc<10?1:0):p.pc.toFixed(2))+"% of stake"}</span>`;
     return `<div class="abar" onclick="openDrawer('${p.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${p.tk}')"
-      title="${p.ceo} — ${p.n} filing${p.n===1?"":"s"}, ${fmt(p.sh)} shares, latest ${p.latest}. Open the full record.">
-      <div class="who">${fMark(p.tk,"lead")}${p.ceo}<small>${p.tk}${p.n>1?` · ${p.n} filings`:""}</small></div>
+      title="${p.ceo} — ${tradesAndFilings(p.evs)}, ${fmt(p.sh)} shares, latest ${p.latest}. Open the full record.">
+      <div class="who">${fMark(p.tk,"lead")}${p.ceo}<small>${p.tk}${p.n>1?` · ${p.n} trades`:""}</small></div>
       <div class="trk">${segs||(p.sh?`<span class="seg unknown" style="width:2%" title="unpriced"></span>`:"")}</div>
       <div class="amt"><b>${p.priced?money(p.v):`<span class="nopr" title="the filing reports no price on these rows">${compact(p.sh)} sh</span>`}</b>${pc}</div>
     </div>`;};
@@ -2294,12 +2306,12 @@ function evColumn(side){
        mostly was without the line becoming a ranking */
     const big=[...ex].filter(e=>!e.fl).sort((a,b)=>(b.v||0)-(a.v||0))[0];
     cash=`<div class="acash">${ex.length
-      ?`<b>Options cashed, kept apart:</b> ${ex.length.toLocaleString()} filing${ex.length===1?"":"s"} by ${who} chief executive${who===1?"":"s"}, ${money(exv)}${big&&big.v?` — the largest ${big.ceo||coOf(big.tk)} (${big.tk}), ${money(big.v)}`:""}. Options exercised and the shares sold the same day: compensation converted to cash, the stakes did not move, so they are not ranked here. <a onclick="setView('exsell')">See them →</a>`
+      ?`<b>Options cashed, kept apart:</b> ${tradesAndFilings(ex)} by ${who} chief executive${who===1?"":"s"}, ${money(exv)}${big&&big.v?` — the largest ${big.ceo||coOf(big.tk)} (${big.tk}), ${money(big.v)}`:""}. Options exercised and the shares sold the same day: compensation converted to cash, the stakes did not move, so they are not ranked here. <a onclick="setView('exsell')">See them →</a>`
       :`<b>Options cashed:</b> none in ${win}.`}</div>`;
   }
   return `<div class="acol${sell?" sell":""}">
     <div class="ah"><span class="at">${sell?"Sold":"Bought"}</span>
-      <span class="an">${pool.length?`<b>${people.length}</b> ${sell?"reduced a stake":"bought"} · <b>${pool.length.toLocaleString()}</b> filing${pool.length===1?"":"s"} · <b>${money(total)}</b>`:"—"}</span></div>
+      <span class="an">${pool.length?`<b>${people.length}</b> ${sell?"reduced a stake":"bought"} · <b>${pool.length.toLocaleString()}</b> trade${pool.length===1?"":"s"} · <b>${money(total)}</b>`:"—"}</span></div>
     <div class="achips">
       ${chip("disc","Discretionary",sell?"sold without a pre-set plan — their own decision, at their own timing. It says nothing about why: diversification and a tax bill look identical here":"bought on the open market with their own money, at their own timing")}
       ${chip("plan","Planned",sell?"sold under a Rule 10b5-1 plan, set up long before the trade date and executed automatically":"bought under a Rule 10b5-1 plan — rarer still than an open-market purchase")}
@@ -2307,7 +2319,7 @@ function evColumn(side){
     ${top.length?top.map(bar).join(""):`<div class="aempty">${ks.length?`No chief executive of these companies ${sell?"reduced a stake":"bought shares"}${ks.length===1?` ${ks[0]==="plan"?"under a plan":"at their own discretion"}`:""} in ${win}.`:"Both manners are off — select one to see the column."}</div>`}
     <div class="af">
       <span class="key"><span><i></i>discretionary</span><span><i class="plan"></i>10b5-1 plan</span>${state.live.founders?`<span><span class="fm">◆</span>founder</span>`:""}</span>
-      ${pool.length?`<a onclick="setView('${side}')">${people.length>N?`Top ${N} of ${people.length} · `:""}all ${pool.length.toLocaleString()} filing${pool.length===1?"":"s"} →</a>`:""}
+      ${pool.length?`<a onclick="setView('${side}')">${people.length>N?`Top ${N} of ${people.length} · `:""}all ${pool.length.toLocaleString()} trade${pool.length===1?"":"s"} →</a>`:""}
     </div>
     ${cash}
   </div>`;

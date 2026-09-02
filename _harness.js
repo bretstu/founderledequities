@@ -55,7 +55,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},loadData,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,tjLens,soldTickers,renderTrends,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},loadData,nFilings,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,tjLens,soldTickers,renderTrends,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -135,8 +135,14 @@ const P=runPage();
   const S365=evAgg("sells"),B365=evAgg("buys");
   const rep=[...B365.people,...S365.people].find(p=>p.n>=2);
   assert(rep&&rep.n>=2,"a repeat filer is one bar with a filing count: "+(rep&&rep.tk+" x"+rep.n));
-  assert(evColumn(rep.n>=2&&B365.people.includes(rep)?"buys":"sells").includes(rep.n+" filings"),
-    "and the bar says how many filings it folds");
+  assert(evColumn(rep.n>=2&&B365.people.includes(rep)?"buys":"sells").includes(rep.n+" trades"),
+    "and the bar says how many trades it folds");
+  // rows are trades; a Form 4 covering two trade days is one filing
+  const twoDay={};for(const e of P.evBase()){const k=e.acc;if(k)twoDay[k]=(twoDay[k]||0)+1;}
+  const multi=Object.values(twoDay).some(n=>n>1);
+  const strip=els["#actday"]._html;
+  assert(/\d+ trades?( in \d+ filings?)? · /.test(strip),"the strip counts trades, and filings when they differ");
+  if(multi)assert(P.nFilings(P.evBase())<P.evBase().length,"a two-day Form 4 counts as one filing, two trades");
   // the aggregate share of stake follows the pipeline's rule
   const one=[...B365.people,...S365.people].find(p=>p.n===1&&p.pc!==null);
   if(one){const side=B365.people.includes(one)?"buys":"sells";

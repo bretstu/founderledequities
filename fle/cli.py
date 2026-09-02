@@ -34,8 +34,32 @@ COLUMNS = ["cik", "company", "ceo", "ceo_source", "owner_cik", "shares",
            "filings_read", "settled", "confidence", "flags", "error"]
 
 
+_CLIENTS: list = []   # every client built this process, so a run can sum stale feeds
+
+
 def _client(args) -> EdgarClient:
-    return EdgarClient(user_agent=getattr(args, "user_agent", None))
+    c = EdgarClient(user_agent=getattr(args, "user_agent", None))
+    _CLIENTS.append(c)
+    return c
+
+
+def _stale_feeds() -> int:
+    return sum(c.stale_served for c in _CLIENTS)
+
+
+def fresh_checkpoint(path: str) -> bool:
+    """Remove a staged panel checkpoint so tonight's panel is tonight's.
+
+    The checkpoint exists to resume a cold run that was interrupted. Left in
+    _staging/ between nights, it made every night a resume of Aug 28: the
+    panel finished in the same second it started and nothing was asked of
+    EDGAR. A nightly recompute over a warm cache is a few minutes. Returns
+    whether there was one to remove.
+    """
+    if os.path.exists(path):
+        os.remove(path)
+        return True
+    return False
 
 
 def _tick(i, n):
@@ -1155,7 +1179,10 @@ def cmd_refresh(args) -> int:
                    os.path.join(args.dir, "about.html"),
                    path("universe.html"))
 
-    # 1 -- the panel
+    # 1 -- the panel, from scratch every night. A leftover checkpoint is a
+    # finished night, and resuming it asks EDGAR nothing (see fresh_checkpoint).
+    if fresh_checkpoint(path("panel.jsonl")):
+        log("panel: cleared yesterday's checkpoint")
     # Each stage gets exactly what its own command reads. These defaults
     # mirror the parser's; a stage that grew an option and was not added
     # here used to die mid-run, hours in.
@@ -1261,6 +1288,13 @@ def cmd_refresh(args) -> int:
             published.append(name)
     log(f"published {', '.join(published)} in "
         f"{(time.time() - started) / 60:.1f} min")
+    # A FEED SERVED STALE IS SAID OUT LOUD. The client falls back to a
+    # cached submissions list when EDGAR refuses the refetch; that keeps a
+    # throttled night alive, and this line keeps it honest.
+    if _stale_feeds():
+        log(f"WARNING: {_stale_feeds()} submissions feed(s) served from a "
+            f"stale cache after a failed refetch -- those companies may "
+            f"lack tonight's filings")
 
     # 8 -- hand off to the host, if a deploy command is configured.
     # The mini PC is the builder, not the server: it assembles the site and

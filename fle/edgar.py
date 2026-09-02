@@ -20,7 +20,7 @@ from typing import Any
 
 import requests
 
-from .config import SEC_BASE, SEC_DATA, MAX_REQUESTS_PER_SECOND, SETTINGS
+from .config import SEC_BASE, SEC_DATA, MAX_REQUESTS_PER_SECOND, SETTINGS, SUBMISSIONS_MAX_AGE
 
 
 # Set on Ctrl+C: every worker waiting on the limiter or resting through a
@@ -155,6 +155,7 @@ class EdgarClient:
         self.cache_dir = cache_dir or SETTINGS.cache_dir
         os.makedirs(self.cache_dir, exist_ok=True)
         self._limiter = RateLimiter()
+        self.stale_served = 0      # feeds served past max_age after a failed refetch
         self._session = requests.Session()
         self._session.headers.update(
             {
@@ -169,11 +170,34 @@ class EdgarClient:
         key = hashlib.sha256(url.encode()).hexdigest()[:32]
         return os.path.join(self.cache_dir, key)
 
-    def get(self, url: str, use_cache: bool = True, retries: int = 3) -> str:
+    def get(self, url: str, use_cache: bool = True, retries: int = 3,
+            max_age: float | None = None) -> str:
+        """The body at `url`, from the disk cache when it may be.
+
+        THE CACHE HAS NO CLOCK, AND FOR FILINGS IT NEEDS NONE: a Form 4 or a
+        cover page never changes after it is accepted, so a cached copy is
+        the document. A submissions FEED is the opposite kind of thing --
+        it is the list of what has been filed so far -- and serving it from
+        a clockless cache meant the nightly asked EDGAR nothing: the panel
+        resumed a finished checkpoint, history saw the same newest accession
+        it saw yesterday, the anchors held because nothing moved, and the
+        site deployed with the same data every night, reporting success.
+
+        `max_age` (seconds) says how old a cached copy may be before it is
+        refetched. When the refetch fails, the stale copy is served and
+        counted in `stale_served`, so the run can say so: a day-old feed for
+        one company beats a dead night, but never silently.
+        """
         path = self._cache_path(url)
+        stale_fallback: str | None = None
         if use_cache and os.path.exists(path):
+            fresh_enough = (max_age is None
+                            or time.time() - os.path.getmtime(path) <= max_age)
             with open(path, "r", encoding="utf-8", errors="replace") as fh:
-                return fh.read()
+                body = fh.read()
+            if fresh_enough:
+                return body
+            stale_fallback = body
 
         last_err: Exception | None = None
         attempt = 0
@@ -216,10 +240,14 @@ class EdgarClient:
                 last_err = exc
                 attempt += 1
                 time.sleep(1.5 * attempt)
+        if stale_fallback is not None:
+            self.stale_served += 1
+            return stale_fallback
         raise RuntimeError(f"Failed to fetch {url}: {last_err}")
 
-    def get_json(self, url: str, use_cache: bool = True) -> Any:
-        return json.loads(self.get(url, use_cache=use_cache))
+    def get_json(self, url: str, use_cache: bool = True,
+                 max_age: float | None = None) -> Any:
+        return json.loads(self.get(url, use_cache=use_cache, max_age=max_age))
 
     # ------------------------------------------------------------ identity
 
@@ -238,7 +266,9 @@ class EdgarClient:
     def submissions(self, cik: int) -> dict:
         """Filing history. Only `recent` is inlined; older sits in extra files."""
         url = f"{SEC_DATA}/submissions/CIK{cik:010d}.json"
-        data = self.get_json(url)
+        # the main feed carries the newest filings, so it ages; the older
+        # chunks it points at are closed history and stay cached
+        data = self.get_json(url, max_age=SUBMISSIONS_MAX_AGE)
         recent = data.get("filings", {}).get("recent", {})
         rows = _columns_to_rows(recent)
         failed = []

@@ -161,7 +161,7 @@ def test_a_partial_submissions_index_raises_instead_of_truncating(tmp_path, monk
     main = {"filings": {"recent": {"form": ["424B2"], "accessionNumber": ["a"],
                                    "filingDate": ["2026-08-01"]},
                         "files": [{"name": "CIK0000040729-submissions-001.json"}]}}
-    def fake_get_json(url, use_cache=True):
+    def fake_get_json(url, use_cache=True, max_age=None):
         if url.endswith("submissions-001.json"):
             raise RuntimeError("429 for " + url)
         return json.loads(json.dumps(main))
