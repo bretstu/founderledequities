@@ -49,7 +49,9 @@ def numbers(panel_p, sp_p, prices_p, founders_p):
             open_n += 1
             if pct > 5:
                 above5 += 1
-        if t in founders and t in prices:
+        # the free hero's figure: founders in the open (S&P) set, so the card
+        # says the number a visitor then sees, not a larger one they cannot
+        if t in sp and t in founders and t in prices:
             founder_value += sh * prices[t]
     return dict(total=total, open=open_n, above5=above5, founder_value=founder_value)
 

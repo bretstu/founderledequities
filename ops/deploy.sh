@@ -96,7 +96,17 @@ cp index.html about.html public/
 # the universe page: every member, the snapshot date, the rules. The About
 # page has linked to it since the promotion; it deploys now.
 [ -f universe.html ] && cp universe.html public/
-[ -s og.png ] && cp og.png public/
+# THE CARD'S ADDRESS CHANGES WHEN THE CARD DOES. X and the other unfurlers
+# cache an image by its URL for days -- including a failed fetch -- so a
+# card redrawn nightly at the same address would be shown stale or not at
+# all. The published pages point at og.png?v=<hash of the file>: a new
+# picture is a new URL, and a cached miss never sticks.
+if [ -s og.png ]; then
+  cp og.png public/
+  OGV=$(sha256sum og.png | cut -c1-10)
+  sed -i "s|founderledequities.com/og.png\"|founderledequities.com/og.png?v=$OGV\"|g" public/index.html public/about.html
+  echo "  og image: published as og.png?v=$OGV"
+fi
 
 # ---- 2. free tier, at the root: the generator's output plus prices ----
 cp -r site-data/. public/
