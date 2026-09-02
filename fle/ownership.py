@@ -362,6 +362,11 @@ def build(client, cik: int, company: str = "", ticker: str = "",
                    f"curated list: " + " | ".join(
                        f"{lab} ({src})" for lab, (_, _, src) in
                        led.excluded.items()))
+    if getattr(led, "discovered_classes", None):
+        names = ", ".join(sorted(led.discovered_classes)[:3])
+        flag("problem",
+             f"class(es) counted from the person's filings but absent from "
+             f"the cover page: {names}; the denominator may not include them")
     if led.unnamed_class:
         total = sum(led.unnamed_class.values())
         flag(CAUTION, f"{len(led.unnamed_class)} security title(s) name a class "

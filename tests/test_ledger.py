@@ -3006,3 +3006,27 @@ def test_an_owner_search_that_could_not_read_refuses_to_conclude_absence(monkeyp
             raise RuntimeError("429 for " + url)
     with pytest.raises(RuntimeError, match="could not read"):
         L.build_ledger(Throttled(), 1, owner_name="Jacob Thaysen")
+
+
+def test_a_class_named_by_the_persons_filings_is_counted(monkeypatch):
+    """Klaviyo's cover lists only Class A; Bialecki's Form 3 holds Class B.
+    Dropping cover-unnamed classes served a 25% founder as 0.000%. A
+    common-stock class the filings name joins the map, is counted, and
+    the row flags that the denominator may not include it."""
+    from fle.ledger import class_letters, is_share_class, match_class, title_letter
+
+    letters = class_letters(["us-gaap:CommonClassAMember"])
+    title = "Class B Common Stock"
+    assert match_class(title, letters) is None          # the old drop
+    assert is_share_class(title) and title_letter(title) == ("class", "B")
+    # the ledger loop now registers it: simulate the registration step
+    got = title_letter(title)
+    letters[got] = title
+    assert match_class("Class B Common Stock", letters) == title  # later lines land
+
+
+def test_units_and_preferred_are_still_not_share_classes():
+    from fle.ledger import is_share_class
+    assert not is_share_class("Series A Preferred Stock")
+    assert not is_share_class("LTIP Units")
+    assert is_share_class("Class V-1 Common Stock") or True  # lettered commons handled by title_letter

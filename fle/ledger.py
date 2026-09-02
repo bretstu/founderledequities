@@ -642,6 +642,7 @@ class Ledger:
     single_class: bool = False    # the title was not used at all
     classes: list = field(default_factory=list)   # letters the company names
     unnamed_class: dict = field(default_factory=dict)  # title -> most it held
+    discovered_classes: set = field(default_factory=set)  # counted, absent from cover
     # label -> (shares, reason, source), from the curated list
     excluded: dict = field(default_factory=dict)
 
@@ -938,9 +939,24 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                 title = SINGLE_CLASS
             else:
                 title = match_class(r.security, letters)
+                if title is None and is_share_class(r.security):
+                    # A CLASS THE PERSON'S OWN FILINGS NAME IS A CLASS THAT
+                    # EXISTS. Founders' super-voting stock is routinely
+                    # unregistered and absent from the cover page, and
+                    # dropping those lines served Klaviyo's 25% founder as
+                    # 0.000% and the Shoen family's 43% of U-Haul as 5% --
+                    # the very stakes this site exists to show. The filer's
+                    # own title becomes the label, the class joins the map
+                    # so later lines land with it, and the row says what
+                    # happened: the denominator may not include this class.
+                    got = title_letter(r.security)
+                    if got is not None:
+                        title = r.security.strip()
+                        letters[got] = title
+                        led.discovered_classes.add(title)
                 if title is None:
-                    # A class the cover page does not name. Not counted --
-                    # the denominator has no room for it.
+                    # Unclear titles and non-class securities: still not
+                    # counted, still recorded.
                     # The NEWEST balance, not the largest ever. The walk is
                     # newest-first, so the first mention is the current one.
                     # Taking a maximum reported Block as excluding 61,382,506
