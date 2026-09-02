@@ -28,6 +28,18 @@ python3 ops/build_site_data.py \
 python3 -m fle.cli prices --panel site-data/pro/universe.csv --out prices.csv \
   || echo "  prices: fetch failed; keeping the existing prices.csv"
 
+# ---- 1c. the founders index, universe-wide ----
+# The chart's cohort is founders.csv INTERSECT perf.csv; the generator just
+# merged the universe founder labels, so fetching monthly closes for that
+# list turns the 47-company S&P index into the ~354-company universe index
+# with zero page changes -- the caption's count is computed, and young
+# listings enter when their price history begins (the method note already
+# says so). One Polygon aggs call per ticker, full history each, and
+# merge_history keeps every month ever fetched. A failure keeps the
+# existing perf.csv.
+python3 -m fle.cli perf --founders site-data/founders.csv --out perf.csv \
+  || echo "  perf: fetch failed; keeping the existing perf.csv"
+
 rm -rf public && mkdir -p public
 cp index.html about.html public/
 [ -f terms.html ] && cp terms.html public/
