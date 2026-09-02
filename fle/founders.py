@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 import urllib.request
 from dataclasses import dataclass, field
 
@@ -58,6 +59,14 @@ WINDOW = 240          # characters of context kept around a founder term
 NEAR = 90             # how close the surname must be to count as a candidate
 
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
+
+
+class FoundersApiError(RuntimeError):
+    """The classifier could not ASK. Distinct from UNCLEAR (the model read
+    the evidence and was unsure) -- the night this shipped, a missing key
+    silently classified a third of the universe 'uncertain' at heuristic
+    speed and zero cost, and the only tell was an API bill that did not
+    move. A classifier that could not ask must not conclude."""
 ANTHROPIC_MODEL = "claude-sonnet-4-6"
 
 
@@ -352,8 +361,26 @@ def llm_verdict(window: str, ceo: str, api_key: str, company: str = "",
             data = post(body)
         answer = "".join(b.get("text", "") for b in data.get("content", [])
                          if b.get("type") == "text").strip().upper()
-    except Exception:  # noqa: BLE001 -- an API failure is an unknown, not a no
-        return None
+    except Exception as exc:  # noqa: BLE001
+        # one retry for a transient blip; then the failure is the answer
+        try:
+            time.sleep(2)
+            if post is None:
+                req = urllib.request.Request(
+                    ANTHROPIC_URL, data=body,
+                    headers={"content-type": "application/json",
+                             "x-api-key": api_key,
+                             "anthropic-version": "2023-06-01"})
+                with urllib.request.urlopen(req, timeout=30) as r:
+                    data = json.loads(r.read())
+            else:
+                data = post(body)
+            answer = "".join(b.get("text", "") for b in data.get("content", [])
+                             if b.get("type") == "text").strip().upper()
+        except Exception:  # noqa: BLE001
+            raise FoundersApiError(
+                f"API call failed twice ({type(exc).__name__}: "
+                f"{str(exc)[:120]})") from exc
     if answer.startswith("YES"):
         return "yes"
     if answer.startswith("NO"):

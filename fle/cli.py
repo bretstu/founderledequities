@@ -1458,8 +1458,14 @@ def cmd_founders(args) -> int:
 
     key = None if args.no_llm else SETTINGS.anthropic_api_key
     if not args.no_llm and not key:
-        print("  note: no ANTHROPIC_API_KEY configured -- ambiguous proxies "
-              "will be marked uncertain instead of resolved")
+        # A NOTE IS NOT CONSENT. This used to print one line and then
+        # classify the whole universe by heuristics -- a third of it
+        # "uncertain" at zero cost, the note long scrolled away. Running
+        # without the model is a choice the operator makes with a flag,
+        # never a degradation the run makes for them.
+        print("  no ANTHROPIC_API_KEY configured. Add it to .env, or pass "
+              "--no-llm to classify by heuristics alone (deliberately).")
+        return 2
 
     overrides = {}
     if args.overrides:
@@ -1488,10 +1494,18 @@ def cmd_founders(args) -> int:
                 v_founder, v_method, ev, src = "unknown", "no-name", "", ""
                 early = ""
             else:
-                v = find_founder(client, cik, ceo,
-                                 company=(row.get("company") or "").strip(),
-                                 api_key=key,
-                                 escalate=not args.no_escalate)
+                from .founders import FoundersApiError
+                try:
+                    v = find_founder(client, cik, ceo,
+                                     company=(row.get("company") or "").strip(),
+                                     api_key=key,
+                                     escalate=not args.no_escalate)
+                except FoundersApiError as exc:
+                    print(f"\n  founders aborted at {tick}: {exc}")
+                    print("  nothing usable written; fix the key/network "
+                          "and rerun (or --only the remainder)")
+                    return 2
+                _unused = None
                 v_founder, v_method = v.founder, v.method
                 ev, src = v.evidence[:400], v.source
                 early = v.early_presence
