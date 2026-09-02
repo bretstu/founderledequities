@@ -1214,7 +1214,7 @@ function renderHero(){
      subline), never a component of a statistic. */
   const OPEN=PANEL.filter(r=>!r.masked);
   $("#thesis").innerHTML=`<b>${above5}</b> of ${open} chief executives own more than 5% of the company they run.`+
-    (sealed?`<span style="color:var(--faint);font-size:0.55em;display:block;margin-top:10px;font-weight:400">${sealed.toLocaleString()} more companies measured <button class="gopro" onclick="openPro()" style="font-size:0.8em;padding:6px 14px;margin-left:12px;vertical-align:2px">Go Pro</button></span>`:"");
+    (sealed?`<span style="color:var(--faint);font-size:0.55em;display:block;margin-top:10px;font-weight:400">${sealed.toLocaleString()} more companies measured <button class="gopro" onclick="openPro()" style="font-size:12.5px;padding:7px 14px;margin-left:14px;vertical-align:middle">Go Pro</button></span>`:"");
 
   // WHAT THE SITE IS ACTUALLY ABOUT, said with the numbers we have.
   //
