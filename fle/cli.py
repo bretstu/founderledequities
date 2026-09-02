@@ -795,7 +795,7 @@ def cmd_history(args) -> int:
 
 EVENT_COLUMNS = ["ticker", "cik", "ceo", "owner_cik", "filed", "traded",
                  "code", "label", "shares", "value", "avg_price",
-                 "pct_of_holding", "net_change", "holding_after", "residue",
+                 "pct_of_holding", "pct_approx", "net_change", "holding_after", "residue",
                  "plan", "other_codes", "rows", "unpriced_rows", "securities",
                  "direct", "form", "accession", "price_flag", "url"]
 
@@ -856,6 +856,7 @@ def cmd_events(args) -> int:
                 "" if e.value is None else f"{e.value:.2f}",
                 "" if e.avg_price is None else f"{e.avg_price:.4f}",
                 "" if e.pct_of_holding is None else f"{e.pct_of_holding:.4f}",
+                "" if e.pct_approx is None else f"{e.pct_approx:.4f}",
                 "" if e.net_change is None else f"{e.net_change:.0f}",
                 "" if e.holding_after is None else f"{e.holding_after:.0f}",
                 "" if e.residue is None else f"{e.residue:.0f}",

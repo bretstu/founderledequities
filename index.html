@@ -416,6 +416,7 @@ td.src a:hover{color:var(--blue)}
 .aplan{display:block;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.05em;margin-top:4px}
 .apx{font-family:var(--mono);font-size:11px;color:var(--faint);display:block;font-weight:400;margin-top:2px}
 .pwarn{cursor:help;color:var(--amber)}
+.apx{cursor:help;color:var(--amber)}
 td.asrc a{font-family:var(--mono);font-size:11px;color:var(--faint)}
 td.asrc a:hover{color:var(--blue)}
 .efoot{padding:12px 2px 0;font-size:13px;color:var(--mut)}
@@ -961,7 +962,7 @@ function mapEvents(recs){
     tk:(r.ticker||"").toUpperCase(),ceo:r.ceo||"",fd:(r.filed||"").slice(0,10),
     td:(r.traded||"").slice(0,10),c:r.code||"",lb:r.label||"",
     sh:num(r.shares)||0,v:num(r.value),ap:num(r.avg_price),
-    pc:num(r.pct_of_holding),nc:num(r.net_change),ha:num(r.holding_after),
+    pc:num(r.pct_of_holding),pa:num(r.pct_approx),nc:num(r.net_change),ha:num(r.holding_after),
     rs:num(r.residue),pl:r.plan||"unknown",u:r.url||"",fl:r.price_flag||"",acc:r.accession||""
   })).filter(e=>e.tk&&e.fd).sort((a,b)=>a.fd<b.fd?1:-1);
 }
@@ -1980,6 +1981,19 @@ function evValCell(e){
   if(e.fl)return `<span class="pwarn" title="as the filing states it — ${e.fl}. Almost certainly the filer\u2019s error; open the filing and see for yourself">${m} ⚠</span>`;
   return `<span title="$${fmt(e.v)} — at the execution prices the Form 4 reports, not a market close">${m}</span>`;
 }
+function pctOf(e){
+  /* THE PERCENTAGE, OR ITS APPROXIMATION. The pipeline declines a figure
+     over any residue; it offers pct_approx when the residue is under 1% of
+     the trade and under 0.1% of the position -- a gap that cannot move the
+     answer. The page shows that with a ≈ and says how large the gap was.
+     -> {v, approx} or null */
+  if(e.pc!==null&&e.pc!==undefined)return{v:e.pc,approx:false};
+  if(e.pa!==null&&e.pa!==undefined)return{v:e.pa,approx:true};
+  return null;
+}
+function approxNote(e){
+  return `≈ the walk left ${fmt(Math.abs(e.rs||0))} share${Math.abs(e.rs||0)===1?"":"s"} unexplained that day — under 1% of the trade and 0.1% of the position, so the figure cannot move`;
+}
 function pctWhy(e){
   /* WHY A PERCENTAGE IS MISSING IS ITSELF INFORMATION.
      A blank cell beside Schwarzman's $20.1m and a filled one beside
@@ -1993,9 +2007,12 @@ function pctWhy(e){
 }
 function evPctCell(e){
   if(unchangedKind(e)!==null)return '<span class="nopr" title="the shares sold did not come out of the position on record — a percentage of a stake that did not move is not a number">unchanged</span>';
-  if(e.pc===null||e.pc===undefined)return `<span class="nopr" title="${pctWhy(e)}">—</span>`;
-  if(e.pc>=100)return `<span title="${Math.round(e.pc).toLocaleString()}% — the trade was many times the position on record before it">≥100%</span>`;
-  return e.pc.toFixed(e.pc<1?2:1)+"%";
+  const p=pctOf(e);
+  if(!p)return `<span class="nopr" title="${pctWhy(e)}">—</span>`;
+  const t=p.approx?`<span class="apx" title="${approxNote(e)}">≈ `:"";
+  const c=p.approx?"</span>":"";
+  if(p.v>=100)return `${t}<span title="${Math.round(p.v).toLocaleString()}% — the trade was many times the position on record before it">≥100%</span>${c}`;
+  return t+p.v.toFixed(p.v<1?2:1)+"%"+c;
 }
 function sellKind(e){
   /* THE MANNERS OF A TRADE, IN PRECEDENCE ORDER.
@@ -2068,7 +2085,7 @@ function evFiltered(){
   const val=e=>e.fl?0:(e.v||0);
   const KEY={
     fd:e=>e.fd, co:e=>e.tk, act:e=>(e.c==="P"?"0":"1")+e.lb,
-    v:val, sh:e=>e.sh, pc:e=>(e.pc===null||e.pc===undefined?-1:e.pc),
+    v:val, sh:e=>e.sh, pc:e=>{const p=pctOf(e);return p?p.v:-1;},
   };
   const f=KEY[key]||KEY.fd;
   evs=[...evs].sort((a,b)=>{
@@ -2221,7 +2238,8 @@ function dayText(day,rows){
     const uk=unchangedKind(e);
     const what=side==="buys"?"bought":uk==="exercise"?"cashed options for":uk==="convert"?"converted and sold":uk==="bought"?"bought (position unchanged)":uk===""?"sold (position unchanged)":"sold";
     const man=side==="exsell"?"stake unchanged":e.pl==="plan"?"10b5-1 plan":e.pl==="discretionary"?"discretionary":"";
-    const pc=(e.pc===null||e.pc===undefined||side==="exsell")?"":(side==="buys"?" +":" −")+(e.pc>=100?"100%+":e.pc.toFixed(e.pc<1?2:1)+"%")+" of stake";
+    const pp=pctOf(e);
+    const pc=(!pp||side==="exsell")?"":(side==="buys"?" +":" −")+(pp.approx?"≈":"")+(pp.v>=100?"100%+":pp.v.toFixed(pp.v<1?2:1)+"%")+" of stake";
     L.push(`${e.ceo||coOf(e.tk)} (${e.tk}) ${what} ${e.v&&!e.fl?money(e.v):compact(e.sh)+" sh"}${pc}${man?", "+man:""}`);
   }
   const also=dayAlso(day);if(also)L.push(also+".");
@@ -2258,9 +2276,10 @@ function renderDay(){
   const scope=dayScope();
   const row=e=>{
     const b=evBadge(e),side=evSide(e);
+    const pp=pctOf(e);
     const pc=side==="exsell"?`<span title="options exercised and the shares sold the same day — the stake did not move">stake unchanged</span>`
-      :(e.pc===null||e.pc===undefined)?`<span class="nopr" title="${pctWhy(e)}">share of stake not stated</span>`
-      :`${side==="buys"?"+":"−"}${e.pc>=100?"100%+":e.pc.toFixed(e.pc<1?2:1)+"%"} of stake`;
+      :!pp?`<span class="nopr" title="${pctWhy(e)}">share of stake not stated</span>`
+      :`${pp.approx?`<span class="apx" title="${approxNote(e)}">≈ </span>`:""}${side==="buys"?"+":"−"}${pp.v>=100?"100%+":pp.v.toFixed(pp.v<1?2:1)+"%"} of stake`;
     const man=side==="exsell"?"":e.pl==="plan"?" · 10b5-1":e.pl==="discretionary"?" · discretionary":"";
     return `<div class="dayrow" onclick="openDrawer('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
       <span class="abadge ${b.k}" title="${b.n}">${b.t}</span>
@@ -2303,17 +2322,18 @@ function evAgg(side){
        declined to state a percentage for makes the aggregate unstatable
        too, with that row's reason: the site does not assert a number one
        of its own rows would not. */
-    let pc=null,why="";
-    const bad=evs.find(e=>e.pc===null||e.pc===undefined);
+    let pc=null,why="",approx=false;
+    const bad=evs.find(e=>!pctOf(e));
     if(bad)why=pctWhy(bad);
     else{
+      approx=evs.some(e=>pctOf(e).approx);
       const f=evs[0];
       const before=(f.ha||0)+(side==="sells"?f.sh:-f.sh);
       if(before>0)pc=100*sh/before;
       else why="the position before the first trade computes to zero, and a percentage of nothing is not a number";
     }
     const priced=evs.some(e=>!e.fl&&e.v);
-    return {tk:p.tk,ceo:p.ceo,n:evs.length,evs,v,sh,seg,pc,why,priced,
+    return {tk:p.tk,ceo:p.ceo,n:evs.length,evs,v,sh,seg,pc,why,approx,priced,
             latest:evs[evs.length-1].fd,flagged:evs.some(e=>e.fl)};
   });
   people.sort((a,b)=>b.v-a.v||b.sh-a.sh);
@@ -2337,7 +2357,7 @@ function evColumn(side){
        the top of the column and its mix against itself */
     const segs=["disc","plan","unknown"].map(k=>p.seg[k]>0?`<span class="seg ${k}" style="width:${max?(100*p.seg[k]/max).toFixed(2):0}%" title="${k==="disc"?"discretionary":k==="plan"?"under a 10b5-1 plan":"before the checkbox existed"} — ${money(p.seg[k])}"></span>`:"").join("");
     const pc=p.pc===null?`<span class="q" title="${p.why}">share of stake not stated</span>`
-      :`<span title="${fmt(p.sh)} shares against the position before the first of these trades">${p.pc>=100?(sell?"sold more than they held":"multiplied their stake"):(sell?"−":"+")+(p.pc>=1?p.pc.toFixed(p.pc<10?1:0):p.pc.toFixed(2))+"% of stake"}</span>`;
+      :`<span title="${fmt(p.sh)} shares against the position before the first of these trades${p.approx?" — ≈: a residue too small to move the figure on one of these days":""}">${p.approx?"≈ ":""}${p.pc>=100?(sell?"sold more than they held":"multiplied their stake"):(sell?"−":"+")+(p.pc>=1?p.pc.toFixed(p.pc<10?1:0):p.pc.toFixed(2))+"% of stake"}</span>`;
     return `<div class="abar" onclick="openDrawer('${p.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${p.tk}')"
       title="${p.ceo} — ${tradesAndFilings(p.evs)}, ${fmt(p.sh)} shares, latest ${p.latest}. Open the full record.">
       <div class="who"><span class="nmrow"><span class="nm">${p.ceo}</span>${fMark(p.tk)}</span><small>${p.tk}${p.n>1?` · ${p.n} trades`:""}</small></div>

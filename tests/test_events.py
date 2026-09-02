@@ -171,3 +171,24 @@ def test_a_purchase_the_position_did_not_register_says_so():
     assert e.pct_of_holding is None
     real = _e(code="P", buy=True, holding_after=10_000, net_change=10_000, residue=0.0)
     assert real.label == "open-market purchase"
+
+
+def test_a_residue_too_small_to_change_the_answer_states_it_with_a_caution():
+    """Tan: 105,263 bought, 561 unexplained, 1,331,640 after. Half a percent
+    of the trade, four hundredths of a percent of the position."""
+    tan = _e(code="P", buy=True, shares=105_263, holding_after=1_331_640,
+             net_change=105_824, residue=561.0)
+    assert tan.pct_of_holding is None, "the strict figure is still declined"
+    assert abs(tan.pct_approx - 100 * 105_263 / (1_331_640 - 105_263)) < 1e-9
+    # the median residue day: 38% of the trade -- stays unstated
+    big = _e(shares=10_000, holding_after=100_000, net_change=-13_800, residue=3_800.0)
+    assert big.pct_approx is None
+    # small against the trade but large against a tiny position -- unstated
+    tiny = _e(shares=1_000_000, holding_after=1_000, net_change=-1_000_000, residue=5_000.0)
+    assert tiny.pct_approx is None
+    # no residue at all: the strict figure exists and the approximation is not offered
+    clean = _e(shares=10_000, holding_after=90_000, net_change=-10_000, residue=0.0)
+    assert clean.pct_of_holding is not None and clean.pct_approx is None
+    # an unchanged stake is never given a percentage, however small the residue
+    ex = _e(shares=10_000, holding_after=90_000, net_change=0.0, residue=1.0, other_codes="M")
+    assert ex.pct_approx is None

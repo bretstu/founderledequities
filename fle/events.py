@@ -216,6 +216,39 @@ class Event:
             return None
         return 100.0 * self.shares / before
 
+    # A RESIDUE TOO SMALL TO CHANGE THE ANSWER. Under one percent of the
+    # trade AND under a tenth of a percent of the position: whichever way
+    # the unexplained shares resolve, the percentage rounds the same.
+    IMMATERIAL_RESIDUE = (0.01, 0.001)
+
+    @property
+    def pct_approx(self) -> float | None:
+        """The percentage, stated with a caution, when the day's residue
+        cannot move it.
+
+        Lip-Bu Tan's $10m Intel purchase: 105,263 shares bought, 561 shares
+        the walk could not attribute (a grant on the same filing). The
+        strict rule declined the percentage over 561 shares -- half a
+        percent of the trade, four hundredths of a percent of the position
+        -- and printed "not stated" beside the largest purchase on the
+        page. Across the feed, 783 of 4,087 residue days are this shape;
+        the rest (a median residue of 38% of the trade, and splits the walk
+        did not absorb at the top) stay unstated until the walk is fixed.
+        """
+        if not self.residue or self.holding_after is None \
+                or self.stake_unchanged or not self.shares:
+            return None
+        before = self.holding_after + (self.shares if not self.buy
+                                       else -self.shares)
+        if before <= 0:
+            return None
+        res = abs(self.residue)
+        if res / self.shares >= self.IMMATERIAL_RESIDUE[0]:
+            return None
+        if res / max(before, self.holding_after) >= self.IMMATERIAL_RESIDUE[1]:
+            return None
+        return 100.0 * self.shares / before
+
 
 def load_history(path: str) -> dict:
     """history.csv as {cik: [(date, raw_shares, adj_shares, unexplained)]}.

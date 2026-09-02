@@ -61,7 +61,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},loadData,nFilings,evBadge,unchangedKind,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,tjLens,soldTickers,renderTrends,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},loadData,nFilings,evBadge,unchangedKind,pctOf,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,tjLens,soldTickers,renderTrends,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -280,6 +280,13 @@ const P=runPage();
   const msft=EVENTS.find(e=>e.tk==="MSFT"&&e.td==="2020-09-01"&&e.fl);
   assert(msft && msft.fl, "the $189bn filer error is flagged");
   assert(evValCell(msft).includes("⚠"), "and shown with a caution, as filed");
+  // a residue too small to move the figure: stated with ≈, never silently
+  const ap=EVENTS.find(e=>(e.pc===null||e.pc===undefined)&&e.pa!==null&&e.pa!==undefined);
+  if(ap){assert(evPctCell(ap).includes("≈")&&evPctCell(ap).includes("unexplained"),"an approximate share of stake reads ≈ with the gap on hover: "+ap.tk);
+    assert(P.pctOf(ap).approx===true,"and pctOf says it is approximate");}
+  else console.log("  (no approximate-percentage rows in this feed; ≈ not exercised)");
+  const strict=EVENTS.find(e=>e.pc!==null&&e.pc!==undefined&&e.c==="S"&&P.unchangedKind(e)===null);
+  assert(!evPctCell(strict).includes("≈"),"a strict figure carries no ≈");
   const tko=EVENTS.find(e=>e.tk==="TKO"&&e.pc>100);
   assert(tko && evPctCell(tko).includes("≥100%"), "13,111% renders as ≥100%");
   const exs1=EVENTS.find(e=>e.lb==="exercise and sell");
