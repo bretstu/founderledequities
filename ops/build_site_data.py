@@ -85,11 +85,16 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     if fresh_dir:
         f_rows, fresh["founders"] = _overlay(
             f_rows, os.path.join(fresh_dir, "founders.csv"), sp)
-    with open(os.path.join(out_dir, "founders.csv"), "w", newline="",
-              encoding="utf-8") as fh:
-        w = csv.DictWriter(fh, fieldnames=f_cols, extrasaction="ignore")
-        w.writeheader()
-        w.writerows(f_rows)
+    # free labels for the free companies; the sealed remainder's founder
+    # status is itself part of what the seal covers
+    for path, rows in (("founders.csv",
+                        [r for r in f_rows if r.get("ticker") in sp or GENEROUS]),
+                       (os.path.join("pro", "founders.csv"), f_rows)):
+        with open(os.path.join(out_dir, path), "w", newline="",
+                  encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=f_cols, extrasaction="ignore")
+            w.writeheader()
+            w.writerows(rows)
 
     # ---- history shards + trends ----
     hist_rows = list(csv.DictReader(open(hist_p, encoding="utf-8-sig")))
@@ -146,8 +151,6 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
         for t, now, ago, d in trend_rows:
             if t in sp or GENEROUS:
                 w.writerow([t, now, ago, d])
-            else:
-                w.writerow([t, "", "", d])
     with open(os.path.join(out_dir, "pro", "trends.csv"), "w", newline="",
               encoding="utf-8") as fh:
         w = csv.writer(fh)

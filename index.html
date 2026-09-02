@@ -910,11 +910,12 @@ async function loadData(){
     t=>{const h=mapHistory(parseCSV(t));
         if(!Object.keys(h).length)return false;
         HIST=h;state.live.hist=true;return true;});
-  try{const t=await (await fetch("founders.csv",{cache:"no-store"})).text();
-      const m={};
-      for(const r of parseCSV(t))if(r.ticker)m[r.ticker.toUpperCase()]=
-        {f:(r.founder||"").toLowerCase(),ev:r.evidence||"",src:r.source||""};
-      if(Object.keys(m).length){FOUNDERS=m;state.live.founders=true;}}catch(e){}
+  await fetchFirst(state.pro?["/pro/founders.csv","founders.csv"]:["founders.csv"],
+    t=>{const m={};
+        for(const r of parseCSV(t))if(r.ticker)m[r.ticker.toUpperCase()]=
+          {f:(r.founder||"").toLowerCase(),ev:r.evidence||"",src:r.source||""};
+        if(!Object.keys(m).length)return false;
+        FOUNDERS=m;state.live.founders=true;return true;});
   await fetchFirst(state.pro?["/pro/trends.csv","trends.csv"]:["trends.csv"],
     t=>{const m={};
         for(const r of parseCSV(t))if(r.ticker&&r.direction)m[r.ticker.toUpperCase()]=r.direction;
@@ -1094,6 +1095,11 @@ function perfSeries(){
        the average. The live founder labels are the cohort's source of
        truth; the file is just its price memory. */
     if(state.live.founders&&FOUNDERS[tk]&&FOUNDERS[tk].f&&FOUNDERS[tk].f!=="yes")continue;
+    /* the index follows the table's rule: free charts the S&P founder
+       cohort, Pro the universe -- a sealed company contributes no line
+       anywhere, aggregate or not */
+    const _pr=PANEL.find(p=>p.tk===tk);
+    if(_pr&&_pr.masked)continue;
     byTk[tk]=Object.fromEntries(PERF[tk]);}
   const fRet=[],names=Object.keys(byTk);
   for(let i=1;i<months.length;i++){
@@ -1203,6 +1209,10 @@ function renderStatus(){
 function renderHero(){
   const above5=PANEL.filter(r=>r.pct>5).length;
   const open=PANEL.filter(r=>!r.masked).length, sealed=PANEL.length-open;
+  /* EVERY NUMBER ON THIS PAGE SPEAKS FOR THE OPEN SET. Free = the S&P
+     500; Pro = everything. The sealed remainder is one stated fact (the
+     subline), never a component of a statistic. */
+  const OPEN=PANEL.filter(r=>!r.masked);
   $("#thesis").innerHTML=`<b>${above5}</b> of ${open} chief executives own more than 5% of the company they run.`+
     (sealed?`<span style="color:var(--faint);font-size:0.55em;display:block;margin-top:6px">${sealed} more companies measured — their stakes sit behind the seal</span>`:"");
 
@@ -1215,10 +1225,10 @@ function renderHero(){
   // market close. Rather than list all that in the headline, the space now
   // carries the finding the name of the site promises -- how many of these
   // companies are still run by the person who started them.
-  const led=PANEL.filter(r=>{const i=fInfo(r.tk);return i&&i.f==="yes";});
+  const led=OPEN.filter(r=>{const i=fInfo(r.tk);return i&&i.f==="yes";});
   const ledVal=led.reduce((a,r)=>a+(r.val||0),0);
-  const allVal=PANEL.reduce((a,r)=>a+(r.val||0),0);
-  const asofs=PANEL.map(r=>r.asof).filter(Boolean).sort();
+  const allVal=OPEN.reduce((a,r)=>a+(r.val||0),0);
+  const asofs=OPEN.map(r=>r.asof).filter(Boolean).sort();
   const stat=(n,k,hl)=>`<div class="hstat"><div class="n${hl?" hl":""}">${n}</div><div class="k">${k}</div></div>`;
   let out="";
   if(led.length)out+=stat(led.length,"Founder-led companies",true);
