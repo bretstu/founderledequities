@@ -300,10 +300,12 @@ td.src a:hover{color:var(--blue)}
 .acol .achips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 12px}
 .acol .achips .chip{padding:6px 11px;font-size:12px}
 .acol .achips .chip i{margin-left:6px}
-.abar{display:grid;grid-template-columns:minmax(96px,34%) minmax(0,1fr) 150px;gap:8px 10px;align-items:center;padding:6px 0;cursor:pointer;border-radius:6px}
+.abar{display:grid;grid-template-columns:minmax(120px,42%) minmax(0,1fr) 138px;gap:8px 10px;align-items:center;padding:6px 0;cursor:pointer;border-radius:6px}
 .abar:hover{background:var(--wash);margin:0 -8px;padding-left:8px;padding-right:8px}
 .abar .who{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--disp);font-weight:650;font-size:13px;letter-spacing:-.012em;line-height:1.15}
 .abar .who small{display:block;font-family:var(--mono);font-weight:600;font-size:10.5px;color:var(--blue);letter-spacing:.02em;margin-top:2px}
+.abar .who{display:block}
+.abar .who .nmrow{display:flex;align-items:center;min-width:0}
 .acol.sell .abar .who small{color:#C13A2E}
 .abar .trk{height:18px;background:var(--panel);border-radius:3px;display:flex;overflow:hidden}
 .abar .seg{height:100%;background:var(--blue);flex:none}
@@ -333,14 +335,18 @@ td.src a:hover{color:var(--blue)}
 .acol.sell .af .key i{background:#C13A2E}
 .acol.sell .af .key i.plan{background:rgba(193,58,46,.36)}
 /* THE FOUNDER MARK. The site exists to tell founders from hired hands, so
-   the section says which is which -- quietly: one small diamond after the
-   name, the column's own colour, the proxy sentence on hover, and nothing
-   at all where the proxy is ambiguous. */
-.fm{font-size:9px;color:var(--blue);margin-left:5px;vertical-align:1px;cursor:help}
-/* in a bar the mark leads the name, so a long name's ellipsis never eats it */
-.fm.lead{margin-left:0;margin-right:5px}
-.acol.sell .fm,.drwho .fm.dn{color:#C13A2E}
+   the section says which is which -- quietly, and in the leaderboard's own
+   badge: the same ink pill, abbreviated to F, always after the name so
+   every name starts at the same edge. The proxy sentence is on hover, and
+   an ambiguous proxy gets nothing. In a bar the name is the flexible part
+   and the pill is not, so a long name shortens before the pill can go. */
+.fm{display:inline-block;flex:none;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;border-radius:4px;padding:1px 5px;margin-left:7px;vertical-align:1px;background:var(--ink);color:#fff;cursor:help;line-height:1.4}
+.abar .who .nm{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.abar .who .fm{margin-top:-1px}
 .acol .af .key .fm{margin-left:0;margin-right:4px}
+/* the day chips: the last five filing days, newest on the right */
+.dayh .dn .chip{padding:4px 9px;font-size:11px;font-family:var(--mono);letter-spacing:.02em}
+.dayh .dn .chip i{margin-left:5px}
 .acol .af a{color:var(--mut);text-decoration:none;font-weight:600;cursor:pointer}
 .acol .af a:hover{color:var(--blue)}
 /* SALES THAT DID NOT MOVE A STAKE ARE OFF THE PAGE AND ONE CLICK AWAY.
@@ -1055,10 +1061,10 @@ function wireSw(id,flip){
   el.addEventListener("click",flip);
   el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}});
 }
-function fMark(tk,cls){
+function fMark(tk){
   const i=fInfo(tk);
   if(!i||i.f!=="yes")return"";
-  return `<span class="fm${cls?" "+cls:""}" title="founder — ${(i.ev||"named a founder in the proxy").replace(/"/g,"&quot;").slice(0,300)}">◆</span>`;
+  return `<span class="fm" title="founder — ${(i.ev||"named a founder in the proxy").replace(/"/g,"&quot;").slice(0,300)}">F</span>`;
 }
 function fBadge(tk){
   const i=fInfo(tk);
@@ -2113,7 +2119,7 @@ function evTable(rows,sortable,emptyMsg){
     const plan=e.pl==="plan"?"10b5-1":e.pl==="discretionary"?"discretionary":"";
     return `<tr onclick="openDrawer('${e.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
      <td class="adate" title="traded ${e.td}${e.td!==e.fd?" — filings lag trades by up to two business days":""}">${e.fd}</td>
-     <td><span class="atk">${e.tk}</span><span class="aceo">${e.ceo||coOf(e.tk)}${fMark(e.tk,e.c==="P"?"":"dn")}</span></td>
+     <td><span class="atk">${e.tk}</span><span class="aceo">${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span></td>
      <td><span class="abadge ${b.k}" title="${b.n} — select for more like this"
        onclick="event.stopPropagation();setKind('${e.c==="P"?"buys":sellKind(e)}')"
        role="button" tabindex="0" onkeydown="if(event.key==='Enter'){event.stopPropagation();setKind('${e.c==="P"?"buys":sellKind(e)}')}"
@@ -2193,8 +2199,8 @@ function dayAlso(day){
   return `Also filed: ${ex.length} sale${ex.length===1?"":"s"} that left the stake unchanged (${kinds}), ${money(ex.reduce((t,e)=>t+((e.fl?0:e.v)||0),0))}`;
 }
 function dayText(day,rows){
-  /* the day as plain text, for pasting: one line per filing, the same
-     words the strip uses, so what gets posted is what the page shows */
+  /* the day as plain text, one line per trade in the strip's own words.
+     No control calls this today; it is the seed of the daily digest. */
   const L=[`Chief executive trades filed ${niceDay(day)} (${dayScope()}):`];
   for(const e of rows){
     const side=evSide(e);
@@ -2207,13 +2213,6 @@ function dayText(day,rows){
   const also=dayAlso(day);if(also)L.push(also+".");
   L.push(`Every filing linked: https://founderledequities.com/?day=${day}#activity`);
   return L.join("\n");
-}
-function copyDay(){
-  const day=dayShown();
-  const t=dayText(day,dayRows(day));
-  const done=()=>{const b=$("#daycopy");if(b){b.textContent="copied";setTimeout(()=>{b.textContent="copy as text";},1600);}};
-  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,()=>prompt("Copy:",t));
-  else prompt("Copy:",t);
 }
 function gotoDay(d){
   state.ev.day=d||"";
@@ -2229,10 +2228,19 @@ function renderDay(){
   const el=$("#actday");if(!el)return;
   const day=dayShown();
   const rows=dayRows(day);
+  /* THE LAST FIVE FILING DAYS, AS CHIPS. Filing days, not calendar days:
+     a weekend is not a day nobody filed, and a chip for it would be an
+     empty box. Each chip names its day the way a person says it and
+     carries the count of trades that moved a stake. The arrows, the
+     permalink and the copy control that were here read as machinery; the
+     ?day= address still works for anyone who has one. */
   const days=filingDays();
-  const i=days.indexOf(day);
-  const prev=i>0?days[i-1]:(i<0?days.filter(x=>x<day).pop():""),next=i>=0&&i<days.length-1?days[i+1]:"";
-  const pinned=!!state.ev.day&&day!==days[days.length-1];
+  let recent=days.slice(-5);
+  if(day&&!recent.includes(day))recent=[day,...recent].sort().slice(-5);
+  const chipDay=d=>{const t=Date.parse(d+"T00:00:00Z");
+    const lab=isNaN(t)?d:new Date(t).toLocaleDateString("en-US",{weekday:"short",month:"numeric",day:"numeric",timeZone:"UTC"}).replace(",","");
+    const n=EVENTS.filter(e=>e.fd===d&&unchangedKind(e)===null).length;
+    return `<button class="chip${d===day?" on":""}" onclick="gotoDay('${d===days[days.length-1]?"":d}')" title="${niceDay(d)} — ${n} trade${n===1?"":"s"} that moved a stake">${lab}<i>${n}</i></button>`;};
   const scope=dayScope();
   const CAP=12;
   const row=e=>{
@@ -2243,19 +2251,13 @@ function renderDay(){
     const man=side==="exsell"?"":e.pl==="plan"?" · 10b5-1":e.pl==="discretionary"?" · discretionary":"";
     return `<div class="dayrow" onclick="openDrawer('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
       <span class="abadge ${b.k}" title="${b.n}">${b.t}</span>
-      <span class="drwho"><span class="atk">${e.tk}</span>${e.ceo||coOf(e.tk)}${fMark(e.tk,side==="buys"?"":"dn")}</span>
+      <span class="drwho"><span class="atk">${e.tk}</span>${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span>
       <span class="drv"><b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>${pc}${man}${e.u?`<a href="${e.u}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing itself, on EDGAR">4 ↗</a>`:""}</span>
     </div>`;};
   el.innerHTML=`<div class="dayb">
     <div class="dayh">
       <span class="dt">Filed <b>${day?niceDay(day):"—"}</b> · ${tradesAndFilings(rows)} · ${scope}</span>
-      <span class="dn">
-        ${prev?`<button onclick="gotoDay('${prev}')" title="the previous filing day">‹ ${prev}</button>`:""}
-        ${next?`<button onclick="gotoDay('${next}')" title="the next filing day">${next} ›</button>`:""}
-        ${pinned?`<button onclick="gotoDay('')" title="back to the newest filing day">newest ›|</button>`:""}
-        ${rows.length?`<button id="daycopy" onclick="copyDay()" title="the day as plain text, one line per filing">copy as text</button>`:""}
-        <a href="?day=${day}#activity" title="a link to exactly this day">permalink</a>
-      </span>
+      <span class="dn">${recent.map(chipDay).join("")}</span>
     </div>
     ${rows.length?rows.slice(0,CAP).map(row).join(""):`<div class="dayempty">No chief executive of these companies filed a trade that moved a stake on ${day?niceDay(day):"this day"}.</div>`}
     ${rows.length>CAP?`<div class="dayrow" onclick="setView('day')" style="justify-content:flex-start;color:var(--mut);font-size:12.5px"><span></span><span>+ ${rows.length-CAP} more trade${rows.length-CAP===1?"":"s"} — open the day as a table →</span></div>`:""}
@@ -2326,7 +2328,7 @@ function evColumn(side){
       :`<span title="${fmt(p.sh)} shares against the position before the first of these trades">${p.pc>=100?(sell?"sold more than they held":"multiplied their stake"):(sell?"−":"+")+(p.pc>=1?p.pc.toFixed(p.pc<10?1:0):p.pc.toFixed(2))+"% of stake"}</span>`;
     return `<div class="abar" onclick="openDrawer('${p.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${p.tk}')"
       title="${p.ceo} — ${tradesAndFilings(p.evs)}, ${fmt(p.sh)} shares, latest ${p.latest}. Open the full record.">
-      <div class="who">${fMark(p.tk,"lead")}${p.ceo}<small>${p.tk}${p.n>1?` · ${p.n} trades`:""}</small></div>
+      <div class="who"><span class="nmrow"><span class="nm">${p.ceo}</span>${fMark(p.tk)}</span><small>${p.tk}${p.n>1?` · ${p.n} trades`:""}</small></div>
       <div class="trk">${segs||(p.sh?`<span class="seg unknown" style="width:2%" title="unpriced"></span>`:"")}</div>
       <div class="amt"><b>${p.priced?money(p.v):`<span class="nopr" title="the filing reports no price on these rows">${compact(p.sh)} sh</span>`}</b>${pc}</div>
     </div>`;};
@@ -2340,7 +2342,7 @@ function evColumn(side){
     </div>
     ${top.length?top.map(bar).join(""):`<div class="aempty">${ks.length?`No chief executive of these companies ${sell?"reduced a stake":"bought shares"}${ks.length===1?` ${ks[0]==="plan"?"under a plan":"at their own discretion"}`:""} in ${win}.`:"Both manners are off — select one to see the column."}</div>`}
     <div class="af">
-      <span class="key"><span><i></i>discretionary</span><span><i class="plan"></i>10b5-1 plan</span>${state.live.founders?`<span><span class="fm">◆</span>founder</span>`:""}</span>
+      <span class="key"><span><i></i>discretionary</span><span><i class="plan"></i>10b5-1 plan</span>${state.live.founders?`<span><span class="fm">F</span>founder</span>`:""}</span>
       ${pool.length?`<a onclick="setView('${side}')">${people.length>N?`Top ${N} of ${people.length} · `:""}all ${pool.length.toLocaleString()} trade${pool.length===1?"":"s"} →</a>`:""}
     </div>
   </div>`;

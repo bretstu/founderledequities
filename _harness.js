@@ -107,8 +107,11 @@ const P=runPage();
     assert(P.dayText(newest,rows).includes("Also filed:"),"and the copy text carries the same line");
   }else assert(!els["#actday"]._html.includes("Also filed:"),"and a day without them has no such line");
   const dayHtml=els["#actday"]._html;
-  assert(dayHtml.includes("Filed <b>")&&dayHtml.includes("permalink")&&dayHtml.includes("copy as text"),
-    "the strip carries a readable date, a permalink and a copy control");
+  assert(dayHtml.includes("Filed <b>")&&!dayHtml.includes("permalink")&&!dayHtml.includes("copy as text"),
+    "the strip carries a readable date and no machinery");
+  const chips=(dayHtml.match(/gotoDay\(/g)||[]).length;
+  assert(chips===Math.min(5,filingDays().length),"one chip per filing day, the last five: "+chips);
+  assert(/class="chip on"[^>]*>(Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d+\/\d+<i>/.test(dayHtml),"the newest day's chip is lit and reads like a day");
   assert((dayHtml.match(/class="dayrow"/g)||[]).length>=Math.min(rows.length,12),"one row per filing, capped at twelve");
   assert(dayHtml.includes("openDrawer(")&&dayHtml.includes("sec.gov"),"day rows are doors and carry filing links");
   const txt=dayText(newest,rows);
@@ -117,8 +120,8 @@ const P=runPage();
   assert(!txt.includes("null")&&!txt.includes("undefined"),"and prints no holes");
   const days=filingDays();
   gotoDay(days[days.length-2]);
-  assert(dayShown()===days[days.length-2]&&els["#actday"]._html.includes("newest"),
-    "a pinned earlier day shows a way back to the newest");
+  assert(dayShown()===days[days.length-2]&&(els["#actday"]._html.match(/class="chip on"/g)||[]).length===1,
+    "choosing an earlier day lights that chip alone");
   gotoDay("");
   assert(dayShown()===newest,"and clearing the pin returns to it");
   // a day with no filings is an honest empty, not an error
@@ -200,9 +203,10 @@ const P=runPage();
   const fn=[...B365.people,...S365.people].find(p=>{const i=P.fInfo(p.tk);return !i||i.f!=="yes";});
   const both=evColumn("buys")+evColumn("sells");
   const esc=x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
-  if(fy)assert(new RegExp('class="fm lead"[^<]*<\\/span>'+esc(fy.ceo)).test(both),"a founder gets the diamond, leading the name: "+fy.ceo);
-  if(fn)assert(!new RegExp('<\\/span>'+esc(fn.ceo)+"<small").test(both),"a hired chief executive does not: "+fn.ceo);
-  assert(both.includes("◆</span>founder")||!state.live.founders,"and the key explains the mark");
+  if(fy)assert(new RegExp('<span class="nm">'+esc(fy.ceo)+'<\\/span><span class="fm"').test(both),"a founder gets the F pill after the name: "+fy.ceo);
+  if(fn)assert(new RegExp('<span class="nm">'+esc(fn.ceo)+'<\\/span><\\/span>').test(both),"a hired chief executive does not: "+fn.ceo);
+  assert(both.includes("F</span>founder")||!state.live.founders,"and the key explains the mark");
+  assert(!both.includes("◆"),"the diamond is gone");
   setWin(30);
 
   // ---- manner chips are per column and independent ----
