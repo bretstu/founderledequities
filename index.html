@@ -403,6 +403,7 @@ td.asrc a:hover{color:var(--blue)}
 .actf tbody tr{cursor:pointer}
 .actf tbody tr:hover{background:var(--wash)}
 .adate{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap}
+.adate .atd{display:block;font-size:10px;color:var(--faint);margin-top:2px}
 .atk{font-family:var(--mono);font-weight:600;font-size:13px}
 .aceo{font-size:12px;color:var(--mut);margin-left:9px}
 .abadge{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.07em;padding:4px 9px;border-radius:5px}
@@ -1387,7 +1388,7 @@ function renderTable(){
     r.d3=st?st.d:null;                         /* points, over three years */
     r.d3base=st?st.baseDate:"";
     const lt=last[r.tk];
-    r.lt=lt?lt.fd:"";r.ltev=lt||null;
+    r.lt=lt?(lt.td||lt.fd):"";r.ltev=lt||null;   /* sorts by the trade date */
     r.ns=!sold.has(r.tk)&&!!HIST[r.tk];        /* never sold, on a record that exists */
   }
   let rows=PANEL.filter(r=>{
@@ -1429,7 +1430,7 @@ function renderTable(){
         ?`<span class="nopr" title="${HIST[r.tk]?"fewer than two points in the cleaned record":"no walkable filing history"}">—</span>`
         :`<span class="d3 ${r.d3>0.05?"up":r.d3<-0.05?"down":"flat"}" title="${r.d3>=0?"+":""}${r.d3.toFixed(2)} percentage points since ${r.d3base}">${sparkline(r.tk,H3)}<b>${r.d3>=0?"+":"−"}${Math.abs(r.d3).toFixed(Math.abs(r.d3)<1?2:1)}</b><small>pts</small></span>`}${r.ns?` <span class="ns" title="never sold a share that reduced the stake, in the record since 2016">never sold</span>`:""}</td>
      <td class="c-lt">${r.ltev
-        ?`<span class="lt" title="${r.ltev.ceo} — ${money(r.ltev.v||0)} on ${r.ltev.fd}, ${r.ltev.lb}"><span class="abadge ${evBadge(r.ltev).k}">${evBadge(r.ltev).t}</span><span class="ltd">${r.ltev.fd}</span></span>`
+        ?`<span class="lt" title="${r.ltev.ceo} — ${money(r.ltev.v||0)}, ${r.ltev.lb}, traded ${r.ltev.td||r.ltev.fd}, filed ${r.ltev.fd}${lagNote(r.ltev)}"><span class="abadge ${evBadge(r.ltev).k}">${evBadge(r.ltev).t}</span><span class="ltd">${r.ltev.td||r.ltev.fd}</span></span>`
         :`<span class="nopr" title="no trade that moved the stake on record since 2016">—</span>`}</td>
      <td class="n num" title="${r.val?'$'+fmt(r.val):''}">${r.val?money(r.val):"—"}</td>
      <td class="n num c-sh" title="${r.sh!==null?fmt(r.sh):''}">${r.sh!==null?compact(r.sh):"—"}</td>
@@ -1827,6 +1828,20 @@ function evValCell(e){
   if(e.fl)return `<span class="pwarn" title="as the filing states it — ${e.fl}. Almost certainly the filer\u2019s error; open the filing and see for yourself">${m} ⚠</span>`;
   return `<span title="$${fmt(e.v)} — at the execution prices the Form 4 reports, not a market close">${m}</span>`;
 }
+/* TWO DATES, AND WHICH ONE LEADS DEPENDS ON THE QUESTION.
+   Where the subject is disclosure -- the day strip, the trade table's
+   Filed column -- the filing date leads: that is the day the fact became
+   public. Where the subject is what a person did -- the drawer, the
+   screener's last trade, the copy text -- the trade date leads: Musk's
+   11,390 SpaceX shares went on 2 April, seven weeks before the S-1, and a
+   Form 4 filed 17 June said so; shown as "17 June" the row read as a sale
+   inside the lockup. The other date is always one hover away, and a lag
+   past two business days is named. */
+function lagNote(e){
+  if(!e.td||!e.fd||e.td===e.fd)return"";
+  const days=Math.round((Date.parse(e.fd)-Date.parse(e.td))/86400e3);
+  return days>4?` — filed ${days} days after the trade (the first Form 4 after a registration reports everything since the Form 3)`:" — filings lag trades by up to two business days";
+}
 function pctOf(e){
   /* THE PERCENTAGE, OR ITS APPROXIMATION. The pipeline declines a figure
      over any residue; it offers pct_approx when the residue is under 1% of
@@ -1993,7 +2008,7 @@ function evTable(rows,sortable,emptyMsg){
     const b=evBadge(e);
     const plan=e.pl==="plan"?"10b5-1":e.pl==="discretionary"?"discretionary":"";
     return `<tr onclick="openDrawer('${e.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
-     <td class="adate" title="traded ${e.td}${e.td!==e.fd?" — filings lag trades by up to two business days":""}">${e.fd}</td>
+     <td class="adate" title="filed ${e.fd}; traded ${e.td}${lagNote(e)}">${e.fd}${e.td&&e.td!==e.fd?`<span class="atd">traded ${e.td}</span>`:""}</td>
      <td><span class="atk">${e.tk}</span><span class="aceo">${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span></td>
      <td><span class="abadge ${b.k}" title="${b.n} — select for more like this"
        onclick="event.stopPropagation();setKind('${e.c==="P"?"buys":sellKind(e)}')"
@@ -2086,7 +2101,7 @@ function dayText(day,rows){
     const man=side==="exsell"?"stake unchanged":e.pl==="plan"?"10b5-1 plan":e.pl==="discretionary"?"discretionary":"";
     const pp=pctOf(e);
     const pc=(!pp||side==="exsell")?"":(side==="buys"?" +":" −")+(pp.approx?"≈":"")+(pp.v>=100?"100%+":pp.v.toFixed(pp.v<1?2:1)+"%")+" of stake";
-    L.push(`${e.ceo||coOf(e.tk)} (${e.tk}) ${what} ${e.v&&!e.fl?money(e.v):compact(e.sh)+" sh"}${pc}${man?", "+man:""}`);
+    L.push(`${e.ceo||coOf(e.tk)} (${e.tk}) ${what} ${e.v&&!e.fl?money(e.v):compact(e.sh)+" sh"}${pc}${man?", "+man:""}${e.td&&e.td!==e.fd?` (traded ${e.td})`:""}`);
   }
   const also=dayAlso(day);if(also)L.push(also+".");
   L.push(`Every filing linked: https://founderledequities.com/?day=${day}#activity`);
@@ -2128,7 +2143,7 @@ function renderDay(){
       :`${pp.approx?`<span class="apx" title="${approxNote(e)}">≈ </span>`:""}${side==="buys"?"+":"−"}${pp.v>=100?"100%+":pp.v.toFixed(pp.v<1?2:1)+"%"} of stake`;
     const man=side==="exsell"?"":e.pl==="plan"?" · 10b5-1":e.pl==="discretionary"?" · discretionary":"";
     return `<div class="dayrow" onclick="openDrawer('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
-      <span class="abadge ${b.k}" title="${b.n}">${b.t}</span>
+      <span class="abadge ${b.k}" title="${b.n} — traded ${e.td||e.fd}${lagNote(e)}">${b.t}</span>
       <span class="drwho"><span class="atk">${e.tk}</span>${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span>
       <span class="drv"><b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>${pc}${man}${e.u?`<a href="${e.u}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing itself, on EDGAR">4 ↗</a>`:""}</span>
     </div>`;};
@@ -2334,7 +2349,7 @@ function openDrawer(tk){
         const b=evBadge(e);
         const stk=unchangedKind(e)!==null?"stake unchanged"
           :(e.pc!==null&&e.pc!==undefined?(e.pc>=100?"≥100% of stake":e.pc.toFixed(1)+"% of stake"):"");
-        return `<div class="drow"><span class="adate">${e.fd}</span>
+        return `<div class="drow"><span class="adate" title="traded ${e.td||e.fd}; filed ${e.fd}${lagNote(e)}">${e.td||e.fd}</span>
           <span class="abadge ${b.k}" title="${b.n}">${b.t}</span>
           <span class="aval ${e.c==="P"?"up":"down"}">${evValCell(e)}</span>
           <span class="adlt ${e.c==="P"?"up":"down"}">${e.c==="P"?"+":"−"}${compact(e.sh)}</span>

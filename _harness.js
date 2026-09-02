@@ -323,9 +323,22 @@ const P=runPage();
   assert(t.includes("sortTape('v')"), "the value head is clickable");
   setView("");
 
-  // drawer with events present
+  // drawer with events present -- and the trade date leads there
   openDrawer("TSLA");
   assert(els["#drawer"]._html.includes("Latest trades"), "drawer prefers filed events");
+  {const lag={tk:"SPCX",ceo:"Elon Musk",c:"S",lb:"discretionary sale",pl:"discretionary",fd:"2026-06-17",td:"2026-04-02",sh:11390,v:1.2e6,pc:0.002,ha:5e8,nc:-11390,rs:0,u:"https://sec.gov/z"};
+   const row=evTable([lag],false);
+   assert(/class="adate"[^>]*>2026-06-17<span class="atd">traded 2026-04-02/.test(row),"the trade table leads with the filing date and shows the trade date beneath when it differs");
+   assert(row.includes("filed 76 days after the trade"),"and names a lag past two business days");
+   const before=P.PANEL;P.PANEL=[{tk:"SPCX",co:"SpaceX",ceo:"Elon Musk",pct:33.76,sh:4.45e9,out:1.3e10,val:6e11,conf:"medium"}];
+   const savedE=P.EVENTS;P.EVENTS=[lag];P.HIST={SPCX:[["2025-07-01",36.2,4.7e9],["2026-06-11",33.76,4.45e9]]};
+   P.state.sort={key:"pct",dir:-1};P.state.q="";P.state.min=0;P.state.tbH=false;P.renderTable();
+   const cell=els["#tbody"]._html;
+   assert(/class="ltd">2026-04-02</.test(cell)&&cell.includes("filed 2026-06-17"),"the screener's last trade leads with the trade date, filing date on hover");
+   openDrawer("SPCX");
+   assert(/class="adate"[^>]*>2026-04-02</.test(els["#drawer"]._html),"the drawer's latest trades lead with the trade date");
+   assert(P.dayText("2026-06-17",[lag]).includes("(traded 2026-04-02)"),"the copy text names the trade date when it is not the filing day");
+   P.PANEL=before;P.EVENTS=savedE;}
 
   // ---- the screener: three-year change, last trade, never sold ----
   const day=n=>new Date(Date.now()-n*86400e3).toISOString().slice(0,10);
