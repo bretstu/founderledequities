@@ -91,8 +91,27 @@ def test_the_deploy_passes_the_live_files_and_the_member_list():
     list decides only what is open. A root copy of the full panel would
     publish every sealed stake."""
     sh = (HERE / "ops" / "deploy.sh").read_text()
-    assert "sp500.csv history.csv events.csv founders.csv" in sh
+    assert "panel.csv history.csv events.csv founders.csv" in sh
     assert "universe-data/" not in sh.replace("# ", "")  or "u-panel.csv" not in sh
     assert 'cp "$f" public/' not in sh.split("legacy")[-1] or "sp500.csv history-free.csv" not in sh
     assert "for f in sp500.csv history-free.csv" not in sh
     assert "universe.html public/" in sh
+
+
+def test_nothing_still_calls_the_panel_sp500():
+    """The panel held 500 rows once; it holds the universe now. The only
+    thing named sp500 is the S&P list itself, universe/sp500-<date>.csv."""
+    import re
+    bad = []
+    for sub in ("fle", "ops"):
+        for p in (HERE / sub).rglob("*"):
+            if p.suffix in (".py", ".sh") and p.is_file():
+                for i, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
+                    if "sp500.csv" in line and "sp500-" not in line:
+                        bad.append(f"{p.relative_to(HERE)}:{i}")
+    for name in ("index.html", ".gitignore"):
+        for i, line in enumerate((HERE / name).read_text(encoding="utf-8").splitlines(), 1):
+            if "sp500.csv" in line and "sp500-" not in line:
+                bad.append(f"{name}:{i}")
+    assert not bad, "the panel is panel.csv now: " + ", ".join(bad)
+    assert "panel.csv" in (HERE / ".gitignore").read_text()

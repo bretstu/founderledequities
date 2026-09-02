@@ -2,7 +2,7 @@
 """Read the rehearsal's results: what the new names did that the known
 ones didn't. Run after panel + history + events on universe/rehearsal-100.csv.
 
-    python3 ops/rehearsal_read.py _staging/rh-panel.csv _staging/rh-history.csv ../founderledequities/sp500.csv
+    python3 ops/rehearsal_read.py _staging/rh-panel.csv _staging/rh-history.csv universe/sp500-<date>.csv
 """
 import csv
 import sys

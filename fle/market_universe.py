@@ -565,6 +565,18 @@ with the ticker; the evidence behind every decision is kept.</p>
 """
 
 
+def _sp_note(members_path: str) -> str:
+    """One sentence naming the S&P list in force and its date: the free
+    tier is the S&P 500 as of that list, re-read weekly by the nightly."""
+    import os
+    from .universe import newest_sp_list
+    got = newest_sp_list(os.path.dirname(members_path) or ".")
+    if not got:
+        return ""
+    return (f" The free tier is the S&P 500 as of <b>{got[1].isoformat()}</b>"
+            f" (membership re-read weekly); every other member is Pro.")
+
+
 def write_page(members_path: str, evidence_path: str, taken: str,
                about_path: str, out_path: str) -> str | None:
     """The published universe: every member, and the rules, as a page in
@@ -614,7 +626,7 @@ def write_page(members_path: str, evidence_path: str, taken: str,
   <h1>Every company on the site.</h1>
   <p class="standfirst">{n:,} US public companies with a market capitalization at or
   above $1 billion on <b>{html.escape(taken)}</b>, chosen by the rules below.
-  {flagged:,} carried a flag for human review at that snapshot.</p>
+  {flagged:,} carried a flag for human review at that snapshot.{_sp_note(members_path)}</p>
 
   <section id="rules">
     <h2>The rules</h2>

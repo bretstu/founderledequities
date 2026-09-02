@@ -1174,14 +1174,15 @@ def cmd_refresh(args) -> int:
     if snap:
         members_path, evidence_path, taken = snap
         age = (datetime.date.today() - taken).days
-        # THE QUARTERLY RE-SNAPSHOT IS OPT-IN. It reads every registrant's
-        # feed and prices them all -- hours, unattended, on a night nobody
-        # chose. Until its cadence is designed, the nightly says how old the
-        # snapshot is and leaves it; FLE_UNIVERSE_RESNAPSHOT=1 turns it on.
-        if age >= 90 and os.environ.get("FLE_UNIVERSE_RESNAPSHOT") != "1":
-            log(f"universe: snapshot {taken} is {age} days old (re-snapshot "
-                f"is off; set FLE_UNIVERSE_RESNAPSHOT=1 to take a new one)")
-        elif age >= 90:
+        due = resnapshot_due(age, os.environ)
+        if due == "hold":
+            log(f"universe: snapshot {taken} is {age} days old; re-snapshot "
+                f"held by FLE_UNIVERSE_RESNAPSHOT=0")
+        elif due == "warn":
+            log(f"universe: snapshot {taken} is {age} days old; a new one "
+                f"will be taken in {90 - age} day(s) -- watch that night, or "
+                f"set FLE_UNIVERSE_RESNAPSHOT=0 to hold")
+        if due == "take":
             log(f"universe: snapshot {taken} is {age} days old; taking a new one")
             if run("universe", lambda: cmd_market_universe(ns(
                     min_cap=1e9, exit_cap=8e8, prior=evidence_path,
@@ -1191,13 +1192,42 @@ def cmd_refresh(args) -> int:
                 return 1
             members_path, evidence_path, taken = newest_snapshot(
                 os.path.join(args.dir, "universe"))
-        else:
+        elif due != "warn":
             log(f"universe: snapshot {taken}, {age} days old, {sum(1 for _ in open(members_path))-1} members")
         args.universe = members_path
         from .market_universe import write_page
         write_page(members_path, evidence_path, taken.isoformat(),
                    os.path.join(args.dir, "about.html"),
                    path("universe.html"))
+
+    # 0b -- the S&P list, weekly. It decides only who is free; every member
+    # is already in the universe, so a change moves companies between tiers
+    # and nothing else. One request, accepted only if it looks like the
+    # S&P 500 (see universe.sp_list_acceptable); otherwise the current
+    # list stays and the log says why.
+    from .universe import newest_sp_list, sp_list_acceptable
+    cur = newest_sp_list(os.path.join(args.dir, "universe"))
+    sp_age = (datetime.date.today() - cur[1]).days if cur else 999
+    if sp_age >= 7:
+        try:
+            fresh = fetch_members(_client(args))
+            current = read_universe(cur[0]) if cur else []
+            ok, why, adds, drops = sp_list_acceptable(fresh, current)
+            if ok:
+                out = os.path.join(args.dir, "universe",
+                                   f"sp500-{datetime.date.today()}.csv")
+                write_universe(fresh, out)
+                log(f"S&P list: {len(fresh)} members -> {os.path.basename(out)}"
+                    + (f"; added {', '.join(adds)}" if adds else "")
+                    + (f"; dropped {', '.join(drops)}" if drops else "")
+                    + " (commit the file)")
+            else:
+                log(f"S&P list: keeping {os.path.basename(cur[0]) if cur else 'none'}"
+                    f" -- the fetched list was refused: {why}")
+        except Exception as exc:  # noqa: BLE001 - the list is never a reason to lose a night
+            log(f"S&P list: fetch failed ({exc.__class__.__name__}); keeping the current list")
+    else:
+        log(f"S&P list: {os.path.basename(cur[0])}, {sp_age} days old (weekly)")
 
     # 1 -- the panel. LAST NIGHT'S CHECKPOINT BECOMES TONIGHT'S PRIOR: a
     # finished checkpoint resumed as-is asks EDGAR nothing (five nights of
@@ -1212,7 +1242,7 @@ def cmd_refresh(args) -> int:
     # mirror the parser's; a stage that grew an option and was not added
     # here used to die mid-run, hours in.
     if run("panel", lambda: cmd_panel(ns(
-            universe=args.universe, out=path("sp500.csv"), limit=None,
+            universe=args.universe, out=path("panel.csv"), limit=None,
             tickers=None, ciks=None, redo="none",
             checkpoint=ck, prior=prior, workers=args.workers))):
         return 1
@@ -1220,10 +1250,10 @@ def cmd_refresh(args) -> int:
     # 2 -- the gate
     log("checking the verified holdings...")
     gate = cmd_diff(argparse.Namespace(
-        before=path("sp500.csv", staged=False), after=path("sp500.csv"),
+        before=path("panel.csv", staged=False), after=path("panel.csv"),
         limit=12, out=path("panel-diff.csv")))
     if gate and not args.force:
-        moves = anchor_moves(path("sp500.csv", staged=False), path("sp500.csv"))
+        moves = anchor_moves(path("panel.csv", staged=False), path("panel.csv"))
         bad = sorted(t for t, v in moves.items() if v == "unexplained")
         if bad:
             log(f"REFUSING TO PUBLISH -- a verified holding moved with no "
@@ -1238,6 +1268,19 @@ def cmd_refresh(args) -> int:
             else:
                 log(f"verified holding {t} still differs from its constant "
                     f"(unchanged tonight); ANCHORS in fle/cli.py is stale")
+    # 2b -- the same question of every company: a share count that moved
+    # with no newer filing to explain it is the rules moving, not the person
+    odd = unexplained_moves(path("panel.csv", staged=False), path("panel.csv"))
+    if odd and len(odd) > UNEXPLAINED_LIMIT and not args.force:
+        log(f"REFUSING TO PUBLISH -- {len(odd)} companies' share counts moved "
+            f"with no newer filing to explain it ({', '.join(odd[:12])}"
+            f"{', ...' if len(odd) > 12 else ''}). That is a rule change, not "
+            f"a night of filings. Yesterday's data is still live; "
+            f"panel-diff.csv has every move. --force publishes anyway.")
+        return 2
+    if odd:
+        log(f"{len(odd)} share count(s) moved with no newer filing -- within "
+            f"the nightly allowance, worth a look: {', '.join(odd)}")
 
     # 3 -- history, reusing companies that have not filed
     if run("history", lambda: cmd_history(ns(
@@ -1251,7 +1294,7 @@ def cmd_refresh(args) -> int:
     # 3.5 -- the trailing edge. History has just been rebuilt and the panel
     # is still staged, so the two can be reconciled before either is live.
     try:
-        n = edge_confidence(path("sp500.csv"), path("history.csv"))
+        n = edge_confidence(path("panel.csv"), path("history.csv"))
         if n:
             log(f"capped confidence for {n} compan{'y' if n == 1 else 'ies'} "
                 f"whose newest filing does not reconcile")
@@ -1260,7 +1303,7 @@ def cmd_refresh(args) -> int:
 
     # 4 -- prices
     run("prices", lambda: cmd_prices(ns(
-        panel=path("sp500.csv"), out=path("prices.csv"), date=None)))
+        panel=path("panel.csv"), out=path("prices.csv"), date=None)))
 
     # 5 -- events: the trade feed. Runs after history because the position
     # columns are read from the file history just wrote, and it is the
@@ -1268,7 +1311,7 @@ def cmd_refresh(args) -> int:
     # cache the panel filled. Non-fatal for the same reason prices is: a
     # site with yesterday's feed beats no site at all.
     run("events", lambda: cmd_events(ns(
-        panel=path("sp500.csv"), history=path("history.csv"),
+        panel=path("panel.csv"), history=path("history.csv"),
         tickers=None, since=args.since, exclusions=args.exclusions,
         out=path("events.csv"))))
 
@@ -1277,7 +1320,7 @@ def cmd_refresh(args) -> int:
     age = (time.time() - os.path.getmtime(fpath)) / 86400 if os.path.exists(fpath) else 999
     if args.founders or age >= 7:
         run("founders", lambda: cmd_founders(ns(
-            panel=path("sp500.csv"), out=path("founders.csv"),
+            panel=path("panel.csv"), out=path("founders.csv"),
             only=None, verbose=False, overrides=os.path.join(
                 live, "founder-overrides.csv"),
             no_escalate=False, no_llm=False)))
@@ -1312,10 +1355,10 @@ def cmd_refresh(args) -> int:
     # ops/build_site_data.py cuts the free files from these full ones by the
     # S&P list, and it is the only place that rule lives.)
 
-    # 7 -- publish, atomically. sp500.csv is the panel's historical name;
-    # under the market-cap universe it holds every member.
+    # 7 -- publish, atomically. panel.csv is one row per company in the
+    # universe; the S&P list decides at deploy which rows are open.
     published = []
-    for name in ("sp500.csv", "history.csv", "prices.csv", "founders.csv",
+    for name in ("panel.csv", "history.csv", "prices.csv", "founders.csv",
                  "events.csv", "universe.html"):
         src = path(name)
         if os.path.exists(src) and os.path.getsize(src) > 0:
@@ -1448,6 +1491,69 @@ def anchor_moves(before_path: str, after_path: str) -> dict:
         else:
             verdict[t] = "unexplained"
     return verdict
+
+
+def unexplained_moves(before_path: str, after_path: str) -> list[str]:
+    """Every company whose share count moved with no newer filing to say so.
+
+    WITH FINGERPRINTED REUSE, AN UNCHANGED COMPANY IS CARRIED VERBATIM, so
+    a row whose share count differs from last night's was recomputed
+    because a relevant filing landed. If its shares_as_of did not advance,
+    the number moved and no filing explains it: the rules moved, not the
+    person. That is the anchor gate's question asked of every company
+    instead of nine, with no constants to maintain.
+    """
+    def read(path):
+        out = {}
+        try:
+            with open(path, encoding="utf-8-sig") as fh:
+                for row in csv.DictReader(fh):
+                    t = (row.get("ticker") or "").strip().upper()
+                    if t:
+                        out[t] = row
+        except FileNotFoundError:
+            pass
+        return out
+
+    def num(row, col):
+        try:
+            return float((row.get(col) or "").replace(",", ""))
+        except (ValueError, AttributeError):
+            return None
+
+    old, new = read(before_path), read(after_path)
+    bad = []
+    for t, n in new.items():
+        o = old.get(t)
+        if o is None:
+            continue
+        a, b = num(o, "shares"), num(n, "shares")
+        if a is None or b is None or abs(a - b) <= 0.5:
+            continue
+        if (n.get("shares_as_of") or "") > (o.get("shares_as_of") or ""):
+            continue
+        bad.append(t)
+    return sorted(bad)
+
+
+# how many unexplained moves a night may carry before it is a rule change
+# rather than a filer's oddity (an amended cover page, a restated figure)
+UNEXPLAINED_LIMIT = 5
+
+
+def resnapshot_due(age_days: int, env: dict) -> str:
+    """"take" | "warn" | "hold" | "" for a universe snapshot of this age.
+
+    QUARTERLY, ON BY DEFAULT, WITH A WEEK'S NOTICE. The cadence the About
+    page promises and the two-snapshot exit rule was designed around. The
+    log says a week ahead that one is coming, so the first unattended
+    snapshot can be watched; FLE_UNIVERSE_RESNAPSHOT=0 holds it.
+    """
+    if age_days >= 90:
+        return "hold" if env.get("FLE_UNIVERSE_RESNAPSHOT") == "0" else "take"
+    if age_days >= 83:
+        return "warn"
+    return ""
 
 
 def cmd_diff(args) -> int:
@@ -2033,7 +2139,7 @@ def main(argv=None) -> int:
 
     ev = sub.add_parser("events",
                         help="every CEO buy/sell, one row per filing, code and day")
-    ev.add_argument("--panel", default="sp500.csv")
+    ev.add_argument("--panel", default="panel.csv")
     ev.add_argument("--history", default="history.csv",
                     help="where the position columns come from")
     ev.add_argument("--tickers", default=None)
@@ -2045,7 +2151,7 @@ def main(argv=None) -> int:
 
     pr = sub.add_parser("prices",
                         help="closing prices for every panel ticker, one request")
-    pr.add_argument("--panel", default="sp500.csv")
+    pr.add_argument("--panel", default="panel.csv")
     pr.add_argument("--date", default=None,
                     help="trading day to price at (default: most recent)")
     pf = sub.add_parser("perf",
@@ -2081,7 +2187,7 @@ def main(argv=None) -> int:
 
     fo = sub.add_parser("founders",
                         help="decide the founder flag from each proxy statement")
-    fo.add_argument("--panel", default="sp500.csv")
+    fo.add_argument("--panel", default="panel.csv")
     fo.add_argument("--only", default=None,
                     help="comma-separated tickers; run just these")
     fo.add_argument("--verbose", action="store_true",

@@ -2,7 +2,7 @@
 """Checkpoint two: read the full-universe results before anything ships.
 
     python3 ops/universe_read.py _staging/u-panel.csv _staging/u-history.csv \
-        _staging/u-founders.csv ../founderledequities/sp500.csv
+        _staging/u-founders.csv universe/sp500-<date>.csv
 
 Every section is a question a skeptical reader would ask. Sections skip
 themselves gracefully if a column is absent -- say so rather than crash.

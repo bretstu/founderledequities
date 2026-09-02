@@ -3,7 +3,7 @@
 
     python3 ops/build_site_data.py _staging/u-panel.csv _staging/u-history.csv \
         _staging/u-events.csv _staging/u-founders.csv \
-        ../founderledequities/sp500.csv site-data/
+        universe/sp500-<date>.csv site-data/
 
 Layout produced (paths relative to the output dir):
     universe.csv            every company, list-page columns; non-S&P rows
@@ -28,7 +28,7 @@ from collections import defaultdict
 GENEROUS = False   # True: public universe.csv carries every pct unmasked
 
 # EVERY COLUMN THE PAGE READS, OR THE PAGE READS A HOLE. The universe
-# promotion moved the page from sp500.csv (the full panel) to this list, and
+# promotion moved the page from the raw panel to this list, and
 # the first cut of this list dropped five columns mapPanel consumes:
 # shares_as_of (every "As of" cell became "—"), operating_partnership
 # (Blackstone printed 0.000% instead of "partnership units"), cautions (the
@@ -69,7 +69,7 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     fresh = {}
     if fresh_dir:
         panel, fresh["panel"] = _overlay(
-            panel, os.path.join(fresh_dir, "sp500.csv"), sp)
+            panel, os.path.join(fresh_dir, "panel.csv"), sp)
     for d in ("", "history", "events", "pro", "pro/history", "pro/events"):
         os.makedirs(os.path.join(out_dir, d), exist_ok=True)
 

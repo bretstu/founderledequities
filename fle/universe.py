@@ -145,3 +145,41 @@ def read_universe(path: str) -> list[Member]:
 
 def default_name(when: date | None = None) -> str:
     return f"universe/sp500-{(when or date.today()).isoformat()}.csv"
+
+
+def newest_sp_list(universe_dir: str):
+    """(path, date) of the newest universe/sp500-<date>.csv, or None."""
+    import glob
+    import os
+    paths = sorted(glob.glob(os.path.join(universe_dir, "sp500-????-??-??.csv")))
+    if not paths:
+        return None
+    stem = os.path.basename(paths[-1])[len("sp500-"):-len(".csv")]
+    try:
+        return paths[-1], date.fromisoformat(stem)
+    except ValueError:
+        return None
+
+
+def sp_list_acceptable(fresh: list, current: list,
+                       lo: int = 495, hi: int = 510, max_churn: int = 10):
+    """-> (ok, why, added_tickers, dropped_tickers).
+
+    THE LIST IS A SCRAPE, AND A SCRAPE CAN BE WRONG FOR A DAY. The S&P 500
+    holds a few more than 500 filers (dual-class members dedupe to one
+    CIK; a handful of members are two companies). Anything outside 495-510
+    is not the index; a difference of more than ten companies from the
+    list we have is not an index change but a broken page. Either keeps
+    the current list. Membership is compared by CIK, EDGAR's own key.
+    """
+    n = len(fresh)
+    if not lo <= n <= hi:
+        return False, f"{n} members, expected {lo}-{hi}", [], []
+    old = {m.cik: m for m in current}
+    new = {m.cik: m for m in fresh}
+    adds = sorted(new[c].ticker for c in new if c not in old)
+    drops = sorted(old[c].ticker for c in old if c not in new)
+    if current and len(adds) + len(drops) > max_churn:
+        return (False, f"{len(adds)} added and {len(drops)} dropped at once; "
+                f"more than {max_churn} is not an index change", adds, drops)
+    return True, "", adds, drops

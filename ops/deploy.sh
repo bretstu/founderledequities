@@ -7,18 +7,20 @@
 # so the sharded tree under pro/ is gated by construction).
 #
 # ONE REFRESH, ONE LIST. The nightly rebuilds the whole universe into the
-# root files (sp500.csv is the panel's historical name; it holds every
-# member). The S&P list is passed here for ONE purpose: deciding which rows
+# root files (panel.csv holds every member). The S&P list is passed here
+# for ONE purpose: deciding which rows
 # are open at the root and which sit sealed under /pro/. The overlay of a
 # fresh S&P onto a frozen snapshot is gone with the snapshot.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-SP_LIST="${FLE_SP_LIST:-universe/sp500-2026-08-25.csv}"
+# the newest S&P list in force; the nightly writes a new dated one weekly
+SP_LIST="${FLE_SP_LIST:-$(ls universe/sp500-????-??-??.csv | sort | tail -1)}"
+echo "  S&P list: $SP_LIST"
 
 # ---- 1. the site's data, generated fresh ----
 python3 ops/build_site_data.py \
-  sp500.csv history.csv events.csv founders.csv \
+  panel.csv history.csv events.csv founders.csv \
   "$SP_LIST" site-data/
 
 # ---- 1b. price the whole universe ----
@@ -93,9 +95,8 @@ cp -r site-data/. public/
 for f in prices.csv perf.csv; do
   [ -s "$f" ] && cp "$f" public/
 done
-# NO ROOT COPY OF sp500.csv. It was kept one release for cached pages; under
-# the universe it is the whole unmasked panel, and a copy at the root would
-# publish every sealed stake. The page's fallbacks find universe.csv.
+# NO ROOT COPY OF THE PANEL. It is the whole unmasked universe, and a copy
+# at the root would publish every sealed stake. The page reads universe.csv.
 
 # ---- 3. sanity before the world sees it ----
 # the free root must never carry an unmasked universe: the root file and the

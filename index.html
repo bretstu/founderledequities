@@ -818,7 +818,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
 <script>
 /* ================================================================
    Founder Led Equities — analytics layer
-   Loads sp500.csv + history.csv from the same folder. If they are
+   Loads universe.csv (or a raw panel.csv) + history from the same folder. If they are
    unreachable (opened from disk, or not yet generated) it falls
    back to an embedded sample of real pipeline output and says so.
    ================================================================ */
@@ -986,11 +986,11 @@ async function loadData(){
      the site is simply free. */
   try{const r=await fetch("/api/me",{cache:"no-store"});
       if(r.ok){const j=await r.json();state.pro=!!j.pro;state.acct=j.email||"";}}catch(e){}
-  /* the full universe when it is published; today's sp500.csv otherwise --
+  /* the universe file the deploy cuts; a raw panel.csv in a dev folder otherwise --
      the same page serves both eras */
   await fetchFirst(state.pro
-      ?["/pro/universe.csv","universe.csv","sp500.csv"]
-      :["universe.csv","sp500.csv"],
+      ?["/pro/universe.csv","universe.csv","panel.csv"]
+      :["universe.csv","panel.csv"],
     t=>{const p=mapPanel(parseCSV(t));
         if(!p.length)return false;
         PANEL=p;state.live.panel=true;return true;});
@@ -1452,7 +1452,7 @@ function renderTable(){
     </tr>`}).join("");
   const sealedN=PANEL.filter(r=>r.masked).length;
   $("#tcount").textContent=
-    `${total} compan${total===1?"y":"ies"} · scroll the table${state.live.panel?"":" · embedded sample — serve sp500.csv beside this file to load all 500"}`;
+    `${total} compan${total===1?"y":"ies"} · scroll the table${state.live.panel?"":" · embedded sample — serve universe.csv beside this file to load all 500"}`;
   document.querySelectorAll("th.sortable").forEach(th=>{
     const on=th.dataset.key===state.sort.key;
     th.querySelector(".arr").textContent=on?(state.sort.dir<0?" ↓":" ↑"):"";

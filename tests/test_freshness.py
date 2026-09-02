@@ -231,3 +231,62 @@ def test_polygon_days_are_never_cached(tmp_path):
     assert "use_cache=False" in src
     assert edgar.SUBMISSIONS_MAX_AGE <= 4 * 3600, \
         "a run by hand in the evening must not blind the 02:30 nightly"
+
+
+# ---------------------------------------------------------------- the S&P list
+
+def _m(cik, tk):
+    from fle.universe import Member
+    return Member(cik, tk, tk + " Co")
+
+
+def test_the_sp_list_is_accepted_only_when_it_looks_like_the_index():
+    from fle.universe import sp_list_acceptable
+    current = [_m(i, f"T{i}") for i in range(1, 504)]
+    # an ordinary quarter: two swapped
+    fresh = [m for m in current if m.cik not in (1, 2)] + [_m(901, "NEW1"), _m(902, "NEW2")]
+    ok, why, adds, drops = sp_list_acceptable(fresh, current)
+    assert ok and adds == ["NEW1", "NEW2"] and drops == ["T1", "T2"]
+    # a broken page: 480 rows
+    ok, why, _, _ = sp_list_acceptable(current[:480], current)
+    assert not ok and "480 members" in why
+    # a vandalised page: the right size, the wrong companies
+    fresh = current[:490] + [_m(900 + i, f"X{i}") for i in range(13)]
+    ok, why, adds, drops = sp_list_acceptable(fresh, current)
+    assert not ok and "not an index change" in why
+    # the first list ever: no current to compare against, size alone decides
+    ok, _, _, _ = sp_list_acceptable(current, [])
+    assert ok
+
+
+def test_the_newest_sp_list_is_found_by_its_date(tmp_path):
+    from fle.universe import newest_sp_list
+    assert newest_sp_list(str(tmp_path)) is None
+    (tmp_path / "sp500-2026-08-25.csv").write_text("cik,ticker,company,added\n")
+    (tmp_path / "sp500-2026-09-09.csv").write_text("cik,ticker,company,added\n")
+    (tmp_path / "sp500-notadate.csv").write_text("")
+    path, when = newest_sp_list(str(tmp_path))
+    assert path.endswith("sp500-2026-09-09.csv") and when.isoformat() == "2026-09-09"
+
+
+# ---------------------------------------------------------------- every company
+
+def test_the_gate_asks_every_company_whether_a_filing_explains_its_move(tmp_path):
+    from fle.cli import unexplained_moves
+    before, after = tmp_path / "b.csv", tmp_path / "a.csv"
+    _panel(before, [dict(ticker="A", shares=100, shares_as_of="2026-08-01"),
+                    dict(ticker="B", shares=100, shares_as_of="2026-08-01"),
+                    dict(ticker="C", shares=100, shares_as_of="2026-08-01")])
+    _panel(after, [dict(ticker="A", shares=100, shares_as_of="2026-08-01"),   # carried
+                   dict(ticker="B", shares=120, shares_as_of="2026-09-02"),   # filed: explained
+                   dict(ticker="C", shares=120, shares_as_of="2026-08-01"),   # moved, no filing
+                   dict(ticker="D", shares=5, shares_as_of="2026-09-02")])    # new member
+    assert unexplained_moves(str(before), str(after)) == ["C"]
+
+
+def test_the_resnapshot_is_quarterly_with_a_weeks_notice():
+    from fle.cli import resnapshot_due
+    assert resnapshot_due(30, {}) == ""
+    assert resnapshot_due(83, {}) == "warn" and resnapshot_due(89, {}) == "warn"
+    assert resnapshot_due(90, {}) == "take"
+    assert resnapshot_due(120, {"FLE_UNIVERSE_RESNAPSHOT": "0"}) == "hold"
