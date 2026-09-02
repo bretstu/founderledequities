@@ -37,8 +37,48 @@ python3 -m fle.cli prices --panel site-data/pro/universe.csv --out prices.csv \
 # says so). One Polygon aggs call per ticker, full history each, and
 # merge_history keeps every month ever fetched. A failure keeps the
 # existing perf.csv.
-python3 -m fle.cli perf --founders site-data/founders.csv --out perf.csv \
-  || echo "  perf: fetch failed; keeping the existing perf.csv"
+# Monthly data earns monthly fetches. The stage re-pulls full history per
+# ticker (355 calls), so it runs only with a reason: a founder ticker
+# missing from perf.csv (gap-healing -- the cohort can never silently
+# lack a line), a month rollover, or FLE_PERF_FORCE=1.
+if python3 - << 'PYGUARD'
+import csv, datetime, os, sys
+if os.environ.get("FLE_PERF_FORCE") == "1":
+    print("  perf: forced"); sys.exit(0)
+try:
+    have = {r["ticker"] for r in csv.DictReader(open("perf.csv", encoding="utf-8-sig"))}
+    newest = max(r["month"] for r in csv.DictReader(open("perf.csv", encoding="utf-8-sig")))
+except (OSError, ValueError):
+    print("  perf: no usable perf.csv; fetching"); sys.exit(0)
+want = {r["ticker"] for r in csv.DictReader(open("site-data/founders.csv", encoding="utf-8-sig"))
+        if (r.get("founder") or "").lower() == "yes"}
+missing = sorted(want - have)
+if missing:
+    # a ticker Polygon genuinely has nothing for would otherwise trigger
+    # the full fetch on EVERY deploy, forever; one attempt per day caps
+    # the chase at the old nightly's cost
+    marker = ".perf-attempt"
+    today = datetime.date.today().isoformat()
+    tried = ""
+    try:
+        tried = open(marker).read().strip()
+    except OSError:
+        pass
+    if tried == today:
+        print(f"  perf: {len(missing)} founder(s) still without history "
+              f"({', '.join(missing[:6])}); already tried today, skipping")
+        sys.exit(1)
+    open(marker, "w").write(today)
+    print(f"  perf: {len(missing)} founder(s) without price history "
+          f"({', '.join(missing[:6])}...); fetching"); sys.exit(0)
+if newest < datetime.date.today().strftime("%Y-%m"):
+    print(f"  perf: newest stored month {newest}; month rolled; fetching"); sys.exit(0)
+print(f"  perf: current through {newest}, cohort complete; skipping"); sys.exit(1)
+PYGUARD
+then
+  python3 -m fle.cli perf --founders site-data/founders.csv --out perf.csv \
+    || echo "  perf: fetch failed; keeping the existing perf.csv"
+fi
 
 rm -rf public && mkdir -p public
 cp index.html about.html public/

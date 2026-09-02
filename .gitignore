@@ -28,3 +28,4 @@ site-data/
 *.log
 history.csv.pre-*
 history-state.json
+.perf-attempt
