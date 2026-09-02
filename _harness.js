@@ -289,7 +289,7 @@ const P=runPage();
   // search reaches by surname across every side of the window
   setWin(365);setView("");state.ev.sort={key:"fd",dir:-1}; state.ev.q="musk";
   const musk=P.evBase();
-  assert(musk.length>0 && musk.every(e=>e.tk==="TSLA"), "search by surname reaches Musk: "+musk.length);
+  assert(musk.length>0 && musk.some(e=>e.tk==="TSLA"), "search by surname reaches Musk (and, over the universe, whoever else matches): "+musk.length);
   state.ev.q="";setView("sells");
 
   // sorting is by column head
