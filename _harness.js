@@ -55,7 +55,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},loadData,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,syncChips,toggleDir,toggleKind,setKind,trajStats,tjLens,soldTickers,renderTrends,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},loadData,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,syncChips,toggleDir,toggleKind,setKind,trajStats,tjLens,soldTickers,renderTrends,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -311,6 +311,13 @@ const P=runPage();
 
   // ---- founders against the index ----
   {
+    // the cohort is perf INTERSECT live founder labels now; the fixture
+    // must pin its own labels or real founders.csv rows (some explicitly
+    // "no") evict fixture tickers and shift the >=5-names start
+    const savedF=P.FOUNDERS;
+    const pinned={};
+    for(const tk in P.PERF){if(tk!=="SPY")pinned[tk]={f:"yes",ev:"",src:""};}
+    P.FOUNDERS=pinned;
     const full=P.perfSeries();
     assert(full&&full.months.length===24,"perf chains all 24 months: "+(full&&full.months.length));
     const endF=full.founders[full.founders.length-1],endS=full.spy[full.spy.length-1];
@@ -336,6 +343,7 @@ const P=runPage();
     assert(P.state.pw==="60","a five-year record defaults to the 5-year preset, max chip hidden");
     assert(els["#perfnote"]._html.includes("portrait, not a strategy"),
       "the caveat ships with the chart");
+    P.FOUNDERS=savedF;
   }
 
   // ---- founders-only, per section, independently ----

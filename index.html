@@ -1089,6 +1089,11 @@ function perfSeries(){
   const months=spy.map(p=>p[0]);
   const byTk={};
   for(const tk in PERF){if(tk==="SPY")continue;
+    /* perf.csv keeps every month ever fetched (merge_history), so a
+       company later reclassified founder->no would linger as a ghost in
+       the average. The live founder labels are the cohort's source of
+       truth; the file is just its price memory. */
+    if(state.live.founders&&FOUNDERS[tk]&&FOUNDERS[tk].f&&FOUNDERS[tk].f!=="yes")continue;
     byTk[tk]=Object.fromEntries(PERF[tk]);}
   const fRet=[],names=Object.keys(byTk);
   for(let i=1;i<months.length;i++){
@@ -1272,7 +1277,11 @@ function renderBars(){
   const max=metric(top[0])||1;
   $("#bars").innerHTML=top.map(r=>{
     const w=Math.max(2,metric(r)/max*100);
-    const inside=w>34;
+    /* 34 was tuned when TSLA led at ~2x the runner-up; with SPCX at
+       $632B as the yardstick, META/NVDA/DELL (22-31%) all just missed
+       and looked like the leader got special treatment. A fifth of the
+       track (~230px) fits ticker + name + badge comfortably. */
+    const inside=w>20;
     const main=useVal?money(r.val||0):r.pct.toFixed(2)+"%";
     const sub=useVal?r.pct.toFixed(2)+"% of co.":(r.val?money(r.val):"");
     return `<div class="brow" onclick="openDrawer('${r.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${r.tk}')">
