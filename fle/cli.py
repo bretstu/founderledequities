@@ -1096,6 +1096,52 @@ def cmd_market_universe(args) -> int:
 
 
 def cmd_refresh(args) -> int:
+    """The nightly, wrapped so that EVERY way it ends is reported.
+
+    A DEAD-MAN'S SWITCH WITH BOTH HALVES. The heartbeat used to ping on
+    success and on one kind of failure; a panel that failed, a gate that
+    refused, an exception, a hang -- each returned or died without a word,
+    and the monitor would have noticed only by the silence. Now: /start
+    when the run begins (a hang is "started, never finished"), and the
+    exit code when it ends, whatever the path, with the tail of the log
+    as the body so the alert says why. By-hand runs stay silent: the URL
+    lives in the service unit, not in .env.
+    """
+    log = _logger(args.dir)
+    _heartbeat(log, "start")
+    try:
+        code = _refresh(args, log)
+    except BaseException as exc:  # noqa: BLE001 - report, then re-raise
+        log(f"FAILED refresh: {exc.__class__.__name__}: {exc}")
+        _heartbeat(log, 1, _log_tail(args.dir))
+        raise
+    _heartbeat(log, code or 0, _log_tail(args.dir))
+    return code
+
+
+def _logger(live: str):
+    def log(msg):
+        stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        line = f"[{stamp}] {msg}"
+        print(line, flush=True)
+        try:
+            with open(os.path.join(live, "refresh.log"), "a",
+                      encoding="utf-8") as fh:
+                fh.write(line + "\n")
+        except OSError:
+            pass
+    return log
+
+
+def _log_tail(live: str, n: int = 40) -> str:
+    try:
+        with open(os.path.join(live, "refresh.log"), encoding="utf-8") as fh:
+            return "".join(fh.readlines()[-n:])
+    except OSError:
+        return ""
+
+
+def _refresh(args, log) -> int:
     """One command, run by a timer, that publishes only if the data is sane.
 
     The stages are the same ones run by hand all along -- panel, diff,
@@ -1122,17 +1168,6 @@ def cmd_refresh(args) -> int:
     started = time.time()
     live, stage = args.dir, os.path.join(args.dir, "_staging")
     os.makedirs(stage, exist_ok=True)
-
-    def log(msg):
-        stamp = time.strftime("%Y-%m-%d %H:%M:%S")
-        line = f"[{stamp}] {msg}"
-        print(line, flush=True)
-        try:
-            with open(os.path.join(live, "refresh.log"), "a",
-                      encoding="utf-8") as fh:
-                fh.write(line + "\n")
-        except OSError:
-            pass
 
     def path(name, staged=True):
         return os.path.join(stage if staged else live, name)
@@ -1384,15 +1419,9 @@ def cmd_refresh(args) -> int:
         code = os.system(deploy)  # noqa: S605 - operator-configured, by design
         if code:
             log(f"FAILED deploy: exit {code}")
-            _heartbeat(log, ok=False)
             return 1
         log("deployed")
-
-    # 9 -- heartbeat. A nightly job that dies silently is only discovered by
-    # a reader looking at stale data, which is the worst possible monitor.
-    # Point FLE_HEARTBEAT_URL at a dead-man's-switch service and it will
-    # page YOU instead; the /fail suffix reports an explicit failure.
-    _heartbeat(log, ok=True)
+    # the heartbeat is sent by cmd_refresh, for every exit path
     return 0
 
 
@@ -1418,14 +1447,25 @@ def _write_variant(src: str, dst: str, keep) -> None:
     os.replace(tmp, dst)
 
 
-def _heartbeat(log, ok: bool) -> None:
+def _heartbeat(log, signal, body: str = "") -> None:
+    """Ping the dead-man's switch: "start", or an exit code (0 = success).
+
+    healthchecks.io reads /start as "a run began", /<n> as "it ended with
+    exit status n" (nonzero alerts), and shows a POSTed body in the alert,
+    so the tail of the log rides along and the email says why.
+    """
     url = os.environ.get("FLE_HEARTBEAT_URL")
     if not url:
         return
+    suffix = "/start" if signal == "start" else f"/{int(signal)}"
     try:
         import urllib.request
-        urllib.request.urlopen(  # noqa: S310 - operator-configured URL
-            url if ok else url.rstrip("/") + "/fail", timeout=10)
+        req = urllib.request.Request(
+            url.rstrip("/") + suffix,
+            data=(body or "").encode("utf-8")[-100_000:],
+            headers={"Content-Type": "text/plain; charset=utf-8"},
+            method="POST")
+        urllib.request.urlopen(req, timeout=10)  # noqa: S310 - operator-configured URL
     except Exception as exc:  # noqa: BLE001 - monitoring must never kill the run
         log(f"heartbeat failed: {exc.__class__.__name__}")
 

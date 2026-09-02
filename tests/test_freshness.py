@@ -218,8 +218,8 @@ def test_weekly_copies_keep_their_date(tmp_path):
     assert abs(os.path.getmtime(dst) - old) < 2, "the date travels with the file"
     import inspect
     from fle import cli
-    assert "copy2(fpath" in inspect.getsource(cli.cmd_refresh) and \
-           "copyfile(fpath" not in inspect.getsource(cli.cmd_refresh)
+    assert "copy2(fpath" in inspect.getsource(cli._refresh) and \
+           "copyfile(fpath" not in inspect.getsource(cli._refresh)
 
 
 def test_polygon_days_are_never_cached(tmp_path):
@@ -290,3 +290,60 @@ def test_the_resnapshot_is_quarterly_with_a_weeks_notice():
     assert resnapshot_due(83, {}) == "warn" and resnapshot_due(89, {}) == "warn"
     assert resnapshot_due(90, {}) == "take"
     assert resnapshot_due(120, {"FLE_UNIVERSE_RESNAPSHOT": "0"}) == "hold"
+
+
+# ---------------------------------------------------------------- the heartbeat
+
+def _capture(monkeypatch):
+    import urllib.request
+    calls = []
+    def fake_open(req, timeout=10):
+        calls.append((req.full_url, req.data.decode("utf-8")))
+        class R: pass
+        return R()
+    monkeypatch.setattr(urllib.request, "urlopen", fake_open)
+    monkeypatch.setenv("FLE_HEARTBEAT_URL", "https://hc-ping.com/uuid")
+    return calls
+
+
+def test_every_way_the_nightly_ends_is_reported(tmp_path, monkeypatch):
+    """The switch used to hear success and one kind of failure; a panel
+    that failed, a gate that refused, or an exception died silent."""
+    from fle import cli
+    import argparse
+    calls = _capture(monkeypatch)
+    (tmp_path / "refresh.log").write_text("[x] earlier line\n")
+    args = argparse.Namespace(dir=str(tmp_path))
+
+    monkeypatch.setattr(cli, "_refresh", lambda a, log: (log("published"), 0)[1])
+    assert cli.cmd_refresh(args) == 0
+    assert [u.rsplit("/", 1)[1] for u, _ in calls] == ["start", "0"]
+    assert "published" in calls[-1][1], "the log tail rides with the ping"
+
+    calls.clear()
+    monkeypatch.setattr(cli, "_refresh", lambda a, log: (log("REFUSING TO PUBLISH -- gate"), 2)[1])
+    assert cli.cmd_refresh(args) == 2
+    assert [u.rsplit("/", 1)[1] for u, _ in calls] == ["start", "2"]
+    assert "REFUSING" in calls[-1][1]
+
+    calls.clear()
+    def boom(a, log):
+        raise RuntimeError("panel died")
+    monkeypatch.setattr(cli, "_refresh", boom)
+    import pytest as _pt
+    with _pt.raises(RuntimeError):
+        cli.cmd_refresh(args)
+    assert [u.rsplit("/", 1)[1] for u, _ in calls] == ["start", "1"]
+    assert "panel died" in calls[-1][1]
+
+
+def test_no_url_means_no_ping_and_never_an_error(tmp_path, monkeypatch):
+    from fle import cli
+    monkeypatch.delenv("FLE_HEARTBEAT_URL", raising=False)
+    import urllib.request
+    monkeypatch.setattr(urllib.request, "urlopen", lambda *a, **k: (_ for _ in ()).throw(AssertionError("pinged")))
+    cli._heartbeat(lambda m: None, 0, "x")   # silent, no call
+    monkeypatch.setenv("FLE_HEARTBEAT_URL", "https://hc-ping.com/uuid")
+    said = []
+    cli._heartbeat(said.append, 0, "x")      # the fake raises; the run must not
+    assert said and "heartbeat failed" in said[0]
