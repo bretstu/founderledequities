@@ -576,6 +576,10 @@ const P=runPage();
   assert(idx.includes('og:title')&&idx.includes('twitter:card')&&idx.includes('rel="canonical"'),
     "a pasted link unfurls as a card");
   {const head=idx.slice(0,idx.indexOf("</head>"));
+   assert(head.includes('property="og:image" content="https://founderledequities.com/og.png"')&&head.includes('name="twitter:image"'),
+     "a shared link unfurls with a picture");
+   assert(require("fs").existsSync("ops/og_image.py")&&require("fs").readFileSync("ops/deploy.sh","utf8").includes("og_image.py"),
+     "and the deploy draws it from tonight's numbers");
    assert(!/S&P 500 CEO ownership/.test(head)&&!/Every S&P 500 chief executive/.test(head),"the title and descriptions no longer describe an S&P-only site");
    assert(/2,100\+/.test(head),"and say how many companies the site covers");
    const box=idx.slice(idx.indexOf('id="promodal"'),idx.indexOf("</script>",idx.indexOf('id="promodal"')));

@@ -23,6 +23,13 @@ python3 ops/build_site_data.py \
   panel.csv history.csv events.csv founders.csv \
   "$SP_LIST" site-data/
 
+# ---- 1a. the card a shared link unfurls into, from tonight's numbers ----
+# Pillow lives in the venv; the system python may lack it, and a missing
+# picture must never stop a deploy -- the script keeps the last og.png.
+OGPY=python3; [ -x .venv/bin/python ] && OGPY=.venv/bin/python
+$OGPY ops/og_image.py panel.csv "$SP_LIST" prices.csv founders.csv og.png \
+  || echo "  og image: not drawn; keeping the existing og.png"
+
 # ---- 1b. price the whole universe ----
 # Polygon's grouped-daily endpoint returns the entire market in ONE call;
 # the ticker list only filters the output. Pricing 2,135 costs the same
@@ -89,6 +96,7 @@ cp index.html about.html public/
 # the universe page: every member, the snapshot date, the rules. The About
 # page has linked to it since the promotion; it deploys now.
 [ -f universe.html ] && cp universe.html public/
+[ -s og.png ] && cp og.png public/
 
 # ---- 2. free tier, at the root: the generator's output plus prices ----
 cp -r site-data/. public/
