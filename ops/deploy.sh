@@ -20,6 +20,14 @@ python3 ops/build_site_data.py \
   universe-data/u-events.csv universe-data/u-founders.csv \
   sp500.csv site-data/ .
 
+# ---- 1b. price the whole universe ----
+# Polygon's grouped-daily endpoint returns the entire market in ONE call;
+# the ticker list only filters the output. Pricing 2,135 costs the same
+# request as pricing 500. A failure keeps yesterday's file -- the deploy
+# never publishes an empty prices.csv over a good one.
+python3 -m fle.cli prices --panel site-data/pro/universe.csv --out prices.csv \
+  || echo "  prices: fetch failed; keeping the existing prices.csv"
+
 rm -rf public && mkdir -p public
 cp index.html about.html public/
 [ -f terms.html ] && cp terms.html public/
