@@ -1,4 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-TPB,1290677,Brian Wigginton,1734429,2026-05-13,2026-05-12,S,discretionary sale,4000,366680.00,91.6700,30.2343,-4000,9230,0,discretionary,,1,0,Common Stock,D,4,0001437749-26-016848,,https://www.sec.gov/Archives/edgar/data/1290677/000143774926016848/rdgdoc.xml
-TPB,1290677,Brian Wigginton,1734429,2025-06-18,2025-06-16,S,exercise and sell,10800,817236.00,75.6700,,0,10171,0,discretionary,M,1,0,Common Stock,D,4,0001437749-25-020794,,https://www.sec.gov/Archives/edgar/data/1290677/000143774925020794/rdgdoc.xml
-TPB,1290677,Brian Wigginton,1734429,2025-05-09,2025-05-08,S,discretionary sale,3500,265125.00,75.7500,25.6016,-3500,10171,0,discretionary,,1,0,Common Stock,D,4,0001437749-25-015885,,https://www.sec.gov/Archives/edgar/data/1290677/000143774925015885/rdgdoc.xml

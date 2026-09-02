@@ -1,4 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-NWN,1733998,Justin B. Palfreyman,1686243,2026-05-07,2026-05-07,P,open-market purchase,1225,59718.75,48.7500,4.4994,1225,28451,0,discretionary,,1,0,Common Stock,D,4,0001733998-26-000089,,https://www.sec.gov/Archives/edgar/data/1733998/000173399826000089/form4.xml
-NWN,1733998,Justin B. Palfreyman,1686243,2020-12-18,2020-12-17,S,sale,2335,120480.95,51.5978,43.5066,-2335,3032,0,unknown,,2,0,Common Stock,D,4,0001567619-20-021376,,https://www.sec.gov/Archives/edgar/data/1733998/000156761920021376/doc1.xml
-NWN,1733998,Justin B. Palfreyman,1686243,2019-08-22,2019-08-21,S,sale,488,34737.79,71.1840,15.8287,-488,2595,0,unknown,,1,0,Common Stock,D,4,0001567619-19-017497,,https://www.sec.gov/Archives/edgar/data/1733998/000156761919017497/doc1.xml

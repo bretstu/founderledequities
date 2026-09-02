@@ -1,7 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-WSO,105016,Albert H. Nahmad,1243203,2012-11-30,2012-11-28,S,sale,38700,2752351.20,71.1202,,,,,unknown,C,2,0,Common Stock,D,4,0001181431-12-061408,,https://www.sec.gov/Archives/edgar/data/105016/000118143112061408/rrd361699.xml
-WSO,105016,Albert H. Nahmad,1243203,2012-11-28,2012-11-27,S,sale,28885,2063469.30,71.4374,,,,,unknown,C,1,0,Common Stock,D,4,0001181431-12-060846,,https://www.sec.gov/Archives/edgar/data/105016/000118143112060846/rrd361477.xml
-WSO,105016,Albert H. Nahmad,1243203,2012-11-28,2012-11-26,S,sale,23300,1672097.88,71.7639,,,,,unknown,C,2,0,Common Stock,D,4,0001181431-12-060846,,https://www.sec.gov/Archives/edgar/data/105016/000118143112060846/rrd361477.xml
-WSO,105016,Albert H. Nahmad,1243203,2012-11-26,2012-11-23,S,sale,4729,342443.44,72.4135,,,,,unknown,C,1,0,Common Stock,D,4,0001181431-12-060492,,https://www.sec.gov/Archives/edgar/data/105016/000118143112060492/rrd361372.xml
-WSO,105016,Albert H. Nahmad,1243203,2012-11-26,2012-11-21,S,sale,9700,696818.90,71.8370,,,,,unknown,C,1,0,Common Stock,D,4,0001181431-12-060492,,https://www.sec.gov/Archives/edgar/data/105016/000118143112060492/rrd361372.xml
-WSO,105016,Albert H. Nahmad,1243203,2012-11-21,2012-11-20,S,sale,28100,2025982.59,72.0990,,,,,unknown,C,2,0,Common Stock,D,4,0001181431-12-060027,,https://www.sec.gov/Archives/edgar/data/105016/000118143112060027/rrd361116.xml

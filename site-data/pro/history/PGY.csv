@@ -1,6 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1883085,PGY,Gal Krubiner,1935363,2024-04-04,4,0001883085-24-000042,523076,523076,75900219,0.6892,33600,348069.12,,,P,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:PreferredClassAMember,,TRUE
-1883085,PGY,Gal Krubiner,1935363,2024-04-08,3,0001883085-24-000035,5078650,5078650,75900219,6.6912,,,,4555574,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:PreferredClassAMember,,TRUE
-1883085,PGY,Gal Krubiner,1935363,2026-04-01,4,0001935363-26-000002,5078650,5078650,84897989,5.9821,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:PreferredClassAMember,,TRUE
-1883085,PGY,Gal Krubiner,1935363,2026-06-02,4,0001628280-26-040304,5128850,5128850,84897989,6.0412,16600,250550.44,,33600,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:PreferredClassAMember,,TRUE
-1883085,PGY,Gal Krubiner,1935363,2026-06-24,4,0001628280-26-045532,5145080,5145080,84897989,6.0603,16230,250467.85,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:PreferredClassAMember,,TRUE

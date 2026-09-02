@@ -1,5 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-895419,WOLF,Robert Feurle,2066842,2025-05-01,3,0000895419-25-000057,0,0,155571122,0.0,,,,,,0,c-3,,TRUE
-895419,WOLF,Robert Feurle,2066842,2025-12-08,4,0001628280-25-056292,317327,317327,25892446,1.2256,317327,,1,,A,1,c-3,,TRUE
-895419,WOLF,Robert Feurle,2066842,2026-05-01,4,0001628280-26-030487,288020,288020,48339081,0.5958,-29307,1077325.32,,,F,1,c-3,,TRUE
-895419,WOLF,Robert Feurle,2066842,2026-07-15,4,0001628280-26-048451,279773,279773,48339081,0.5788,-8247,289469.7,,,F,1,c-3,,TRUE

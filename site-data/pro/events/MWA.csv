@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-MWA,1350593,Paul McAndrew,1956000,2026-08-10,2026-08-10,S,scheduled sale,40000,1055572.00,26.3893,,-30563,42556,9437,plan,,1,0,Common Stock,D,4,0001225208-26-007049,,https://www.sec.gov/Archives/edgar/data/1350593/000122520826007049/doc4.xml
-MWA,1350593,Paul McAndrew,1956000,2024-02-15,2024-02-13,S,discretionary sale,23000,345510.60,15.0222,77.4385,-12000,6701,0,discretionary,M,1,0,Common Stock,D,4,0001225208-24-002254,,https://www.sec.gov/Archives/edgar/data/1350593/000122520824002254/doc4.xml

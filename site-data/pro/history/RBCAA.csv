@@ -1,3 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-921557,RBCAA,Steven E. Trager,1372597,2020-08-13,4,0001179110-20-009077,90433,90433,20908048,0.4325,-142764,,1,,G,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-921557,RBCAA,Steven E. Trager,1372597,2022-02-11,4,0001179110-22-001205,0,0,19989375,0.0,-90433,,4,,G,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

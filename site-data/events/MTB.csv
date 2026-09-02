@@ -1,5 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-MTB,36270,René F. Jones,1245773,2024-10-30,2024-10-28,S,discretionary sale,23071,4472938.57,193.8771,,-25322,82044,-720,discretionary,G,1,0,Common Stock,D,4,0001628280-24-044361,,https://www.sec.gov/Archives/edgar/data/36270/000162828024044361/wk-form4_1730324581.xml
-MTB,36270,René F. Jones,1245773,2016-11-15,2016-11-11,S,sale,6730,900106.75,133.7462,13.0103,38269,44998,,unknown,,1,0,Common Stock,I,4,0001209191-16-150232,,https://www.sec.gov/Archives/edgar/data/36270/000120919116150232/doc4.xml
-MTB,36270,René F. Jones,1245773,2016-11-15,2016-11-10,S,sale,1700,225429.86,132.6058,,38269,44998,46699,unknown,,1,0,Common Stock,D,4,0001209191-16-150232,,https://www.sec.gov/Archives/edgar/data/36270/000120919116150232/doc4.xml
-MTB,36270,René F. Jones,1245773,2016-11-09,2016-11-07,S,sale,15740,1956639.40,124.3100,,-7097,6729,8643,unknown,M,1,0,Common Stock,D,4,0001209191-16-149101,,https://www.sec.gov/Archives/edgar/data/36270/000120919116149101/doc4.xml

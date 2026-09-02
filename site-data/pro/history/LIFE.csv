@@ -1,7 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1788451,LIFE,Peter Colis,2089362,2026-01-28,3,0002089362-26-000002,7872574,7872574,62869653,12.5221,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1788451,LIFE,Peter Colis,2089362,2026-01-29,4,0002089362-26-000003,7180688,7180688,62869653,11.4215,-562993,,7,-128893,CF,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1788451,LIFE,Peter Colis,2089362,2026-05-15,4,0002089362-26-000010,7249546,7249546,62994262,11.5083,-60035,1324783.1,2,128893,CS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1788451,LIFE,Peter Colis,2089362,2026-07-08,4,0002089362-26-000012,8149546,8149546,63759454,12.7817,900000,,1,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1788451,LIFE,Peter Colis,2089362,2026-08-17,4,0002089362-26-000014,8128678,8128678,63759454,12.749,-29342,1003013.68,,8474,S,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1788451,LIFE,Peter Colis,2089362,2026-08-19,4,0002089362-26-000016,8052704,8052704,63759454,12.6298,-84448,2795706.4,4,8474,CS,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

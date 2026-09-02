@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-FERG,2011641,Kevin Murphy,1984614,2025-10-15,2025-10-13,S,discretionary sale,8800,2060349.28,234.1306,5.0445,11518,165649,0,discretionary,AF,1,0,Common Stock,D,4,0001984614-25-000004,,https://www.sec.gov/Archives/edgar/data/2011641/000198461425000004/wk-form4_1760541291.xml
-FERG,2011641,Kevin Murphy,1984614,2024-10-16,2024-10-14,S,discretionary sale,10000,2013500.00,201.3500,6.0927,,154131,0,discretionary,AF,1,0,Common Stock,D,4,0001127602-24-025624,,https://www.sec.gov/Archives/edgar/data/2011641/000112760224025624/form4.xml

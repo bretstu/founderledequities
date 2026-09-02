@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-NWL,814453,Christopher H. Peterson,1558968,2021-05-11,2021-05-07,S,sale,39378,1153775.40,29.3000,25.8252,-39378,113101,0,unknown,,1,0,Common Stock,D,4,0000814453-21-000103,,https://www.sec.gov/Archives/edgar/data/814453/000081445321000103/wf-form4_162076417355282.xml
-NWL,814453,Christopher H. Peterson,1558968,2020-03-09,2020-03-06,P,open-market purchase,10000,140930.00,14.0930,25.3949,10000,49378,0,unknown,,1,0,Common Stock,D,4,0000814453-20-000087,,https://www.sec.gov/Archives/edgar/data/814453/000081445320000087/wf-form4_158375444359482.xml

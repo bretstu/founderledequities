@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-APG,1796209,Russell A. Becker,1805568,2021-08-18,2021-08-16,P,open-market purchase,112,2486.40,22.2000,,1015,2793999,846,unknown,,1,0,Common Stock,I,4,0000899243-21-033396,,https://www.sec.gov/Archives/edgar/data/1796209/000089924321033396/doc4.xml
-APG,1796209,Russell A. Becker,1805568,2020-06-23,2020-06-19,P,open-market purchase,2100,30009.00,14.2900,0.0781,3150,2690384,0,unknown,,1,0,Common Stock,I,4,0000899243-20-017475,,https://www.sec.gov/Archives/edgar/data/1796209/000089924320017475/doc4.xml

@@ -1,4 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-MZTI,57515,David A. Ciesinski,1352525,2025-02-18,2025-02-13,S,discretionary sale,17000,3250230.00,191.1900,23.7284,-17000,54644,0,discretionary,,1,0,Common Stock,D,4,0001225208-25-001800,,https://www.sec.gov/Archives/edgar/data/57515/000122520825001800/doc4.xml
-MZTI,57515,David A. Ciesinski,1352525,2022-11-10,2022-11-10,S,sale,2225,465372.95,209.1564,4.3973,-5411,48374,,unknown,FM,3,0,Common Stock,D,4,0001225208-22-011591,,https://www.sec.gov/Archives/edgar/data/57515/000122520822011591/doc4.xml
-MZTI,57515,David A. Ciesinski,1352525,2022-11-10,2022-11-08,S,sale,7926,1664517.86,210.0073,,-5411,48374,2515,unknown,FM,1,0,Common Stock,D,4,0001225208-22-011591,,https://www.sec.gov/Archives/edgar/data/57515/000122520822011591/doc4.xml

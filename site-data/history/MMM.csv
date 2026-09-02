@@ -1,7 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-66740,MMM,William M. Brown,1350633,2024-05-01,3,0001127602-24-014046,0,0,661820063,0.0,,,,,,0,c-8,,TRUE
-66740,MMM,William M. Brown,1350633,2024-05-03,4,0001127602-24-014329,0,0,661820063,0.0,,,,,,0,c-8,,TRUE
-66740,MMM,William M. Brown,1350633,2025-02-12,4,0001127602-25-004699,0,0,542900000,0.0,,,,,,0,c-8,,TRUE
-66740,MMM,William M. Brown,1350633,2025-05-02,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=4665.0, last_txn={('D', ''): 4665.0}, holdings=0.0, hold_by_vehicle={}, filed='2025-05-02', moved_here=True, opening={('D', ''): 0.0}, rows=2, as_of='2025-05-02', accession='0001127602-25-013291', table='I')",4665,4665,538181362,0.0009,4665,1774437.12,,,FM,1,c-8,,TRUE
-66740,MMM,William M. Brown,1350633,2026-02-06,4,0000066740-26-000088,4665,4665,526700000,0.0009,,,,,,1,c-8,,TRUE
-66740,MMM,William M. Brown,1350633,2026-05-01,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=9331.0, last_txn={('D', ''): 9331.0}, holdings=0.0, hold_by_vehicle={}, filed='2026-05-01', moved_here=True, opening={('D', ''): 4665.0}, rows=2, as_of='2026-05-01', accession='0000066740-26-000182', table='I')",9331,9331,521567261,0.0018,4666,1779825.0,,,FM,1,c-8,,TRUE

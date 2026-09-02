@@ -1,4 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-INVX,1042893,Adam Anderson,2025643,2026-02-25,2026-02-24,S,scheduled sale,18837,536854.50,28.5000,3.8793,-18837,466744,0,plan,,1,0,Common Stock,D,4,0001193125-26-072480,,https://www.sec.gov/Archives/edgar/data/1042893/000119312526072480/ownership.xml
-INVX,1042893,Adam Anderson,2025643,2026-02-24,2026-02-23,S,scheduled sale,13241,357507.00,27.0000,2.6545,-13241,485581,0,plan,,1,0,Common Stock,D,4,0001193125-26-067832,,https://www.sec.gov/Archives/edgar/data/1042893/000119312526067832/ownership.xml
-INVX,1042893,Adam Anderson,2025643,2026-01-15,2026-01-14,S,discretionary sale,13241,331025.00,25.0000,2.5858,-13241,498822,0,discretionary,,1,0,Common Stock,D,4,0001193125-26-014308,,https://www.sec.gov/Archives/edgar/data/1042893/000119312526014308/ownership.xml

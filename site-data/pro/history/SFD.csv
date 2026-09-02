@@ -1,5 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-91388,SFD,C. Shane Smith,2053145,2025-01-27,3,0001628280-25-002670,0,0,393112711,0.0,,,,,,0,c-2,,TRUE
-91388,SFD,C. Shane Smith,2053145,2025-01-29,4,0001628280-25-003207,120000,120000,393112711,0.0305,120000,600000.0,1,,AP,1,c-2,,TRUE
-91388,SFD,C. Shane Smith,2053145,2026-01-28,4,0002053145-26-000003,114431,114431,393112711,0.0291,-5569,131706.85,,,F,1,c-2,,TRUE
-91388,SFD,C. Shane Smith,2053145,2026-03-10,4/A,0002053145-26-000005,238643,238643,393112711,0.0607,124212,522197.28,1,,AF,1,c-2,,TRUE

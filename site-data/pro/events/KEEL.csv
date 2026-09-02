@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-KEEL,1812477,Benjamin Gagnon,2121167,2026-08-21,2026-08-21,P,open-market purchase,38888,129497.04,3.3300,2.8854,38888,1386624,0,discretionary,,1,0,Common Stock,D,4,0001812477-26-000031,,https://www.sec.gov/Archives/edgar/data/1812477/000181247726000031/wk-form4_1787344965.xml
-KEEL,1812477,Benjamin Gagnon,2121167,2026-08-14,2026-08-13,P,open-market purchase,58888,196097.04,3.3300,4.5690,58888,1347736,0,discretionary,,1,0,Common Stock,D,4,0001812477-26-000025,,https://www.sec.gov/Archives/edgar/data/1812477/000181247726000025/wk-form4_1786729462.xml

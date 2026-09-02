@@ -1,6 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-TRMK,36146,Duane A. Dewey,1263552,2017-06-02,2017-06-01,S,sale,5748,177328.80,30.8505,15.1486,-5748,32196,0,unknown,,2,0,Common stock,D,4,0000036146-17-000062,,https://www.sec.gov/Archives/edgar/data/36146/000003614617000062/edgar.xml
-TRMK,36146,Duane A. Dewey,1263552,2013-11-25,2013-11-22,S,sale,15000,423000.00,28.2000,,,,,unknown,M,1,0,common stock,D,4,0000036146-13-000124,,https://www.sec.gov/Archives/edgar/data/36146/000003614613000124/edgar.xml
-TRMK,36146,Duane A. Dewey,1263552,2013-07-26,2013-07-25,S,sale,10000,274000.00,27.4000,,,,,unknown,M,1,0,common stock,D,4,0000036146-13-000100,,https://www.sec.gov/Archives/edgar/data/36146/000003614613000100/edgar.xml
-TRMK,36146,Duane A. Dewey,1263552,2009-08-26,2009-08-24,S,sale,3919,78380.00,20.0000,,,,,unknown,F,1,0,common,D,4,0000036146-09-000118,,https://www.sec.gov/Archives/edgar/data/36146/000003614609000118/edgar.xml
-TRMK,36146,Duane A. Dewey,1263552,2009-06-10,2009-06-08,S,sale,1699,32921.84,19.3772,,,,,unknown,,6,0,common,D,4,0000036146-09-000099,,https://www.sec.gov/Archives/edgar/data/36146/000003614609000099/edgar.xml

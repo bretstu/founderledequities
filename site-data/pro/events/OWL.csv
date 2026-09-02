@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-OWL,1823945,Douglas I. Ostrover,1394688,2025-12-03,2025-12-02,P,open-market purchase,139327,2098334.28,15.0605,0.1795,158000,77758765,,discretionary,,1,0,Class A Shares,I,4,0001193125-25-306956,,https://www.sec.gov/Archives/edgar/data/1823945/000119312525306956/ownership.xml
-OWL,1823945,Douglas I. Ostrover,1394688,2025-12-03,2025-12-01,P,open-market purchase,18673,281135.09,15.0557,0.0240,158000,77758765,0,discretionary,,1,0,Class A Shares,I,4,0001193125-25-306956,,https://www.sec.gov/Archives/edgar/data/1823945/000119312525306956/ownership.xml

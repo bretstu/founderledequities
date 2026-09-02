@@ -1,8 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1637207,PLNT,Colleen Keating,2026250,2024-06-10,3,0001562180-24-005002,102834,102834,88179335,0.1166,102834,,2,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1637207,PLNT,Colleen Keating,2026250,2025-03-15,4,0001562180-25-002562,129009,129009,84671979,0.1524,26175,,1,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1637207,PLNT,Colleen Keating,2026250,2025-06-11,4,0001562180-25-004826,105339,105339,84193017,0.1251,-23670,2423784.3,,,S,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1637207,PLNT,Colleen Keating,2026250,2026-03-10,4,0002026250-26-000005,140730,140730,80014017,0.1759,35391,,1,,A,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1637207,PLNT,Colleen Keating,2026250,2026-03-15,4,0002026250-26-000006,136511,136511,80014017,0.1706,-4219,310602.78,,,F,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1637207,PLNT,Colleen Keating,2026250,2026-05-12,4,0002026250-26-000009,141511,141511,79442777,0.1781,5000,247700.0,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1637207,PLNT,Colleen Keating,2026250,2026-06-10,4,0002026250-26-000010,119017,119017,79442777,0.1498,-22494,1138196.4,,,F,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

@@ -1,4 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-ADEA,1803696,Paul E. Davis,1738428,2021-07-06,2021-07-01,S,sale,6902,153776.56,22.2800,5.0455,-6902,129893,0,unknown,,1,0,Common Stock,D,4,0001062993-21-006369,,https://www.sec.gov/Archives/edgar/data/1803696/000106299321006369/form4.xml
-ADEA,1803696,Paul E. Davis,1738428,2020-12-22,2020-12-18,S,sale,6396,128239.80,20.0500,5.0743,-6396,119651,0,unknown,,1,0,Common Stock,D,4,0001278807-20-000054,,https://www.sec.gov/Archives/edgar/data/1803696/000127880720000054/edgar.xml
-ADEA,1803696,Paul E. Davis,1738428,2020-06-10,2020-06-09,P,open-market purchase,725,9844.38,13.5785,0.8028,725,91033,0,unknown,,2,0,Common Stock,D,4,0000899243-20-015950,,https://www.sec.gov/Archives/edgar/data/1803696/000089924320015950/doc4.xml

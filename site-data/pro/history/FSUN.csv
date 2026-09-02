@@ -1,5 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1709442,FSUN,Neal E. Arnold,1195802,2024-07-11,3,0001709442-24-000048,232348,232348,27639621,0.8406,,,,,,1,fcb:VotingCommonStockMember|us-gaap:NonvotingCommonStockMember,,TRUE
-1709442,FSUN,Neal E. Arnold,1195802,2025-04-01,4,0001709442-25-000026,255972,255972,27833378,0.9197,23624,,1,,A,1,fcb:VotingCommonStockMember|us-gaap:NonvotingCommonStockMember,,TRUE
-1709442,FSUN,Neal E. Arnold,1195802,2025-04-30,4,0001709442-25-000038,273544,273544,27833378,0.9828,17572,255427.0,1,,AF,1,fcb:VotingCommonStockMember|us-gaap:NonvotingCommonStockMember,,TRUE
-1709442,FSUN,Neal E. Arnold,1195802,2026-04-01,4,0001195802-26-000002,329750,329750,46736705,0.7055,56206,397924.44,2,,AF,1,fcb:VotingCommonStockMember|us-gaap:NonvotingCommonStockMember,,TRUE

@@ -1,5 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-CNK,1385280,Sean Gamble,1616557,2025-03-27,2024-12-06,S,scheduled sale,127672,4449369.20,34.8500,16.3102,-127672,655104,0,plan,,1,0,Common Stock,I,4/A,0000950170-25-046145,,https://www.sec.gov/Archives/edgar/data/1385280/000095017025046145/ownership.xml
-CNK,1385280,Sean Gamble,1616557,2019-08-05,2019-08-02,S,sale,5669,235263.50,41.5000,4.3047,-5669,126025,0,unknown,,1,0,Common Stock,D,4,0001209191-19-044431,,https://www.sec.gov/Archives/edgar/data/1385280/000120919119044431/doc4.xml
-CNK,1385280,Sean Gamble,1616557,2018-11-13,2018-11-09,S,sale,7468,305441.20,40.9000,7.4575,-7468,92673,0,unknown,,1,0,Common Stock,D,4,0001209191-18-058097,,https://www.sec.gov/Archives/edgar/data/1385280/000120919118058097/doc4.xml
-CNK,1385280,Sean Gamble,1616557,2016-12-21,2016-12-20,S,sale,3412,133886.88,39.2400,7.6166,-3412,41385,0,unknown,,1,0,Common Stock,D,4,0001209191-16-156259,,https://www.sec.gov/Archives/edgar/data/1385280/000120919116156259/doc4.xml

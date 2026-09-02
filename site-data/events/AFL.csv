@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-AFL,4977,Daniel P. Amos,1075275,2018-02-20,2018-02-16,S,sale,24983,2242691.43,89.7687,1.8342,-49966,1337080,0,unknown,,1,0,Common Stock,I,4,0000004977-18-000040,,https://www.sec.gov/Archives/edgar/data/4977/000000497718000040/edgardoc.xml
-AFL,4977,Daniel P. Amos,1075275,2017-03-06,2017-03-02,S,sale,1317,95595.24,72.5856,0.0826,-2208,1593017,0,unknown,G,1,0,Common Stock,I,4,0000004977-17-000074,,https://www.sec.gov/Archives/edgar/data/4977/000000497717000074/edgardoc.xml

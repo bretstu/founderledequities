@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-MBLY,1910139,Professor Amnon Shashua,1629689,2024-08-05,2024-08-02,P,open-market purchase,631963,10434093.37,16.5106,18.3277,631963,4080097,0,discretionary,,2,0,Class A Common Stock,D,4,0000950103-24-011687,,https://www.sec.gov/Archives/edgar/data/1910139/000095010324011687/dp216194_4-shashua.xml
-MBLY,1910139,Professor Amnon Shashua,1629689,2022-10-31,2022-10-28,P,open-market purchase,476191,10000011.00,21.0000,,,476191,,unknown,,1,0,Class A Common Stock,D,4,0001104659-22-113069,,https://www.sec.gov/Archives/edgar/data/1910139/000110465922113069/tm227410-29_4seq1.xml

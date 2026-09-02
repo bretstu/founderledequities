@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-PODD,1145197,Ashley A. McEvoy,1745936,2026-08-24,2026-08-21,P,open-market purchase,1100,162217.00,147.4700,,1180,23735,80,discretionary,,1,0,Common Stock,D,4,0001145197-26-000172,,https://www.sec.gov/Archives/edgar/data/1145197/000114519726000172/form4.xml
-PODD,1145197,Ashley A. McEvoy,1745936,2026-02-23,2026-02-20,P,open-market purchase,4300,1029205.00,239.3500,,4376,13920,76,discretionary,,1,0,Common Stock,D,4,0001145197-26-000031,,https://www.sec.gov/Archives/edgar/data/1145197/000114519726000031/form4.xml

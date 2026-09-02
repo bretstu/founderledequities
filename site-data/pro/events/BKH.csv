@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-BKH,1130464,Linden R. Evans,1305656,2020-09-03,2020-08-06,P,open-market purchase,1000,57421.00,57.4210,,1000,120684,-2000,unknown,,1,0,Common Stock,D,4/A,0001593968-20-001842,,https://www.sec.gov/Archives/edgar/data/1130464/000159396820001842/primary_01.xml
-BKH,1130464,Linden R. Evans,1305656,2020-08-07,2020-08-06,P,open-market purchase,1000,57421.00,57.4210,,1000,120684,-2000,unknown,,1,0,Common Stock,D,4,0001593968-20-001711,,https://www.sec.gov/Archives/edgar/data/1130464/000159396820001711/primary_01.xml

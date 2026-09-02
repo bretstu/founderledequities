@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-TPL,1811074,Tyler Glover,1690299,2021-05-27,2021-05-25,P,open-market purchase,27,40606.11,1503.9300,10.4651,243,285,0,unknown,,1,0,Common Stock,D,4,0001062993-21-005082,,https://www.sec.gov/Archives/edgar/data/1811074/000106299321005082/form4.xml
-TPL,1811074,Tyler Glover,1690299,2021-05-20,2021-05-18,P,open-market purchase,158,260605.20,1649.4000,158.0000,1422,258,0,unknown,,1,0,Common Stock,D,4,0001062993-21-004925,,https://www.sec.gov/Archives/edgar/data/1811074/000106299321004925/form4.xml

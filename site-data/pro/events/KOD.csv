@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-KOD,1468748,Victor Perlroth,1754181,2022-02-28,2022-02-25,S,sale,340000,3055988.00,8.9882,13.5564,-1340000,2168038,,unknown,,1,0,Common Stock,D,4,0001209191-22-013787,,https://www.sec.gov/Archives/edgar/data/1468748/000120919122013787/doc4.xml
-KOD,1468748,Victor Perlroth,1754181,2022-02-28,2022-02-24,S,sale,1000000,9201700.00,9.2017,31.5653,-1340000,2168038,0,unknown,,1,0,Common Stock,D,4,0001209191-22-013787,,https://www.sec.gov/Archives/edgar/data/1468748/000120919122013787/doc4.xml

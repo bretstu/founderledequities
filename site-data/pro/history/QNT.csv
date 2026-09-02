@@ -1,3 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-2110105,QNT,Rajeeb Hazra,2136924,2026-06-03,4,0001628280-26-041620,784505,784505,263308142,0.2979,784505,20183340.0,2,,AF,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2110105,QNT,Rajeeb Hazra,2136924,2026-06-04,3,0001628280-26-040983,706172,706172,263308142,0.2682,,,,-78333,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

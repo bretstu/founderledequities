@@ -1,3 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1603015,VIA,Daniel Ramot,2083753,2025-09-11,4,0002083753-25-000006,6260236,6260236,80990820,7.7296,,25291500.0,8,,JMS,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1603015,VIA,Daniel Ramot,2083753,2026-06-12,4,0001628280-26-043662,6267140,6267140,81295871,7.7091,6904,99805.35,,,P,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

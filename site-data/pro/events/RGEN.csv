@@ -1,4 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-RGEN,730272,Olivier Loeillot,1995525,2026-08-21,2026-08-20,S,exercise and sell,5426,976680.00,180.0000,,0,54246,0,plan,M,1,0,Common Stock,D,4,0001628280-26-058417,,https://www.sec.gov/Archives/edgar/data/730272/000162828026058417/wk-form4_1787342788.xml
-RGEN,730272,Olivier Loeillot,1995525,2026-04-22,2026-04-21,S,scheduled sale,3832,536480.00,140.0000,6.5980,-3832,54246,0,plan,,1,0,Common Stock,D,4,0001193125-26-169682,,https://www.sec.gov/Archives/edgar/data/730272/000119312526169682/ownership.xml
-RGEN,730272,Olivier Loeillot,1995525,2025-11-26,2025-11-25,S,scheduled sale,7041,1196970.00,170.0000,16.3977,-7041,35898,0,plan,,1,0,Common Stock,D,4,0001193125-25-300642,,https://www.sec.gov/Archives/edgar/data/730272/000119312525300642/ownership.xml

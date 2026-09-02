@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-ADT,1703056,James D. DeVries,1430382,2023-05-04,2023-05-04,P,open-market purchase,50000,248000.00,4.9600,1.4320,50000,3541519,0,discretionary,,1,0,Common Stock,D,4,0001703056-23-000107,,https://www.sec.gov/Archives/edgar/data/1703056/000170305623000107/wk-form4_1683240973.xml
-ADT,1703056,James D. DeVries,1430382,2021-03-08,2021-03-05,P,open-market purchase,143000,1019346.90,7.1283,3.7878,143000,3918280,0,unknown,,1,0,Common Stock,D,4,0001703056-21-000037,,https://www.sec.gov/Archives/edgar/data/1703056/000170305621000037/wf-form4_161520387670271.xml

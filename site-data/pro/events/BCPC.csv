@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-BCPC,9326,Theodore L. Harris,1378228,2024-02-23,2024-02-22,S,discretionary sale,34350,5300026.01,154.2948,34.0902,-29679,66412,,discretionary,M,3,0,Common Stock,D,4,0001140361-24-009271,,https://www.sec.gov/Archives/edgar/data/9326/000114036124009271/form4.xml
-BCPC,9326,Theodore L. Harris,1378228,2024-02-23,2024-02-21,S,discretionary sale,29679,4558031.26,153.5777,30.8863,-29679,66412,0,discretionary,M,4,0,Common Stock,D,4,0001140361-24-009271,,https://www.sec.gov/Archives/edgar/data/9326/000114036124009271/form4.xml

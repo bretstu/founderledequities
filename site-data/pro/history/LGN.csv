@@ -1,4 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-2052568,LGN,Jeffrey Sprau,2082076,2025-09-11,3,0001193125-25-201597,0,0,105336929,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2052568,LGN,Jeffrey Sprau,2082076,2025-09-15,4,0001193125-25-204051,62500,62500,105336929,0.0593,62500,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2052568,LGN,Jeffrey Sprau,2082076,2026-03-16,4,0001193125-26-114448,96667,96667,108037932,0.0895,34167,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

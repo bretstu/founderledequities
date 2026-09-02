@@ -1,9 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1866581,BROS,Christine Barone,1804370,2023-02-06,3,0001866581-23-000022,0,0,163830512,0.0,,,,,,0,bros:CommonClassDMember|us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
-1866581,BROS,Christine Barone,1804370,2023-03-01,4,0001866581-23-000044,0,0,163830512,0.0,,,,,,0,bros:CommonClassDMember|us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
-1866581,BROS,Christine Barone,1804370,2024-03-01,4,0001866581-24-000064,0,0,177148032,0.0,,,,,,0,bros:CommonClassDMember|us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
-1866581,BROS,Christine Barone,1804370,2025-02-20,4,0001866581-25-000064,0,0,154204448,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
-1866581,BROS,Christine Barone,1804370,2025-03-01,4,0001866581-25-000091,42031,42031,154204448,0.0273,42031,2140011.44,3,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
-1866581,BROS,Christine Barone,1804370,2026-02-20,4,0001866581-26-000039,46444,46444,164544979,0.0282,4413,82098.42,1,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
-1866581,BROS,Christine Barone,1804370,2026-03-01,4,0001866581-26-000049,86604,86604,164544979,0.0526,40160,1549597.05,3,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE
-1866581,BROS,Christine Barone,1804370,2026-06-10,4,0001866581-26-000119,44573,44573,174648253,0.0255,-42031,2527492.15,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,TRUE

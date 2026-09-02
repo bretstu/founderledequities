@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-HLMN,1822492,Jon Michael Adinolfi,1869790,2024-03-15,2024-03-14,S,discretionary sale,110000,1078660.00,9.8060,14.2878,-110000,659889,0,discretionary,,1,0,Common Stock,D,4,0001822492-24-000053,,https://www.sec.gov/Archives/edgar/data/1822492/000182249224000053/wk-form4_1710506028.xml
-HLMN,1822492,Jon Michael Adinolfi,1869790,2022-03-07,2022-03-07,P,open-market purchase,47830,499823.50,10.4500,12.7257,47830,423685,0,unknown,,1,0,Common Stock,D,4,0001822492-22-000028,,https://www.sec.gov/Archives/edgar/data/1822492/000182249222000028/wf-form4_164668863259235.xml

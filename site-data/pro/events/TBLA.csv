@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-TBLA,1840502,Adam Singolda,1911045,2025-03-03,2025-02-28,P,open-market purchase,123771,334181.70,2.7000,0.8558,184000,14586714,0,discretionary,,1,0,Ordinary Shares,D,4,0001840502-25-000028,,https://www.sec.gov/Archives/edgar/data/1840502/000184050225000028/form4.xml
-TBLA,1840502,Adam Singolda,1911045,2025-02-28,2025-02-28,P,open-market purchase,60229,163822.88,2.7200,0.4146,184000,14586714,0,discretionary,,1,0,Ordinary Shares,D,4,0001840502-25-000021,,https://www.sec.gov/Archives/edgar/data/1840502/000184050225000021/form4.xml

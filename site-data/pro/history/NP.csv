@@ -1,4 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-2067129,NP,Trevor Burgess,1613062,2025-09-30,3,0001193125-25-225608,43435000,43435000,138035000,31.4667,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2067129,NP,Trevor Burgess,1613062,2025-10-02,4,0001193125-25-283512,45467964,45467964,138035000,32.9394,2032964,1000000.0,13,,AJP,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2067129,NP,Trevor Burgess,1613062,2026-03-13,4,0002067129-26-000008,45517964,45517964,138153530,32.9474,50000,935345.0,,,P,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

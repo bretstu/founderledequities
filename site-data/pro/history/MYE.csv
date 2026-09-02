@@ -1,7 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-69488,MYE,Aaron M. Schapper,1811105,2025-01-01,3,0000950170-25-000094,0,0,37259812,0.0,,,,,,0,C_cd732c3d-ea7c-44cf-85b4-dba25c6faf43,,TRUE
-69488,MYE,Aaron M. Schapper,1811105,2025-01-02,4,0000950170-25-001321,0,0,37259812,0.0,,,,,,0,C_cd732c3d-ea7c-44cf-85b4-dba25c6faf43,,TRUE
-69488,MYE,Aaron M. Schapper,1811105,2025-03-10,4,0000950170-25-037345,0,0,37295964,0.0,,,,,,0,C_cd732c3d-ea7c-44cf-85b4-dba25c6faf43,,TRUE
-69488,MYE,Aaron M. Schapper,1811105,2025-03-13,4,0000950170-25-039063,1972,1972,37295964,0.0053,1972,24985.24,,,P,1,C_cd732c3d-ea7c-44cf-85b4-dba25c6faf43,,TRUE
-69488,MYE,Aaron M. Schapper,1811105,2026-03-09,4,0001193125-26-102077,1972,1972,37403228,0.0053,,,,,,1,C_cd732c3d-ea7c-44cf-85b4-dba25c6faf43,,TRUE
-69488,MYE,Aaron M. Schapper,1811105,2026-03-16,4,0001193125-26-113855,18035,18035,37403228,0.0482,16063,207662.99,1,,FM,1,C_cd732c3d-ea7c-44cf-85b4-dba25c6faf43,,TRUE

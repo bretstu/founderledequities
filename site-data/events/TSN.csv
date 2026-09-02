@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-TSN,100493,Donnie King,1415534,2023-05-12,2023-05-11,P,open-market purchase,10350,500422.50,48.3500,,23192,204116,12841,discretionary,,1,0,Class A Common Stock,D,4,0000100493-23-000076,,https://www.sec.gov/Archives/edgar/data/100493/000010049323000076/wf-form4_168392524138387.xml
-TSN,100493,Donnie King,1415534,2016-08-26,2016-08-25,S,sale,146641,11108055.75,75.7500,44.1694,,185356,,unknown,M,2,0,Class A Common Stock,D,4,0000100493-16-000256,,https://www.sec.gov/Archives/edgar/data/100493/000010049316000256/wf-form4_147224167828647.xml

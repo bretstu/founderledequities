@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-SMA,1585389,H. Michael Schwartz,1462216,2025-11-18,2025-11-17,P,open-market purchase,6250,198187.50,31.7100,,6249,174370,-1,discretionary,,1,0,Common Stock,I,4,0001462216-25-000006,,https://www.sec.gov/Archives/edgar/data/1585389/000146221625000006/primary_doc.xml
-SMA,1585389,H. Michael Schwartz,1462216,2025-04-04,2025-04-03,P,open-market purchase,18000,540000.00,30.0000,,-1032848,168121,-1050848,discretionary,,1,0,Common Stock,I,4,0001462216-25-000003,,https://www.sec.gov/Archives/edgar/data/1585389/000146221625000003/primary_doc.xml

@@ -1,4 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-CTVA,1755672,Charles V. Magro,1893081,2025-02-20,2025-02-19,S,discretionary sale,46905,2993477.10,63.8200,16.8239,-16105,231895,,discretionary,AF,1,0,Common Stock,D,4,0000950170-25-024425,,https://www.sec.gov/Archives/edgar/data/1755672/000095017025024425/ownership.xml
-CTVA,1755672,Charles V. Magro,1893081,2023-02-08,2023-02-06,P,open-market purchase,40000,2425480.00,60.6370,,40592,126095,592,unknown,,1,0,Common Stock,D,4,0001209191-23-007813,,https://www.sec.gov/Archives/edgar/data/1755672/000120919123007813/doc4.xml
-CTVA,1755672,Charles V. Magro,1893081,2022-02-15,2022-02-11,P,open-market purchase,50000,2556762.62,51.1353,,50000,50000,0,unknown,,2,0,Common Stock,D,4,0001209191-22-009822,,https://www.sec.gov/Archives/edgar/data/1755672/000120919122009822/doc4.xml

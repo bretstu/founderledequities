@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-SKT,899715,Stephen J. Yalof,1809284,2025-05-05,2025-05-05,P,open-market purchase,3348,99999.92,29.8700,0.4042,3347,831610,0,discretionary,,1,0,Common Stock,D,4,0000899715-25-000108,,https://www.sec.gov/Archives/edgar/data/899715/000089971525000108/wk-form4_1746476035.xml
-SKT,899715,Stephen J. Yalof,1809284,2020-08-24,2020-08-21,P,open-market purchase,10000,57770.00,5.7770,2.5687,10000,399308,0,unknown,,1,0,Common Stock,D,4,0000899715-20-000141,,https://www.sec.gov/Archives/edgar/data/899715/000089971520000141/wf-form4_159830015316621.xml

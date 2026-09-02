@@ -1,8 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1569345,CXM,Rory Read,1528597,2024-11-05,4,0001415889-24-026247,2137500,2137500,254382809,0.8403,2137500,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1569345,CXM,Rory Read,1528597,2024-11-18,4,0001528597-26-000004,1506270,1506270,254382809,0.5921,-165838,996877.86,,-465392,PS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,TRUE,TRUE
-1569345,CXM,Rory Read,1528597,2025-11-06,4,0001528597-25-000004,1879286,1879286,246686136,0.7618,-258214,1931440.72,,631230,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,TRUE,TRUE
-1569345,CXM,Rory Read,1528597,2025-12-16,4,0001528597-25-000006,1810613,1810613,246686136,0.734,-68673,534275.94,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,TRUE,TRUE
-1569345,CXM,Rory Read,1528597,2026-01-14,4,0001528597-26-000002,1672108,1672108,246686136,0.6778,-138505,987540.65,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,TRUE,TRUE
-1569345,CXM,Rory Read,1528597,2026-03-15,4,0001528597-26-000006,3562844,3562844,248864345,1.4316,2056574,263255.85,1,-165838,AS,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1569345,CXM,Rory Read,1528597,2026-06-16,4,0001528597-26-000008,3419190,3419190,234228762,1.4598,-143654,761366.2,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

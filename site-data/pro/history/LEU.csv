@@ -1,5 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1065059,LEU,Amir V. Vexler,2004642,2024-01-01,4,0001065059-24-000004,0,0,15675634,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1065059,LEU,Amir V. Vexler,2004642,2024-12-04,4,0001065059-24-000106,2196,2196,16396424,0.0134,2196,138096.2,1,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1065059,LEU,Amir V. Vexler,2004642,2025-12-04,4,0001628280-25-055791,4392,4392,18212032,0.0241,2196,502648.52,1,,FM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1065059,LEU,Amir V. Vexler,2004642,2026-06-17,4,0001628280-26-044790,4392,4392,19672794,0.0223,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

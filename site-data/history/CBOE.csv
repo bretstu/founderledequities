@@ -1,3 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1374310,CBOE,Craig S. Donohue,1212810,2025-05-07,4,0001415889-25-013034,0,0,104713346,0.0,,,,,,0,c-2,,TRUE
-1374310,CBOE,Craig S. Donohue,1212810,2026-02-19,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=2604.0, last_txn={('D', ''): 2604.0}, holdings=0.0, hold_by_vehicle={}, filed='2026-02-19', moved_here=True, opening={('D', ''): 0.0}, rows=2, as_of='2026-02-19', accession='0001212810-26-000001', table='I')",2604,2604,104667696,0.0025,2604,1935081.54,,,FM,1,c-2,,TRUE

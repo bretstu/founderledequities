@@ -1,5 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-860413,FIBK,James A. Reuter,2042435,2024-11-01,4,0000860413-24-000134,25974,25974,104529863,0.0248,25974,,1,,A,1,c-2,,TRUE
-860413,FIBK,James A. Reuter,2042435,2025-03-15,4,0000860413-25-000032,60637,60637,104531312,0.058,34663,,1,,A,1,c-2,,TRUE
-860413,FIBK,James A. Reuter,2042435,2026-03-15,4,0002042435-26-000002,92029,92029,101118302,0.091,31392,1040016.96,,,A,1,c-2,,TRUE
-860413,FIBK,James A. Reuter,2042435,2026-03-16,4,0002042435-26-000004,86904,86904,101118302,0.0859,-5125,170252.5,,,F,1,c-2,,TRUE

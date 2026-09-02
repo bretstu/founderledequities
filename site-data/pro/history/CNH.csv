@@ -1,4 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1567094,CNH,Gerrit Marx,1808863,2025-01-01,3,0001104659-25-000975,0,0,1248983000,0.0,,,,,,0,c-4,,TRUE
-1567094,CNH,Gerrit Marx,1808863,2025-02-28,4,0000950170-25-032924,375136,375136,1248023791,0.0301,375136,3730294.08,1,,MS,1,c-4,,TRUE
-1567094,CNH,Gerrit Marx,1808863,2026-02-28,4,0001193125-26-089289,661909,661909,1240946574,0.0533,286773,2510700.48,1,,FM,1,c-4,,TRUE

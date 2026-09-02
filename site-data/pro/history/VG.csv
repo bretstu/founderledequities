@@ -1,9 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-2007855,VG,Michael Sabel,2050374,2025-01-23,3,0000950103-25-000827,435500,435500,2419861468,0.018,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2007855,VG,Michael Sabel,2050374,2025-01-27,4,0000950103-25-000923,1968604458,1968604458,2419861468,81.3519,,,2,1968168958,AD,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2007855,VG,Michael Sabel,2050374,2025-03-10,4,0000950103-25-003235,1968854458,1968854458,2419861468,81.3623,250000,2342500.0,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2007855,VG,Michael Sabel,2050374,2025-03-11,4,0000950103-25-003282,1969054843,1969054843,2419861468,81.3706,200385,1975796.1,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2007855,VG,Michael Sabel,2050374,2025-03-12,4,0000950103-25-003357,1969324343,1969324343,2419861468,81.3817,269500,2797631.06,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2007855,VG,Michael Sabel,2050374,2025-03-13,4,0000950103-25-003431,1969555843,1969555843,2419861468,81.3913,231500,2387574.47,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2007855,VG,Michael Sabel,2050374,2025-03-14,4,0000950103-25-003478,1969790343,1969790343,2419861468,81.401,234500,2469285.0,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2007855,VG,Michael Sabel,2050374,2026-06-12,4,0000950103-26-008986,1969791569,1969791569,2484358030,79.2877,1226,15980.91,,,P,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

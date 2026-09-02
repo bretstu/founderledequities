@@ -1,5 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1592386,VIRT,Aaron Simons,2080456,2025-08-01,3,0000950142-25-002126,93,93,152864242,0.0001,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassCMember|virt:CommonClassDMember,,TRUE
-1592386,VIRT,Aaron Simons,2080456,2026-01-31,4,0002080456-26-000002,61188,61188,154664573,0.0396,61095,,6,,AFM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassCMember|virt:CommonClassDMember,,TRUE
-1592386,VIRT,Aaron Simons,2080456,2026-02-03,4,0002080456-26-000004,85609,85609,154664573,0.0554,24421,,6,,AFM,1,us-gaap:CommonClassAMember|us-gaap:CommonClassCMember|virt:CommonClassDMember,,TRUE
-1592386,VIRT,Aaron Simons,2080456,2026-08-20,4,0002080456-26-000007,85609,85609,155200227,0.0552,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassCMember|virt:CommonClassDMember,,TRUE

@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-LW,1679273,MICHAEL J. SMITH,1712056,2023-01-09,2023-01-09,S,sale,11934,1180272.60,98.9000,,-11697,74351,237,unknown,,1,0,Common Stock,D,4,0001415889-23-000703,,https://www.sec.gov/Archives/edgar/data/1679273/000141588923000703/form4-01092023_100130.xml
-LW,1679273,MICHAEL J. SMITH,1712056,2020-01-22,2020-01-21,S,sale,5500,501727.05,91.2231,,-5405,59505,94,unknown,,1,0,Common Stock,D,4,0001179110-20-000695,,https://www.sec.gov/Archives/edgar/data/1679273/000117911020000695/edgar.xml

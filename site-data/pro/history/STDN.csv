@@ -1,3 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-2086716,STDN,Kurt Terrani,2142553,2026-07-15,4,0001628280-26-048737,7271250,7271250,156550755,4.6447,3846250,,2,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2086716,STDN,Kurt Terrani,2142553,2026-07-20,4,0001628280-26-049241,7271250,7271250,156550755,4.6447,,,10,,G,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

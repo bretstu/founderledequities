@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-CHRW,1043277,David P. Bozeman,1575959,2026-02-13,2026-02-12,P,open-market purchase,1223,199770.93,163.3450,0.6458,1223,190600,0,discretionary,,1,0,Common Stock,D,4,0001437749-26-004143,,https://www.sec.gov/Archives/edgar/data/1043277/000143774926004143/rdgdoc.xml
-CHRW,1043277,David P. Bozeman,1575959,2023-11-16,2023-11-14,P,open-market purchase,1807,149818.37,82.9100,1.2673,1807,144391,0,discretionary,,1,0,Common Stock,D,4,0001209191-23-055550,,https://www.sec.gov/Archives/edgar/data/1043277/000120919123055550/doc4.xml

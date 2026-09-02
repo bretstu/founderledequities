@@ -1,4 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-MUR,717423,Eric M. Hambly,1751754,2022-11-14,2022-11-14,S,sale,37000,1864067.40,50.3802,32.6659,-37000,76268,0,unknown,,1,0,Common Stock,D,4,0001127602-22-025567,,https://www.sec.gov/Archives/edgar/data/717423/000112760222025567/form4.xml
-MUR,717423,Eric M. Hambly,1751754,2022-03-22,2022-03-22,S,exercise and sell,2305,94182.30,40.8600,,0,113268,,unknown,FM,1,0,Common Stock,D,4,0001127602-22-010163,,https://www.sec.gov/Archives/edgar/data/717423/000112760222010163/form4.xml
-MUR,717423,Eric M. Hambly,1751754,2022-03-10,2022-03-10,S,exercise and sell,5231,192640.99,36.8268,,0,113268,,unknown,FM,1,0,Common Stock,D,4,0001127602-22-008879,,https://www.sec.gov/Archives/edgar/data/717423/000112760222008879/form4.xml

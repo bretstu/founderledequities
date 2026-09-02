@@ -137,6 +137,15 @@ class Event:
         and says so.
         """
         if self.buy:
+            # THE SAME RULE, BOTH DIRECTIONS. A purchase after which the
+            # position on record is exactly what it was -- Schwarzman's
+            # $27m of Blackstone common in August 2026, where the walk
+            # counts his common at zero before and after -- is a trade
+            # this measurement did not register, and the page must not rank
+            # it as a stake going up. Said as such; where the shares went is
+            # the walk's question (Blackstone's is on the repair list).
+            if self.stake_unchanged and not self.residue:
+                return "purchase, position unchanged"
             return ("scheduled purchase" if self.plan == "plan"
                     else "open-market purchase")
         if self.stake_unchanged and not self.residue:

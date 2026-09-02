@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-BFH,1101215,Ralph J. Andretta,1801850,2026-06-01,2026-05-29,S,scheduled sale,15000,1336540.00,89.1027,2.5115,-15000,582241,0,plan,,3,0,Common Stock,D,4,0001801850-26-000005,,https://www.sec.gov/Archives/edgar/data/1101215/000180185026000005/wk-form4_1780349784.xml
-BFH,1101215,Ralph J. Andretta,1801850,2022-08-09,2022-08-08,P,open-market purchase,3773,149802.81,39.7039,1.8950,3773,202875,0,unknown,,1,0,Common Stock,D,4,0001062993-22-017570,,https://www.sec.gov/Archives/edgar/data/1101215/000106299322017570/form4.xml

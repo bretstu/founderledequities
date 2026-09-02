@@ -1,4 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-2098430,MAIR,Jill Wyant,1559370,2026-04-16,3,0001193125-26-159392,3733549,3733549,501267972,0.7448,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2098430,MAIR,Jill Wyant,1559370,2026-06-16,4,0001628280-26-043815,3566033,3566033,501267972,0.7114,-167516,6536474.32,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2098430,MAIR,Jill Wyant,1559370,2026-06-23,4,0001628280-26-044978,3472415,3472415,501267972,0.6927,-93618,3569654.34,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

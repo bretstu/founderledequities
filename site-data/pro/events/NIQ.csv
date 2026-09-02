@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-NIQ,2054696,James Peck,1645773,2026-05-18,2026-05-18,P,open-market purchase,118625,1000008.75,8.4300,1.1897,118625,10090025,0,discretionary,,1,0,Ordinary Shares,D,4,0001645773-26-000007,,https://www.sec.gov/Archives/edgar/data/2054696/000164577326000007/wk-form4_1779127330.xml
-NIQ,2054696,James Peck,1645773,2025-09-03,2025-08-29,P,open-market purchase,29500,508580.00,17.2400,0.3052,29500,9694842,0,discretionary,,1,0,Ordinary Shares,D,4,0001193125-25-194967,,https://www.sec.gov/Archives/edgar/data/2054696/000119312525194967/ownership.xml

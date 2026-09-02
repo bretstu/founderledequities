@@ -268,18 +268,21 @@ td.src a:hover{color:var(--blue)}
 .dayh{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
 .dayh .dt{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
 .dayh .dt b{color:var(--blue);font-weight:600}
-.dayh .dn{font-family:var(--mono);font-size:11px;color:var(--faint);display:flex;gap:12px;flex-wrap:wrap}
-.dayh .dn a,.dayh .dn button{color:var(--faint);text-decoration:none;background:none;border:0;padding:0;font:inherit;cursor:pointer}
-.dayh .dn a:hover,.dayh .dn button:hover{color:var(--blue)}
+/* the day chips are the section's own chips -- white with a border, the
+   chosen one filled ink -- so they read as the filter they are */
+.dayh .dn{display:flex;gap:6px;flex-wrap:wrap}
+.dayh .dn .chip{cursor:pointer}
+.dayh .dn .chip:hover{border-color:var(--ink);color:var(--ink)}
+.dayh .dn .chip.on:hover{color:#fff}
 .dayrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px 14px;align-items:center;padding:9px 0;border-top:1px solid var(--line2);cursor:pointer;font-size:13.5px}
-.dayrow:hover{background:var(--wash);margin:0 -18px;padding-left:18px;padding-right:18px}
+.dayrow:hover{background:var(--wash)}
 .dayrow .drwho{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dayrow .drwho .atk{margin-right:8px}
 .dayrow .drv{font-family:var(--mono);font-size:12px;text-align:right;white-space:nowrap;color:var(--mut)}
 .dayrow .drv b{font-weight:600;color:var(--ink);margin-right:6px}
 .dayrow .drv a{color:var(--faint);text-decoration:none;margin-left:8px}
 .dayrow .drv a:hover{color:var(--blue)}
-.dayempty{padding:14px 0 10px;font-size:13.5px;color:var(--mut);line-height:1.6}
+.dayempty{padding:14px 24px 10px;font-size:13.5px;color:var(--mut);line-height:1.6;text-align:center}
 @media(max-width:640px){.dayrow{grid-template-columns:auto minmax(0,1fr)}.dayrow .drv{grid-column:1/-1;text-align:left;padding-left:2px}}
 
 /* THE TWO COLUMNS. Same frame, same chips, same bar; only the colour and
@@ -340,13 +343,19 @@ td.src a:hover{color:var(--blue)}
    every name starts at the same edge. The proxy sentence is on hover, and
    an ambiguous proxy gets nothing. In a bar the name is the flexible part
    and the pill is not, so a long name shortens before the pill can go. */
-.fm{display:inline-block;flex:none;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;border-radius:4px;padding:1px 5px;margin-left:7px;vertical-align:1px;background:var(--ink);color:#fff;cursor:help;line-height:1.4}
+.fm{display:inline-block;flex:none;box-sizing:border-box;width:15px;height:15px;line-height:15px;text-align:center;font-family:var(--ui);font-size:10px;font-weight:700;letter-spacing:0;border-radius:4px;padding:0;margin-left:7px;vertical-align:1px;background:var(--ink);color:#fff;cursor:help}
 .abar .who .nm{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .abar .who .fm{margin-top:-1px}
 .acol .af .key .fm{margin-left:0;margin-right:4px}
 /* the day chips: the last five filing days, newest on the right */
-.dayh .dn .chip{padding:4px 9px;font-size:11px;font-family:var(--mono);letter-spacing:.02em}
-.dayh .dn .chip i{margin-left:5px}
+.dayh .dn .chip{padding:5px 10px;font-size:11.5px;font-family:var(--mono);letter-spacing:.02em;font-weight:600}
+.dayh .dn .chip i{margin-left:6px}
+/* THE STRIP IS A FIXED FRAME. A day of three trades and a day of thirty
+   take the same space; the rows scroll inside it, and the page below never
+   jumps when a chip is chosen. */
+.daylist{height:290px;overflow:auto;overscroll-behavior:contain;margin:0 -18px;padding:0 18px}
+.daylist .dayrow:hover{margin:0 -18px;padding-left:18px;padding-right:18px}
+.dayempty{height:100%;display:grid;place-items:center}
 .acol .af a{color:var(--mut);text-decoration:none;font-weight:600;cursor:pointer}
 .acol .af a:hover{color:var(--blue)}
 /* SALES THAT DID NOT MOVE A STAKE ARE OFF THE PAGE AND ONE CLICK AWAY.
@@ -1944,9 +1953,11 @@ function coOf(tk){const r=PANEL.find(p=>p.tk===tk);return r?r.co:"";}
    exchanged into shares and sold (Schwarzman, every time -- his common
    position is zero before and after); "sale, position unchanged" is a day
    the filing does not explain. All three sit apart from the ranking. */
-const UNCHANGED={"exercise and sell":"exercise","convert and sell":"convert","sale, position unchanged":""};
-function unchangedKind(e){return e.c==="S"&&e.lb in UNCHANGED?UNCHANGED[e.lb]:null;}
+const UNCHANGED={"exercise and sell":"exercise","convert and sell":"convert","sale, position unchanged":"","purchase, position unchanged":"bought"};
+function unchangedKind(e){return (e.c==="S"||e.c==="P")&&e.lb in UNCHANGED?UNCHANGED[e.lb]:null;}
 function evBadge(e){
+  if(e.lb==="purchase, position unchanged")return{t:"UNCHANGED",k:"neu",
+    n:"shares bought and the position on record left where it was — this measurement did not register them; open the filing"};
   if(e.c==="P")return{t:"BOUGHT",k:"up",
     n:e.pl==="plan"?"a purchase made under a pre-set 10b5-1 plan — rarer still than an open-market buy"
      :"an open-market purchase — their own money, at the market's price"};
@@ -2022,8 +2033,9 @@ function evSide(e){
   /* which column a filing belongs to. Options cashed is a sale whose stake
      did not move: it is neither a purchase nor a stake reduction, so it has
      a side of its own and never enters the Sold ranking. */
+  if(unchangedKind(e)!==null)return"exsell";   /* the kept-apart pile, both directions */
   if(e.c==="P")return"buys";
-  if(e.c==="S")return sellKind(e)==="exsell"?"exsell":"sells";
+  if(e.c==="S")return"sells";
   return"";
 }
 function mannerOK(e,side){
@@ -2194,9 +2206,11 @@ function dayAlso(day){
      the filing accounted for rather than missing */
   const ex=EVENTS.filter(e=>e.fd===day&&unchangedKind(e)!==null);
   if(!ex.length)return"";
-  const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length;
-  const kinds=[nM?"options cashed":"",nC?"units converted":"",ex.length-nM-nC?"source not in the filing":""].filter(Boolean).join(", ");
-  return `Also filed: ${ex.length} sale${ex.length===1?"":"s"} that left the stake unchanged (${kinds}), ${money(ex.reduce((t,e)=>t+((e.fl?0:e.v)||0),0))}`;
+  const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nB=ex.filter(e=>unchangedKind(e)==="bought").length;
+  const kinds=[nM?"options cashed":"",nC?"units converted":"",nB?"a purchase the position did not register":"",ex.length-nM-nC-nB?"source not in the filing":""].filter(Boolean).join(", ");
+  const nS=ex.length-nB;
+  const what=[nS?`${nS} sale${nS===1?"":"s"}`:"",nB?`${nB} purchase${nB===1?"":"s"}`:""].filter(Boolean).join(" and ");
+  return `Also filed: ${what} that left the stake unchanged (${kinds}), ${money(ex.reduce((t,e)=>t+((e.fl?0:e.v)||0),0))}`;
 }
 function dayText(day,rows){
   /* the day as plain text, one line per trade in the strip's own words.
@@ -2205,7 +2219,7 @@ function dayText(day,rows){
   for(const e of rows){
     const side=evSide(e);
     const uk=unchangedKind(e);
-    const what=side==="buys"?"bought":uk==="exercise"?"cashed options for":uk==="convert"?"converted and sold":uk===""?"sold (position unchanged)":"sold";
+    const what=side==="buys"?"bought":uk==="exercise"?"cashed options for":uk==="convert"?"converted and sold":uk==="bought"?"bought (position unchanged)":uk===""?"sold (position unchanged)":"sold";
     const man=side==="exsell"?"stake unchanged":e.pl==="plan"?"10b5-1 plan":e.pl==="discretionary"?"discretionary":"";
     const pc=(e.pc===null||e.pc===undefined||side==="exsell")?"":(side==="buys"?" +":" −")+(e.pc>=100?"100%+":e.pc.toFixed(e.pc<1?2:1)+"%")+" of stake";
     L.push(`${e.ceo||coOf(e.tk)} (${e.tk}) ${what} ${e.v&&!e.fl?money(e.v):compact(e.sh)+" sh"}${pc}${man?", "+man:""}`);
@@ -2242,7 +2256,6 @@ function renderDay(){
     const n=EVENTS.filter(e=>e.fd===d&&unchangedKind(e)===null).length;
     return `<button class="chip${d===day?" on":""}" onclick="gotoDay('${d===days[days.length-1]?"":d}')" title="${niceDay(d)} — ${n} trade${n===1?"":"s"} that moved a stake">${lab}<i>${n}</i></button>`;};
   const scope=dayScope();
-  const CAP=12;
   const row=e=>{
     const b=evBadge(e),side=evSide(e);
     const pc=side==="exsell"?`<span title="options exercised and the shares sold the same day — the stake did not move">stake unchanged</span>`
@@ -2259,8 +2272,7 @@ function renderDay(){
       <span class="dt">Filed <b>${day?niceDay(day):"—"}</b> · ${tradesAndFilings(rows)} · ${scope}</span>
       <span class="dn">${recent.map(chipDay).join("")}</span>
     </div>
-    ${rows.length?rows.slice(0,CAP).map(row).join(""):`<div class="dayempty">No chief executive of these companies filed a trade that moved a stake on ${day?niceDay(day):"this day"}.</div>`}
-    ${rows.length>CAP?`<div class="dayrow" onclick="setView('day')" style="justify-content:flex-start;color:var(--mut);font-size:12.5px"><span></span><span>+ ${rows.length-CAP} more trade${rows.length-CAP===1?"":"s"} — open the day as a table →</span></div>`:""}
+    <div class="daylist">${rows.length?rows.map(row).join(""):`<div class="dayempty">No chief executive of these companies filed a trade that moved a stake on ${day?niceDay(day):"this day"}.</div>`}</div>
     ${dayAlso(day)?`<div class="dayalso" onclick="setView('day')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')setView('day')" title="every trade of the day as a table, these included">${dayAlso(day)} →</div>`:""}
   </div>`;
 }
@@ -2351,10 +2363,12 @@ function actNote(){
   /* ONE SENTENCE FOR THE SECTION: what was kept out, and where it is */
   const ex=evBase().filter(e=>evSide(e)==="exsell");
   if(!ex.length)return"";
-  const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length;
-  const kinds=[nM?"options cashed":"",nC?"units converted":""].filter(Boolean).join(" or ")||"shares from outside the filing";
+  const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nB=ex.filter(e=>unchangedKind(e)==="bought").length;
+  const kinds=[nM?"options cashed":"",nC?"units converted and sold":"",nB?"purchases the position did not register":""].filter(Boolean).join(", ")||"shares from outside the filing";
   const win={30:"the last 30 days",90:"the last 90 days",365:"the last 12 months"}[state.ev.win]||"this window";
-  return `Kept out of everything above: ${ex.length.toLocaleString()} sale${ex.length===1?"":"s"} in ${win} that left the stake where it was — ${kinds}, and the shares sold the same day. <a onclick="setView('exsell')">They are in the table →</a>`;
+  const nS=ex.length-nB;
+  const what=[nS?`${nS.toLocaleString()} sale${nS===1?"":"s"}`:"",nB?`${nB} purchase${nB===1?"":"s"}`:""].filter(Boolean).join(" and ");
+  return `Kept out of everything above: ${what} in ${win} that left the measured stake where it was — ${kinds}. <a onclick="setView('exsell')">They are in the table →</a>`;
 }
 function renderCols(){
   const el=$("#actcols");if(!el)return;
@@ -2367,7 +2381,7 @@ function renderFeed(){
   const el=$("#actwrap");if(!el)return;
   const v=state.ev.view;
   const tv=$("#tview");
-  if(tv)tv.innerHTML={buys:"Bought",sells:"Sold",exsell:"Sold, stake unchanged",day:"Filed "+niceDay(dayShown())}[v]
+  if(tv)tv.innerHTML={buys:"Bought",sells:"Sold",exsell:"Stake unchanged",day:"Filed "+niceDay(dayShown())}[v]
     +`<em>${v==="day"?"every filing that day":({30:"last 30 days",90:"last 90 days",365:"last 12 months"}[state.ev.win]||"")+(v!=="exsell"&&v!=="day"&&state.ev.kinds[v].length===1?" · "+(state.ev.kinds[v][0]==="plan"?"planned only":"discretionary only"):"")}</em>`;
   const evs=evFiltered();
   const CAP=200;
@@ -2377,13 +2391,13 @@ function renderFeed(){
      cashed, where the stake does not move. Reporting that as one figure
      overstated stake reduction by a factor of two. */
   const sum=a=>a.reduce((t,e)=>t+((e.fl?0:e.v)||0),0);
-  const buys=evs.filter(e=>e.c==="P");
   const cashed=evs.filter(e=>sellKind(e)==="exsell");
+  const buys=evs.filter(e=>e.c==="P"&&sellKind(e)!=="exsell");
   const cut=evs.filter(e=>e.c==="S"&&sellKind(e)!=="exsell");
   const part=(n,one,many,v)=>n?`${n.toLocaleString()} ${n===1?one:many}${v?" "+money(v):""}`:"";
   const parts=[part(buys.length,"purchase","purchases",sum(buys)),
                part(cut.length,"stake reduction","stake reductions",sum(cut)),
-               part(cashed.length,"sale that left the stake unchanged","sales that left the stake unchanged",sum(cashed))].filter(Boolean);
+               part(cashed.length,"trade that left the stake unchanged","trades that left the stake unchanged",sum(cashed))].filter(Boolean);
   /* AN EMPTY RESULT KEEPS THE TABLE'S FRAME.
      Collapsing to one line of text made the whole section jump and read
      as broken. The headers stay, the frame stays its height, and the

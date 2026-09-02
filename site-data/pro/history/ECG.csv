@@ -1,4 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-2015845,ECG,Jeffrey S. Thiede,1577239,2024-10-17,3,0001225208-24-009357,0,0,50972059,0.0,,,,,,0,c-2,,TRUE
-2015845,ECG,Jeffrey S. Thiede,1577239,2025-02-20,4,0001225208-25-002340,119684,119684,50972059,0.2348,7938,390703.3,1,111746,AF,1,c-2,,TRUE
-2015845,ECG,Jeffrey S. Thiede,1577239,2026-02-27,4,0001225208-26-003043,119698,119698,51006719,0.2347,14,1450077.39,1,,AF,1,c-2,,TRUE

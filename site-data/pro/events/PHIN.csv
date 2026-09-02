@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-PHIN,1968915,Brady D. Ericson,1529734,2025-05-01,2025-04-30,P,open-market purchase,10000,397327.00,39.7327,,10206,436486,206,discretionary,,1,0,Common Stock,D,4,0001628280-25-021648,,https://www.sec.gov/Archives/edgar/data/1968915/000162828025021648/wk-form4_1746142280.xml
-PHIN,1968915,Brady D. Ericson,1529734,2023-08-14,2023-08-11,P,open-market purchase,13194,381570.48,28.9200,,7056,279699,-6138,discretionary,,1,0,Common Stock,D,4,0000897069-23-001181,,https://www.sec.gov/Archives/edgar/data/1968915/000089706923001181/form4.xml

@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-KKR,1404912,Joseph Y. Bae,1208917,2026-03-03,2026-02-27,P,open-market purchase,50000,4428000.00,88.5600,0.2709,50000,18506070,0,discretionary,,1,0,Common Stock,I,4,0001140361-26-007578,,https://www.sec.gov/Archives/edgar/data/1404912/000114036126007578/form4.xml
-KKR,1404912,Joseph Y. Bae,1208917,2026-02-18,2026-02-17,P,open-market purchase,125000,12773530.16,102.1882,0.6819,125000,18456070,0,discretionary,,4,0,Common Stock,I,4,0001140361-26-006056,,https://www.sec.gov/Archives/edgar/data/1404912/000114036126006056/form4.xml

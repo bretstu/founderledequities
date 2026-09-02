@@ -1,4 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-2096300,AVEX,Roger Wells,1891903,2026-04-16,4/A,0001193125-26-166819,0,0,114041700,0.0,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2096300,AVEX,Roger Wells,1891903,2026-04-17,3,0001193125-26-161949,0,0,114041700,0.0,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2096300,AVEX,Roger Wells,1891903,2026-05-12,4,0001193125-26-224060,94000,94000,114041700,0.0824,94000,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

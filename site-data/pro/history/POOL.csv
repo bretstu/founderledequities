@@ -1,4 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-945841,POOL,John B. Watwood,2105194,2026-01-12,3,0000945841-26-000011,0,0,36787820,0.0,,,,,,0,C_b26ae0df-aa62-45b1-a1df-e2fd222b08de,,TRUE
-945841,POOL,John B. Watwood,2105194,2026-02-25,4,0000945841-26-000053,8498,8498,36787820,0.0231,8498,,2,,A,1,C_b26ae0df-aa62-45b1-a1df-e2fd222b08de,,TRUE
-945841,POOL,John B. Watwood,2105194,2026-05-04,4,0000945841-26-000108,21413,21413,36443003,0.0588,12915,,2,,A,1,C_b26ae0df-aa62-45b1-a1df-e2fd222b08de,,TRUE

@@ -1,5 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-LUV,92380,Robert E. Jordan,1381318,2021-03-09,2021-03-08,S,sale,28795,1727196.45,59.9825,,-28816,152795,-21,unknown,,6,0,Common Stock,D,4,0000092380-21-000077,,https://www.sec.gov/Archives/edgar/data/92380/000009238021000077/edgar.xml
-LUV,92380,Robert E. Jordan,1381318,2017-12-18,2017-12-14,S,sale,32931,2120037.05,64.3782,,-32895,72499,36,unknown,,21,0,Common Stock,D,4,0000092380-17-000177,,https://www.sec.gov/Archives/edgar/data/92380/000009238017000177/edgar.xml
-LUV,92380,Robert E. Jordan,1381318,2017-05-24,2017-05-23,S,sale,15273,912148.03,59.7229,12.6571,-15273,105394,0,unknown,,6,0,Common Stock,D,4,0000092380-17-000128,,https://www.sec.gov/Archives/edgar/data/92380/000009238017000128/edgar.xml
-LUV,92380,Robert E. Jordan,1381318,2017-03-01,2017-02-28,S,sale,13939,811610.98,58.2259,9.5842,-13939,131499,0,unknown,,6,0,Common Stock,D,4,0000092380-17-000068,,https://www.sec.gov/Archives/edgar/data/92380/000009238017000068/edgar.xml

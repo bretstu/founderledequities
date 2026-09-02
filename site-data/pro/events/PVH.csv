@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-PVH,78239,Stefan Larsson,1558755,2025-06-30,2025-06-26,P,open-market purchase,15645,1000001.94,63.9200,6.1643,15644,269437,0,discretionary,,1,0,"Common Stock, $1 par value",D,4,0001062993-25-012221,,https://www.sec.gov/Archives/edgar/data/78239/000106299325012221/form4.xml
-PVH,78239,Stefan Larsson,1558755,2022-09-07,2022-09-06,P,open-market purchase,18540,1000000.27,53.9364,15.7121,18540,136541,0,unknown,,1,0,"Common Stock, $1 par value",D,4,0000078239-22-000116,,https://www.sec.gov/Archives/edgar/data/78239/000007823922000116/wf-form4_166257092135481.xml

@@ -1,5 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-2067876,VSNT,Mark Lazarus,1360780,2026-01-02,3,0000950103-26-000129,0,0,144168616,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2067876,VSNT,Mark Lazarus,1360780,2026-01-09,4,0000950103-26-000384,429248,429248,144168616,0.2977,422094,,2,7154,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2067876,VSNT,Mark Lazarus,1360780,2026-03-05,4,0001628280-26-015689,633218,633218,144168616,0.4392,203971,,1,-1,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-2067876,VSNT,Mark Lazarus,1360780,2026-07-28,4,0001628280-26-051128,627018,627018,139170078,0.4505,-6200,230888.0,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

@@ -1,4 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1788060,VOYG,Dylan Taylor,1423572,2025-06-11,3,0001628280-25-030714,0,0,58969640,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1788060,VOYG,Dylan Taylor,1423572,2025-06-13,4,0001628280-25-031391,2008566,2008566,58969640,3.4061,45000,,1,1963566,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1788060,VOYG,Dylan Taylor,1423572,2026-01-13,4,0001628280-26-002248,2008566,2008566,59087628,3.3993,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

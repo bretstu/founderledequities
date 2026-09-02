@@ -158,3 +158,16 @@ def test_fewer_than_three_neighbours_is_no_verdict():
            _e(traded="2026-01-06", avg_price=100_000.0)]
     flag_prices(evs)
     assert not any(e.price_flag for e in evs)
+
+
+def test_a_purchase_the_position_did_not_register_says_so():
+    """Both of Schwarzman's August 2026 Blackstone purchases carry
+    net_change 0 and holding_after 0 from history: the walk counts his
+    common at zero before and after. The label must not call that a stake
+    going up."""
+    e = _e(code="P", buy=True, holding_after=0.0, net_change=0.0, residue=0.0,
+           plan="discretionary")
+    assert e.label == "purchase, position unchanged"
+    assert e.pct_of_holding is None
+    real = _e(code="P", buy=True, holding_after=10_000, net_change=10_000, residue=0.0)
+    assert real.label == "open-market purchase"

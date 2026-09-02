@@ -1,3 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-51434,IP,Andrew K. Silvernail,1485532,2024-05-01,3,0001127602-24-014517,0,0,347332324,0.0,,,,,,0,c-2,,TRUE
-51434,IP,Andrew K. Silvernail,1485532,2026-01-30,4,"Group(security=""Common Stock (the company's only class)"", direct='D', shares=50000.0, last_txn={('D', ''): 50000.0}, holdings=0.0, hold_by_vehicle={}, filed='2026-01-30', moved_here=True, opening={('D', ''): 0.0}, rows=1, as_of='2026-01-30', accession='0000051434-26-000019', table='I')",50000,50000,528038317,0.0095,50000,1998965.0,,,P,1,c-2,,TRUE

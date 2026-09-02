@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-SFNC,90498,James M. Brogdon,1859222,2025-07-24,2025-07-23,P,open-market purchase,7550,139675.00,18.5000,,7550,53703,15100,discretionary,,1,0,SFNC Common Stock,D,4,0000950170-25-098463,,https://www.sec.gov/Archives/edgar/data/90498/000095017025098463/ownership.xml
-SFNC,90498,James M. Brogdon,1859222,2023-05-15,2023-05-12,P,open-market purchase,15000,224700.00,14.9800,164.6904,15000,24108,0,discretionary,,1,0,SFNC Common Stock,D,4,0001171843-23-003307,,https://www.sec.gov/Archives/edgar/data/90498/000117184323003307/ownership.xml

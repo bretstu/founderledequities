@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-NVTS,1821769,Chris Allexandre,1607983,2026-05-29,2026-05-27,S,discretionary sale,13323,423804.63,31.8100,1.2268,-13323,1072633,0,discretionary,,1,0,Class A Common Stock,D,4,0001104659-26-068287,,https://www.sec.gov/Archives/edgar/data/1821769/000110465926068287/tm2616066-1_4seq1.xml
-NVTS,1821769,Chris Allexandre,1607983,2026-03-05,2026-03-03,S,scheduled sale,9236,82477.48,8.9300,1.1228,13323,813323,0,plan,A,1,0,Class A Common Stock,D,4,0001607983-26-000002,,https://www.sec.gov/Archives/edgar/data/1821769/000160798326000002/wk-form4_1772755162.xml

@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-CSX,277948,Stephen F. Angel,1190775,2026-03-06,2026-03-06,P,open-market purchase,25000,1006750.00,40.2700,,25350,148655,350,discretionary,,1,0,Common Stock,D,4,0001193125-26-096732,,https://www.sec.gov/Archives/edgar/data/277948/000119312526096732/ownership.xml
-CSX,277948,Stephen F. Angel,1190775,2025-10-21,2025-10-20,P,open-market purchase,55000,2027850.00,36.8700,1700.6803,55000,58234,0,discretionary,,1,0,Common Stock,D,4,0001193125-25-245241,,https://www.sec.gov/Archives/edgar/data/277948/000119312525245241/ownership.xml

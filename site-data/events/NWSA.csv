@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-NWSA,1564708,Robert J. Thomson,1579380,2020-11-25,2020-11-25,S,sale,70000,1258243.00,17.9749,97.2222,-70000,2000,0,unknown,,1,0,Class B Common Stock,D,4,0001567619-20-020388,,https://www.sec.gov/Archives/edgar/data/1564708/000156761920020388/doc1.xml
-NWSA,1564708,Robert J. Thomson,1579380,2018-08-15,2018-08-15,P,open-market purchase,72000,1017144.00,14.1270,,72000,72000,0,unknown,FM,1,0,Class B Common Stock,D,4,0001567619-18-001184,,https://www.sec.gov/Archives/edgar/data/1564708/000156761918001184/doc1.xml

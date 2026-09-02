@@ -1,9 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1800227,PPLI,Barry Diller,927067,2020-06-30,4,0001104659-20-080685,7589347,7589347,85317565,8.8954,5932273,,4,,J,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
-1800227,PPLI,Barry Diller,927067,2020-07-07,4,0001104659-20-082396,7619496,7619496,85317565,8.9307,36212,5195355.21,1,-6063,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
-1800227,PPLI,Barry Diller,927067,2020-11-05,4,0001179110-20-010935,7619496,7619496,85339130,8.9285,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
-1800227,PPLI,Barry Diller,927067,2020-12-03,4,0001179110-20-011732,7749929,7749929,85339130,9.0813,130433,27057761.11,,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
-1800227,PPLI,Barry Diller,927067,2021-05-25,4,0001179110-21-006005,5962284,5962284,89137047,6.6889,5652865,,4,-7440510,J,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
-1800227,PPLI,Barry Diller,927067,2021-11-12,4,0001104659-21-140067,5834798,5834798,89566940,6.5145,-127486,,2,,J,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
-1800227,PPLI,Barry Diller,927067,2025-03-05,4,0001104659-25-021768,6129535,6129535,83283336,7.3599,294737,47160919.16,1,,FGM,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
-1800227,PPLI,Barry Diller,927067,2025-11-05,4,0001628280-25-050741,6327324,6327324,77433044,8.1713,197789,7954353.68,1,,FM,3,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,

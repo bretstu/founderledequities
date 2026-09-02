@@ -1,8 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1568651,OSCR,Mark T. Bertolini,1352552,2023-04-03,4,0001562180-23-003445,0,0,218349422,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1568651,OSCR,Mark T. Bertolini,1352552,2024-04-03,4,0001562180-24-003316,955555,955555,237223633,0.4028,955555,,1,,M,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1568651,OSCR,Mark T. Bertolini,1352552,2025-04-03,4,0001562180-25-003037,2866666,2866666,254677000,1.1256,955556,,1,955555,M,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1568651,OSCR,Mark T. Bertolini,1352552,2026-03-02,4,0001568651-26-000026,4463543,4463543,297748000,1.4991,1596877,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1568651,OSCR,Mark T. Bertolini,1352552,2026-04-03,4,0001352552-26-000008,10196876,10196876,301493000,3.3821,5733333,23840011.92,1,,FMP,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1568651,OSCR,Mark T. Bertolini,1352552,2026-06-25,4,0001352552-26-000010,8990566,8990566,301493000,2.982,-1206310,34912078.28,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1568651,OSCR,Mark T. Bertolini,1352552,2026-06-29,4,0001568651-26-000060,7751570,7751570,301493000,2.5711,-1238996,35767321.7,,,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

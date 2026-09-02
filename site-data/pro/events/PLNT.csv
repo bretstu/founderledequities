@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-PLNT,1637207,Colleen Keating,2026250,2026-05-14,2026-05-12,P,open-market purchase,5000,247700.00,49.5400,3.6627,5000,141511,0,discretionary,,1,0,Class A common stock,D,4,0002026250-26-000009,,https://www.sec.gov/Archives/edgar/data/1637207/000202625026000009/primarydocument.xml
-PLNT,1637207,Colleen Keating,2026250,2025-06-13,2025-06-11,S,discretionary sale,23670,2423784.30,102.3990,18.3476,-23670,105339,0,discretionary,,2,0,Class A common stock,D,4,0001562180-25-004826,,https://www.sec.gov/Archives/edgar/data/1637207/000156218025004826/primarydocument.xml

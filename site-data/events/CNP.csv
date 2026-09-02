@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-CNP,1130310,Jason P. Wells,1661849,2023-11-09,2023-11-09,P,open-market purchase,10000,269050.00,26.9050,4.8134,10000,217755,0,discretionary,,1,0,Common Stock,I,4,0001130310-23-000150,,https://www.sec.gov/Archives/edgar/data/1130310/000113031023000150/wk-form4_1699568705.xml
-CNP,1130310,Jason P. Wells,1661849,2021-05-12,2021-05-11,P,open-market purchase,10000,240600.00,24.0600,10.2653,10000,107416,0,unknown,,1,0,Common Stock,D,4,0001209191-21-031951,,https://www.sec.gov/Archives/edgar/data/1130310/000120919121031951/doc4.xml

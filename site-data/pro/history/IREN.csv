@@ -1,5 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1878848,IREN,Daniel Roberts,1909120,2025-07-01,4,0000950103-25-008478,14989696,14989696,283465490,5.288,1793392,,1,,A,1,us-gaap:CommonClassAMember,,TRUE
-1878848,IREN,Daniel Roberts,1909120,2025-09-03,4,0000950103-25-011346,14989696,14989696,283465490,5.288,,,,,,1,us-gaap:CommonClassAMember,,TRUE
-1878848,IREN,Daniel Roberts,1909120,2025-09-11,4,0000950103-25-011563,13989696,13989696,283465490,4.9352,-1000000,33131000.0,,,S,1,us-gaap:CommonClassAMember,,TRUE
-1878848,IREN,Daniel Roberts,1909120,2026-07-01,4,0000950103-26-009958,23641221,23641221,357378674,6.6152,9651525,,2,,A,1,us-gaap:CommonClassAMember,,TRUE

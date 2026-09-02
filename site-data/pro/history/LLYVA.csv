@@ -1,5 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-2078416,LLYVA,Chad R. Hollingsworth,1634652,2025-12-12,3,0001225208-25-009919,0,0,91931669,0.0,,,,,,0,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,
-2078416,LLYVA,Chad R. Hollingsworth,1634652,2025-12-15,4,0001225208-25-010097,644,644,91931669,0.0007,644,,1,,J,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,
-2078416,LLYVA,Chad R. Hollingsworth,1634652,2026-02-16,4,0001225208-26-002387,1885,1885,91931669,0.0021,1241,,1,,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,
-2078416,LLYVA,Chad R. Hollingsworth,1634652,2026-03-05,4,0001225208-26-003422,1276,1276,91931669,0.0014,-609,59194.8,,,F,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember|us-gaap:CommonClassCMember,,

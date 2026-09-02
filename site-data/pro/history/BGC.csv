@@ -1,7 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-1094831,BGC,JP Aubin,2053826,2025-02-18,3/A,0001437749-25-006668,1131641,1131641,487938528,0.2319,,,,,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1094831,BGC,JP Aubin,2053826,2025-02-20,3,0001437749-25-004626,1283206,1283206,487938528,0.263,,,,151565,,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1094831,BGC,JP Aubin,2053826,2025-04-01,4,0001437749-26-008398,1185705,1185705,488173431,0.2429,64064,137731.44,1,-161565,AF,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1094831,BGC,JP Aubin,2053826,2026-03-05,4,0001437749-26-007358,1121641,1121641,479913420,0.2337,-10000,95500.0,,-54064,S,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1094831,BGC,JP Aubin,2053826,2026-04-01,4,0001437749-26-010904,1455262,1455262,479056637,0.3038,269557,,1,64064,A,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE
-1094831,BGC,JP Aubin,2053826,2026-08-28,4,0001437749-26-029325,1082071,1082071,475466522,0.2276,-373191,4523074.92,,,D,1,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,TRUE

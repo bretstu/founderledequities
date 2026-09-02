@@ -1,6 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-821130,AD,Anthony J. M. Carlson,2028349,2025-11-16,3,0002028349-25-000004,14118,14118,86400000,0.0163,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
-821130,AD,Anthony J. M. Carlson,2028349,2026-01-02,4,0002028349-26-000003,17785,17785,86400000,0.0206,3667,344358.0,,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
-821130,AD,Anthony J. M. Carlson,2028349,2026-03-04,4,0002028349-26-000007,18440,18440,86400000,0.0213,655,67528.23,,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
-821130,AD,Anthony J. M. Carlson,2028349,2026-03-17,4,0002028349-26-000009,18440,18440,86400000,0.0213,,,,,,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,
-821130,AD,Anthony J. M. Carlson,2028349,2026-04-03,4,0002028349-26-000011,22604,22604,86400000,0.0262,4164,365760.0,,,FM,2,us-gaap:CommonClassAMember|us-gaap:CommonClassBMember,,

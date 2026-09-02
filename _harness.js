@@ -112,7 +112,7 @@ const P=runPage();
   const chips=(dayHtml.match(/gotoDay\(/g)||[]).length;
   assert(chips===Math.min(5,filingDays().length),"one chip per filing day, the last five: "+chips);
   assert(/class="chip on"[^>]*>(Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d+\/\d+<i>/.test(dayHtml),"the newest day's chip is lit and reads like a day");
-  assert((dayHtml.match(/class="dayrow"/g)||[]).length>=Math.min(rows.length,12),"one row per filing, capped at twelve");
+  assert((dayHtml.match(/class="dayrow"/g)||[]).length===rows.length&&dayHtml.includes('class="daylist"'),"one row per trade inside a fixed, scrolling frame");
   assert(dayHtml.includes("openDrawer(")&&dayHtml.includes("sec.gov"),"day rows are doors and carry filing links");
   const txt=dayText(newest,rows);
   assert(txt.split("\n").length===rows.length+2+(allDay.length>rows.length?1:0)&&txt.includes("?day="+newest),
@@ -189,6 +189,11 @@ const P=runPage();
   assert(P.evBadge(conv).t==="CONVERTED"&&!P.evBadge(conv).n.includes("compensation"),"and is badged as a conversion, not compensation");
   assert(P.evPctCell(conv).includes("unchanged"),"and states no percentage");
   assert(P.dayText("2026-01-01",[conv]).includes("converted and sold"),"and the copy text says converted");
+  // a purchase the position did not register (Schwarzman's BX buys) is kept apart too
+  const ghost={tk:"BX",ceo:"S",c:"P",lb:"purchase, position unchanged",pl:"discretionary",sh:1,v:1,fd:"2026-01-01",td:"2026-01-01",pc:null,ha:0,nc:0,rs:null};
+  assert(P.evSide(ghost)==="exsell"&&P.unchangedKind(ghost)==="bought","a purchase the position did not register never enters the buy ranking");
+  assert(P.evBadge(ghost).t==="UNCHANGED","and is badged unchanged, not bought");
+  assert(P.evAgg("buys").pool.every(e=>e.lb!=="purchase, position unchanged"),"the buy column holds none of them");
   assert((sellHtml.match(/class="abar"/g)||[]).length<=8,"at most eight bars per column");
   assert(sellHtml.includes('class="seg plan"')||sellHtml.includes('class="seg disc"'),
     "a bar is segmented by manner");

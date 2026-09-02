@@ -1,4 +1,0 @@
-cik,ticker,ceo,owner_cik,date,form,accession,shares,shares_split_adjusted,outstanding,pct,traded,traded_value,unpriced_rows,unexplained,codes,groups,classes,restated,matches_panel
-84748,ROG,Ali El-Haj,2076878,2025-07-12,4,0002076878-25-000003,21598,21598,18121685,0.1192,21598,,1,,A,1,c-2,,TRUE
-84748,ROG,Ali El-Haj,2076878,2026-05-19,4,0002076878-26-000002,46420,46420,17848535,0.2601,24822,,1,,A,1,c-2,,TRUE
-84748,ROG,Ali El-Haj,2076878,2026-07-12,4,0002076878-26-000003,37502,37502,17868335,0.2099,-8918,1226403.36,,,F,1,c-2,,TRUE

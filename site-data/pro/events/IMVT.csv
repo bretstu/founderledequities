@@ -1,3 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-IMVT,1764013,Eric Venker,1801917,2026-07-06,2026-07-02,S,discretionary sale,3092,118980.16,38.4800,1.2014,2467,254280,,discretionary,M,1,0,Common Stock,D,4,0001764013-26-000077,,https://www.sec.gov/Archives/edgar/data/1764013/000176401326000077/wk-form4_1783371682.xml
-IMVT,1764013,Eric Venker,1801917,2026-04-03,2026-04-02,S,discretionary sale,14229,342854.20,24.0955,42.1101,19561,19561,,discretionary,M,2,0,Common Stock,D,4,0001764013-26-000024,,https://www.sec.gov/Archives/edgar/data/1764013/000176401326000024/wk-form4_1775248378.xml

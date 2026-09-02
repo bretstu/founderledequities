@@ -1,4 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-PFE,78003,Albert Bourla,1595703,2026-08-12,2026-08-12,P,open-market purchase,38000,1000920.00,26.3400,,40881,435555,2881,discretionary,,1,0,Common Stock,D,4,0001225208-26-007083,,https://www.sec.gov/Archives/edgar/data/78003/000122520826007083/doc4.xml
-PFE,78003,Albert Bourla,1595703,2020-11-10,2020-11-09,S,sale,132508,5557385.52,41.9400,,-130686,81812,1822,unknown,,1,0,Common Stock,D,4,0001225208-20-013318,,https://www.sec.gov/Archives/edgar/data/78003/000122520820013318/doc4.xml
-PFE,78003,Albert Bourla,1595703,2016-11-07,2016-11-04,S,sale,18390,552529.63,30.0451,,2994,133248,1384,unknown,M,4,0,Common Stock,D,4,0001225208-16-041273,,https://www.sec.gov/Archives/edgar/data/78003/000122520816041273/doc4.xml

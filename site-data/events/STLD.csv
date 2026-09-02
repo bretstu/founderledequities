@@ -1,4 +1,0 @@
-ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,net_change,holding_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url
-STLD,1022671,Mark D. Millett,1195949,2021-09-10,2021-09-09,S,sale,67686,4490289.24,66.3400,2.1651,-67686,3058587,0,unknown,,1,0,Common Stock,D,4,0001062993-21-008460,,https://www.sec.gov/Archives/edgar/data/1022671/000106299321008460/form4.xml
-STLD,1022671,Mark D. Millett,1195949,2021-09-07,2021-09-03,S,sale,176751,11856531.30,67.0804,5.3512,-176751,3126273,0,unknown,,2,0,Common Stock,D,4,0001062993-21-008318,,https://www.sec.gov/Archives/edgar/data/1022671/000106299321008318/form4.xml
-STLD,1022671,Mark D. Millett,1195949,2021-09-01,2021-08-30,S,sale,155563,11043109.75,70.9880,4.4979,-155563,3303024,0,unknown,,2,0,Common Stock,D,4,0001062993-21-008063,,https://www.sec.gov/Archives/edgar/data/1022671/000106299321008063/form4.xml
