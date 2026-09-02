@@ -179,50 +179,22 @@ td.src a:hover{color:var(--blue)}
 .more{font-weight:700;font-size:13px;border:1px solid var(--ink);border-radius:9px;padding:8px 16px}
 .more:hover{background:var(--ink);color:#fff}
 @media(max-width:980px){.h-out,.c-out,.h-asof,.c-asof{display:none}}
-@media(max-width:760px){.h-sh,.c-sh,.h-conf,.c-conf,.h-src,.c-src,.h-ceo,td.ceo{display:none}}
+@media(max-width:760px){.h-sh,.c-sh,.h-conf,.c-conf,.h-src,.c-src,.h-ceo,td.ceo,.h-lt,.c-lt{display:none}}
+/* the screener's two new cells */
+.c-d3 .d3{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;font-family:var(--mono);font-size:12px}
+.c-d3 .d3 b{font-weight:600}
+.c-d3 .d3 small{font-size:10px;color:var(--faint);margin-left:-4px}
+.c-d3 .d3.up b,.c-d3 .d3.up .spark{color:#0b7a4b}
+.c-d3 .d3.down b,.c-d3 .d3.down .spark{color:#c22a2a}
+.c-d3 .d3.flat b,.c-d3 .d3.flat .spark{color:var(--mut)}
+.c-d3 .spark{display:block;flex:none}
+.c-d3 .ns{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);background:var(--wash);border-radius:4px;padding:2px 6px;margin-left:2px}
+.c-lt .lt{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.c-lt .ltd{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 
 /* ---------- trends ---------- */
 .protag{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.1em;color:#fff;background:var(--ink);border-radius:5px;padding:4px 8px;vertical-align:middle}
 .protag.ghost{color:var(--ink);background:none;border:1px solid var(--ink)}
-.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr));gap:16px}
-/* trajectory cards: the stat is the headline, the sparkline is the proof */
-.tjcard{border:1px solid var(--line);border-radius:12px;padding:18px 20px 12px;background:#fff;
-  cursor:pointer;transition:border-color .12s}
-.tjcard:hover{border-color:var(--blue)}
-.tjhead{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
-.tjhead .l{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tjhead .nm{font-family:var(--disp);font-weight:600;font-size:16px}
-.tjhead .ce{font-size:12.5px;color:var(--mut);margin-left:8px}
-.mint{flex:none;font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.1em;
-  color:#fff;background:var(--blue);border-radius:4px;padding:3px 8px}
-.tjstat{font-family:var(--disp);font-weight:700;font-size:clamp(26px,2.4vw,32px);
-  letter-spacing:-.03em;line-height:1.05}
-.tjstat.up{color:#0b7a4b}.tjstat.down{color:#c22a2a}
-.tjsub{font-size:12.5px;color:var(--mut);margin:3px 0 8px}
-
-/* ONE LINE, ALWAYS. The company name truncates before anything wraps; the
-   ticker moved into the focus view, where there is room for it. */
-.tcard .thead{flex-wrap:nowrap;gap:12px}
-.tcard .thead .l{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tcard .delta{flex:none;white-space:nowrap}
-/* THE CARD IS A DOOR, NOT A PICTURE. Selecting it opens the same drawer as
-   the table row -- the full record, sources and all -- so the chart is the
-   way IN to the details rather than the end of them. */
-.tcard{border:1px solid var(--line);border-radius:12px;padding:20px 22px 14px;background:#fff;cursor:pointer;transition:border-color .12s}
-.tcard:hover{border-color:var(--blue)}
-/* WHICH WAY DID IT GO? The closing figure carries the direction: risen
-   stakes read green with a rising arrow, fallen ones red with a falling
-   one. The number was already there; now it says which way it points. */
-.tcard .delta .dir{font-weight:600}
-.tcard .delta.up b,.tcard .delta.up .dir{color:#0b7a4b}
-.tcard .delta.down b,.tcard .delta.down .dir{color:#c22a2a}
-.tcard .delta.flat b,.tcard .delta.flat .dir{color:var(--mut)}
-.tcard .thead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px;flex-wrap:wrap}
-.tcard .thead .l .tk{font-family:var(--mono);font-weight:600;font-size:13px}
-.tcard .thead .l .nm{font-family:var(--disp);font-weight:600;font-size:17px;margin-left:8px}
-.tcard .thead .l .ce{font-size:12.5px;color:var(--mut);margin-left:8px}
-.tcard .delta{font-family:var(--mono);font-size:12px;color:var(--mut)}
-.tcard .delta b{font-weight:600}
 .chartbox{position:relative}
 .chartbox svg{display:block;width:100%;height:auto}
 /* ONE LOCK, USED EVERYWHERE.
@@ -254,7 +226,6 @@ td.src a:hover{color:var(--blue)}
 /* a locked block never collapses to nothing: the blur needs room to read as
    content rather than as a smudge */
 .locked.tall{min-height:260px}
-#tglock:not(:empty){margin-top:14px}
 .freetag{position:absolute;top:6px;right:6px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--blue);background:var(--wash);border-radius:4px;padding:3px 8px}
 .tnote{font-size:11.5px;color:var(--faint);margin-top:8px}
 
@@ -562,9 +533,8 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     onkeydown="if(event.key==='Enter')window.scrollTo({top:0,behavior:'smooth'})">Founder Led <i>Equities</i></div>
   <div class="topnav">
     <a href="#board">Leaderboard</a>
-    <a href="#perfsec">Performance</a>
     <a href="#activity">Recent activity</a>
-    <a href="#trends">Trajectories</a>
+    <a href="#perfsec">Performance</a>
     <a href="#table">Every company</a>
     <a href="about.html">About</a>
     <button class="devtog" id="devtog" onclick="toggleDev()" title="Developer preview — see the site as a Pro subscriber">Preview: Free</button>
@@ -589,26 +559,6 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   </div>
   <div class="r bsub" id="bsub"></div>
   <div class="bars" id="bars"></div>
-</div></section>
-
-<!-- PERFORMANCE SITS RIGHT AFTER THE BOARD.
-     The hero says 18 of 500; the board says who; this section answers the
-     question every visitor arrives with next -- has it mattered? One
-     equal-weight line for the founder cohort, one for the market, and the
-     honest caveat in plain sight. Free, deliberately: it is the thesis. -->
-<section id="perfsec" class="perfs hide"><div class="wrap">
-  <div class="shead">
-    <h2>Founders against the index</h2>
-    <div class="perfctl">
-      <button class="chip pw on" data-pw="" id="pwmax">Since 2016</button>
-      <button class="chip pw" data-pw="60">5 years</button>
-      <button class="chip pw" data-pw="36">3 years</button>
-      <button class="chip pw" data-pw="12">1 year</button>
-    </div>
-  </div>
-  <div class="r bsub" id="perfsub"></div>
-  <div class="chartbox" id="perfchart"></div>
-  <div class="tnote" id="perfnote"></div>
 </div></section>
 
 <!-- RECENT ACTIVITY SITS SECOND, NOT LAST.
@@ -669,52 +619,36 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   </div>
 </div></section>
 
-<!-- TRAJECTORIES, NOT TWELVE CHARTS.
-     The leaderboard already ranks by stake size; re-ranking the same list
-     with sparklines answered a question the reader just left. History's own
-     question is DIRECTION -- who is betting on themselves and who is heading
-     for the door -- so the section is organised by change: pick a lens, get
-     the ranked evidence, each card leading with the stat the lens is about.
-     "At new lows" is the return hook: milestones are minted by every filing,
-     so this view is different tomorrow. -->
-<section class="trends" id="trends"><div class="wrap">
+<!-- PERFORMANCE SITS THIRD: after who, after what happened, before the
+     long tail. It answers "has it mattered?" -- one equal-weight line for
+     the founder cohort, one for the market, the honest caveat in plain
+     sight. Free, deliberately: it is the thesis. A first visit still meets
+     it before the table; a return visit meets the strip first. -->
+<section id="perfsec" class="perfs hide"><div class="wrap">
   <div class="shead">
-    <h2>Trajectories</h2>
-    <div class="r" id="trendsub"></div>
+    <h2>Founders against the index</h2>
+    <div class="perfctl">
+      <button class="chip pw on" data-pw="" id="pwmax">Since 2016</button>
+      <button class="chip pw" data-pw="60">5 years</button>
+      <button class="chip pw" data-pw="36">3 years</button>
+      <button class="chip pw" data-pw="12">1 year</button>
+    </div>
   </div>
-  <div class="controls hide" id="tjctl">
-    <div class="gatecover hide" id="tjgate" role="button" tabindex="0"
-      title="Every lens, every horizon, every company's trajectory — Pro. Select to unlock"
-      onclick="openPro()" onkeydown="if(event.key==='Enter')openPro()"></div>
-    <label class="search">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input id="tsearch" placeholder="Or look up any company — ticker, name, or chief executive" autocomplete="off" aria-label="Look up a company">
-    </label>
-    <button class="chip on" data-tl="up"
-      title="stakes that grew over the chosen horizon, largest gain first">Accumulating<i></i></button>
-    <button class="chip" data-tl="down"
-      title="stakes that shrank over the chosen horizon, largest reduction first">Selling down<i></i></button>
-    <button class="chip" data-tl="low"
-      title="stakes at the lowest point in their whole record, newest low first — minted by the latest filing">At new lows<i></i></button>
-    <button class="chip" data-tl="hold"
-      title="not one stake-reducing sale on record since 2016 — options cashed the same day don't count against anyone">Never sold<i></i></button>
-    <span class="chipdiv" aria-hidden="true"></span>
-<span class="fsw" id="tjf" role="switch" aria-checked="false" tabindex="0"
-        title="only companies still run by a person the proxy names as a founder">Founders only<span class="tr"><i></i></span></span>
-    <select id="thoriz" aria-label="Horizon">
-      <option value="365">Past year</option>
-      <option value="1095" selected>Past 3 years</option>
-      <option value="">Since 2016</option>
-    </select>
-  </div>
-  <div class="tgrid" id="tgrid"></div>
-  <div id="tglock"></div>
+  <div class="r bsub" id="perfsub"></div>
+  <div class="chartbox" id="perfchart"></div>
+  <div class="tnote" id="perfnote"></div>
 </div></section>
 
 <section class="tablesec" id="table"><div class="wrap">
+  <!-- THE SCREENER. Trajectories used to be a section of nine charts,
+       chosen by a lens the reader had not asked for. Its question -- where
+       is each stake heading, and did the person ever sell -- is a question
+       about ONE company, so it lives here as columns: sort by three-year
+       change, read the last trade, filter to those who never sold, and open
+       the row for the full record. -->
   <div class="shead">
     <h2>Every company</h2>
-    <div class="r">Click a column to sort</div>
+    <div class="r">Click a column to sort · open a row for the full record</div>
   </div>
   <div class="controls">
     <label class="search">
@@ -727,6 +661,8 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     <button class="chip" data-min="10">&gt; 10%</button>
     <span class="fsw" id="fchip" role="switch" aria-checked="false" tabindex="0"
         title="only companies still run by a person the proxy names as a founder">Founders only<span class="tr"><i></i></span></span>
+    <span class="fsw" id="hchip" role="switch" aria-checked="false" tabindex="0"
+        title="not one stake-reducing sale on record since 2016 — options cashed and units converted the same day don't count against anyone">Never sold<span class="tr"><i></i></span></span>
   </div>
   <div class="tscroll">
   <table>
@@ -735,6 +671,8 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
       <th class="sortable" data-key="co">Company<span class="arr"></span></th>
       <th class="sortable h-ceo" data-key="ceo">Chief executive<span class="arr"></span></th>
       <th class="sortable" data-key="pct">Ownership<span class="arr"></span></th>
+      <th class="sortable h-d3" data-key="d3" title="the stake now against the stake three years ago, in percentage points, with the record between">3-yr change<span class="arr"></span></th>
+      <th class="sortable h-lt" data-key="lt" title="the newest trade that moved the stake">Last trade<span class="arr"></span></th>
       <th class="sortable n" data-key="val">Value<span class="arr"></span></th>
       <th class="sortable n h-sh" data-key="sh">Shares held<span class="arr"></span></th>
       <th class="sortable n h-out" data-key="out">Outstanding<span class="arr"></span></th>
@@ -801,7 +739,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     <p>The history behind every number in the free view.</p>
     <ul>
       <li>Ownership and share-count history for all 500 companies, filing by filing</li>
-      <li>Trajectories — every lens, every horizon, every company</li>
+      <li>Every company's three-year change and its full record, filing by filing</li>
       <li>The full trading feed — every buy and sale since 2016, filtered, sorted and searchable</li>
       <li>Every filing linked at the row, the day it hits EDGAR</li>
     </ul>
@@ -844,7 +782,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tq:"",tl:"up",thoriz:"1095",tjF:false,pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
+const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
 
 /* ---------------- embedded fallback (real pipeline output) ------ */
 const SAMPLE=[
@@ -1156,7 +1094,7 @@ function chartBlock(tk){
 }
 
 /* ---------------- render ---------------- */
-function renderAll(){syncNav();renderStatus();renderHero();renderBars();renderTable();renderTrends();renderActivity();renderPerf();
+function renderAll(){syncNav();renderStatus();renderHero();renderBars();renderTable();renderActivity();renderPerf();
   if(/[?&]welcome=1/.test(location.search)&&!state._welcomed){
     state._welcomed=true;
     const t=document.createElement("div");
@@ -1412,11 +1350,49 @@ function trendArrow(tk){
   const t=d==="up"?"stake higher than a year ago":d==="down"?"stake lower than a year ago":"stake roughly flat over a year";
   return `<span class="tarr ${d}" title="${t}">${g}</span>`;
 }
+function sparkline(tk,days){
+  /* THE RECORD, AT A GLANCE. Sixty pixels of the cleaned history over the
+     horizon, no axes: enough to see a climb, a cliff or a flat line, and
+     the row is the door to the real chart. */
+  const pts=cleanHist(tk);if(pts.length<2)return"";
+  const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
+  let win=pts.filter(p=>p[0]>=cut);
+  const base=[...pts].reverse().find(p=>p[0]<cut);
+  if(base)win=[base,...win];
+  if(win.length<2)return"";
+  const t0=Date.parse(win[0][0]),t1=Date.parse(win[win.length-1][0])||t0+1;
+  let lo=Infinity,hi=-Infinity;for(const p of win){if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];}
+  const W=64,H=18,span=(hi-lo)||1;
+  const d=win.map(p=>`${(W*(Date.parse(p[0])-t0)/((t1-t0)||1)).toFixed(1)},${(H-2-(H-4)*(p[1]-lo)/span).toFixed(1)}`).join(" ");
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true"><polyline points="${d}" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>`;
+}
+function lastTrades(){
+  /* ticker -> the newest trade that moved the stake, and the set of
+     tickers that ever reduced one; computed once per render from the feed */
+  const last={};
+  for(const e of EVENTS){
+    if(unchangedKind(e)!==null||(e.c!=="P"&&e.c!=="S"))continue;
+    if(!last[e.tk]||e.fd>last[e.tk].fd)last[e.tk]=e;
+  }
+  return {last,sold:soldTickers()};
+}
 function renderTable(){
   paintSw("fchip",state.tbF);
+  paintSw("hchip",state.tbH);
+  const {last,sold}=lastTrades();
+  const H3=1095;
+  for(const r of PANEL){
+    if(r.masked)continue;
+    const st=HIST[r.tk]?trajStats(r.tk,H3):null;
+    r.d3=st?st.d:null;                         /* points, over three years */
+    r.d3base=st?st.baseDate:"";
+    const lt=last[r.tk];
+    r.lt=lt?lt.fd:"";r.ltev=lt||null;
+    r.ns=!sold.has(r.tk)&&!!HIST[r.tk];        /* never sold, on a record that exists */
+  }
   let rows=PANEL.filter(r=>{
     const q=state.q.toLowerCase();
-    const fOK=fOnly(r.tk,state.tbF);
+    const fOK=fOnly(r.tk,state.tbF)&&(!state.tbH||r.ns);
     /* SEALED COMPANIES ARE NOT ROWS. The free table is the S&P 500,
        complete; the sealed remainder exists as a stated fact (hero and
        footer), not as 1,635 rows of dashes. A subscriber's panel has no
@@ -1429,6 +1405,10 @@ function renderTable(){
   rows.sort((a,b)=>{
     let va=a[key],vb=b[key];
     if(key==="conf"){va=CONF[va]||0;vb=CONF[vb]||0;}
+    /* a company with no three-year record sorts below every real change,
+       whichever way the column points */
+    if(key==="d3"){const na=va===null||va===undefined,nb=vb===null||vb===undefined;
+      if(na!==nb)return na?1:-1;if(na)return 0;}
     if(typeof va==="string"||typeof vb==="string")
       return String(va||"").localeCompare(String(vb||""))*dir;
     return ((va||0)-(vb||0))*dir;
@@ -1445,6 +1425,12 @@ function renderTable(){
         :r.units
         ?`<div class="tbar" title="ownership held as exchangeable partnership units, not common stock — a percent of common cannot describe it; open the record for the filing's own words"><i style="width:0.75%"></i></div><div class="tpct" style="color:var(--faint)">units</div>`
         :`<div class="tbar" title="${r.pct.toFixed(2)}% of the company — the bar is drawn on a 0–100% scale${r.src13?" — from "+r.src13+", not Section 16 filings":""}"><i style="width:${Math.max(0.75,r.pct)}%"></i></div><div class="tpct">${r.pct.toFixed(r.pct<1?3:2)}%${trendArrow(r.tk)}${r.src13?`<span style="color:var(--faint)" title="stake from ${r.src13}; this issuer's insiders file no U.S. transaction reports"> †</span>`:""}</div>`}</div></td>
+     <td class="c-d3">${r.d3===null||r.d3===undefined
+        ?`<span class="nopr" title="${HIST[r.tk]?"fewer than two points in the cleaned record":"no walkable filing history"}">—</span>`
+        :`<span class="d3 ${r.d3>0.05?"up":r.d3<-0.05?"down":"flat"}" title="${r.d3>=0?"+":""}${r.d3.toFixed(2)} percentage points since ${r.d3base}">${sparkline(r.tk,H3)}<b>${r.d3>=0?"+":"−"}${Math.abs(r.d3).toFixed(Math.abs(r.d3)<1?2:1)}</b><small>pts</small></span>`}${r.ns?` <span class="ns" title="never sold a share that reduced the stake, in the record since 2016">never sold</span>`:""}</td>
+     <td class="c-lt">${r.ltev
+        ?`<span class="lt" title="${r.ltev.ceo} — ${money(r.ltev.v||0)} on ${r.ltev.fd}, ${r.ltev.lb}"><span class="abadge ${evBadge(r.ltev).k}">${evBadge(r.ltev).t}</span><span class="ltd">${r.ltev.fd}</span></span>`
+        :`<span class="nopr" title="no trade that moved the stake on record since 2016">—</span>`}</td>
      <td class="n num" title="${r.val?'$'+fmt(r.val):''}">${r.val?money(r.val):"—"}</td>
      <td class="n num c-sh" title="${r.sh!==null?fmt(r.sh):''}">${r.sh!==null?compact(r.sh):"—"}</td>
      <td class="n num c-out" title="${r.out?fmt(r.out):""}">${r.out?compact(r.out):"—"}</td>
@@ -1569,146 +1555,6 @@ function soldTickers(){
   for(const e of EVENTS)if(e.c==="S"&&unchangedKind(e)===null)out.add(e.tk);
   return out;
 }
-function tjPool(){
-  let pool=PANEL.filter(r=>HIST[r.tk]);
-  if(state.tjF)pool=pool.filter(r=>fOnly(r.tk,true));
-  return pool;
-}
-function tjLens(lens){
-  /* -> [{r,st}] ranked. Floors keep the lenses honest: a stake going from
-     0.01% to 0.04% is a 300% gain of nothing, so gains rank by percentage
-     POINTS and every lens requires a stake worth measuring. */
-  const days=+state.thoriz||null;
-  const sold=lens==="hold"?soldTickers():null;
-  const out=[];
-  for(const r of tjPool()){
-    const st=trajStats(r.tk,days);
-    if(!st)continue;
-    if(lens==="up"&&st.d>=0.1&&st.cur>=0.5)out.push({r,st});
-    else if(lens==="down"&&st.d<=-0.1&&st.base>=0.5)out.push({r,st});
-    else if(lens==="low"&&st.atLow&&st.spanDays>=730&&st.peak>=0.5)out.push({r,st});
-    else if(lens==="hold"&&!sold.has(r.tk)&&st.cur>=1&&st.spanDays>=730)out.push({r,st});
-  }
-  const RANK={up:(a,b)=>b.st.d-a.st.d, down:(a,b)=>a.st.d-b.st.d,
-              low:(a,b)=>a.st.ageDays-b.st.ageDays, hold:(a,b)=>b.st.cur-a.st.cur};
-  return out.sort(RANK[lens]);
-}
-function tjCard({r,st},lens){
-  /* the card's chart shows what the card's stat measured: the cleaned
-     series, clipped to the horizon for the horizon lenses. The record
-     lenses (lows, never-sold) draw the whole cleaned record, because the
-     whole record is their claim. The focus view remains the unabridged
-     truth, artifacts drawn and annotated. */
-  let h=cleanHist(r.tk);
-  const days=+state.thoriz||null;
-  if(days&&lens!=="low"&&lens!=="hold"){
-    const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
-    const clipped=h.filter(p=>p[0]>=cut);
-    /* carry one point of lead-in so the line enters from the left edge
-       instead of starting mid-chart */
-    const lead=h.filter(p=>p[0]<cut);
-    if(lead.length)clipped.unshift(lead[lead.length-1]);
-    /* a two-point window is a ruler, not a chart: when the horizon holds
-       almost nothing, show the whole cleaned record rather than a line
-       that pretends the stake moved in one straight glide */
-    if(clipped.length>=4)h=clipped;
-  }
-  const P1=v=>v.toFixed(v<1?2:1);
-  let cls,stat,sub,mint="";
-  if(lens==="up"){cls="up";stat=`+${st.d.toFixed(1)} pts`;
-    sub=`${P1(st.base)}% → ${P1(st.cur)}% of the company`;}
-  else if(lens==="down"){cls="down";stat=`−${Math.abs(st.d).toFixed(1)} pts`;
-    sub=`${P1(st.base)}% → ${P1(st.cur)}% of the company`;}
-  else if(lens==="low"){cls="down";stat=`${P1(st.cur)}%`;
-    sub=`lowest on record — under every filing since ${cleanHist(r.tk)[0][0].slice(0,4)}`;
-    mint=st.ageDays<=7?"NEW THIS WEEK":st.ageDays<=31?"NEW THIS MONTH":"";}
-  else if(lens==="hold"){cls="up";stat=`${P1(st.cur)}%`;
-    sub=`no stake-reducing sale since ${cleanHist(r.tk)[0][0].slice(0,4)} — options cashed don't count`;}
-  else{cls=st.d>=0?"up":"down";
-    stat=`${st.d>=0?"+":"−"}${Math.abs(st.d).toFixed(1)} pts`;
-    sub=`${P1(st.base)}% → ${P1(st.cur)}% of the company`;}
-  return `<div class="tjcard" onclick="openFocus('${r.tk}')" role="button" tabindex="0"
-    onkeydown="if(event.key==='Enter')openFocus('${r.tk}')" title="${r.tk} — open the full record">
-   <div class="tjhead">
-     <div class="l"><span class="nm">${r.co}</span><span class="ce">${r.ceo}</span>${fBadge(r.tk)}</div>
-     ${mint?`<span class="mint">${mint}</span>`:""}
-   </div>
-   <div class="tjstat ${cls}">${stat}</div>
-   <div class="tjsub">${sub}</div>
-   ${chartSVG(h,{h:150})}
-  </div>`;
-}
-function syncTjChips(){
-  const counts={};
-  for(const l of ["up","down","low","hold"])counts[l]=tjLens(l).length;
-  document.querySelectorAll(".chip[data-tl]").forEach(c=>{
-    c.classList.toggle("on",c.dataset.tl===state.tl);
-    c.querySelector("i").textContent=counts[c.dataset.tl].toLocaleString();
-  });
-  paintSw("tjf",state.tjF);
-  /* the record lenses ignore a horizon -- but hiding the select made every
-     chip shuffle sideways, which reads as the row rearranging itself. It
-     stays where it is, greyed and disabled, and says why on hover. */
-  const hz=$("#thoriz"),recordLens=(state.tl==="low"||state.tl==="hold");
-  hz.disabled=recordLens;
-  hz.title=recordLens?"this lens looks at the whole record, so a horizon does not apply":"";
-}
-const TJSUB={
-  up:"stakes growing over the horizon, largest gain first — a chief executive putting more of themselves in",
-  down:"stakes shrinking over the horizon, largest reduction first",
-  low:"stakes at the lowest point in their whole record, newest low first — this view changes with every filing",
-  hold:"not one stake-reducing sale on record — the conviction list",
-};
-function renderTrends(){
-  if(!$("#tgrid"))return;
-
-  $("#tjctl").classList.remove("hide");
-  $("#tjctl").classList.remove("gated");
-  $("#tjgate").classList.add("hide");
-  if(false){
-    syncTjChips();
-    $("#trendsub").textContent="who's betting on themselves, and who's heading for the door — three samples are open; every trajectory sits behind the seal.";
-    const have=new Set(Object.keys(HIST));
-    let picks=["META","TSLA","COIN"].filter(t=>have.has(t));
-    if(!picks.length)picks=[...have].slice(0,3);
-    const card=tk=>{
-      const r=PANEL.find(p=>p.tk===tk)||{tk,co:tk,ceo:""};
-      const st=trajStats(tk,null);
-      return st?tjCard({r,st},st.d>=0?"up":"down"):"";
-    };
-    $("#tgrid").innerHTML=picks.map(card).join("");
-    /* the locked half is real cards under the same blur the feed uses --
-       a reader sees the shape of what they are missing, not an advert */
-    const more=[...have].filter(t=>!picks.includes(t)).slice(0,3).map(card).join("");
-    $("#tglock").innerHTML=more
-      ? lockedBlock(`<div class="tgrid">${more}</div>`,
-          "every trajectory, every lens — who is accumulating, who is at a new low")
-      : "";
-    return;
-  }
-  $("#tglock").innerHTML="";
-  syncTjChips();
-  const q=(state.tq||"").trim().toLowerCase();
-  if(q){
-    /* the direct route stays: a search shows the matches with their change
-       over the chosen horizon, whatever lens is selected */
-    const days=+state.thoriz||null;
-    const matches=tjPool().filter(r=>r.tk.toLowerCase().includes(q)
-      ||r.co.toLowerCase().includes(q)||r.ceo.toLowerCase().includes(q)).slice(0,9);
-    $("#trendsub").textContent="every company with a filing history — select a card for the full record.";
-    $("#tgrid").innerHTML=matches.map(r=>{
-      const st=trajStats(r.tk,days);
-      return st?tjCard({r,st},"search"):"";
-    }).join("")||`<div class="tnote" style="padding:18px 4px">Nothing matches — try a ticker, a company, or a surname.</div>`;
-    return;
-  }
-  $("#trendsub").textContent=TJSUB[state.tl];
-  const rows=tjLens(state.tl).slice(0,9);
-  $("#tgrid").innerHTML=rows.map(x=>tjCard(x,state.tl)).join("")
-    ||`<div class="tnote" style="padding:18px 4px">Nothing qualifies under this lens right now — widen the horizon, or clear "Founders only".</div>`;
-}
-const SEAL="◆";
-
 /* ---------------- the focus view ---------------- */
 
 let FOCUS=null;   // {tk, pts, X:[], Y:[], w, h}
@@ -2517,7 +2363,7 @@ function closeDrawer(){$("#drawer").classList.remove("on");$("#scrim").classList
 
 /* ---------------- dev / pro toggle ---------------- */
 function toggleDev(){
-  state.pro=!state.pro;syncDev();renderTrends();renderActivity();}
+  state.pro=!state.pro;syncDev();renderTable();renderActivity();}
 /* THE SCAFFOLDING COMES DOWN FOR VISITORS.
    A public "Preview: Pro" button reads as a site the developer never
    finished. The toggle now exists only when the owner asks for it by URL
@@ -2552,12 +2398,7 @@ document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;
 
 /* ---------------- wire controls ---------------- */
 $("#q").addEventListener("input",e=>{state.q=e.target.value;renderTable()});
-$("#tsearch").addEventListener("input",e=>{state.tq=e.target.value;renderTrends();});
-document.querySelectorAll(".chip[data-tl]").forEach(c=>c.addEventListener("click",()=>{
-  state.tl=c.dataset.tl;renderTrends();
-}));
-wireSw("tjf",()=>{state.tjF=!state.tjF;renderTrends();});
-$("#thoriz").addEventListener("change",e=>{state.thoriz=e.target.value;renderTrends();});
+wireSw("hchip",()=>{state.tbH=!state.tbH;renderTable();});
 wireSw("fchip",()=>{state.tbF=!state.tbF;renderTable();});
 document.querySelectorAll(".bmode").forEach(b=>b.addEventListener("click",()=>{
   state.bmode=b.dataset.mode;renderBars();

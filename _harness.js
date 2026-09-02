@@ -61,7 +61,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},loadData,nFilings,evBadge,unchangedKind,pctOf,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,tjLens,soldTickers,renderTrends,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,nFilings,evBadge,unchangedKind,pctOf,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,soldTickers,sparkline,lastTrades,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -77,8 +77,11 @@ const P=runPage();
   state.pro=false; renderActivity();
   assert(!idxsrc.includes('classList.toggle("gated",!state.pro)'),
     "no section gates its controls by tier");
-  assert(idxsrc.includes('classList.add("hide")')&&idxsrc.includes('id="tjgate"'),
-    "the old gate covers exist but stay hidden");
+  assert(!idxsrc.includes('id="tjgate"')&&!idxsrc.includes('id="trends"'),
+    "the Trajectories section is gone");
+  assert(idxsrc.indexOf('id="activity"')<idxsrc.indexOf('id="perfsec"')&&idxsrc.indexOf('id="perfsec"')<idxsrc.indexOf('id="table"'),
+    "sections run leaderboard, activity, performance, table");
+  assert(idxsrc.indexOf('href="#activity"')<idxsrc.indexOf('href="#perfsec"'),"and the nav follows the page");
   const freeCols=els["#actcols"]._html;
   assert(freeCols.includes("Bought")&&freeCols.includes("Sold"),"both columns render for a free reader");
   assert(!freeCols.includes("locked")&&!/class="blurred"/.test(freeCols),"no lock, no blur in the free view");
@@ -324,34 +327,41 @@ const P=runPage();
   openDrawer("TSLA");
   assert(els["#drawer"]._html.includes("Latest trades"), "drawer prefers filed events");
 
-  // ---- trajectories ----
-  // synthetic history: up, down, a fresh record low, and a zero-led record
+  // ---- the screener: three-year change, last trade, never sold ----
   const day=n=>new Date(Date.now()-n*86400e3).toISOString().slice(0,10);
   P.HIST={
     UPX:[[day(1400),5.0,100],[day(700),6.2,120],[day(30),9.1,150]],
     DNX:[[day(1400),12.0,900],[day(700),10.0,800],[day(5),7.5,600]],
-    LOWX:[[day(1500),8.0,500],[day(900),6.0,400],[day(400),5.0,350],[day(3),4.2,300]],
-    ZLED:[[day(1500),0,0],[day(1000),3.0,100],[day(500),2.0,80],[day(2),1.5,60]],
+    NOH:[[day(10),3.0,10]],
   };
-  const fakePanel=[["UPX","Upward Inc","A Founder"],["DNX","Downward Inc","B Exec"],
-                   ["LOWX","Lowpoint Inc","C Exec"],["ZLED","Zeroled Inc","D Exec"]]
-    .map(([tk,co,ceo])=>({tk,co,ceo,pct:5,sh:1,out:1}));
+  const fakePanel=[["UPX","Upward Inc","A Founder"],["DNX","Downward Inc","B Exec"],["NOH","Newlisted Inc","C Exec"]]
+    .map(([tk,co,ceo])=>({tk,co,ceo,pct:5,sh:1,out:1,val:1e9,conf:"high"}));
+  const savedPanel=P.PANEL,savedEvents=P.EVENTS;
   P.PANEL=fakePanel;
-  state.tjf=false;state.thoriz="";
-  const up=P.tjLens("up"),down=P.tjLens("down"),low=P.tjLens("low");
-  assert(up.some(x=>x.r.tk==="UPX")&&!up.some(x=>x.r.tk==="DNX"),
-    "Accumulating finds the riser: "+up.map(x=>x.r.tk).join(","));
-  assert(down.some(x=>x.r.tk==="DNX")&&!down.some(x=>x.r.tk==="UPX"),
-    "Selling down finds the faller: "+down.map(x=>x.r.tk).join(","));
-  assert(low.some(x=>x.r.tk==="LOWX"),"At new lows finds the fresh low");
-  assert(low.some(x=>x.r.tk==="ZLED"),
-    "a record that opens at zero can still set a real low");
-  assert(!low.some(x=>x.r.tk==="UPX"),"a riser is not at a low");
-  const st=P.trajStats("UPX",null);
-  assert(Math.abs(st.d-4.1)<1e-9,"since-start delta is in percentage points: +"+st.d.toFixed(1));
-  const st1=P.trajStats("UPX",365);
-  assert(Math.abs(st1.d-(9.1-6.2))<1e-9,"the horizon baseline forward-fills: +"+st1.d.toFixed(1));
-
+  P.EVENTS=[{tk:"DNX",ceo:"B Exec",c:"S",lb:"discretionary sale",pl:"discretionary",fd:day(5),td:day(6),sh:100,v:1e6,pc:1,ha:600,nc:-100,rs:0,u:"https://sec.gov/x"},
+            {tk:"UPX",ceo:"A Founder",c:"P",lb:"open-market purchase",pl:"discretionary",fd:day(30),td:day(31),sh:30,v:3e5,pc:2,ha:150,nc:30,rs:0,u:"https://sec.gov/y"},
+            {tk:"UPX",ceo:"A Founder",c:"S",lb:"exercise and sell",pl:"plan",fd:day(2),td:day(2),sh:5,v:1e4,pc:null,ha:150,nc:0,rs:0,u:""}];
+  state.q="";state.min=0;state.tbF=false;state.tbH=false;state.sort={key:"d3",dir:-1};
+  P.renderTable();
+  let tb=els["#tbody"]._html;
+  const order=[...tb.matchAll(/onclick="openDrawer\('([A-Z]+)'\)"/g)].map(m=>m[1]);
+  assert(order[0]==="UPX"&&order[1]==="DNX"&&order[2]==="NOH","sorted by three-year change: the riser, the faller, then the record too short to say: "+order.join(",")+" d3="+P.PANEL.map(r=>r.d3).join(","));
+  assert(/UPX[\s\S]*?class="d3 up"[\s\S]*?<b>\+4\.1<\/b>/.test(tb),"the riser reads +4.1 pts in green, from the point on or before the horizon");
+  assert(/DNX[\s\S]*?class="d3 down"[\s\S]*?<b>−4\.5<\/b>/.test(tb),"the faller reads −4.5 pts in red");
+  assert((tb.match(/class="spark"/g)||[]).length===2,"a sparkline for each row with a record, none for the short one");
+  const rowOf=tk=>{const i=tb.indexOf(`onclick="openDrawer('${tk}')"`);const j=tb.indexOf("</tr>",i);return tb.slice(i,j);};
+  assert(rowOf("UPX").includes("never sold")&&!rowOf("DNX").includes("never sold"),"never sold marks the one who never reduced a stake — options cashed don't count");
+  assert(rowOf("NOH").includes("never sold"),"a short record with no sale on file is never-sold too");
+  assert(rowOf("DNX").includes('class="abadge down"')&&rowOf("DNX").includes("SOLD")&&rowOf("UPX").includes("BOUGHT"),"the last trade that moved the stake, badged");
+  assert(rowOf("NOH").includes("no trade that moved the stake"),"and an honest dash where there is none");
+  state.tbH=true;P.renderTable();
+  const held=[...els["#tbody"]._html.matchAll(/onclick="openDrawer\('([A-Z]+)'\)"/g)].map(m=>m[1]);
+  assert(held.join(",")==="UPX,NOH","the Never sold switch keeps only those who never did: "+held.join(","));
+  state.tbH=false;state.sort={key:"d3",dir:1};P.renderTable();
+  const asc=[...els["#tbody"]._html.matchAll(/onclick="openDrawer\('([A-Z]+)'\)"/g)].map(m=>m[1]);
+  assert(asc[0]==="DNX"&&asc[2]==="NOH","ascending puts the faller first and the short record still last");
+  state.sort={key:"pct",dir:-1};
+  P.PANEL=savedPanel;P.EVENTS=savedEvents;
   // ---- the cleaned series: known lies out, real findings in ----
   P.HIST={
     ECHO:[["2023-12-21",59.47,49902472,"G",null,null,2687900],
@@ -454,7 +464,7 @@ const P=runPage();
     P.state.lbF=false;P.renderBars();
     const again=[...els["#bars"]._html.matchAll(/openDrawer\('([A-Z.]+)'\)/g)].map(m=>m[1]);
     assert(again.length>shown.length,"toggling off restores the full board");
-    assert(P.state.ev.f===false&&P.state.tjF===false&&P.state.tbF===false,
+    assert(P.state.ev.f===false&&P.state.tbF===false&&P.state.tbH===false,
       "the leaderboard switch moved no other section's");
   }
 
@@ -487,9 +497,9 @@ const P=runPage();
 
   // never-sold consults the filed trades, not the history codes
   assert(P.soldTickers().has("TSLA"),"Musk has stake-reducing sales on record");
-  const hold=P.tjLens("hold");
-  assert(hold.every(x=>!P.soldTickers().has(x.r.tk)),
-    "Never sold excludes anyone with a stake-reducing sale ("+hold.length+")");
+  {const s=P.soldTickers();const ex=EVENTS.find(e=>P.unchangedKind(e)!==null);
+   if(ex&&!EVENTS.some(e=>e.tk===ex.tk&&e.c==="S"&&P.unchangedKind(e)===null))
+     assert(!s.has(ex.tk),"a company whose only sales left the stake unchanged is not a seller: "+ex.tk);}
 
   // ---- the trust layer ----
   const idx=require("fs").readFileSync("index.html","utf8");
