@@ -139,7 +139,7 @@ const P=runPage();
   assert(dayShown()===newest,"and clearing the pin returns to it");
   // a day with no filings is an honest empty, not an error
   gotoDay("2019-01-01");
-  assert(els["#actday"]._html.includes("No chief executive")||dayRows("2019-01-01").length>0,
+  assert(els["#actday"]._html.includes("No CEO")||dayRows("2019-01-01").length>0,
     "a day nobody filed says so");
   gotoDay("");
 
@@ -585,7 +585,11 @@ const P=runPage();
    const box=idx.slice(idx.indexOf('id="promodal"'),idx.indexOf("</script>",idx.indexOf('id="promodal"')));
    assert(!box.includes("all 500 companies")&&box.includes('id="mcount"')&&box.includes("more companies"),
      "the Pro box sells the other companies, with the count filled from the data");
-   assert(!about.includes("Until that page exists"),"About no longer promises a page that now exists");}
+   assert(!about.includes("Until that page exists"),"About no longer promises a page that now exists");
+   /* CEO wherever a reader scans; "chief executive" only inside About's prose */
+   const visible=idx.replace(/<!--[\s\S]*?-->/g,"").replace(/\/\*[\s\S]*?\*\//g,"").replace(/^\s*\/\/.*$/gm,"");
+   assert(!/chief executive/i.test(visible),"no label on the page says chief executive: "+(visible.match(/.{0,40}chief executive.{0,40}/i)||[""])[0]);
+   assert(head.includes("what every CEO owns")&&idx.includes("The wealthiest CEOs")&&idx.includes('data-key="ceo">CEO<'),"the hero, the board and the screener say CEO");}
   assert(idx.includes("mailto:hello@founderledequities.com?subject=Refund"),
     "the refund promise carries its address");
   assert(idx.includes('"/api/hit"')&&idx.includes("fle_nohit")&&idx.includes('hit("view","page")'),

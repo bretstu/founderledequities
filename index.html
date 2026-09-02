@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Founder Led Equities — what every chief executive owns of the company they run</title>
+<title>Founder Led Equities — what every CEO owns of the company they run</title>
   <link rel="canonical" href="https://founderledequities.com">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Founder Led Equities">
   <meta property="og:url" content="https://founderledequities.com">
-  <meta property="og:title" content="Founder Led Equities — what chief executives own of the companies they run">
-  <meta property="og:description" content="The stake every chief executive of 2,100+ US public companies holds, computed from the filings they signed. Who bought, who sold, and where every stake is heading. The S&P 500 is open to everyone.">
+  <meta property="og:title" content="Founder Led Equities — what every CEO owns of the company they run">
+  <meta property="og:description" content="The stake every CEO of 2,100+ US public companies holds, computed from the filings they signed. Who bought, who sold, and where every stake is heading. The S&P 500 is open to everyone.">
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:image" content="https://founderledequities.com/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="How many chief executives own more than 5% of the company they run, computed from SEC filings">
+  <meta property="og:image:alt" content="How many CEOs own more than 5% of the company they run, computed from SEC filings">
   <meta name="twitter:image" content="https://founderledequities.com/og.png">
   <meta name="description" content="CEO ownership for 2,100+ US public companies, computed from SEC filings — never estimated. Who bought, who sold, and where every stake is heading. The S&P 500 is free.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -578,13 +578,13 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
 </div></div>
 
 <section class="hero"><div class="wrap">
-  <h1 id="thesis"><b>20</b> of 500 chief executives own more than 5% of the company they run.</h1>
+  <h1 id="thesis"><b>20</b> of 500 CEOs own more than 5% of the company they run.</h1>
   <div class="herostats" id="herostats"></div>
 </div></section>
 
 <section class="board" id="board"><div class="wrap">
   <div class="shead">
-    <h2 id="boardtitle">The wealthiest chief executives</h2>
+    <h2 id="boardtitle">The wealthiest CEOs</h2>
     <div class="bmodes" id="bmodes">
       <button class="chip bmode on" data-mode="val">Stake value</button>
       <button class="chip bmode" data-mode="pct">% of company</button>
@@ -646,7 +646,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
       <span class="tview" id="tview"></span>
       <label class="search">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="eq" type="search" placeholder="Filter by ticker, company, or chief executive" aria-label="Filter events">
+        <input id="eq" type="search" placeholder="Filter by ticker, company, or CEO" aria-label="Filter events">
       </label>
       <button class="chip" onclick="setView('')" title="close the table">Close ✕</button>
     </div>
@@ -688,7 +688,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="controls">
     <label class="search">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input id="q" type="search" placeholder="Search company, ticker, or chief executive" aria-label="Search">
+      <input id="q" type="search" placeholder="Search company, ticker, or CEO" aria-label="Search">
     </label>
     <button class="chip on" data-min="0">All</button>
     <button class="chip" data-min="1">&gt; 1%</button>
@@ -716,7 +716,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     <thead><tr>
       <th class="n">№</th>
       <th class="sortable" data-key="co">Company<span class="arr"></span></th>
-      <th class="sortable h-ceo" data-key="ceo">Chief executive<span class="arr"></span></th>
+      <th class="sortable h-ceo" data-key="ceo">CEO<span class="arr"></span></th>
       <th class="sortable" data-key="pct">Ownership<span class="arr"></span></th>
       <th class="sortable n" data-key="val" title="the stake's value: shares held at the latest close">Value<span class="arr"></span></th>
       <th class="sortable n h-mc" data-key="mcap" title="market capitalization: shares outstanding at the latest close">Mkt cap<span class="arr"></span></th>
@@ -789,7 +789,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
          the box never undercounts what it sells. -->
     <ul>
       <li><span id="mcount">1,635</span> more companies — every US company worth $1 billion or more beyond the S&amp;P 500, the same computed stake, filing by filing</li>
-      <li>Their chief executives in the day's trades, the buy and sell rankings, and the screener — filtered, sorted, exportable</li>
+      <li>Their CEOs in the day's trades, the buy and sell rankings, and the screener — filtered, sorted, exportable</li>
       <li>Every one of their full records: the stake over time, every trade since 2016, every filing linked the day it hits EDGAR</li>
       <li>The S&amp;P 500 stays open to everyone, in full</li>
     </ul>
@@ -1347,7 +1347,7 @@ function renderHero(){
      500; Pro = everything. The sealed remainder is one stated fact (the
      subline), never a component of a statistic. */
   const OPEN=PANEL.filter(r=>!r.masked);
-  $("#thesis").innerHTML=`<b>${above5}</b> of ${open} chief executives own more than 5% of the company they run.`+
+  $("#thesis").innerHTML=`<b>${above5}</b> of ${open} CEOs own more than 5% of the company they run.`+
     (sealed?`<span style="color:var(--faint);font-size:0.55em;display:block;margin-top:10px;font-weight:400">${sealed.toLocaleString()} more companies measured <button class="gopro" onclick="openPro()" style="font-size:12.5px;padding:7px 14px;margin-left:14px;vertical-align:middle">Go Pro</button></span>`:"");
 
   // WHAT THE SITE IS ACTUALLY ABOUT, said with the numbers we have.
@@ -1371,8 +1371,8 @@ function renderHero(){
       /* the deploy prices the whole universe now (one grouped Polygon
          call), so these sums are universe-true and say so plainly */
       out+=stat(money(ledVal),"Held by those founders");
-      out+=stat(Math.round(ledVal/(allVal||1)*100)+"%","Of all chief-executive wealth");
-    }else out+=stat(money(allVal),"Held by all chief executives");
+      out+=stat(Math.round(ledVal/(allVal||1)*100)+"%","Of all CEO wealth");
+    }else out+=stat(money(allVal),"Held by all CEOs");
   }
   /* THE NEWEST FILING WE READ, NOT THE NEWEST ONE THAT MOVED SOMEBODY.
      The panel's as_of only advances when a filing changes a headline share
@@ -1407,13 +1407,13 @@ function renderBars(){
      once aborted the whole render chain mid-flight. */
   const pool=PANEL.filter(r=>!r.units&&!r.masked&&r.pct!==null&&fOnly(r.tk,state.lbF));
   $("#boardtitle").textContent=useVal
-    ?(state.lbF?"The wealthiest founders":"The wealthiest chief executives")
+    ?(state.lbF?"The wealthiest founders":"The wealthiest CEOs")
     :(state.lbF?"The largest founder stakes":"The largest ownership stakes");
   $("#bsub").textContent=useVal
     ?"The wealthiest stakes — shares held times the "+PRICES_ASOF+" close · "
       +(state.lbF?pool.length+" founder-led companies ranked":"all "+pool.length+" ranked, scroll for more")
     :(state.lbF?pool.length+" founders ranked by percent of shares outstanding"
-               :"Every chief executive ranked by percent of shares outstanding · scroll for more");
+               :"Every CEO ranked by percent of shares outstanding · scroll for more");
   const metric=r=>useVal?(r.val||0):r.pct;
   const top=[...pool].sort((a,b)=>metric(b)-metric(a));
   if(!top.length){$("#bars").innerHTML=
@@ -2012,7 +2012,7 @@ function pctWhy(e){
      three distinct reasons and they are worth telling apart, so the reason
      rides on the cell. */
   if(e.rs)return "several filings moved this position on the same day and cannot be reconciled to one figure, so no percentage is asserted";
-  if(!e.ha)return "no common-stock position on record to measure against — Blackstone's chief executive, for one, holds partnership units rather than issued stock of the company";
+  if(!e.ha)return "no common-stock position on record to measure against — Blackstone's CEO, for one, holds partnership units rather than issued stock of the company";
   return "the position before this trade computes to zero, and a percentage of nothing is not a number";
 }
 function evPctCell(e){
@@ -2247,7 +2247,7 @@ function dayAlso(day){
 function dayText(day,rows){
   /* the day as plain text, one line per trade in the strip's own words.
      No control calls this today; it is the seed of the daily digest. */
-  const L=[`Chief executive trades filed ${niceDay(day)} (${dayScope()}):`];
+  const L=[`CEO trades filed ${niceDay(day)} (${dayScope()}):`];
   for(const e of rows){
     const side=evSide(e);
     const uk=unchangedKind(e);
@@ -2307,7 +2307,7 @@ function renderDay(){
       <span class="dt">Filed <b>${day?niceDay(day):"—"}</b> · ${tradesAndFilings(rows)} · ${scope}</span>
       <span class="dn">${recent.map(chipDay).join("")}</span>
     </div>
-    <div class="daylist">${rows.length?rows.map(row).join(""):`<div class="dayempty">No chief executive of these companies filed a trade that moved a stake on ${day?niceDay(day):"this day"}.</div>`}</div>
+    <div class="daylist">${rows.length?rows.map(row).join(""):`<div class="dayempty">No CEO of these companies filed a trade that moved a stake on ${day?niceDay(day):"this day"}.</div>`}</div>
     ${dayAlso(day)?`<div class="dayalso" onclick="setView('day')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')setView('day')" title="every trade of the day as a table, these included">${dayAlso(day)} →</div>`:""}
   </div>`;
 }
@@ -2388,7 +2388,7 @@ function evColumn(side){
       ${chip("disc","Discretionary",sell?"sold without a pre-set plan — their own decision, at their own timing. It says nothing about why: diversification and a tax bill look identical here":"bought on the open market with their own money, at their own timing")}
       ${chip("plan","Planned",sell?"sold under a Rule 10b5-1 plan, set up long before the trade date and executed automatically":"bought under a Rule 10b5-1 plan — rarer still than an open-market purchase")}
     </div>
-    ${top.length?top.map(bar).join(""):`<div class="aempty">${ks.length?`No chief executive of these companies ${sell?"reduced a stake":"bought shares"}${ks.length===1?` ${ks[0]==="plan"?"under a plan":"at their own discretion"}`:""} in ${win}.`:"Both manners are off — select one to see the column."}</div>`}
+    ${top.length?top.map(bar).join(""):`<div class="aempty">${ks.length?`No CEO of these companies ${sell?"reduced a stake":"bought shares"}${ks.length===1?` ${ks[0]==="plan"?"under a plan":"at their own discretion"}`:""} in ${win}.`:"Both manners are off — select one to see the column."}</div>`}
     <div class="af">
       <span class="key"><span><i></i>discretionary</span><span><i class="plan"></i>planned</span>${state.live.founders?`<span><span class="fm">F</span>founder</span>`:""}</span>
       ${pool.length?`<a onclick="setView('${side}')">${people.length>N?`Top ${N} of ${people.length} · `:""}all ${pool.length.toLocaleString()} trade${pool.length===1?"":"s"} →</a>`:""}
@@ -2468,7 +2468,7 @@ function openDrawer(tk){
      <button class="dclose" onclick="closeDrawer()" aria-label="Close">✕</button>
      <div class="tk">${r.tk}${r.masked?` · ${SEAL} SEALED UNIVERSE`:" · S&P 500"}</div>
      <h3>${r.co}</h3>
-     <div class="ce">${r.ceo} — Chief Executive ${fBadge(r.tk)}</div>
+     <div class="ce">${r.ceo} — CEO ${fBadge(r.tk)}</div>
      ${fInfo(r.tk)&&fInfo(r.tk).f==="yes"&&fInfo(r.tk).ev?`<div class="dnote" style="margin:14px 0 0">“${fInfo(r.tk).ev.slice(0,280)}” <span style="color:var(--faint)">— ${fInfo(r.tk).src}</span></div>`:""}
    </div>
    <div class="dpct${r.units||r.masked?" wide":""}">${r.masked
@@ -2477,7 +2477,7 @@ function openDrawer(tk){
       and sits in the Pro tier. The S&amp;P 500 is open in full.</div>`
      :r.units
      ?`<div class="p">Ownership held as partnership units</div>
-      <div class="l">This chief executive's stake is structured as exchangeable partnership
+      <div class="l">This CEO's stake is structured as exchangeable partnership
       units rather than common stock, so a percent of common shares cannot describe it.
       The pipeline flags below carry the filing's own words.</div>`
      :`<div class="p">${r.pct.toFixed(r.pct<1?3:2)}%</div>

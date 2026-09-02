@@ -41,12 +41,12 @@ def banner(n, out, fonts_dir):
     d = ImageDraw.Draw(im)
     # the thesis, top left, clear of the avatar (which sits bottom-left)
     big = disp(64, 650)
-    d.text((80, 70), "What every chief executive owns", font=big, fill=INK)
+    d.text((80, 70), "What every CEO owns", font=big, fill=INK)
     d.text((80, 144), "of the company they run.", font=big, fill=INK)
     d.text((80, 232), f"{n['total']:,} US public companies · computed from SEC filings, never estimated",
            font=mono(19), fill=MUT)
     # the strip, bottom right, the hero's own numbers
-    facts = [(f"{n['above5']} of {n['open']}", "S&P 500 chief executives own over 5%", BLUE),
+    facts = [(f"{n['above5']} of {n['open']}", "S&P 500 CEOs own over 5%", BLUE),
              (f"{n['led']}", "founder-led companies", INK),
              (money(n["led_value"]), "held by those founders", INK)]
     x = 560
