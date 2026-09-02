@@ -32,9 +32,31 @@ LIST_COLS = ["ticker", "cik", "company", "ceo", "pct", "shares",
              "flags", "error", "form4_url", "cover_url", "masked"]
 
 
-def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir) -> int:
+def _overlay(base_rows, fresh_path, sp, key="ticker"):
+    """Rows for S&P tickers come from the FRESH file when one is given.
+
+    The universe snapshot is static until its own refresh cadence exists;
+    the S&P rebuilds nightly. Serving a fresh S&P beside a frozen
+    remainder is the promotion's honest shape -- this merge is where it
+    happens: fresh rows win for S&P tickers, the snapshot fills the rest."""
+    if not fresh_path or not os.path.exists(fresh_path):
+        return base_rows, False
+    fresh = [r for r in csv.DictReader(open(fresh_path, encoding="utf-8-sig"))
+             if r.get(key) in sp]
+    if not fresh:
+        return base_rows, False
+    keep = [r for r in base_rows if r.get(key) not in sp]
+    return keep + fresh, True
+
+
+def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
+         fresh_dir=None) -> int:
     sp = {r["ticker"] for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
     panel = list(csv.DictReader(open(panel_p, encoding="utf-8-sig")))
+    fresh = {}
+    if fresh_dir:
+        panel, fresh["panel"] = _overlay(
+            panel, os.path.join(fresh_dir, "sp500.csv"), sp)
     for d in ("", "history", "events", "pro", "pro/history", "pro/events"):
         os.makedirs(os.path.join(out_dir, d), exist_ok=True)
 
@@ -57,16 +79,26 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir) -> int:
     write_list(os.path.join(out_dir, "universe.csv"), mask_new=True)
     write_list(os.path.join(out_dir, "pro", "universe.csv"), mask_new=False)
 
-    # ---- founders passthrough ----
-    with open(founders_p, encoding="utf-8-sig") as src, \
-         open(os.path.join(out_dir, "founders.csv"), "w",
-              encoding="utf-8") as dst:
-        dst.write(src.read())
+    # ---- founders: fresh S&P labels over the snapshot ----
+    f_rows = list(csv.DictReader(open(founders_p, encoding="utf-8-sig")))
+    f_cols = list(f_rows[0].keys()) if f_rows else ["ticker", "founder"]
+    if fresh_dir:
+        f_rows, fresh["founders"] = _overlay(
+            f_rows, os.path.join(fresh_dir, "founders.csv"), sp)
+    with open(os.path.join(out_dir, "founders.csv"), "w", newline="",
+              encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, fieldnames=f_cols, extrasaction="ignore")
+        w.writeheader()
+        w.writerows(f_rows)
 
     # ---- history shards + trends ----
+    hist_rows = list(csv.DictReader(open(hist_p, encoding="utf-8-sig")))
+    if fresh_dir:
+        hist_rows, fresh["history"] = _overlay(
+            hist_rows, os.path.join(fresh_dir, "history.csv"), sp)
     hist_by_t = defaultdict(list)
     hist_cols = None
-    for r in csv.DictReader(open(hist_p, encoding="utf-8-sig")):
+    for r in hist_rows:
         hist_cols = hist_cols or list(r.keys())
         hist_by_t[r["ticker"]].append(r)
     trend_rows = []
@@ -167,9 +199,13 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir) -> int:
             w.writerows(rows)
 
     # ---- event shards ----
+    ev_rows_shard = list(csv.DictReader(open(events_p, encoding="utf-8-sig")))
+    if fresh_dir:
+        ev_rows_shard, fresh["events"] = _overlay(
+            ev_rows_shard, os.path.join(fresh_dir, "events.csv"), sp)
     ev_by_t = defaultdict(list)
     ev_cols = None
-    for r in csv.DictReader(open(events_p, encoding="utf-8-sig")):
+    for r in ev_rows_shard:
         ev_cols = ev_cols or list(r.keys())
         ev_by_t[r["ticker"]].append(r)
     for t, rows in sorted(ev_by_t.items()):
@@ -184,10 +220,8 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir) -> int:
     # THE SEAL IS THE ONLY GATE: the free file is the S&P's ENTIRE event
     # archive -- every sale, every year -- not a windowed teaser. Pro adds
     # companies, never features.
-    with open(events_p, encoding="utf-8-sig") as src:
-        rdr = csv.DictReader(src)
-        cols = rdr.fieldnames
-        all_rows = list(rdr)
+    cols = ev_cols
+    all_rows = ev_rows_shard
     for path, rows in (("events-free.csv",
                         [r for r in all_rows if r.get("ticker") in sp]),
                        (os.path.join("pro", "events.csv"), all_rows)):
@@ -221,8 +255,11 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir) -> int:
           f"{_kb('events-free.csv')} KB (full S&P archive)")
     print(f"  pro/events.csv      {len(all_rows)} rows")
     print(f"  GENEROUS={GENEROUS}  (public pct on non-S&P rows)")
+    if fresh_dir:
+        got = ", ".join(k for k, v in fresh.items() if v) or "none"
+        print(f"  fresh S&P overlay   {got}  (from {fresh_dir})")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(*sys.argv[1:7]))
+    raise SystemExit(main(*sys.argv[1:8]))

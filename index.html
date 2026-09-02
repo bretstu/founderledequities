@@ -165,6 +165,7 @@ td.ceo{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
 .tbar{flex:1;height:4px;background:var(--line2);border-radius:2px;overflow:hidden;min-width:60px}
 .tbar i{display:block;height:100%;background:var(--blue)}
 .tpct{font-family:var(--mono);font-weight:600;font-size:13.5px;min-width:64px;text-align:right}
+.tarr{font-size:10px;margin-left:6px;vertical-align:1px}.tarr.up{color:#0B8A3E}.tarr.down{color:#C23B3B}.tarr.flat{color:var(--faint)}
 td.num{font-family:var(--mono);font-size:12.5px;color:var(--mut)}
 td.asof{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap}
 .conf{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)}
@@ -794,7 +795,7 @@ const SAMPLE_HIST={
 /* the activity feed's fallback: real events, so it reads true from disk */
 const EVSAMPLE=[{"tk":"SLB","ceo":"Olivier Le Peuch","fd":"2026-08-27","td":"2026-08-27","c":"S","lb":"scheduled sale","sh":5000.0,"v":275000.0,"ap":55.0,"pc":0.3728,"nc":-5000.0,"ha":1336328.0,"rs":0.0,"pl":"plan","u":"https://www.sec.gov/Archives/edgar/data/87347/000008734726000118/form4.xml","fl":""},{"tk":"CRWD","ceo":"George Kurtz","fd":"2026-08-27","td":"2026-08-26","c":"S","lb":"scheduled sale","sh":10000.0,"v":1885230.52,"ap":188.5231,"pc":0.1207,"nc":-20000.0,"ha":8276019.0,"rs":null,"pl":"plan","u":"https://www.sec.gov/Archives/edgar/data/1535527/000095010326013019/ownership.xml","fl":""},{"tk":"FIX","ceo":"Brian E. Lane","fd":"2026-08-27","td":"2026-08-26","c":"S","lb":"discretionary sale","sh":16024.0,"v":25769923.39,"ap":1608.2079,"pc":9.9473,"nc":-16024.0,"ha":145065.0,"rs":0.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1035983/000144824026000019/form4-08272026_040803.xml","fl":""},{"tk":"LITE","ceo":"Michael Hurlston","fd":"2026-08-27","td":"2026-08-27","c":"S","lb":"discretionary sale","sh":548.0,"v":525345.68,"ap":958.66,"pc":0.2923,"nc":74157.0,"ha":186951.0,"rs":null,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1633978/000157333826000017/form4-08282026_010801.xml","fl":""},{"tk":"ABT","ceo":"Robert B. Ford","fd":"2026-08-27","td":"2026-08-25","c":"S","lb":"exercise and sell","sh":398832.0,"v":46204798.38,"ap":115.8503,"pc":null,"nc":0.0,"ha":522664.0,"rs":0.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1800/000161257126000011/form4-08272026_090838.xml","fl":""},{"tk":"ANET","ceo":"Jayshree Ullal","fd":"2026-08-27","td":"2026-08-25","c":"S","lb":"scheduled sale","sh":13809.0,"v":2648491.23,"ap":191.7946,"pc":0.0535,"nc":-13809.0,"ha":25820337.0,"rs":0.0,"pl":"plan","u":"https://www.sec.gov/Archives/edgar/data/1596532/000159653226000216/edgardoc.xml","fl":""},{"tk":"VRSN","ceo":"D. James Bidzos","fd":"2026-08-26","td":"2026-08-25","c":"S","lb":"scheduled sale","sh":3300.0,"v":960812.03,"ap":291.1552,"pc":0.8221,"nc":-3300.0,"ha":398088.0,"rs":0.0,"pl":"plan","u":"https://www.sec.gov/Archives/edgar/data/1014473/000120481626000038/wk-form4_1787777452.xml","fl":""},{"tk":"MU","ceo":"Sanjay Mehrotra","fd":"2026-08-25","td":"2026-08-21","c":"S","lb":"scheduled sale","sh":40000.0,"v":38756162.13,"ap":968.9041,"pc":4.388,"nc":-40000.0,"ha":871578.0,"rs":0.0,"pl":"plan","u":"https://www.sec.gov/Archives/edgar/data/723125/000124265426000015/primarydocument.xml","fl":""},{"tk":"INTC","ceo":"Lip-Bu Tan","fd":"2026-08-14","td":"2026-08-11","c":"P","lb":"open-market purchase","sh":105263.0,"v":9999985.0,"ap":95.0,"pc":null,"nc":105824.0,"ha":1331640.0,"rs":561.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/50863/000005086326000177/form4.xml","fl":""},{"tk":"PFE","ceo":"Albert Bourla","fd":"2026-08-12","td":"2026-08-12","c":"P","lb":"open-market purchase","sh":38000.0,"v":1000920.0,"ap":26.34,"pc":null,"nc":40881.0,"ha":435555.0,"rs":2881.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/78003/000122520826007083/doc4.xml","fl":""},{"tk":"APTV","ceo":"Kevin P. Clark","fd":"2026-08-11","td":"2026-08-10","c":"P","lb":"open-market purchase","sh":51190.0,"v":2502684.22,"ap":48.8901,"pc":3.8575,"nc":51190.0,"ha":1378226.0,"rs":0.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1521332/000119312526344586/ownership.xml","fl":""},{"tk":"BSX","ceo":"Michael F. Mahoney","fd":"2026-08-05","td":"2026-08-03","c":"P","lb":"open-market purchase","sh":186240.0,"v":9001407.55,"ap":48.3323,"pc":13.0612,"nc":208359.0,"ha":1612143.0,"rs":0.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/885725/000122520826006950/doc4.xml","fl":""},{"tk":"CSGP","ceo":"Andrew C. Florance","fd":"2026-08-05","td":"2026-08-04","c":"P","lb":"open-market purchase","sh":83300.0,"v":2489837.0,"ap":29.89,"pc":4.835,"nc":83300.0,"ha":1806165.0,"rs":0.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1057352/000162828026052968/wk-form4_1785936417.xml","fl":""},{"tk":"TTD","ceo":"Jeff T. Green","fd":"2026-03-04","td":"2026-03-04","c":"P","lb":"open-market purchase","sh":2314304.0,"v":58042744.32,"ap":25.08,"pc":4.886,"nc":6398089.0,"ha":49680426.0,"rs":null,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1671933/000167144526000004/wk-form4_1772674051.xml","fl":""},{"tk":"TSLA","ceo":"Elon Musk","fd":"2025-09-15","td":"2025-09-12","c":"P","lb":"open-market purchase","sh":2568732.0,"v":999959042.37,"ap":389.2812,"pc":0.5069,"nc":2568732.0,"ha":509362808.0,"rs":0.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1318605/000110465925089693/tm2526050-1_4seq1.xml","fl":""}];
 
-let PANEL=[],HIST={},PRICES={},PRICES_ASOF="",FOUNDERS={},EVENTS=[],PERF={};
+let PANEL=[],HIST={},PRICES={},PRICES_ASOF="",FOUNDERS={},EVENTS=[],PERF={},TRENDS={};
 
 /* ---------------- CSV loading ---------------- */
 function parseCSV(text){
@@ -835,7 +836,13 @@ function mapPanel(recs){
        page say it too instead of printing the misleading zero. */
     units:(r.operating_partnership||"").toLowerCase()==="true"
           &&num(r.pct)!==null&&num(r.pct)<0.05,
-  })).filter(r=>r.tk&&r.pct!==null&&r.sh!==null);
+    /* a universe row outside the free tier: the person and the badge are
+       public, the stake sits behind the seal */
+    masked:String(r.masked||"")==="1",
+    /* "SC 13G/A 2024-02-13" when the figure is a dated schedule stake,
+       not a Section 16 sum -- the row must say so */
+    src13:r.stake_source||"",
+  })).filter(r=>r.tk&&(r.masked||(r.pct!==null&&r.sh!==null)));
 }
 function mapHistory(recs){
   const out={};
@@ -889,12 +896,15 @@ async function loadData(){
      the site is simply free. */
   try{const r=await fetch("/api/me",{cache:"no-store"});
       if(r.ok){const j=await r.json();state.pro=!!j.pro;state.acct=j.email||"";}}catch(e){}
-  try{const t=await (await fetch("sp500.csv",{cache:"no-store"})).text();
-      const p=mapPanel(parseCSV(t));
-      if(p.length){PANEL=p;state.live.panel=true;}}catch(e){}
+  /* the full universe when it is published; today's sp500.csv otherwise --
+     the same page serves both eras */
+  await fetchFirst(["universe.csv","sp500.csv"],
+    t=>{const p=mapPanel(parseCSV(t));
+        if(!p.length)return false;
+        PANEL=p;state.live.panel=true;return true;});
   await fetchFirst(state.pro
-      ?["/pro/history.csv","history-free.csv","history.csv"]
-      :["history-free.csv","history.csv"],
+      ?["/pro/history-lite.csv","/pro/history.csv","history-free-lite.csv","history-free.csv","history.csv"]
+      :["history-free-lite.csv","history-free.csv","history.csv"],
     t=>{const h=mapHistory(parseCSV(t));
         if(!Object.keys(h).length)return false;
         HIST=h;state.live.hist=true;return true;});
@@ -903,6 +913,11 @@ async function loadData(){
       for(const r of parseCSV(t))if(r.ticker)m[r.ticker.toUpperCase()]=
         {f:(r.founder||"").toLowerCase(),ev:r.evidence||"",src:r.source||""};
       if(Object.keys(m).length){FOUNDERS=m;state.live.founders=true;}}catch(e){}
+  await fetchFirst(state.pro?["/pro/trends.csv","trends.csv"]:["trends.csv"],
+    t=>{const m={};
+        for(const r of parseCSV(t))if(r.ticker&&r.direction)m[r.ticker.toUpperCase()]=r.direction;
+        if(!Object.keys(m).length)return false;
+        TRENDS=m;return true;});
   try{const t=await (await fetch("perf.csv",{cache:"no-store"})).text();
     const m={};
     for(const r of parseCSV(t)){
@@ -1029,17 +1044,16 @@ function edgeCaution(h){
   return"";
 }
 function chartBlock(tk){
+  /* THE SEAL IS THE ONLY GATE. Free means the whole S&P experience --
+     every chart, every lens. What a free reader lacks is companies,
+     not features: the sealed 1,635 have no rows in the free files, so
+     data presence is the gate, and it enforces itself. */
   const h=HIST[tk];
-  const unlocked=state.pro||tk==="META";
-  if(h&&unlocked)return `<div class="chartbox">${chartSVG(h)}
-    ${!state.pro&&tk==="META"?'<span class="freetag">FREE SAMPLE</span>':""}</div>
+  if(h)return `<div class="chartbox">${chartSVG(h)}</div>
     <div class="tnote">${h.length} transaction-days on record — select for the filings behind the line.</div>`;
-  if(h)return lockedBlock(chartSVG(h),
-    "The real curve is underneath — a decade of this founder's filings, charted.");
-  if(state.pro)return `<div class="tnote" style="padding:30px 0">No rows for ${tk} in history.csv yet — run the history command to add it.</div>`;
-  return lockedBlock(chartSVG([["2016-06-01",8],["2018-06-01",7.1],["2020-06-01",6.5],
-    ["2022-06-01",5.8],["2024-06-01",5.3],["2026-06-01",4.9]]),
-    "A decade of this founder's filings, charted.");
+  const _r=PANEL.find(p=>p.tk===tk);
+  if(_r&&_r.masked)return `<div class="tnote" style="padding:30px 0">This company's trajectory sits in the Pro tier with its stake.</div>`;
+  return `<div class="tnote" style="padding:30px 0">No trajectory yet — this record has no walkable filing history.</div>`;
 }
 
 /* ---------------- render ---------------- */
@@ -1181,7 +1195,9 @@ function renderStatus(){
 }
 function renderHero(){
   const above5=PANEL.filter(r=>r.pct>5).length;
-  $("#thesis").innerHTML=`<b>${above5}</b> of ${PANEL.length} chief executives own more than 5% of the company they run.`;
+  const open=PANEL.filter(r=>!r.masked).length, sealed=PANEL.length-open;
+  $("#thesis").innerHTML=`<b>${above5}</b> of ${open} chief executives own more than 5% of the company they run.`+
+    (sealed?`<span style="color:var(--faint);font-size:0.55em;display:block;margin-top:6px">${sealed} more companies measured — their stakes sit behind the seal</span>`:"");
 
   // WHAT THE SITE IS ACTUALLY ABOUT, said with the numbers we have.
   //
@@ -1201,8 +1217,11 @@ function renderHero(){
   if(led.length)out+=stat(led.length,"Founder-led companies",true);
   if(state.live.prices){
     if(led.length){
-      out+=stat(money(ledVal),"Held by those founders");
-      out+=stat(Math.round(ledVal/(allVal||1)*100)+"%","Of all chief-executive wealth");
+      /* prices cover the S&P today, so the dollar stats say so -- a
+         universe founder count beside an S&P dollar sum was two scopes
+         wearing one sentence. Universe pricing arrives with promotion. */
+      out+=stat(money(ledVal),"Held by S&P 500 founders");
+      out+=stat(Math.round(ledVal/(allVal||1)*100)+"%","Of S&P chief-executive wealth");
     }else out+=stat(money(allVal),"Held by all chief executives");
   }
   /* THE NEWEST FILING WE READ, NOT THE NEWEST ONE THAT MOVED SOMEBODY.
@@ -1233,8 +1252,10 @@ function renderBars(){
   paintSw("lbf",state.lbF);
   /* units-structured stakes cannot rank on a common-stock board -- their
      honest reading lives in the table and the drawer, not at the bottom
-     of a list implying "owns nothing" */
-  const pool=PANEL.filter(r=>!r.units&&fOnly(r.tk,state.lbF));
+     of a list implying "owns nothing". A MASKED stake cannot rank
+     either: there is no number to sort, and r.pct.toFixed on its null
+     once aborted the whole render chain mid-flight. */
+  const pool=PANEL.filter(r=>!r.units&&!r.masked&&r.pct!==null&&fOnly(r.tk,state.lbF));
   $("#boardtitle").textContent=useVal
     ?(state.lbF?"The wealthiest founders":"The wealthiest chief executives")
     :(state.lbF?"The largest founder stakes":"The largest ownership stakes");
@@ -1266,12 +1287,24 @@ function renderBars(){
       <div class="bpct">${main}${sub?`<span class="b2">${sub}</span>`:""}</div>
     </div>`}).join("");
 }
+function trendArrow(tk){
+  /* the year-over-year direction, from trends.csv. Deliberately present
+     on SEALED rows too: "this founder is accumulating" without the
+     number is honest, public, and the best reason to open the seal. */
+  const d=TRENDS[tk];if(!d)return"";
+  const g=d==="up"?"\u25b2":d==="down"?"\u25bc":"\u2192";
+  const t=d==="up"?"stake higher than a year ago":d==="down"?"stake lower than a year ago":"stake roughly flat over a year";
+  return `<span class="tarr ${d}" title="${t}">${g}</span>`;
+}
 function renderTable(){
   paintSw("fchip",state.tbF);
   let rows=PANEL.filter(r=>{
     const q=state.q.toLowerCase();
     const fOK=fOnly(r.tk,state.tbF);
-    return fOK&&(!q||r.tk.toLowerCase().includes(q)||r.co.toLowerCase().includes(q)||r.ceo.toLowerCase().includes(q))&&r.pct>=state.min;
+    /* a masked stake can't be compared to a threshold; it stays in the
+       full list and steps aside only when a minimum is actually set */
+    const minOK=r.masked?state.min<=0:r.pct>=state.min;
+    return fOK&&(!q||r.tk.toLowerCase().includes(q)||r.co.toLowerCase().includes(q)||r.ceo.toLowerCase().includes(q))&&minOK;
   });
   const {key,dir}=state.sort;
   const CONF={high:3,medium:2,low:1};
@@ -1289,11 +1322,13 @@ function renderTable(){
      <td class="rk">${String(i+1).padStart(2,"0")}</td>
      <td><div class="tk">${r.tk}</div><div class="nm">${r.co}</div></td>
      <td class="ceo h-ceo">${r.ceo}${fBadge(r.tk)}</td>
-     <td><div class="cell-own">${r.units
+     <td><div class="cell-own">${r.masked
+        ?`<div class="tbar" title="this company is outside the free tier — the stake is measured and waiting"><i style="width:0.75%"></i></div><div class="tpct" style="color:var(--faint)">PRO ${SEAL}${trendArrow(r.tk)}</div>`
+        :r.units
         ?`<div class="tbar" title="ownership held as exchangeable partnership units, not common stock — a percent of common cannot describe it; open the record for the filing's own words"><i style="width:0.75%"></i></div><div class="tpct" style="color:var(--faint)">units</div>`
-        :`<div class="tbar" title="${r.pct.toFixed(2)}% of the company — the bar is drawn on a 0–100% scale"><i style="width:${Math.max(0.75,r.pct)}%"></i></div><div class="tpct">${r.pct.toFixed(r.pct<1?3:2)}%</div>`}</div></td>
+        :`<div class="tbar" title="${r.pct.toFixed(2)}% of the company — the bar is drawn on a 0–100% scale${r.src13?" — from "+r.src13+", not Section 16 filings":""}"><i style="width:${Math.max(0.75,r.pct)}%"></i></div><div class="tpct">${r.pct.toFixed(r.pct<1?3:2)}%${trendArrow(r.tk)}${r.src13?`<span style="color:var(--faint)" title="stake from ${r.src13}; this issuer's insiders file no U.S. transaction reports"> †</span>`:""}</div>`}</div></td>
      <td class="n num" title="${r.val?'$'+fmt(r.val):''}">${r.val?money(r.val):"—"}</td>
-     <td class="n num c-sh" title="${fmt(r.sh)}">${compact(r.sh)}</td>
+     <td class="n num c-sh" title="${r.sh!==null?fmt(r.sh):''}">${r.sh!==null?compact(r.sh):"—"}</td>
      <td class="n num c-out" title="${r.out?fmt(r.out):""}">${r.out?compact(r.out):"—"}</td>
      <td class="asof c-asof">${r.asof||"—"}</td>
      <td class="c-conf"><span class="conf"><span class="dot ${r.conf}"></span>${r.conf}</span></td>
@@ -1507,13 +1542,11 @@ const TJSUB={
 };
 function renderTrends(){
   if(!$("#tgrid"))return;
-  $("#trendtag").textContent=state.pro?"PRO · PREVIEW":"PRO";
-  /* same rule as the feed: a free reader sees the whole instrument panel,
-     counts and all, under one cover that opens the Pro sheet */
+  $("#trendtag").textContent="";
   $("#tjctl").classList.remove("hide");
-  $("#tjctl").classList.toggle("gated",!state.pro);
-  $("#tjgate").classList.toggle("hide",state.pro);
-  if(!state.pro){
+  $("#tjctl").classList.remove("gated");
+  $("#tjgate").classList.add("hide");
+  if(false){
     syncTjChips();
     $("#trendsub").textContent="who's betting on themselves, and who's heading for the door — three samples are open; every trajectory sits behind the seal.";
     const have=new Set(Object.keys(HIST));
@@ -1638,9 +1671,26 @@ function fEvent(p,prev){
          val:p[4]?money(p[4]):""};
 }
 
+const SHARDS={};   /* tickers whose full-resolution walk has been fetched */
+async function ensureShard(tk){
+  /* the lite file carries the monthly shape; the focus view wants every
+     filing. One fetch per ticker, merged into HIST, re-rendered if the
+     reader is still looking. A 404 simply keeps the lite series. */
+  if(SHARDS[tk])return;
+  SHARDS[tk]=true;
+  await fetchFirst(state.pro
+      ?[`/pro/history/${tk}.csv`,`history/${tk}.csv`]
+      :[`history/${tk}.csv`],
+    t=>{const h=mapHistory(parseCSV(t));
+        if(!h[tk]||!h[tk].length)return false;
+        HIST[tk]=h[tk];
+        if(FOCUS&&FOCUS.tk===tk)openFocus(tk);
+        return true;});
+}
 function openFocus(tk){
   const r=PANEL.find(p=>p.tk===tk),pts=HIST[tk];
   if(!r||!pts||!pts.length)return openDrawer(tk);
+  ensureShard(tk);
   FOCUS={tk,pts};
   $("#f_tk").textContent=tk;$("#f_co").textContent=r.co;
   $("#f_ce").textContent=r.ceo;$("#f_badge").innerHTML=fBadge(tk);
@@ -2057,23 +2107,18 @@ function renderFeed(){
       +(evs.length?`<div class="efoot">${parts.join(" · ")}${
          evs.length>CAP?` — showing the first ${CAP} of ${evs.length.toLocaleString()}; narrow the window or search to reach the rest`:""}</div>`:"");
   }else{
-    syncChips();
-    const freeBuys=EVENTS.filter(e=>e.c==="P").slice(0,6);
-    const teaser=EVENTS.slice(0,9);
-    el.innerHTML=
-     (freeBuys.length?`<div class="actfree"><span class="freetag" style="position:static;margin-bottom:8px;display:inline-block">FREE — EVERY PURCHASE</span>${evTable(freeBuys)}</div>`:"")
-     +lockedBlock(evTable(teaser),
-        "every sale, every plan, a decade back — filtered, sorted and searchable",
-        "actlock tablelock");
+    /* the free feed IS the pro feed -- over the free tier's companies */
+    renderFeedFull();
   }
 }
+function renderFeedFull(){const p=state.pro;state.pro=true;try{renderFeed()}finally{state.pro=p}}
 function renderActivity(){
   if(!$("#actwrap"))return;
   evSpotlight();
   $("#actctl").classList.remove("hide");
-  $("#actctl").classList.toggle("gated",!state.pro);
-  $("#actgate").classList.toggle("hide",state.pro);
-  $("#acttag").textContent=state.pro?"PRO · PREVIEW":"PRO";
+  $("#actctl").classList.remove("gated");
+  $("#actgate").classList.add("hide");
+  $("#acttag").textContent="";
   /* ONE SENTENCE OF ORIENTATION, NOT A GLOSSARY.
      The tooltips define the terms; this line gives a first-time reader the
      reading itself -- the one fact that makes the whole feed legible. */
@@ -2090,20 +2135,24 @@ function openDrawer(tk){
   $("#drawer").innerHTML=`
    <div class="dhead">
      <button class="dclose" onclick="closeDrawer()" aria-label="Close">✕</button>
-     <div class="tk">${r.tk} · S&P 500</div>
+     <div class="tk">${r.tk}${r.masked?" · PRO UNIVERSE":" · S&P 500"}</div>
      <h3>${r.co}</h3>
      <div class="ce">${r.ceo} — Chief Executive ${fBadge(r.tk)}</div>
      ${fInfo(r.tk)&&fInfo(r.tk).f==="yes"&&fInfo(r.tk).ev?`<div class="dnote" style="margin:14px 0 0">“${fInfo(r.tk).ev.slice(0,280)}” <span style="color:var(--faint)">— ${fInfo(r.tk).src}</span></div>`:""}
    </div>
-   <div class="dpct${r.units?" wide":""}">${r.units
+   <div class="dpct${r.units||r.masked?" wide":""}">${r.masked
+     ?`<div class="p">Measured — behind the seal ${SEAL}</div>
+      <div class="l">This company's stake is computed from its filings like every other,
+      and sits in the Pro tier. The S&amp;P 500 is open in full.</div>`
+     :r.units
      ?`<div class="p">Ownership held as partnership units</div>
       <div class="l">This chief executive's stake is structured as exchangeable partnership
       units rather than common stock, so a percent of common shares cannot describe it.
       The pipeline flags below carry the filing's own words.</div>`
      :`<div class="p">${r.pct.toFixed(r.pct<1?3:2)}%</div>
-      <div class="l">of common shares outstanding, per the newest Form 4 for each class</div>`}</div>
+      <div class="l">of common shares outstanding, per the newest Form 4 for each class${r.src13?` — from ${r.src13}; this issuer's insiders file no U.S. transaction reports`:""}</div>`}</div>
    <div class="dstats">
-     <div class="dstat"><div class="k">Shares held</div><div class="v">${fmt(r.sh)}</div></div>
+     <div class="dstat"><div class="k">Shares held</div><div class="v">${r.sh!==null?fmt(r.sh):"—"}</div></div>
      <div class="dstat"><div class="k">Shares outstanding</div><div class="v">${r.out?fmt(r.out):"—"}</div></div>
      <div class="dstat"><div class="k">Holding as of</div><div class="v s">${r.asof||"—"} · Form 4</div></div>
      <div class="dstat"><div class="k">Confidence</div><div class="v s"><span class="conf"><span class="dot ${r.conf}"></span>${r.conf}</span></div></div>
@@ -2113,10 +2162,10 @@ function openDrawer(tk){
    ${note?`<div class="dnote">${note}</div>`:""}
    ${r.flags?`<details class="dflags"><summary>pipeline flags — raw</summary><pre>${r.flags.replace(/</g,"&lt;")}</pre></details>`:""}
    <div class="dsec">
-     <h4>Ownership over time ${state.pro||r.tk==="META"?"":'<span class="protag ghost">PRO</span>'}</h4>
+     <h4>Ownership over time</h4>
      ${chartBlock(r.tk)}
    </div>
-   ${(state.pro||r.tk==="META")?(function(){
+   ${(true)?(function(){
       /* the filed trades, verbatim, when the events file covers the ticker;
          the history-diff view survives only as the fallback beneath it */
       const evs=EVENTS.filter(e=>e.tk===r.tk).slice(0,5);
