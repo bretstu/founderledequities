@@ -101,7 +101,11 @@ SINGLE_CLASS = "Common Stock (the company's only class)"
 # The KIND matters as well as the letter: "Series A" and "Class A" are
 # different securities, and Dell holds both. Matching on the letter alone put
 # Series A into Class A.
-CLASS_MEMBER = re.compile(r"(Class|Series)([A-Z])(?:Member)?", re.I)
+# THE DESIGNATOR IS THE LETTER AND ITS NUMBER. Symbotic has no Class V;
+# it has V-1 and V-3, and matching on the bare letter collided them into
+# one group -- "taken whole from the newest filing" then kept whichever
+# line reported last (2.7M) while 401M of the founder's V-3 vanished.
+CLASS_MEMBER = re.compile(r"(Class|Series)([A-Z][0-9]*)(?:Member)?", re.I)
 KIND = re.compile(r"\b(class|series)\b", re.I)
 # A standalone single letter in a security title is its class.
 TOKEN = re.compile(r"[a-z0-9]+", re.I)
@@ -114,7 +118,8 @@ def class_letters(members) -> dict:
         g = CLASS_MEMBER.search(m.split(":")[-1])
         kind = g.group(1).lower() if g else ""
         letter = g.group(2).upper() if g else ""
-        out[(kind, letter)] = (f"{kind.title()} {letter} Common Stock"
+        label_letter = (letter[0] + "-" + letter[1:]) if len(letter) > 1 else letter
+        out[(kind, letter)] = (f"{kind.title()} {label_letter} Common Stock"
                                if letter else "Common Stock")
     return out
 
@@ -125,6 +130,14 @@ def title_letter(title: str) -> tuple | None:
     The letter is a lone token rather than the word after "Class", which is
     why "Clas A Common Stock" still reads as A.
     """
+    # "V-1" / "V1" is one designator, not a letter near a stray digit
+    numbered = re.findall(r"\b([A-Z])[-\u2011]?([0-9])\b", title or "")
+    if len(numbered) == 1:
+        k = KIND.search(title or "")
+        return (k.group(1).lower() if k else "class",
+                numbered[0][0].upper() + numbered[0][1])
+    if len(numbered) > 1:
+        return None
     singles = [t for t in TOKEN.findall(title or "")
                if len(t) == 1 and t.isalpha()]
     if len(singles) > 1:

@@ -3030,3 +3030,23 @@ def test_units_and_preferred_are_still_not_share_classes():
     assert not is_share_class("Series A Preferred Stock")
     assert not is_share_class("LTIP Units")
     assert is_share_class("Class V-1 Common Stock") or True  # lettered commons handled by title_letter
+
+
+def test_numbered_class_designators_do_not_collide():
+    """Symbotic has no Class V -- it has V-1 and V-3. Bare-letter matching
+    merged them into one group, and 'taken whole from the newest filing'
+    kept a 2.7M line while 401M of the founder's V-3 vanished."""
+    from fle.ledger import class_letters, match_class, title_letter
+
+    letters = class_letters(["sym:CommonClassV1Member",
+                             "sym:CommonClassV3Member",
+                             "us-gaap:CommonClassAMember"])
+    assert ("class", "V1") in letters and ("class", "V3") in letters
+    a = match_class("Class V-1 Common Stock", letters)
+    b = match_class("Class V-3 Common Stock", letters)
+    assert a and b and a != b
+    # plain letters and convertible variants are untouched
+    assert title_letter("Class A Common Stock") == ("class", "A")
+    assert title_letter("Class B Convertible Common Stock") == ("class", "B")
+    # two different numbered designators in one title is unclear, not a guess
+    assert title_letter("Class V-1 and Class V-3 Common Stock") is None
