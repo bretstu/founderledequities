@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+"""Stamp tonight's numbers into the published home page.
+
+    python3 ops/stamp_static.py panel.csv universe/sp500-<date>.csv prices.csv founders.csv public/index.html
+
+THE HTML SHOULD SAY WHAT THE PAGE SAYS. The home page is an app: the file
+ships with a placeholder hero ("20 of 500") and empty sections, and the
+script fills them in once the data loads. Anything that reads the HTML
+without running scripts -- a fetch tool, an assistant asked "what is this
+site", a search engine's first pass, a reader in the second before the
+data arrives -- saw the placeholder and empty sections. Now the deploy
+writes the computed hero, the stat strip, and the top ten of the
+leaderboard into index.html as real markup, in the same classes the
+script uses. The script still redraws them on load; the two can no
+longer disagree.
+
+Only the source file is edited in public/; index.html in the repo keeps
+its placeholder, so the harness and the sample paint are unchanged.
+"""
+import csv
+import html
+import os
+import re
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from og_image import money, numbers  # noqa: E402
+
+
+def top_rows(panel_p, sp_p, prices_p, founders_p, n=10):
+    sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
+    prices = {}
+    for r in csv.DictReader(open(prices_p, encoding="utf-8-sig")):
+        try:
+            prices[r["ticker"].upper()] = float(r["close"])
+        except (ValueError, KeyError):
+            pass
+    founders = {}
+    try:
+        for r in csv.DictReader(open(founders_p, encoding="utf-8-sig")):
+            founders[r["ticker"].upper()] = ((r.get("founder") or "").lower(), r.get("evidence") or "")
+    except OSError:
+        pass
+    rows = []
+    for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
+        tk = (r.get("ticker") or "").upper()
+        if tk not in sp:
+            continue
+        try:
+            pct = float(r.get("pct") or "")
+            sh = float(r.get("shares") or 0)
+        except ValueError:
+            continue
+        val = sh * prices[tk] if tk in prices else 0.0
+        rows.append({"tk": tk, "ceo": r.get("ceo") or "", "pct": pct, "val": val,
+                     "f": founders.get(tk, ("", ""))})
+    rows.sort(key=lambda x: -x["val"])
+    return rows[:n]
+
+
+def badge(f):
+    verdict, ev = f
+    if verdict == "yes":
+        return f'<span class="fb yes" title="{html.escape(ev[:300])}">FOUNDER</span>'
+    if verdict == "uncertain":
+        return '<span class="fb unc" title="founder language near the name, but the proxy sentence is ambiguous">FOUNDER?</span>'
+    return ""
+
+
+def bars_html(rows):
+    if not rows:
+        return ""
+    mx = max(r["val"] for r in rows) or 1
+    out = []
+    for r in rows:
+        w = max(2.0, r["val"] / mx * 100)
+        inside = w > 20
+        link = (f'<span class="tk"><a class="pglink" href="/company/{r["tk"]}/" onclick="event.stopPropagation()" '
+                f'title="this company\'s own page">{r["tk"]}</a></span><span class="nm">{html.escape(r["ceo"])}</span>{badge(r["f"])}')
+        lab_in = f'<div class="blab">{link}</div>' if inside else ""
+        lab_out = f'<div class="blab out" style="--w:{w:.1f}%">{link}</div>' if not inside else ""
+        out.append(
+            f'<div class="brow" onclick="openDrawer(\'{r["tk"]}\')" role="button" tabindex="0">'
+            f'<div class="btrack"><div class="bfill" style="width:{w:.1f}%">{lab_in}</div>{lab_out}</div>'
+            f'<div class="bpct">{money(r["val"])}<span class="b2">{r["pct"]:.2f}% of co.</span></div></div>')
+    return "".join(out)
+
+
+def main(panel_p, sp_p, prices_p, founders_p, index_out):
+    n = numbers(panel_p, sp_p, prices_p, founders_p)
+    rows = top_rows(panel_p, sp_p, prices_p, founders_p)
+    page = open(index_out, encoding="utf-8").read()
+    hero_re = re.compile(r'<h1 id="thesis"><b>\d+</b> of [\d,]+ chief executives own more than 5% of the company they run\.</h1>')
+    hero = (f'<h1 id="thesis"><b>{n["above5"]}</b> of {n["open"]:,} chief executives own more than 5% '
+            f'of the company they run.</h1>')
+    if not hero_re.search(page):
+        raise SystemExit("stamp_static: the hero placeholder was not found in index.html")
+    page = hero_re.sub(hero, page, count=1)
+    stats = (f'<div class="hstat"><div class="n hl">{n["led"]}</div><div class="k">Founder-led companies</div></div>'
+             f'<div class="hstat"><div class="n">{money(n["led_value"])}</div><div class="k">Held by those founders</div></div>'
+             f'<div class="hstat"><div class="n">{n["share"]}%</div><div class="k">Of all CEO wealth</div></div>')
+    page = page.replace('<div class="herostats" id="herostats"></div>',
+                        f'<div class="herostats" id="herostats">{stats}</div>', 1)
+    page = page.replace('<div class="bars" id="bars"></div>',
+                        f'<div class="bars" id="bars">{bars_html(rows)}</div>', 1)
+    with open(index_out, "w", encoding="utf-8") as fh:
+        fh.write(page)
+    print(f"  stamped: {n['above5']} of {n['open']} in the hero, {len(rows)} board rows, "
+          f"{n['led']} founder-led / {money(n['led_value'])}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(*sys.argv[1:6]))

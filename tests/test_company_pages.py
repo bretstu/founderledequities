@@ -95,3 +95,19 @@ def test_money_rounds_as_the_page_does():
     assert bcp.money(27.3e9) == "$27.3B"
     assert bcp.money(903e6) == "$903M"
     assert bcp.money(999_959_042) == "$1B", "rounding may cross the unit boundary; the unit is chosen after"
+
+
+def test_the_published_home_page_carries_the_numbers(tmp_path):
+    """A fetch without scripts must read tonight's hero and top ten, not
+    the placeholder '20 of 500' and an empty board."""
+    import stamp_static as st
+    panel, founders, prices, sp, _ = _fixture(tmp_path)
+    out = tmp_path / "index.html"
+    src = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
+    out.write_text(src, encoding="utf-8")
+    st.main(panel, founders, prices, sp, str(out))
+    page = out.read_text(encoding="utf-8")
+    assert '<h1 id="thesis"><b>1</b> of 1 chief executives own' in page, "the hero is computed, not the placeholder"
+    assert 'class="brow"' in page and 'href="/company/TSLA/"' in page and "28.44% of co." in page, "the board's rows are real HTML"
+    assert 'class="hstat"' in page and "Founder-led companies" in page, "and so is the stat strip"
+    assert "<b>20</b> of 500" not in page
