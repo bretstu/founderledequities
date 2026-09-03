@@ -506,7 +506,11 @@ const P=runPage();
      assert(dist.items.length>=5&&dist.items.every(i=>typeof i.ret==="number"),"a return per constituent with a close at both ends of the window");
      assert(Math.abs(dist.spy-10)<1,"and the benchmark's own return over the same window (half its two-year 20%): "+dist.spy);
      assert(Math.abs(P.perfReturns(full).spy-20)<1,"over the whole record, the benchmark's full 20%");
-     assert(!dist.items.some(i=>i.tk==="LATE")&&dist.skipped===1,"the late entrant has no close at the window's start and is counted as listed too recently, not placed");
+     {const late=dist.items.find(i=>i.tk==="LATE");
+      assert(late&&late.since&&late.since>dist.from,"the late entrant is placed, measured from the month it joined: since "+(late&&late.since));
+      assert(typeof late.spyOwn==="number","and judged against the S&P over the same months");
+      assert(dist.joined===1&&dist.skipped===0,"nothing that fed the line is missing from the bins");
+      assert(dist.items.filter(i=>!i.since).every(i=>i.spyOwn===null||Math.abs(i.spyOwn-dist.spy)<1e-9),"a full-window company is judged against the full-window S&P");}
      const {svg,bins,tint}=P.distChart(dist,P.perfBins("12"));
      assert((svg.match(/rx="2" fill="rgba/g)||[]).length===dist.items.length,"one tile per company (hit areas and axis boxes are not tiles)");
      {const crownedN=bins.reduce((n,b)=>n+Math.min(3,b.items.length),0);
@@ -542,7 +546,10 @@ const P=runPage();
       assert(tints[z]==="194"&&tints[z+1]==="11","the -10% to 0% box is red and the 0% to +10% box is green");}
      els["#perfdist"]=els["#perfdist"]||el("#perfdist");
      P.renderDist(d);
-     assert(els["#perfdist"]._html.includes("beat the S&amp;P 500"),"the caption says how many beat the benchmark");
+     assert(els["#perfdist"]._html.includes("beat the S&amp;P 500 over the same months"),"the caption says how many beat the benchmark, each over its own months");
+     assert(els["#perfdist"]._html.includes("joined during the window"),"and how many joined during the window");
+     assert(!els["#perfdist"]._html.includes("too recently"),"no 'too recently' bucket: every constituent is in a bin");
+     assert(/fill-opacity="0.55"/.test(els["#perfdist"]._html)&&/<circle /.test(els["#perfdist"]._html),"an entrant's tile is lighter and marked with a dot");
      // the bins scale with the window
      assert(P.perfBins("12").length===9&&P.perfBins("60")[0]===-75&&P.perfBins("60").slice(-1)[0]===500,"a year moves in tens, five years in hundreds");
      // the screener follows: a Return column and the index chip

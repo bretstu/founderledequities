@@ -422,8 +422,11 @@ td.src a:hover{color:var(--blue)}
 .dpscreen{margin-left:auto;color:var(--blue);cursor:pointer;font-size:12.5px}
 .dpx{border:0;background:transparent;font-size:18px;line-height:1;color:var(--faint);cursor:pointer;padding:0 2px}
 .dtiles{display:flex;flex-wrap:wrap;gap:6px}
-.dtile{display:inline-flex;align-items:baseline;gap:6px;padding:5px 9px;border-radius:5px;text-decoration:none;color:#fff;font-family:var(--mono);font-size:11.5px;line-height:1}
-.dtile b{font-weight:600}.dtile span{opacity:.85;font-size:10.5px}
+.dtile{display:inline-flex;align-items:baseline;gap:6px;padding:5px 9px;border-radius:5px;text-decoration:none;color:var(--ink);font-family:var(--mono);font-size:11.5px;line-height:1;border:1px solid rgba(0,0,0,.08);background-image:linear-gradient(rgba(255,255,255,.42),rgba(255,255,255,.42))}
+.dtile b{font-weight:600}.dtile span{opacity:.8;font-size:10.5px}
+.dtile small{font-size:9.5px;opacity:.7;font-family:var(--ui)}
+.dtile.joined{background-image:linear-gradient(rgba(255,255,255,.66),rgba(255,255,255,.66))}
+.distcap .joined{color:var(--mut);border-bottom:1px dotted var(--faint);cursor:help}
 .dtile:hover{filter:brightness(0.9)}
 .distcap{font-size:13px;color:var(--mut);margin-bottom:8px}
 .distcap b{color:var(--ink)}
@@ -1387,13 +1390,27 @@ function perfChart(d,{w=940,h=300}={}){
    bins carry counts, so the picture stays a picture. Each tile is a door
    to its company page; a bin is a door to the screener, sorted by return. */
 function perfReturns(d){
+  /* THE HISTOGRAM EXPLAINS THE LINE, SO IT COUNTS WHAT THE LINE COUNTED.
+     The index takes a company from the month after it lists; a company
+     that joined during the window is measured from the month it joined
+     (`since`), against the S&P over the same months (`spyOwn`), and the
+     tile is marked so a three-month move is never mistaken for a
+     five-year one. Nothing that fed the line is missing from the bins. */
   const end=d.months[d.months.length-1],from=d.from,out=[];
+  const spyAt=m=>d.spyMap[m];
   for(const tk in d.byTk){
-    const c0=d.byTk[tk][from],c1=d.byTk[tk][end];
-    if(c0&&c1)out.push({tk,ret:(c1/c0-1)*100});
+    const cl=d.byTk[tk];const c1=cl[end];if(!c1)continue;
+    let start=from;
+    if(!cl[start]){start=d.months.find(m=>m>from&&cl[m]);if(!start||start===end)continue;}
+    const c0=cl[start];
+    const s0=spyAt(start),s1=spyAt(end);
+    out.push({tk,ret:(c1/c0-1)*100,since:start===from?null:start,
+              spyOwn:(s0&&s1)?(s1/s0-1)*100:null});
   }
   const s0=d.spyMap[from],s1=d.spyMap[end];
-  return {items:out,spy:(s0&&s1)?(s1/s0-1)*100:null,from,end,skipped:Object.keys(d.byTk).length-out.length};
+  return {items:out,spy:(s0&&s1)?(s1/s0-1)*100:null,from,end,
+          joined:out.filter(i=>i.since).length,
+          skipped:Object.keys(d.byTk).length-out.length};
 }
 function perfBins(monthsBack){
   /* bin edges scale with the window: a year moves in tens, five years in hundreds */
@@ -1481,7 +1498,9 @@ function distChart(dist,edges,{w=940}={}){
       /* ONLY A NAMED TILE IS A LINK. A block you cannot read is part of the
          column: hovering names it, clicking opens the bucket. Otherwise a
          click meant for the column sometimes left the page. */
-      const tile=`<rect x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}" width="${cw.toFixed(1)}" height="${Math.max(1,hh-2).toFixed(1)}" rx="2" fill="${tint(i)}"><title>${it.tk} · ${(it.ret>=0?"+":"")+it.ret.toFixed(0)}% · ${(PANEL.find(p=>p.tk===it.tk)||{}).ceo||""} · ${lab}${crowned?"":" — click for everyone in it"}</title></rect>`;
+      const sinceTxt=it.since?` · since ${it.since} (joined during the window)`:"";
+      const tile=`<rect x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}" width="${cw.toFixed(1)}" height="${Math.max(1,hh-2).toFixed(1)}" rx="2" fill="${tint(i)}"${it.since?' fill-opacity="0.55"':""}><title>${it.tk} · ${(it.ret>=0?"+":"")+it.ret.toFixed(0)}%${sinceTxt} · ${(PANEL.find(p=>p.tk===it.tk)||{}).ceo||""} · ${lab}${crowned?"":" — click for everyone in it"}</title></rect>`
+        +(it.since?`<circle cx="${(x+cw-6).toFixed(1)}" cy="${(y+hh/2).toFixed(1)}" r="${crowned?3:1.6}" fill="var(--ink)" pointer-events="none"/>`:"");
       if(crowned)out+=`<a href="/company/${it.tk}/">${tile}<text class="crown" x="${(x+cw/2).toFixed(1)}" y="${(y+CH/2+3.5).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="${ink(i)}" pointer-events="none">${it.tk}</text></a>`;
       else out+=tile;
       y+=hh;
@@ -1499,7 +1518,7 @@ function distPanel(bin,i,tint){
   const lab=binLabel(bin.lo,bin.hi);
   const items=[...bin.items].sort((a,b)=>a.ret-b.ret);   /* lowest to highest */
   const tiles=items.map(it=>{const p=PANEL.find(r=>r.tk===it.tk)||{};
-    return `<a class="dtile" href="/company/${it.tk}/" style="background:${tint(i)}" title="${(p.ceo||"")} · ${(p.co||"")}"><b>${it.tk}</b><span>${(it.ret>=0?"+":"")+it.ret.toFixed(0)}%</span></a>`;}).join("");
+    return `<a class="dtile${it.since?" joined":""}" href="/company/${it.tk}/" style="background:${tint(i)}" title="${(p.ceo||"")} · ${(p.co||"")}${it.since?" · joined the index "+it.since+"; measured from then":""}"><b>${it.tk}</b><span>${(it.ret>=0?"+":"")+it.ret.toFixed(0)}%</span>${it.since?`<small>since ${it.since.slice(0,4)}</small>`:""}</a>`;}).join("");
   return `<div class="dpanel" data-i="${i}">
     <div class="dph"><b>${lab}</b> · ${items.length} compan${items.length===1?"y":"ies"}
       <a class="dpscreen" onclick="state.tbI=true;state.sort={key:'ret',dir:-1};state.tbRange={lo:${bin.lo===null?"null":bin.lo},hi:${bin.hi===null?"null":bin.hi}};state.retWin=state.pw||'60';renderTable();document.querySelector('#table').scrollIntoView({behavior:'smooth'})">Open these in the screener →</a>
@@ -1513,10 +1532,11 @@ function renderDist(d){
   const dist=perfReturns(d);
   if(dist.items.length<5){box.innerHTML="";return;}
   const edges=perfBins(state.pw);
-  const n=dist.items.length,up=dist.items.filter(i=>i.ret>0).length,beat=dist.spy===null?null:dist.items.filter(i=>i.ret>dist.spy).length;
+  const n=dist.items.length;
+  const beat=dist.items.filter(i=>{const b=i.since?i.spyOwn:dist.spy;return b!==null&&i.ret>b;}).length;
   const cap=`<div class="distcap">Where each of the ${n} landed, ${dist.from} to ${dist.end}`
-    +(beat!==null?` — <b>${beat}</b> of ${n} beat the S&amp;P 500`:"")
-    +(dist.skipped?` · ${dist.skipped} listed too recently for the whole window`:"")
+    +` — <b>${beat}</b> of ${n} beat the S&amp;P 500 over the same months`
+    +(dist.joined?` · <span class="joined" title="the index takes a company from the month after it lists; these are measured from the month they joined and marked with a dot">${dist.joined} joined during the window</span>`:"")
     +` <span class="hint">· click a column to see everyone in it</span></div>`;
   const {svg,bins,tint}=distChart(dist,edges);
   box.innerHTML=cap+svg+`<div id="distpanel"></div>`;
