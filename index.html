@@ -1416,9 +1416,12 @@ function perfReturns(d){
 function perfBins(monthsBack){
   /* bin edges scale with the window: a year moves in tens, five years in hundreds */
   const m=+monthsBack||60;
+  /* THIRTEEN COLUMNS ON EVERY WINDOW, so the chart's shape is the data's
+     and not the bin count's; each window's edges are spaced for the
+     moves that window produces. */
   if(m<=12)return [-60,-40,-30,-20,-10,0,10,20,30,40,60,100];
-  if(m<=36)return [-60,-40,-20,0,20,40,60,80,100,150,200];
-  return [-75,-50,-25,0,25,50,100,150,200,300,500];
+  if(m<=36)return [-60,-40,-20,0,20,40,60,80,100,150,200,300];
+  return [-75,-50,-25,0,25,50,75,100,150,200,300,500];
 }
 function binLabel(lo,hi){
   const f=v=>(v>0?"+":"")+v+"%";
@@ -1501,7 +1504,7 @@ function distChart(dist,edges,{w=940}={}){
          click meant for the column sometimes left the page. */
       const sinceTxt=it.since?` · since ${it.since} (joined during the window)`:"";
       const tile=`<rect x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}" width="${cw.toFixed(1)}" height="${Math.max(1,hh-2).toFixed(1)}" rx="2" fill="${tint(i)}"><title>${it.tk} · ${(it.ret>=0?"+":"")+it.ret.toFixed(0)}%${sinceTxt} · ${(PANEL.find(p=>p.tk===it.tk)||{}).ceo||""} · ${lab}${crowned?"":" — click for everyone in it"}</title></rect>`
-        +(it.since?`<circle cx="${(x+cw-6).toFixed(1)}" cy="${(y+hh/2).toFixed(1)}" r="${crowned?3:1.6}" fill="var(--ink)" pointer-events="none"/>`:"");
+        +(it.since?`<circle cx="${(x+cw-6).toFixed(1)}" cy="${(y+hh/2).toFixed(1)}" r="2.2" fill="var(--ink)" pointer-events="none"/>`:"");
       if(crowned)out+=`<a href="/company/${it.tk}/">${tile}<text class="crown" x="${(x+cw/2).toFixed(1)}" y="${(y+CH/2+3.5).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="${ink(i)}" pointer-events="none">${it.tk}</text></a>`;
       else out+=tile;
       y+=hh;

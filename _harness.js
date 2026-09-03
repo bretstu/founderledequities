@@ -518,7 +518,7 @@ const P=runPage();
      assert(svg.includes("S&amp;P 500 +10%"),"the benchmark is marked where it lands");
      assert(svg.includes(">below<")&&svg.includes(">above<")&&svg.includes(">-40% to<")&&svg.includes(">0% to<")&&svg.includes(">+40%<"),"a labelled box under every column says its range");
      {const boxes=(svg.match(/<rect x="[^"]+" y="[^"]+" width="[^"]+" height="34" rx="3" fill="(rgba[^"]+)"/g)||[]);
-      assert(boxes.length===P.perfBins("12").length+1,"one box per column");
+      assert(boxes.length===13,"one box per column");
       const tiles=[...svg.matchAll(/<rect x="([^"]+)" y="[^"]+" width="[^"]+" height="[^"]+" rx="2" fill="(rgba[^"]+)"/g)];
       const byX={};for(const m of tiles)byX[m[1]]=m[2];
       const boxX=[...svg.matchAll(/<rect x="([^"]+)" y="[^"]+" width="[^"]+" height="34" rx="3" fill="(rgba[^"]+)"/g)];
@@ -551,7 +551,8 @@ const P=runPage();
      assert(!els["#perfdist"]._html.includes("too recently"),"no 'too recently' bucket: every constituent is in a bin");
      assert(!/fill-opacity="0.55"/.test(els["#perfdist"]._html)&&/<circle /.test(els["#perfdist"]._html)&&els["#perfdist"]._html.includes('class="dotkey"'),"an entrant's tile is marked with a dot, and the caption carries the key");
      // the bins scale with the window
-     assert(P.perfBins("12").length===12&&P.perfBins("12").slice(-1)[0]===100&&P.perfBins("60")[0]===-75&&P.perfBins("60").slice(-1)[0]===500,"a year moves in tens with room to +100%, five years in hundreds");
+     assert([P.perfBins("12"),P.perfBins("36"),P.perfBins("60")].every(e=>e.length===12),"thirteen columns on every window");
+     assert(P.perfBins("12").slice(-1)[0]===100&&P.perfBins("36").slice(-1)[0]===300&&P.perfBins("60").slice(-1)[0]===500,"each window's edges spaced for its moves");
      // the screener follows: a Return column and the index chip
      const savedPanel2=P.PANEL;
      /* FE is FirstEnergy, a real S&P company: never inject a row the panel already has */
