@@ -1035,37 +1035,25 @@ def cmd_perf(args) -> int:
                     (row["month"], float(row["close"])))
     except (OSError, ValueError, KeyError):
         stored = {}
-    from .perf import merge_history, registration_month, apply_floors
+    from .perf import merge_history, listing_month, apply_floors
     perf.series = merge_history(stored, perf.series)
-    # NO PRICE BEFORE THE COMPANY WAS A FILER. Symbols are recycled; the
-    # registration month from EDGAR is the floor under every ticker's
-    # history (see perf.registration_month). Needs the CIK per ticker,
-    # which the panel carries.
-    ciks = {}
-    for cand in (getattr(args, "panel", None), "site-data/pro/universe.csv", "panel.csv"):
-        if not cand:
-            continue
-        try:
-            with open(cand, encoding="utf-8-sig") as fh:
-                for row in csv.DictReader(fh):
-                    if row.get("ticker") and row.get("cik"):
-                        ciks[row["ticker"].upper()] = int(float(row["cik"]))
-            break
-        except (OSError, ValueError):
-            continue
+    # NO PRICE BEFORE THIS SECURITY TRADED UNDER THE SYMBOL. Symbols are
+    # recycled; the vendor's per-security list_date is the floor under
+    # every ticker's history (see perf.listing_month for why not EDGAR's
+    # registration date).
     floors, cut = {}, []
     for tk in perf.series:
-        if tk in ("SPY", "RSP") or tk.upper() not in ciks:
+        if tk in ("SPY", "RSP"):
             continue
-        fl = registration_month(client, ciks[tk.upper()])
+        fl = listing_month(client, tk, SETTINGS.polygon_api_key)
         if fl:
             floors[tk.upper()] = fl
-            before = len(perf.series[tk])
-            if any(p[0] < fl for p in perf.series[tk]):
-                cut.append(f"{tk} ({before - sum(1 for p in perf.series[tk] if p[0] >= fl)} months before {fl})")
+            gone = sum(1 for p in perf.series[tk] if p[0] < fl)
+            if gone:
+                cut.append(f"{tk} ({gone} months before {fl})")
     perf.series = apply_floors(perf.series, floors)
     if cut:
-        print(f"  dropped price history from before registration for {len(cut)}: "
+        print(f"  dropped price history from before the symbol's listing for {len(cut)}: "
               + ", ".join(cut[:8]) + (" ..." if len(cut) > 8 else ""))
     rows = write_perf(perf, args.out)
     print(f"  {len(perf.series)} tickers, {rows} monthly closes "

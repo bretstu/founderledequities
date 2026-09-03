@@ -158,25 +158,36 @@ def build_perf(client, founder_tickers, api_key: str,
     return perf
 
 
-def registration_month(client, cik: int) -> str:
-    """The month the company became a Section 16 filer: the earliest Form
-    3/4/5 on its own feed. The same boundary the events stage uses to tell
-    a public-company trade from a pre-registration catch-up.
+REFERENCE = "https://api.polygon.io/v3/reference/tickers/{ticker}?apiKey={key}"
+
+
+def listing_month(client, ticker: str, api_key: str) -> str:
+    """The month THIS security began trading under the symbol, from the
+    vendor's own ticker record (`list_date`).
 
     WHY THE PRICE HISTORY NEEDS IT. Polygon answers by symbol, and symbols
     are recycled. Asked for SPCX it returned sixty months of a SPAC that
     carried the ticker until 2026, stitched onto three months of SpaceX,
-    and the chart called that a 545% three-year return. A company has no
-    price history before it was a public filer; anything earlier under its
-    symbol belongs to someone else."""
-    from .ledger import SECTION16
+    and the chart called that a 545% three-year return. FIG was Fortress
+    before it was Figma.
+
+    WHY NOT THE EDGAR REGISTRATION DATE. It dates the registrant, not the
+    security. Apollo (2022), BlackRock (2024) and DraftKings (2020) each
+    reorganised into a new registrant while the stock traded on without
+    a break; their first Section 16 filing is years after their price
+    history begins, and a floor drawn there cut real months. The vendor's
+    ticker record is per security: a recycled symbol gets a new record
+    with a new list_date, a reorganised company keeps its old one.
+
+    Cached like every other document; the record does not change."""
+    url = REFERENCE.format(ticker=_polygon_ticker(ticker), key=api_key)
     try:
-        subs = client.submissions(cik)
-    except Exception:  # noqa: BLE001 -- no feed, no floor; the caller keeps the series
+        body = client.get(url)
+        data = json.loads(body)
+        ld = ((data.get("results") or {}).get("list_date") or "")[:7]
+        return ld if len(ld) == 7 else ""
+    except Exception:  # noqa: BLE001 -- no record, no floor; the caller keeps the series
         return ""
-    reg = min((f.get("filingDate") or "" for f in subs.get("_filings", [])
-               if f.get("form") in SECTION16 and f.get("filingDate")), default="")
-    return reg[:7]
 
 
 def apply_floors(series: dict, floors: dict) -> dict:
