@@ -115,3 +115,8 @@ def test_a_row_from_an_older_schema_is_recomputed_not_carried():
     assert not _reusable(old)
     new = dict(old, remarks="", direct_classes="")
     assert _reusable(new), "an empty remark is a value; a missing field is not"
+
+
+def test_stake_source_reaches_the_csv():
+    from fle.panel import COLUMNS
+    assert "stake_source" in COLUMNS and "shares_tabled" in COLUMNS and "remarks" in COLUMNS

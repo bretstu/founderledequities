@@ -47,6 +47,10 @@ COLUMNS = [
     # filing's <remarks>, verbatim, for a person to read; and when a cited
     # override adds shares the tables leave out, the tabled figure beside it.
     "remarks", "shares_tabled",
+    # WHERE THE FIGURE CAME FROM when it is not a plain Section 16 sum:
+    # "SC 13G/A 2024-02-13" for a dated schedule stake, "manual" for a
+    # curated addition. The page reads it as src13; it was never written.
+    "stake_source",
 
     # HOW THE STAKE WAS ACQUIRED. Lifetime flows, split-adjusted, never a
     # position -- `codes` carries the full tally so the buckets need not.
