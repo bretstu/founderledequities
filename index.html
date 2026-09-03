@@ -547,6 +547,10 @@ td.asrc a:hover{color:var(--blue)}
 .dflags summary{font-family:var(--mono);font-size:11.5px;color:var(--faint);cursor:pointer}
 .dflags pre{font-family:var(--mono);font-size:11px;color:var(--mut);white-space:pre-wrap;background:var(--panel);border-radius:8px;padding:12px 14px;margin-top:8px;line-height:1.6}
 .dfull{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--blue);text-decoration:none}
+.dhead h3 a.dco{color:inherit;text-decoration:none}
+.dhead h3 a.dco:hover{text-decoration:underline;text-decoration-color:var(--blue)}
+a.pglink{color:inherit;text-decoration:none}
+a.pglink:hover{text-decoration:underline}
 .dfull:hover{text-decoration:underline}
 td.c-co .tk a{color:inherit;text-decoration:none}
 td.c-co .tk a:hover{text-decoration:underline}
@@ -1466,13 +1470,13 @@ function renderBars(){
     const sub=useVal?r.pct.toFixed(2)+"% of co.":(r.val?money(r.val):"");
     return `<div class="brow" onclick="openDrawer('${r.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${r.tk}')">
       <div class="btrack">
-        <div class="bfill" style="width:${w}%">${inside?`<div class="blab"><span class="tk">${r.tk}</span><span class="nm">${r.ceo}</span>${fBadge(r.tk)}</div>`:""}</div>
+        <div class="bfill" style="width:${w}%">${inside?`<div class="blab"><span class="tk"><a class="pglink" href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></span><span class="nm">${r.ceo}</span>${fBadge(r.tk)}</div>`:""}</div>
         ${/* THE BADGE BELONGS TO THE PERSON, NOT TO THE WIDTH OF THEIR BAR.
               Only the label drawn INSIDE a wide bar carried it, so Musk,
               Zuckerberg, Huang and Dell were marked founders and Chesky,
               Ergen, Foroughi, Karp and Xie -- all founders too -- were not.
               The badge said more about stake size than about founding. */""}
-        ${!inside?`<div class="blab out" style="--w:${w}%"><span class="tk" style="color:var(--ink)">${r.tk}</span><span class="nm" style="color:var(--mut)">${r.ceo}</span>${fBadge(r.tk)}</div>`:""}
+        ${!inside?`<div class="blab out" style="--w:${w}%"><span class="tk" style="color:var(--ink)"><a class="pglink" href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></span><span class="nm" style="color:var(--mut)">${r.ceo}</span>${fBadge(r.tk)}</div>`:""}
       </div>
       <div class="bpct">${main}${sub?`<span class="b2">${sub}</span>`:""}</div>
     </div>`}).join("");
@@ -2207,7 +2211,7 @@ function evTable(rows,sortable,emptyMsg){
     const plan=e.pl==="plan"?"planned":e.pl==="discretionary"?"discretionary":"";
     return `<tr onclick="openDrawer('${e.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
      <td class="adate" title="filed ${e.fd}; traded ${e.td}${lagNote(e)}">${e.fd}${e.td&&e.td!==e.fd?`<span class="atd">traded ${e.td}</span>`:""}</td>
-     <td><span class="atk">${e.tk}</span><span class="aceo">${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span></td>
+     <td><span class="atk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></span><span class="aceo">${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span></td>
      <td><span class="abadge ${b.k}" title="${b.n} — select for more like this"
        onclick="event.stopPropagation();setKind('${e.c==="P"?"buys":sellKind(e)}')"
        role="button" tabindex="0" onkeydown="if(event.key==='Enter'){event.stopPropagation();setKind('${e.c==="P"?"buys":sellKind(e)}')}"
@@ -2349,7 +2353,7 @@ function renderDay(){
     const when=`<span class="dtd" title="the trade date; the filing reached EDGAR ${e.fd}${lagNote(e)}">traded ${shortDay(e.td||e.fd)}</span>`;
     return `<div class="dayrow" onclick="openDrawer('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
       <span class="abadge ${b.k}" title="${b.n} — traded ${e.td||e.fd}${lagNote(e)}">${b.t}</span>
-      <span class="drwho"><span class="atk">${e.tk}</span>${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span>
+      <span class="drwho"><span class="atk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></span>${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span>
       <span class="drv"><b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>${pc}${man} · ${when}${e.u?`<a href="${e.u}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing itself, on EDGAR">4 ↗</a>`:""}</span>
     </div>`;};
   el.innerHTML=`<div class="dayb">
@@ -2426,7 +2430,7 @@ function evColumn(side){
       :`<span title="${fmt(p.sh)} shares against the position before the first of these trades${p.approx?" — ≈: a residue too small to move the figure on one of these days":""}">${p.approx?"≈ ":""}${p.pc>=100?(sell?"sold more than they held":"multiplied their stake"):(sell?"−":"+")+(p.pc>=1?p.pc.toFixed(p.pc<10?1:0):p.pc.toFixed(2))+"% of stake"}</span>`;
     return `<div class="abar" onclick="openDrawer('${p.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${p.tk}')"
       title="${p.ceo} — ${tradesAndFilings(p.evs)}, ${fmt(p.sh)} shares, latest ${p.latest}. Open the full record.">
-      <div class="who"><span class="nmrow"><span class="nm">${p.ceo}</span>${fMark(p.tk)}</span><small>${p.tk}${p.n>1?` · ${p.n} trades`:""}</small></div>
+      <div class="who"><span class="nmrow"><span class="nm">${p.ceo}</span>${fMark(p.tk)}</span><small><a class="pglink" href="/company/${p.tk}/" onclick="event.stopPropagation()" title="this company's own page">${p.tk}</a>${p.n>1?` · ${p.n} trades`:""}</small></div>
       <div class="trk">${segs||(p.sh?`<span class="seg unknown" style="width:2%" title="unpriced"></span>`:"")}</div>
       <div class="amt"><b>${p.priced?money(p.v):`<span class="nopr" title="the filing reports no price on these rows">${compact(p.sh)} sh</span>`}</b>${pc}</div>
     </div>`;};
@@ -2517,7 +2521,7 @@ function openDrawer(tk){
    <div class="dhead">
      <button class="dclose" onclick="closeDrawer()" aria-label="Close">✕</button>
      <div class="tk">${r.tk}${r.masked?` · ${SEAL} SEALED UNIVERSE`:" · S&P 500"}</div>
-     <h3>${r.co}</h3>
+     <h3><a class="dco" href="/company/${r.tk}/" title="this company's own page: the record, every trade, every filing">${r.co}</a></h3>
      <div class="ce">${r.ceo} — CEO ${fBadge(r.tk)}</div>
      <a class="dfull" href="/company/${r.tk}/" title="this company's own page: the record, every trade, every filing">Full record →</a>
      ${fInfo(r.tk)&&fInfo(r.tk).f==="yes"&&fInfo(r.tk).ev?`<div class="dnote" style="margin:14px 0 0">“${fInfo(r.tk).ev.slice(0,280)}” <span style="color:var(--faint)">— ${fInfo(r.tk).src}</span></div>`:""}
@@ -2619,6 +2623,16 @@ document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;
 
 /* ---------------- wire controls ---------------- */
 $("#q").addEventListener("input",e=>{state.q=e.target.value;renderTable()});
+/* LOOK UP A COMPANY. Enter in the search box goes straight to the page when
+   the query is a ticker, or narrows the table to exactly one company. */
+$("#q").addEventListener("keydown",e=>{
+  if(e.key!=="Enter")return;
+  const q=(e.target.value||"").trim().toUpperCase();if(!q)return;
+  const exact=PANEL.find(r=>r.tk===q);
+  const rows=state._rows||[];
+  const tk=exact?exact.tk:rows.length===1?rows[0].tk:null;
+  if(tk){hit("open","page",tk);location.href=`/company/${tk}/`;}
+});
 wireSw("hchip",()=>{state.tbH=!state.tbH;renderTable();});
 wireSw("fchip",()=>{state.tbF=!state.tbF;renderTable();});
 document.querySelectorAll(".bmode").forEach(b=>b.addEventListener("click",()=>{

@@ -27,7 +27,7 @@ def _fixture(tmp_path):
     sp = tmp_path / "sp.csv"
     sp.write_text("cik,ticker,company,added\n1318605,TSLA,Tesla,\n")
     prices = tmp_path / "prices.csv"
-    prices.write_text("ticker,close,date\nTSLA,330.00,2026-09-02\nSEALD,10.00,2026-09-02\n")
+    prices.write_text("ticker,close,as_of\nTSLA,330.00,2026-09-02\nSEALD,10.00,2026-09-02\n")
     founders = tmp_path / "founders.csv"
     founders.write_text('ticker,founder,evidence,source\nTSLA,yes,"co-founded the Company",DEF 14A\n')
     out = tmp_path / "public"
@@ -59,6 +59,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert "<title>Elon Musk owns 28.44% of Tesla, Inc. (TSLA)" in tsla
     assert "worth $370B" in tsla, "the description prices the stake at the close, rounded as the page rounds"
     assert '"pct": "28.4412"' in tsla and '"sp": true' in tsla
+    assert '"price_date": "2026-09-02"' in tsla, "the close's date rides with the price (prices.csv says as_of)"
     assert 'href="https://founderledequities.com/company/TSLA/"' in tsla
     assert "co-founded the Company" in tsla, "the founder evidence rides in the shell"
     # the sealed page carries the person and the verdict, and no figure

@@ -168,7 +168,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir):
             p = num(r.get("close"))
             if p:
                 prices[r["ticker"].upper()] = p
-                price_date = max(price_date, r.get("date") or "")
+                price_date = max(price_date, r.get("as_of") or r.get("date") or "")
     except OSError:
         pass
     founders = {}

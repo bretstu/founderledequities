@@ -23,13 +23,6 @@ python3 ops/build_site_data.py \
   panel.csv history.csv events.csv founders.csv \
   "$SP_LIST" site-data/
 
-# ---- 1a. the card a shared link unfurls into, from tonight's numbers ----
-# Pillow lives in the venv; the system python may lack it, and a missing
-# picture must never stop a deploy -- the script keeps the last og.png.
-OGPY=python3; [ -x .venv/bin/python ] && OGPY=.venv/bin/python
-$OGPY ops/og_image.py panel.csv "$SP_LIST" prices.csv founders.csv og.png \
-  || echo "  og image: not drawn; keeping the existing og.png"
-
 # ---- 1b. price the whole universe ----
 # Polygon's grouped-daily endpoint returns the entire market in ONE call;
 # the ticker list only filters the output. Pricing 2,135 costs the same
@@ -37,6 +30,13 @@ $OGPY ops/og_image.py panel.csv "$SP_LIST" prices.csv founders.csv og.png \
 # never publishes an empty prices.csv over a good one.
 python3 -m fle.cli prices --panel site-data/pro/universe.csv --out prices.csv \
   || echo "  prices: fetch failed; keeping the existing prices.csv"
+
+# ---- 1b'. the card a shared link unfurls into, from tonight's numbers ----
+# Pillow lives in the venv; the system python may lack it, and a missing
+# picture must never stop a deploy -- the script keeps the last og.png.
+OGPY=python3; [ -x .venv/bin/python ] && OGPY=.venv/bin/python
+$OGPY ops/og_image.py panel.csv "$SP_LIST" prices.csv founders.csv og.png \
+  || echo "  og image: not drawn; keeping the existing og.png"
 
 # ---- 1c. the founders index, universe-wide ----
 # The chart's cohort is founders.csv INTERSECT perf.csv; the generator just

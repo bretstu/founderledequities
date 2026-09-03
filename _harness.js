@@ -329,6 +329,9 @@ const P=runPage();
 
   assert((idxsrc.match(/^\/\*@shared\*\/$/gm)||[]).length>=25,"the declarations the company pages reuse are marked @shared");
   assert(idxsrc.includes('href="/company/${r.tk}/"'),"the drawer and the screener link to each company's page");
+  assert((idxsrc.match(/class="pglink" href="\/company\/\$\{(e|p|r)\.tk\}\/"/g)||[]).length>=5,"every ticker on the page -- strip, trade table, bars, board -- is a door to its company's page");
+  assert(idxsrc.includes('class="dco" href="/company/${r.tk}/"'),"the drawer's title is a door too");
+  assert(idxsrc.includes('location.href=`/company/${tk}/`'),"Enter in the search box goes to the page");
   assert(typeof P.SEAL==="string"&&P.SEAL.length===1,"the seal glyph is defined (it was referenced in five places and defined in none)");
   // drawer with events present -- and the trade date leads there
   openDrawer("TSLA");
