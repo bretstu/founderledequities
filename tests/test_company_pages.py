@@ -61,11 +61,13 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert '"pct": "28.4412"' in tsla and '"sp": true' in tsla
     assert '"price_date": "2026-09-02"' in tsla, "the close's date rides with the price (prices.csv says as_of)"
     assert 'href="https://founderledequities.com/company/TSLA/"' in tsla
-    assert "co-founded the Company" in tsla, "the founder evidence rides in the shell"
+    assert "co-founded the Company" in tsla, "the founder evidence rides in the shell (as data for the receipt)"
     # the sealed page carries the person and the verdict, and no figure
     assert "<title>What Jane Doe owns of Sealed Co (SEALD)" in sealed
     assert "41.2" not in sealed and "1000000" not in sealed and "2400000" not in sealed
     assert '"sp": false' in sealed and '"row"' not in sealed
+    assert '"price": 10.0' in sealed, "the close is public and rides on a sealed page; the shares do not"
+    assert "Sealed universe" not in sealed and "open to everyone" in tsla
     # the machinery around them
     assert os.path.exists(os.path.join(out, "company.js"))
     assert os.path.exists(os.path.join(out, "site.css"))

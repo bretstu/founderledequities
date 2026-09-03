@@ -196,17 +196,17 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir):
                                              "excluded_shares", "excluded_detail", "problems", "cautions",
                                              "operating_partnership", "stake_source")}
             payload["row"] = row
-            if price:
-                payload["price"] = price
-                payload["price_date"] = price_date
             n_open += 1
         else:
             n_sealed += 1
+        if price:   # the close is public data; a sealed page carries it and no shares
+            payload["price"] = price
+            payload["price_date"] = price_date
         page = (template
                 .replace("{{TITLE}}", html.escape(title))
                 .replace("{{DESCRIPTION}}", html.escape(desc))
                 .replace("{{TICKER}}", html.escape(tk))
-                .replace("{{TIER}}", "S&amp;P 500" if is_sp else "Sealed universe")
+                .replace("{{TIER}}", " · S&amp;P 500 · open to everyone" if is_sp else "")
                 .replace("{{COMPANY}}", html.escape(payload["co"]))
                 .replace("{{CEO}}", html.escape(payload["ceo"]))
                 .replace("{{TOPNAV}}", topnav)
