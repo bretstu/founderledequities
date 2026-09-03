@@ -169,7 +169,7 @@ table.screen{table-layout:fixed}
 table.screen th,table.screen td{overflow:hidden}
 table.screen thead th{text-overflow:ellipsis}
 .tscroll{overflow-x:hidden}
-.w-rk{width:36px}.w-co{width:13.5%}.w-ceo{width:12.5%}.w-own{width:11%}.w-val{width:6.5%}.w-mc{width:7%}.w-d3{width:9%}.w-ret{width:7%}.w-lt{width:11%}.w-ltd{width:8%}.w-ns{width:7.5%}.w-conf{width:7.5%}
+.w-rk{width:36px}.w-co{width:17%}.w-ceo{width:16%}.w-own{width:13%}.w-val{width:8%}.w-mc{width:8.5%}.w-d3{width:10%}.w-lt{width:12%}.w-ltd{width:9%}.w-conf{width:8.5%}
 .c-ltd .ltd{font-family:var(--mono);font-size:12px;color:var(--mut);white-space:nowrap}
 table.screen thead th{letter-spacing:.06em}
 table.screen thead th .arr{width:auto}
@@ -182,9 +182,9 @@ table.screen thead th .arr{width:.7em}
 td.c-co .nm,td.ceo .cn{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 td.ceo .fb{vertical-align:2px}
 .c-mc{white-space:nowrap}
-@media(max-width:1100px){.h-ns,.c-ns,.w-ns,.h-ret,.c-ret,.w-ret,.h-ltd,.c-ltd,.w-ltd{display:none}.w-co{width:22%}}
+@media(max-width:1100px){.h-ltd,.c-ltd,.w-ltd,.h-mc,.c-mc,.w-mc{display:none}.w-co{width:22%}}
 @media(max-width:980px){.h-mc,.c-mc,.w-mc{display:none}.w-lt{width:16%}}
-@media(max-width:760px){.h-conf,.c-conf,.w-conf,.h-lt,.c-lt,.w-lt,.h-ltd,.c-ltd,.w-ltd,.h-d3,.c-d3,.w-d3,.h-ns,.c-ns,.w-ns,.h-ret,.c-ret,.w-ret{display:none}.w-co{width:34%}.w-ceo{width:26%}.w-own{width:20%}.w-val{width:14%}
+@media(max-width:760px){.h-conf,.c-conf,.w-conf,.h-lt,.c-lt,.w-lt,.h-ltd,.c-ltd,.w-ltd,.h-d3,.c-d3,.w-d3,.h-mc,.c-mc,.w-mc{display:none}.w-co{width:34%}.w-ceo{width:26%}.w-own{width:20%}.w-val{width:14%}
   table.screen .tbar{display:none}table.screen .tpct{min-width:0}table.screen thead th,table.screen tbody td{padding-left:8px;padding-right:8px}}
 thead th{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-align:left;padding:10px 12px;border-bottom:1px solid var(--ink);white-space:nowrap}
 thead th.sortable{cursor:pointer;user-select:none}
@@ -231,8 +231,6 @@ td.src a:hover{color:var(--blue)}
 .c-lt .lt{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .chip.export{margin-left:auto}
 .cohort{display:inline-flex;gap:6px;margin-right:14px;padding-right:14px;border-right:1px solid var(--line)}
-.chip.rangechip{background:var(--ink);color:#fff;border-color:var(--ink)}
-.chip.rangechip .x{margin-left:6px;opacity:.7}
 .c-lt .ltd{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 
 /* ---------- trends ---------- */
@@ -418,7 +416,6 @@ td.src a:hover{color:var(--blue)}
 .dpanel{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:14px 16px 16px;background:#fff}
 .dph{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--mut);margin-bottom:12px}
 .dph b{color:var(--ink);font-family:var(--mono)}
-.dpscreen{margin-left:auto;color:var(--blue);cursor:pointer;font-size:12.5px}
 .dpx{border:0;background:transparent;font-size:18px;line-height:1;color:var(--faint);cursor:pointer;padding:0 2px}
 .dtiles{display:flex;flex-wrap:wrap;gap:6px}
 .dtile{display:inline-flex;align-items:baseline;gap:6px;padding:5px 9px;border-radius:5px;text-decoration:none;color:var(--ink);font-family:var(--mono);font-size:11.5px;line-height:1;border:1px solid rgba(0,0,0,.08);background-image:linear-gradient(rgba(255,255,255,.42),rgba(255,255,255,.42))}
@@ -748,7 +745,6 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
         title="only the companies in the Founders index — the cohort the performance chart is drawn from">Founders index<span class="tr"><i></i></span></span>
     <span class="fsw" id="hchip" role="switch" aria-checked="false" tabindex="0"
         title="not one stake-reducing sale on record since the company was public — options cashed and units converted the same day don't count against anyone">Never sold<span class="tr"><i></i></span></span>
-    <button class="chip rangechip hide" id="rangechip" onclick="state.tbRange=null;state.retWin='36';renderTable()" title="set by a click on the distribution above; click to clear"></button>
     <button class="chip export" onclick="exportTable()" title="the rows as filtered and sorted, every field, as a CSV">Export CSV ↓</button>
   </div>
   <!-- NO HORIZONTAL SCROLL. Ten columns, fixed widths that add up to the
@@ -762,7 +758,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="tscroll">
   <table class="screen">
     <colgroup>
-      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-d3"><col class="w-ret"><col class="w-lt"><col class="w-ltd"><col class="w-ns"><col class="w-conf">
+      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-d3"><col class="w-lt"><col class="w-ltd"><col class="w-conf">
     </colgroup>
     <thead><tr>
       <th class="n">№</th>
@@ -771,11 +767,9 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
       <th class="sortable" data-key="pct">Ownership<span class="arr"></span></th>
       <th class="sortable n" data-key="val" title="the stake's value: shares held at the latest close">Value<span class="arr"></span></th>
       <th class="sortable n h-mc" data-key="mcap" title="market capitalization: shares outstanding at the latest close">Mkt cap<span class="arr"></span></th>
-      <th class="sortable n h-d3" data-key="d3" title="the ownership percentage now against three years ago">3-yr change<span class="arr"></span></th>
-      <th class="sortable n h-ret" data-key="ret" title="price return over the last 3 years, for the companies in the Founders index">3-yr return<span class="arr"></span></th>
+      <th class="sortable n h-d3" data-key="d3" title="the stake now against three years ago: the change in the share of the company held">Stake, 3 yrs<span class="arr"></span></th>
       <th class="sortable h-lt" data-key="lt" title="the newest trade that moved the public-company stake: what, and how much">Last trade<span class="arr"></span></th>
       <th class="sortable h-ltd" data-key="ltd" title="the day that trade happened">Traded<span class="arr"></span></th>
-      <th class="sortable c h-ns" data-key="ns" title="not one stake-reducing sale since the company was public">Never sold<span class="arr"></span></th>
       <th class="sortable h-conf" data-key="conf">Confidence<span class="arr"></span></th>
     </tr></thead>
     <tbody id="tbody"></tbody>
@@ -895,7 +889,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,tbRange:null,retWin:"36",distOpen:null,pc:"sp",pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
+const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,distOpen:null,pc:"sp",pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -1018,7 +1012,6 @@ function mapPanel(recs){
        SpaceX shares), a person recorded them with the filing as evidence;
        `tabled` is what the tables alone say, so the page can show both. */
     tabled:num(r.shares_tabled),
-    ret3:num(r.ret_3y),           /* price return over the last 36 months, every company (site build) */
     flags:[r.problems,r.cautions].filter(Boolean).join("\n"),
     /* THE UNRANKABLE STAKE. Blackstone's chief executive holds his
        economics as Blackstone Holdings partnership units, exchangeable
@@ -1528,8 +1521,7 @@ function distPanel(bin,i,tint){
     return `<a class="dtile${it.since?" joined":""}" href="/company/${it.tk}/" style="background:${tint(i)}" title="${(p.ceo||"")} · ${(p.co||"")}${it.since?" · joined the index "+it.since+"; measured from then":""}"><b>${it.tk}</b><span>${(it.ret>=0?"+":"")+it.ret.toFixed(0)}%</span>${it.since?`<small>since ${it.since.slice(0,4)}</small>`:""}</a>`;}).join("");
   return `<div class="dpanel" data-i="${i}">
     <div class="dph"><b>${lab}</b> · ${items.length} compan${items.length===1?"y":"ies"}
-      <a class="dpscreen" onclick="state.tbI=true;state.sort={key:'ret',dir:-1};state.tbRange={lo:${bin.lo===null?"null":bin.lo},hi:${bin.hi===null?"null":bin.hi}};state.retWin=state.pw||'60';renderTable();document.querySelector('#table').scrollIntoView({behavior:'smooth'})">Open these in the screener →</a>
-      <button class="dpx" onclick="closeDistPanel()" title="close">×</button></div>
+      <button class="dpx" onclick="closeDistPanel()" title="close" style="margin-left:auto">×</button></div>
     <div class="dtiles">${tiles}</div></div>`;
 }
 function closeDistPanel(){const p=$("#distpanel");if(p)p.innerHTML="";state.distOpen=null;
@@ -1740,7 +1732,7 @@ function exportTable(){
      open set into a spreadsheet and screen it their own way. */
   const rows=state._rows||[];
   const cols=["ticker","company","chief_executive","founder","ownership_pct","shares_held","shares_outstanding",
-              "close","stake_value","market_cap","change_3y_pts","change_3y_since","return_pct_"+Math.round((+state.retWin||60)/12)+"y","last_trade_date","last_trade",
+              "close","stake_value","market_cap","change_3y_pts","change_3y_since","last_trade_date","last_trade",
               "last_trade_value","never_sold","holding_as_of","confidence","form4_url"];
   const q=v=>{v=v===null||v===undefined?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
   const lines=[cols.join(",")];
@@ -1748,7 +1740,6 @@ function exportTable(){
     const f=fInfo(r.tk);
     lines.push([r.tk,r.co,r.ceo,f?f.f:"",r.pct===null?"":r.pct.toFixed(4),r.sh,r.out,r.price?r.price.toFixed(2):"",
       r.val?Math.round(r.val):"",r.mcap?Math.round(r.mcap):"",r.d3===null||r.d3===undefined?"":r.d3.toFixed(2),r.d3base||"",
-      r.ret===undefined||r.ret===null?"":r.ret.toFixed(1),
       r.ltev?(r.ltev.td||r.ltev.fd):"",r.ltev?evBadge(r.ltev).t.replace("&amp;","&"):"",r.ltev&&r.ltev.v?Math.round(r.ltev.v):"",
       r.ns?"yes":"",r.asof||"",r.conf||"",r.form4||""].map(q).join(","));
   }
@@ -1790,26 +1781,12 @@ function renderTable(){
   paintSw("fchip",state.tbF);
   paintSw("hchip",state.tbH);
   paintSw("ichip",state.tbI);
-  {const rc=$("#rangechip");if(rc){const rg=state.tbRange;rc.classList.toggle("hide",!rg);
-    if(rg){const y=Math.round((+state.retWin||60)/12);rc.innerHTML=`${y}-yr return ${binLabel(rg.lo,rg.hi)} <span class="x">×</span>`;}}}
   const {last,sold}=lastTrades();
-  /* the Return column follows the performance chart's window */
   /* THE RETURN COLUMN NAMES ITS OWN PERIOD. Three years by default, the
      same window as the 3-yr change beside it, so the two columns answer
      one question: what the stake did and what the stock did over the same
      span. The distribution's hand-off is the one thing that changes it,
      to the chart's window, and the header says so while the chip is on. */
-  /* THE 3-YR RETURN IS FOR EVERY ROW. The site build writes each company's
-     36-month price return into universe.csv (r.ret3); the column reads it.
-     Only the distribution's hand-off, which filters by the chart's window,
-     switches the column to the cohort's returns over that window. */
-  let rets=null;
-  if(state.tbRange&&state._perfFull){state._perfWin=perfWindow(state._perfFull,state.retWin);
-    rets={};for(const it of perfReturns(state._perfWin).items)rets[it.tk]=it.ret;}
-  else{rets={};for(const r of PANEL)if(r.ret3!==null&&r.ret3!==undefined)rets[r.tk]=r.ret3;}
-  {const th=$("th.h-ret");if(th){const y=Math.round((+state.retWin||60)/12);
-    th.innerHTML=`${y}-yr return<span class="arr"></span>`;
-    th.title=`price return over the last ${y} year${y===1?"":"s"}`+(state.tbRange?" for the Founders index, over the distribution's window while its filter is on":", from month-end closes");}}
   const H3=1095;
   for(const r of PANEL){
     if(r.masked)continue;
@@ -1820,14 +1797,11 @@ function renderTable(){
     r.ltd=lt?(lt.td||lt.fd):"";r.ltev=lt||null;             /* Traded: sorts by the trade date */
     r.lt=lt?((lt.v&&!lt.fl)?lt.v:0):null;                      /* Last trade: sorts by the amount */
     r.ns=!sold.has(r.tk)&&!!HIST[r.tk];        /* never sold, on a record that exists */
-    r.ret=rets?rets[r.tk]:undefined;            /* return over the chart's window; undefined = not in the index */
   }
   let rows=PANEL.filter(r=>{
     const q=state.q.toLowerCase();
-    const rg=state.tbRange;
-    const inRange=!rg||(r.ret!==undefined&&r.ret!==null&&(rg.lo===null||r.ret>=rg.lo)&&(rg.hi===null||r.ret<rg.hi));
     const inIdx=state._perfFull?(r.tk in (state._perfFull.byTk||{})):(fInfo(r.tk)&&fInfo(r.tk).f==="yes");
-    const fOK=fOnly(r.tk,state.tbF)&&(!state.tbH||r.ns)&&(!state.tbI||inIdx)&&inRange;
+    const fOK=fOnly(r.tk,state.tbF)&&(!state.tbH||r.ns)&&(!state.tbI||inIdx);
     /* SEALED COMPANIES ARE NOT ROWS. The free table is the S&P 500,
        complete; the sealed remainder exists as a stated fact (hero and
        footer), not as 1,635 rows of dashes. A subscriber's panel has no
@@ -1843,7 +1817,7 @@ function renderTable(){
     /* a company with no three-year record sorts below every real change,
        whichever way the column points */
     if(key==="ns"){va=va?1:0;vb=vb?1:0;}
-    if(key==="d3"||key==="mcap"||key==="val"||key==="ret"||key==="lt"){const na=va===null||va===undefined,nb=vb===null||vb===undefined;
+    if(key==="d3"||key==="mcap"||key==="val"||key==="lt"){const na=va===null||va===undefined,nb=vb===null||vb===undefined;
       if(na!==nb)return na?1:-1;if(na)return 0;}
     if(typeof va==="string"||typeof vb==="string")
       return String(va||"").localeCompare(String(vb||""))*dir;
@@ -1869,14 +1843,10 @@ function renderTable(){
         :Math.abs(r.d3)>100
         ?`<span class="pwarn" title="the record's three-year-ago point (${r.d3from.toFixed(1)}%) is not reconciled — a stake above 100% is a walk error, not a holding; the row's current figure stands, this comparison does not">⚠</span>`
         :`<span class="d3 ${r.d3>0.05?"up":r.d3<-0.05?"down":"flat"}" title="ownership ${r.d3from.toFixed(2)}% on ${r.d3base} → ${r.pct.toFixed(2)}% now"><b>${r.d3>=0?"+":"−"}${Math.abs(r.d3).toFixed(Math.abs(r.d3)<1?2:1)}%</b></span>`}</td>
-     <td class="n c-ret">${r.ret===undefined||r.ret===null
-        ?`<span class="nopr" title="${state.tbRange?"not in the Founders index":"no 36 months of prices on file"}">—</span>`
-        :`<span class="d3 ${r.ret>0.5?"up":r.ret<-0.5?"down":"flat"}" title="${(r.ret>=0?"+":"")+r.ret.toFixed(1)}% price return${state.tbRange&&state._perfWin?", "+state._perfWin.from+" to "+state._perfWin.months[state._perfWin.months.length-1]:" over the last 36 months"}"><b>${r.ret>=0?"+":"−"}${Math.abs(r.ret).toFixed(0)}%</b></span>`}</td>
      <td class="c-lt">${r.ltev
         ?`<span class="lt" title="${r.ltev.ceo} — ${r.ltev.lb}, ${fmt(r.ltev.sh)} shares, traded ${r.ltev.td||r.ltev.fd}, filed ${r.ltev.fd}${lagNote(r.ltev)}"><span class="abadge ${evBadge(r.ltev).k}">${evBadge(r.ltev).t}</span><b class="ltv">${r.ltev.v&&!r.ltev.fl?(r.ltev.v>=1e6?money(r.ltev.v):"$"+compact(r.ltev.v)):compact(r.ltev.sh)+" sh"}</b></span>`
         :`<span class="nopr" title="no trade that moved the public-company stake on record">—</span>`}</td>
      <td class="c-ltd">${r.ltev?`<span class="ltd" title="traded ${r.ltev.td||r.ltev.fd}; filed ${r.ltev.fd}${lagNote(r.ltev)}">${r.ltev.td||r.ltev.fd}</span>`:`<span class="nopr">—</span>`}</td>
-     <td class="c c-ns">${r.ns?`<span class="nsy" title="never sold a share that reduced the stake, since the company was public">✓</span>`:`<span class="nopr">·</span>`}</td>
      <td class="c-conf"><span class="conf"><span class="dot ${r.conf}"></span>${r.conf}</span></td>
     </tr>`}).join("");
   const sealedN=PANEL.filter(r=>r.masked).length;
@@ -2911,7 +2881,7 @@ $("#q").addEventListener("keydown",e=>{
 wireSw("hchip",()=>{state.tbH=!state.tbH;renderTable();});
 wireSw("ichip",()=>{state.tbI=!state.tbI;renderTable();});
 document.querySelectorAll(".chip.pc").forEach(c=>c.addEventListener("click",()=>{
-  if(state.pc===c.dataset.pc)return;state.pc=c.dataset.pc;state.distOpen=null;state.tbRange=null;
+  if(state.pc===c.dataset.pc)return;state.pc=c.dataset.pc;state.distOpen=null;
   renderPerf();hit("switch","cohort",state.pc);}));
 wireSw("fchip",()=>{state.tbF=!state.tbF;renderTable();});
 document.querySelectorAll(".bmode").forEach(b=>b.addEventListener("click",()=>{

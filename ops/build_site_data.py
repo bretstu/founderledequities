@@ -39,7 +39,7 @@ LIST_COLS = ["ticker", "cik", "company", "ceo", "pct", "shares",
              "outstanding", "shares_as_of", "confidence", "stake_source",
              "problems", "cautions", "excluded_shares", "excluded_detail",
              "operating_partnership", "flags", "error", "form4_url",
-             "cover_url", "shares_tabled", "masked", "sp", "ret_3y"]
+             "cover_url", "shares_tabled", "masked", "sp"]
 # what a sealed row must not carry: anything that states or bounds the stake
 MASKED_COLS = ("pct", "shares", "form4_url", "cover_url",
                "excluded_shares", "excluded_detail", "shares_tabled")
@@ -60,34 +60,6 @@ def _overlay(base_rows, fresh_path, sp, key="ticker"):
         return base_rows, False
     keep = [r for r in base_rows if r.get(key) not in sp]
     return keep + fresh, True
-
-
-def returns_3y(perf_p: str) -> dict:
-    """TICKER -> price return over the last 36 months, from the monthly
-    closes on disk: close[last] / close[last - 36] - 1, only when both
-    months exist. The same arithmetic the page uses for the index cohort,
-    done once here for every company so the screener shows one number per
-    row and the page carries no extra weight."""
-    closes = {}
-    try:
-        with open(perf_p, encoding="utf-8-sig", newline="") as fh:
-            for r in csv.DictReader(fh):
-                try:
-                    closes.setdefault(r["ticker"].upper(), {})[r["month"]] = float(r["close"])
-                except (KeyError, ValueError):
-                    continue
-    except OSError:
-        return {}
-    spy = closes.get("SPY") or {}
-    months = sorted(spy)
-    if len(months) < 37:
-        return {}
-    end, start = months[-1], months[-37]
-    out = {}
-    for tk, m in closes.items():
-        if start in m and end in m and m[start]:
-            out[tk] = round((m[end] / m[start] - 1) * 100, 2)
-    return out
 
 
 def write_perf_for_chart(perf_p: str, founders_p: str, out_dir: str) -> int:
@@ -119,9 +91,7 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
          fresh_dir=None, perf_p="perf.csv") -> int:
     sp = {r["ticker"] for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
     panel = list(csv.DictReader(open(panel_p, encoding="utf-8-sig")))
-    ret3 = returns_3y(perf_p)
-    for r in panel:
-        r["ret_3y"] = ret3.get((r.get("ticker") or "").upper(), "")
+
     fresh = {}
     if fresh_dir:
         panel, fresh["panel"] = _overlay(
@@ -138,7 +108,7 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
                 masked = 1 if (mask_new and r["ticker"] not in sp
                                and not GENEROUS) else 0
                 row = []
-                for c in LIST_COLS[:-3]:
+                for c in LIST_COLS[:-2]:
                     v = r.get(c, "") or ""
                     if masked and c in MASKED_COLS:
                         v = ""
@@ -148,11 +118,10 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
                 # the free/Pro seam both read it instead of inferring it
                 # from what happens to be masked
                 row.append(1 if r["ticker"] in sp else 0)
-                row.append(r.get("ret_3y", ""))   # price return, public data, every row
                 w.writerow(row)
     write_list(os.path.join(out_dir, "universe.csv"), mask_new=True)
     n_perf = write_perf_for_chart(perf_p, founders_p, out_dir)
-    print(f"  perf.csv (chart cohort)  {n_perf} monthly closes; 3-yr returns for {len(ret3)} companies")
+    print(f"  perf.csv (chart cohort)  {n_perf} monthly closes -- founders and the two benchmarks only")
     write_list(os.path.join(out_dir, "pro", "universe.csv"), mask_new=False)
 
     # ---- founders: fresh S&P labels over the snapshot ----

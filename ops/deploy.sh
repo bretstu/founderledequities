@@ -42,7 +42,6 @@ except (OSError, ValueError):
     print("  perf: no usable perf.csv; fetching"); sys.exit(0)
 want = {r["ticker"] for r in csv.DictReader(open("founders.csv", encoding="utf-8-sig"))
         if (r.get("founder") or "").lower() == "yes"}
-want |= {r["ticker"].upper() for r in csv.DictReader(open("panel.csv", encoding="utf-8-sig")) if r.get("ticker")}
 want |= {"SPY", "RSP"}   # both benchmarks must be on file
 missing = sorted(want - have)
 if missing:
@@ -68,7 +67,7 @@ if newest < datetime.date.today().strftime("%Y-%m"):
 print(f"  perf: current through {newest}, cohort complete; skipping"); sys.exit(1)
 PYGUARD
 then
-  python3 -m fle.cli perf --founders founders.csv --universe panel.csv --out perf.csv \
+  python3 -m fle.cli perf --founders founders.csv --out perf.csv \
     || echo "  perf: fetch failed; keeping the existing perf.csv"
 fi
 

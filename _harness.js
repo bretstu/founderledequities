@@ -358,7 +358,8 @@ const P=runPage();
    assert(P.evPctCell(pre).includes("pre-IPO"),"no percentage against the public-company stake");
    P.EVENTS=[pre];P.renderTable();
    const trow=els["#tbody"]._html;
-   assert(trow.includes("no trade that moved the public-company stake")&&trow.includes('class="nsy"'),"the screener shows no last trade and a never-sold check for a company whose only sale predates registration");
+   assert(trow.includes("no trade that moved the public-company stake"),"the screener shows no last trade for a company whose only sale predates registration");
+   P.state.tbH=true;P.renderTable();assert(/openDrawer\('SPCX'\)/.test(els["#tbody"]._html),"and the Never sold switch keeps it");P.state.tbH=false;
    assert(!P.soldTickers().has("SPCX"),"and it is not a seller");
    assert(P.dayText("2026-06-17",[pre]).includes("sold (pre-IPO)"),"the copy text says pre-IPO");
    P.PANEL=before;P.EVENTS=savedE;}
@@ -389,8 +390,11 @@ const P=runPage();
   assert(!tb.includes('class="spark"'),"no chart preview in the screener -- the number says it, the drawer draws it");
   assert(tb.includes('class="n num c-mc"'),"a market cap column");
   const rowOf=tk=>{const i=tb.indexOf(`onclick="openDrawer('${tk}')"`);const j=tb.indexOf("</tr>",i);return tb.slice(i,j);};
-  assert(rowOf("UPX").includes('class="nsy"')&&!rowOf("DNX").includes('class="nsy"'),"never sold is a check in its own column for the one who never reduced a stake — options cashed don't count");
-  assert(rowOf("NOH").includes('class="nsy"'),"a short record with no sale on file is never-sold too");
+  // NEVER SOLD IS A SWITCH, NOT A COLUMN: a claim you ask for, not one made about everyone
+  assert(!tb.includes('class="nsy"')&&!tb.includes("c-ns"),"no never-sold column in the table");
+  {P.state.tbH=true;P.renderTable();const on=els["#tbody"]._html;
+   assert(on.includes("openDrawer('UPX')")&&on.includes("openDrawer('NOH')")&&!on.includes("openDrawer('DNX')"),"the Never sold switch keeps the one who never reduced a stake and the short record, drops the seller -- options cashed don't count");
+   P.state.tbH=false;P.renderTable();}
   assert(rowOf("DNX").includes('class="ltv"')&&rowOf("DNX").includes("$1M"),"the last trade shows its value beside the badge");
   assert(!tb.includes('class="asof'),"as-of left the table for the drawer and the export");
   assert(rowOf("DNX").includes('class="abadge down"')&&rowOf("DNX").includes("SOLD")&&rowOf("UPX").includes("BOUGHT"),"the last trade that moved the stake, badged");
@@ -538,7 +542,7 @@ const P=runPage();
       const full=big.bins.find(b=>b.items.length===120);
       const panel=P.distPanel(full,big.bins.indexOf(full),big.tint);
       assert((panel.match(/class="dtile"/g)||[]).length===120,"the panel names everyone in the bucket");
-      assert(panel.includes("120 companies")&&panel.includes("Open these in the screener"),"with the count and a way to the screener");
+      assert(panel.includes("120 companies")&&!panel.includes("Open these in the screener"),"with the count; the panel is the drill-down, there is no hand-off");
       const order=[...panel.matchAll(/<b>(T\d+)<\/b>/g)].map(m=>m[1]);
       assert(order[0]==="T0"&&order[119]==="T119","sorted by return, lowest first");
       // a bin that ends at zero is a loss: red, not green
@@ -557,31 +561,14 @@ const P=runPage();
      // the bins scale with the window
      assert([P.perfBins("12"),P.perfBins("36"),P.perfBins("60")].every(e=>e.length===12),"thirteen columns on every window");
      assert(P.perfBins("12").slice(-1)[0]===100&&P.perfBins("36").slice(-1)[0]===300&&P.perfBins("60").slice(-1)[0]===500,"each window's edges spaced for its moves");
-     // the screener follows: a Return column and the index chip
+     // the Founders index chip keeps the cohort
      const savedPanel2=P.PANEL;
-     /* FE is FirstEnergy, a real S&P company: never inject a row the panel already has */
-     P.PANEL=[...savedPanel2,...dist.items.filter(i=>!savedPanel2.some(p=>p.tk===i.tk)).map(i=>({tk:i.tk,co:"Co "+i.tk,ceo:"A Founder",pct:5,sh:1,out:1,val:1e9,conf:"high",ret3:i.ret}))];
-     P.PANEL.forEach(r=>{const it=dist.items.find(i=>i.tk===r.tk);if(it&&(r.ret3===undefined||r.ret3===null))r.ret3=it.ret;});
-     P.state._perfFull=full;P.state.retWin="12";P.state.tbI=true;P.state.q="";P.state.min=0;P.state.tbF=false;P.state.tbH=false;P.state.sort={key:"ret",dir:-1};
-     els["th.h-ret"]=els["th.h-ret"]||el("th.h-ret");
+     P.PANEL=[...dist.items.filter(i=>!savedPanel2.some(p=>p.tk===i.tk)).map(i=>({tk:i.tk,co:"Co "+i.tk,ceo:"A Founder",pct:5,sh:1,out:1,val:1e9,conf:"high"})),...savedPanel2];
+     P.state.tbI=true;P.state.q="";P.state.min=0;P.state.tbF=false;P.state.tbH=false;P.state.sort={key:"pct",dir:-1};
      P.renderTable();
-     assert((els["th.h-ret"]._html||"").includes("1-yr return"),"the column names its own period: "+els["th.h-ret"]._html);
-     const tb=els["#tbody"]._html;
-     assert(/c-ret"><span class="d3 (up|down|flat)"[^>]*><b>[+−]\d+%<\/b>/.test(tb),"a Return column with a signed figure");
-     const shown=[...tb.matchAll(/onclick="openDrawer\('([A-Z0-9.-]+)'\)"/g)].map(m=>m[1]);
-     const uniq=new Set(shown);
-     assert(uniq.size===dist.items.length&&shown.every(tk=>dist.items.some(i=>i.tk===tk)),"the Founders index chip keeps only constituents: "+[...uniq].join(","));
-     P.state.tbI=false;P.renderTable();
-     assert(els["#tbody"]._html.includes("no 36 months of prices on file"),"a company without three years of prices shows a dash in the column");
-     // a bin click is a real filter: the bucket, by name, with a chip to clear it
-     els["#rangechip"]=els["#rangechip"]||el("#rangechip");
-     P.state.tbI=true;P.state.tbRange={lo:40,hi:null};P.state.retWin="12";P.renderTable();
-     const inb=[...els["#tbody"]._html.matchAll(/onclick="openDrawer\('([A-Z0-9.-]+)'\)"/g)].map(m=>m[1]);
-     assert(inb.length>0&&inb.every(tk=>{const it=dist.items.find(i=>i.tk===tk);return it&&it.ret>=40;}),"the range keeps only the bucket's companies: "+inb.join(","));
-     assert(/\d-yr return above \+40%/.test(els["#rangechip"]._html),"and the chip names the bucket and its period: "+els["#rangechip"]._html);
-     P.state.tbRange={lo:0,hi:10};P.renderTable();
-     assert(!/onclick="openDrawer/.test(els["#tbody"]._html),"an empty bucket shows no rows");
-     P.state.tbRange=null;P.state.tbI=false;
+     const shown=[...els["#tbody"]._html.matchAll(/onclick="openDrawer\('([A-Z0-9.-]+)'\)"/g)].map(m=>m[1]);
+     assert(shown.length>0&&shown.every(tk=>dist.items.some(i=>i.tk===tk)),"the Founders index chip keeps only constituents");
+     P.state.tbI=false;
      P.PANEL=savedPanel2;P.state.sort={key:"pct",dir:-1};}
     // ---- the cohort toggle: a choice, the same for every reader ----
     {const savedPanel3=P.PANEL;
