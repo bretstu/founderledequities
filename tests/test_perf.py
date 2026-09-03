@@ -33,9 +33,10 @@ def test_share_class_tickers_are_spelled_polygons_way():
 
 
 def test_a_ticker_the_feed_lacks_is_reported_not_fatal():
-    feed = _Feed({"SPY": [(JAN, 470.0)], "TSLA": [(JAN, 200.0)]})
+    feed = _Feed({"SPY": [(JAN, 470.0)], "RSP": [(JAN, 160.0)], "TSLA": [(JAN, 200.0)]})
     perf = build_perf(feed, ["TSLA", "GHOST"], "k")
     assert "TSLA" in perf.series and "SPY" in perf.series
+    assert "RSP" in perf.series, "the equal-weight S&P rides along as the second benchmark"
     assert perf.missing == ["GHOST"]
     assert perf.ok and not perf.note
 

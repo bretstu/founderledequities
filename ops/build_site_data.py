@@ -39,7 +39,7 @@ LIST_COLS = ["ticker", "cik", "company", "ceo", "pct", "shares",
              "outstanding", "shares_as_of", "confidence", "stake_source",
              "problems", "cautions", "excluded_shares", "excluded_detail",
              "operating_partnership", "flags", "error", "form4_url",
-             "cover_url", "masked"]
+             "cover_url", "masked", "sp"]
 # what a sealed row must not carry: anything that states or bounds the stake
 MASKED_COLS = ("pct", "shares", "form4_url", "cover_url",
                "excluded_shares", "excluded_detail")
@@ -82,12 +82,16 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
                 masked = 1 if (mask_new and r["ticker"] not in sp
                                and not GENEROUS) else 0
                 row = []
-                for c in LIST_COLS[:-1]:
+                for c in LIST_COLS[:-2]:
                     v = r.get(c, "") or ""
                     if masked and c in MASKED_COLS:
                         v = ""
                     row.append(v)
                 row.append(masked)
+                # S&P membership is public; the chart's cohort toggle and
+                # the free/Pro seam both read it instead of inferring it
+                # from what happens to be masked
+                row.append(1 if r["ticker"] in sp else 0)
                 w.writerow(row)
     write_list(os.path.join(out_dir, "universe.csv"), mask_new=True)
     write_list(os.path.join(out_dir, "pro", "universe.csv"), mask_new=False)
@@ -98,10 +102,12 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     if fresh_dir:
         f_rows, fresh["founders"] = _overlay(
             f_rows, os.path.join(fresh_dir, "founders.csv"), sp)
-    # free labels for the free companies; the sealed remainder's founder
-    # status is itself part of what the seal covers
-    for path, rows in (("founders.csv",
-                        [r for r in f_rows if r.get("ticker") in sp or GENEROUS]),
+    # FOUNDER LABELS ARE PUBLIC, EVERYWHERE. A sealed company's page shows
+    # the badge, and perf.csv at the root lists the cohort's tickers, so
+    # the label was never behind the seal; only the stake is. Both files
+    # carry every label, and the chart's "all founder-led" cohort draws
+    # the same for a free reader as for a subscriber.
+    for path, rows in (("founders.csv", f_rows),
                        (os.path.join("pro", "founders.csv"), f_rows)):
         with open(os.path.join(out_dir, path), "w", newline="",
                   encoding="utf-8") as fh:

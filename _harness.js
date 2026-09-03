@@ -36,6 +36,7 @@ global.fetch=async(name)=>{
     const m=i=>`20${23+Math.floor(i/12)}-${String(i%12+1).padStart(2,"0")}`;
     for(let i=0;i<24;i++){
       rows+=`SPY,${m(i)},${(100*Math.pow(1.2,i/23)).toFixed(4)}\n`;
+      rows+=`RSP,${m(i)},${(100*Math.pow(1.1,i/23)).toFixed(4)}\n`;
       for(const tk of ["FA","FB","FC","FD","FE"])
         rows+=`${tk},${m(i)},${(50*Math.pow(2,i/23)).toFixed(4)}\n`;
       if(i>=12)rows+=`LATE,${m(i)},${(10*Math.pow(2,(i-12)/11)).toFixed(4)}\n`;
@@ -61,7 +62,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,nFilings,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,soldTickers,sparkline,lastTrades,exportTable,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,perfReturns,perfBins,distChart,renderDist,distCrown,distPanel,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,nFilings,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,soldTickers,sparkline,lastTrades,exportTable,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,perfChart,renderPerf,perfReturns,perfBins,distChart,renderDist,distCrown,distPanel,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -473,8 +474,9 @@ const P=runPage();
     // "no") evict fixture tickers and shift the >=5-names start
     const savedF=P.FOUNDERS;
     const pinned={};
-    for(const tk in P.PERF){if(tk!=="SPY")pinned[tk]={f:"yes",ev:"",src:""};}
+    for(const tk in P.PERF){if(tk!=="SPY"&&tk!=="RSP")pinned[tk]={f:"yes",ev:"",src:""};}
     P.FOUNDERS=pinned;
+    P.state.pc="all";   /* the existing checks are about the whole cohort */
     const full=P.perfSeries();
     assert(full&&full.months.length===24,"perf chains all 24 months: "+(full&&full.months.length));
     const endF=full.founders[full.founders.length-1],endS=full.spy[full.spy.length-1];
@@ -494,7 +496,7 @@ const P=runPage();
       "a window rebases both lines to $10,000 at its own start");
     P.renderPerf();
     const svg=els["#perfchart"]._html;
-    assert((svg.match(/<path /g)||[]).length===2,"two lines drawn");
+    assert((svg.match(/<path /g)||[]).length===3,"three lines drawn: founders, SPY, RSP");
     assert(svg.includes("Founders index")&&svg.includes("S&amp;P 500 (SPY)"),
       "end labels name the lines, not a dollar figure first");
     assert(P.state.pw==="60","a five-year record defaults to the 5-year preset, max chip hidden");
@@ -566,6 +568,24 @@ const P=runPage();
      assert(!/onclick="openDrawer/.test(els["#tbody"]._html),"an empty bucket shows no rows");
      P.state.tbRange=null;P.state.tbI=false;
      P.PANEL=savedPanel2;P.state.sort={key:"pct",dir:-1};}
+    // ---- the cohort toggle: a choice, the same for every reader ----
+    {const savedPanel3=P.PANEL;
+     /* the five long-lived founders are S&P members; the late entrant is not */
+     /* injected rows go FIRST: a real panel may already hold FE (FirstEnergy), and find() must hit the test row */
+     P.PANEL=[...["FA","FB","FC","FD","FE"].map(tk=>({tk,co:tk,ceo:"a",pct:5,sh:1,out:1,val:1,conf:"high",sp:true})),...savedPanel3];
+     P.state.pc="sp";const sp=P.perfSeries();
+     assert(sp&&sp.count===5,"S&P 500 founders: only the cohort's S&P members: "+(sp&&sp.count));
+     P.state.pc="all";const al=P.perfSeries();
+     assert(al.count>sp.count,"All founder-led: the whole cohort: "+al.count);
+     assert(al.rsp&&Math.abs(al.rsp[al.rsp.length-1]-11000)<150,"the equal-weight S&P rides along as a third line: $"+al.rsp[al.rsp.length-1].toFixed(0));
+     const svg3=P.perfChart(al);
+     assert(svg3.includes("S&amp;P equal weight (RSP)")&&svg3.includes("stroke-dasharray"),"drawn dashed and labelled");
+     P.renderPerf();
+     assert(els["#perfnote"]._html.includes("dividends excluded")&&els["#perfnote"]._html.includes("equal weight (RSP)"),"the footnote states the method precisely and names both benchmarks");
+     assert(els["#perfsub"]._html.includes("all ")||els["#perfsub"].textContent.includes("all "),"the subtitle names the cohort");
+     P.state.pc="sp";P.renderPerf();
+     assert((els["#perfsub"].textContent||els["#perfsub"]._html).includes("in the S&P 500"),"and says S&P 500 when that is the cohort");
+     P.state.pc="all";P.PANEL=savedPanel3;P.renderPerf();}
     assert(els["#perfnote"]._html.includes("portrait, not a strategy"),
       "the caveat ships with the chart");
     P.FOUNDERS=savedF;

@@ -231,6 +231,7 @@ td.src a:hover{color:var(--blue)}
 .c-lt .ns{display:inline-block;font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);background:var(--wash);border-radius:4px;padding:2px 6px;margin-top:4px}
 .c-lt .lt{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .chip.export{margin-left:auto}
+.cohort{display:inline-flex;gap:6px;margin-right:14px;padding-right:14px;border-right:1px solid var(--line)}
 .chip.rangechip{background:var(--ink);color:#fff;border-color:var(--ink)}
 .chip.rangechip .x{margin-left:6px;opacity:.7}
 .c-lt .ltd{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
@@ -700,6 +701,10 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="shead">
     <h2>Founders against the index</h2>
     <div class="perfctl">
+      <span class="cohort">
+        <button class="chip pc on" data-pc="sp" title="the founder-led companies in the S&amp;P 500">S&amp;P 500 founders</button>
+        <button class="chip pc" data-pc="all" title="every founder-led US company worth $1B or more">All founder-led</button>
+      </span>
       <button class="chip pw on" data-pw="" id="pwmax">Since 2016</button>
       <button class="chip pw" data-pw="60">5 years</button>
       <button class="chip pw" data-pw="36">3 years</button>
@@ -884,7 +889,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,tbRange:null,distOpen:null,pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
+const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,tbRange:null,distOpen:null,pc:"sp",pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -1015,6 +1020,7 @@ function mapPanel(recs){
     /* a universe row outside the free tier: the person and the badge are
        public, the stake sits behind the seal */
     masked:String(r.masked||"")==="1",
+    sp:String(r.sp||"")==="1",
     /* "SC 13G/A 2024-02-13" when the figure is a dated schedule stake,
        not a Section 16 sum -- the row must say so */
     src13:r.stake_source||"",
@@ -1282,17 +1288,22 @@ function perfSeries(){
   const spy=PERF.SPY;if(!spy||spy.length<2)return null;
   const months=spy.map(p=>p[0]);
   const byTk={};
-  for(const tk in PERF){if(tk==="SPY")continue;
+  for(const tk in PERF){if(tk==="SPY"||tk==="RSP")continue;
     /* perf.csv keeps every month ever fetched (merge_history), so a
        company later reclassified founder->no would linger as a ghost in
        the average. The live founder labels are the cohort's source of
        truth; the file is just its price memory. */
     if(state.live.founders&&FOUNDERS[tk]&&FOUNDERS[tk].f&&FOUNDERS[tk].f!=="yes")continue;
-    /* the index follows the table's rule: free charts the S&P founder
-       cohort, Pro the universe -- a sealed company contributes no line
-       anywhere, aggregate or not */
+    /* THE COHORT IS A CHOICE, THE SAME FOR EVERY READER. "S&P 500
+       founders" is the founder-led members of the S&P; "All founder-led"
+       is every founder-led company worth $1B or more. Monthly closes are
+       public and the index is an aggregate, so nothing here waits on the
+       seal; what Pro buys is the stakes, not the chart. (An earlier
+       version cut the cohort to the S&P for free readers by skipping
+       masked rows, and a comment here still said so long after the
+       one-list rebuild; membership is now an explicit flag.) */
     const _pr=PANEL.find(p=>p.tk===tk);
-    if(_pr&&_pr.masked)continue;
+    if(state.pc==="sp"&&!(_pr&&_pr.sp))continue;
     byTk[tk]=Object.fromEntries(PERF[tk]);}
   const fRet=[],names=Object.keys(byTk);
   for(let i=1;i<months.length;i++){
@@ -1305,13 +1316,15 @@ function perfSeries(){
   }
   let s0=0;while(s0<fRet.length&&(fRet[s0].r===null||fRet[s0].n<5))s0++;
   if(fRet.length-s0<2)return null;
-  const out={months:[months[s0]],founders:[PERF_BASE],spy:[PERF_BASE],from:months[s0],
-             count:names.length,byTk,spyMap:Object.fromEntries(spy)};
+  const rsp=PERF.RSP&&PERF.RSP.length>1?Object.fromEntries(PERF.RSP):null;
+  const out={months:[months[s0]],founders:[PERF_BASE],spy:[PERF_BASE],rsp:rsp?[PERF_BASE]:null,from:months[s0],
+             count:names.length,byTk,spyMap:Object.fromEntries(spy),rspMap:rsp};
   for(let i=s0;i<fRet.length;i++){
     out.months.push(fRet[i].m);
     out.founders.push(out.founders[out.founders.length-1]*(1+(fRet[i].r||0)));
     /* spy month i of fRet is the move from close i to close i+1 */
     out.spy.push(out.spy[out.spy.length-1]*(spy[i+1]?spy[i+1][1]/spy[i][1]:1));
+    if(out.rsp){const a=rsp[months[i]],b=rsp[months[i+1]];out.rsp.push(out.rsp[out.rsp.length-1]*(a&&b?b/a:1));}
   }
   return out;
 }
@@ -1320,12 +1333,12 @@ function perfWindow(full,monthsBack){
   const k=Math.max(0,full.months.length-1-(+monthsBack));
   const rb=(arr)=>arr.slice(k).map(v=>v/arr[k]*PERF_BASE);
   return {months:full.months.slice(k),founders:rb(full.founders),
-          spy:rb(full.spy),from:full.months[k],count:full.count,byTk:full.byTk,spyMap:full.spyMap};
+          spy:rb(full.spy),rsp:full.rsp?rb(full.rsp):null,from:full.months[k],count:full.count,byTk:full.byTk,spyMap:full.spyMap,rspMap:full.rspMap};
 }
 function perfChart(d,{w=940,h=300}={}){
-  const pad={l:52,r:150,t:16,b:26};
+  const pad={l:52,r:172,t:16,b:26};
   const n=d.months.length;
-  const all=[...d.founders,...d.spy];
+  const all=[...d.founders,...d.spy,...(d.rsp||[])];
   let y0=Math.min(...all),y1=Math.max(...all);
   const yr=(y1-y0)||1;y0=Math.max(0,y0-yr*.08);y1+=yr*.08;
   const X=i=>pad.l+i/((n-1)||1)*(w-pad.l-pad.r);
@@ -1338,22 +1351,26 @@ function perfChart(d,{w=940,h=300}={}){
   /* the label names the line first -- "$24,400 Founders" read like the
      founders own $24,400. Name on top, value beneath, pushed apart when
      the lines finish close together. */
-  let yF=Y(endF),yS=Y(endS);
-  const minGap=34;
-  if(Math.abs(yF-yS)<minGap){
-    const mid=(yF+yS)/2,sgn=yF<=yS?1:-1;
-    yF=mid-sgn*minGap/2;yS=mid+sgn*minGap/2;
-  }
+  const endR=d.rsp?d.rsp[d.rsp.length-1]:null;
+  /* three labels, spread apart when the lines finish close together */
+  const labs=[{k:"F",y:Y(endF)},{k:"S",y:Y(endS)}];if(endR!==null)labs.push({k:"R",y:Y(endR)});
+  labs.sort((a,b)=>a.y-b.y);const minGap=30;
+  for(let i=1;i<labs.length;i++)if(labs[i].y-labs[i-1].y<minGap)labs[i].y=labs[i-1].y+minGap;
+  for(let i=labs.length-2;i>=0;i--)if(labs[i+1].y-labs[i].y<minGap)labs[i].y=labs[i+1].y-minGap;
+  const yF=labs.find(l=>l.k==="F").y,yS=labs.find(l=>l.k==="S").y,yR=endR!==null?labs.find(l=>l.k==="R").y:null;
   return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Founders index against SPY">
    ${[y0+(y1-y0)*.1,(y0+y1)/2,y1-(y1-y0)*.1].map(v=>`<line x1="${pad.l}" x2="${w-pad.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#F0F0EB"/><text x="${pad.l-8}" y="${Y(v)+3.5}" text-anchor="end" font-family="IBM Plex Mono" font-size="10" fill="#7A7E84">${money(v)}</text>`).join("")}
    ${yrs.filter((_,i)=>i%step===0).map(y=>{const i=d.months.findIndex(m=>m.slice(0,4)===y);
      if(i<0)return"";return `<text x="${X(i)}" y="${h-8}" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7A7E84">${y}</text>`}).join("")}
+   ${d.rsp?`<path d="${line(d.rsp)}" fill="none" stroke="#A9ADB3" stroke-width="1.5" stroke-dasharray="4 3" stroke-linejoin="round"/>`:""}
    <path d="${line(d.spy)}" fill="none" stroke="#7A7E84" stroke-width="1.7" stroke-linejoin="round"/>
    <path d="${line(d.founders)}" fill="none" stroke="#1B34E0" stroke-width="2.1" stroke-linejoin="round"/>
    <text x="${w-pad.r+8}" y="${yF-2}" font-family="IBM Plex Mono" font-size="11.5" font-weight="600" fill="#1B34E0">Founders index</text>
    <text x="${w-pad.r+8}" y="${yF+11}" font-family="IBM Plex Mono" font-size="10.5" fill="#1B34E0">${money(endF)}</text>
    <text x="${w-pad.r+8}" y="${yS-2}" font-family="IBM Plex Mono" font-size="11.5" fill="#55585E">S&amp;P 500 (SPY)</text>
    <text x="${w-pad.r+8}" y="${yS+11}" font-family="IBM Plex Mono" font-size="10.5" fill="#7A7E84">${money(endS)}</text>
+   ${d.rsp?`<text x="${w-pad.r+8}" y="${yR-2}" font-family="IBM Plex Mono" font-size="11.5" fill="#8B8F95">S&amp;P equal weight (RSP)</text>
+   <text x="${w-pad.r+8}" y="${yR+11}" font-family="IBM Plex Mono" font-size="10.5" fill="#A9ADB3">${money(endR)}</text>`:""}
   </svg>`;
 }
 /* INSIDE THE INDEX. The line says "beat the market"; it cannot say whether
@@ -1531,13 +1548,15 @@ function renderPerf(){
   const n=d.months.length;
   const yrsSpan=(n-1)/12;
   const cagr=a=>((Math.pow(a[a.length-1]/PERF_BASE,1/Math.max(yrsSpan,1/12))-1)*100);
-  $("#perfsub").textContent=`Growth of $10,000, ${d.from} to ${d.months[n-1]} — `
-    +`an equal-weight index of the ${d.count} founder-led companies against the S&P 500 (via SPY)`;
+  document.querySelectorAll(".chip.pc").forEach(c=>c.classList.toggle("on",c.dataset.pc===state.pc));
+  const who=state.pc==="sp"?`the ${d.count} founder-led companies in the S&P 500`:`all ${d.count} founder-led US companies worth $1B or more`;
+  $("#perfsub").textContent=`Growth of $10,000, ${d.from} to ${d.months[n-1]} — an equal-weight index of ${who}, against the S&P 500`;
   $("#perfchart").innerHTML=perfChart(d);
   renderDist(d);
   state._perfWin=d;renderTable();   /* the screener's Return column follows the window */
-  $("#perfnote").innerHTML=`Equal weight, rebalanced monthly; adjusted month-end closes; companies enter when their price history begins. `
-    +`Founders: ${cagr(d.founders).toFixed(1)}%/yr · S&amp;P 500: ${cagr(d.spy).toFixed(1)}%/yr over this window. `
+  $("#perfnote").innerHTML=`Equal weight, rebalanced monthly; split-adjusted month-end closes, dividends excluded on every line; companies enter when their price history begins. `
+    +`Founders: ${cagr(d.founders).toFixed(1)}%/yr · S&amp;P 500 (SPY, cap-weighted): ${cagr(d.spy).toFixed(1)}%/yr`
+    +(d.rsp?` · S&amp;P 500 equal weight (RSP): ${cagr(d.rsp).toFixed(1)}%/yr — the fair comparison for an equal-weight cohort`:"")+` over this window. `
     +`<b>A portrait, not a strategy:</b> this applies <i>today's</i> founder-led cohort backward — companies whose founders left, or that left the index, aren't represented, which flatters the line. `
     +`<a href="about.html">How every number is made</a>.`;
 }
@@ -2833,6 +2852,9 @@ $("#q").addEventListener("keydown",e=>{
 });
 wireSw("hchip",()=>{state.tbH=!state.tbH;renderTable();});
 wireSw("ichip",()=>{state.tbI=!state.tbI;renderTable();});
+document.querySelectorAll(".chip.pc").forEach(c=>c.addEventListener("click",()=>{
+  if(state.pc===c.dataset.pc)return;state.pc=c.dataset.pc;state.distOpen=null;state.tbRange=null;
+  renderPerf();hit("switch","cohort",state.pc);}));
 wireSw("fchip",()=>{state.tbF=!state.tbF;renderTable();});
 document.querySelectorAll(".bmode").forEach(b=>b.addEventListener("click",()=>{
   state.bmode=b.dataset.mode;renderBars();

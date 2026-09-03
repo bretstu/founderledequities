@@ -60,8 +60,9 @@ try:
     newest = max(r["month"] for r in csv.DictReader(open("perf.csv", encoding="utf-8-sig")))
 except (OSError, ValueError):
     print("  perf: no usable perf.csv; fetching"); sys.exit(0)
-want = {r["ticker"] for r in csv.DictReader(open("site-data/founders.csv", encoding="utf-8-sig"))
+want = {r["ticker"] for r in csv.DictReader(open("site-data/pro/founders.csv", encoding="utf-8-sig"))
         if (r.get("founder") or "").lower() == "yes"}
+want |= {"SPY", "RSP"}   # both benchmarks must be on file
 missing = sorted(want - have)
 if missing:
     # a ticker Polygon genuinely has nothing for would otherwise trigger
@@ -86,7 +87,7 @@ if newest < datetime.date.today().strftime("%Y-%m"):
 print(f"  perf: current through {newest}, cohort complete; skipping"); sys.exit(1)
 PYGUARD
 then
-  python3 -m fle.cli perf --founders site-data/founders.csv --out perf.csv \
+  python3 -m fle.cli perf --founders site-data/pro/founders.csv --out perf.csv \
     || echo "  perf: fetch failed; keeping the existing perf.csv"
 fi
 
@@ -110,6 +111,13 @@ fi
 
 # ---- 2. free tier, at the root: the generator's output plus prices ----
 cp -r site-data/. public/
+# ---- 3. the HTML says what the page says ----
+# The hero, the stat strip and the top ten of the leaderboard are written
+# into public/index.html as real markup, so a fetch without scripts (an
+# assistant, a crawler, the first paint) reads tonight's numbers, not the
+# placeholder. The script redraws them on load.
+python3 ops/stamp_static.py panel.csv "$SP_LIST" prices.csv founders.csv public/index.html
+
 # ---- 3a. one page per company, at its own address ----
 # company.js and site.css are extracted from index.html here, so the pages
 # and the home page share one source for every rule; sitemap.xml lists them.

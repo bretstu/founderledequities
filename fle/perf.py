@@ -126,11 +126,19 @@ def merge_history(stored: dict, fresh: dict) -> dict:
     return out
 
 
+BENCHMARKS = ("SPY", "RSP")   # the S&P 500 cap-weighted, and equal-weighted
+
+
 def build_perf(client, founder_tickers, api_key: str,
                benchmark: str = "SPY", start: str = "2016-01-01",
                on_step=None) -> Perf:
+    """Monthly closes for the cohort and BOTH benchmarks. The founders line
+    is equal-weight, so the fair comparison is the equal-weight S&P (RSP)
+    beside the cap-weighted one (SPY); a reader can then see how much of
+    the gap is founders and how much is weighting."""
     perf = Perf(start=start)
-    todo = [benchmark] + sorted(set(t.upper() for t in founder_tickers))
+    bench = [benchmark] + [b for b in BENCHMARKS if b != benchmark]
+    todo = bench + sorted(set(t.upper() for t in founder_tickers))
     for i, tk in enumerate(todo, 1):
         if on_step:
             on_step(i, len(todo), tk)
