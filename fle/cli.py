@@ -707,10 +707,17 @@ def cmd_history(args) -> int:
     w = csv.DictWriter(fh, fieldnames=cols)
     w.writeheader()
 
+    # A CURATED ADDITION REACHES THE RECORD TOO. The band says 46.04% and the
+    # chart beneath it must not end at 36.16% (see history.apply_additions_to_series).
+    _excl = read_exclusions(getattr(args, "exclusions", None))
+    from .history import apply_additions_to_series
+
     def emit(rows: list) -> None:
         nonlocal n_rows
         if not rows:
             return
+        if hasattr(_excl, "additions_for"):
+            apply_additions_to_series(rows, _excl.additions_for(rows[0].get("ticker") or ""))
         mark_restated_rows(rows)
         for r in rows:
             w.writerow({k: " ".join(str(r.get(k, "")).split()) for k in cols})

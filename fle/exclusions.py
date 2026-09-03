@@ -56,12 +56,13 @@ RULES FOR ENTRIES.
 from __future__ import annotations
 
 import csv
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
 DEFAULT = "universe/exclusions.csv"
 
-COLUMNS = ["cik", "ticker", "security", "direct", "reason", "source", "shares"]
+COLUMNS = ["cik", "ticker", "security", "direct", "reason", "source", "shares", "owner_cik", "since"]
 
 
 @dataclass(frozen=True)
@@ -73,6 +74,8 @@ class Exclusion:
     reason: str = ""
     source: str = ""
     shares: float | None = None    # set: an ADDITION the tables leave out; unset: an exclusion
+    owner_cik: str = ""            # an addition belongs to a PERSON; it applies only to that owner's row
+    since: str = ""                # an addition applies from this date (the filing that stated it)
 
     @property
     def is_addition(self) -> bool:
@@ -129,11 +132,18 @@ def read_exclusions(path: str | None = None) -> Exclusions:
                 if not (row.get("reason") or "").strip():
                     # an addition's reason IS the sentence it came from
                     raise ValueError(f"{p}: {row.get('ticker') or cik} adds shares without quoting the filing")
+                if not (row.get("owner_cik") or "").strip().isdigit():
+                    # a PERSON holds the shares; a new chief executive must not inherit them
+                    raise ValueError(f"{p}: {row.get('ticker') or cik} adds shares without the owner's CIK")
+                if not re.match(r"\d{4}-\d{2}-\d{2}$", (row.get("since") or "").strip()):
+                    raise ValueError(f"{p}: {row.get('ticker') or cik} adds shares without a since date (the filing that stated them)")
             out.by_cik.setdefault(str(int(cik)), []).append(Exclusion(
                 cik=str(int(cik)),
                 ticker=(row.get("ticker") or "").strip().upper(),
                 security=(row.get("security") or "").strip(),
                 direct=(row.get("direct") or "").strip().upper(),
                 reason=(row.get("reason") or "").strip(),
-                source=src, shares=shares))
+                source=src, shares=shares,
+                owner_cik=str(int(row.get("owner_cik"))) if shares is not None else "",
+                since=(row.get("since") or "").strip()))
     return out

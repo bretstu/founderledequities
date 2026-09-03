@@ -197,7 +197,14 @@ def apply_additions(row: dict, adds: list) -> None:
     from .ledger import title_letter
     direct = set((row.get("direct_classes") or "").split("|")) - {""}
     live, notes = [], []
+    owner = str(int(row["owner_cik"])) if str(row.get("owner_cik") or "").strip().isdigit() else ""
     for a in adds:
+        if a.owner_cik and a.owner_cik != owner:
+            # A DIFFERENT PERSON HOLDS THIS ROW. The shares were stated by the
+            # person named in the entry; a successor does not inherit them.
+            notes.append(f"addition of {int(a.shares):,} shares not applied: it belongs to owner CIK "
+                         f"{a.owner_cik}, this row is {owner or 'unknown'} -- settle universe/exclusions.csv")
+            continue
         # the entry's class, read by the same rule the walk reads filing titles with
         tl = title_letter((a.security or "").split("(")[0])
         sec = f"{tl[0]}:{tl[1]}" if tl else (a.security or "").strip().lower()

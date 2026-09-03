@@ -680,3 +680,26 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
             groups=len(groups),
             classes="|".join(sorted(members)) if members else ""))
     return hist
+
+
+def apply_additions_to_series(rows: list, adds: list) -> None:
+    """A curated addition (fle/exclusions.py) reaches the record, not just
+    the panel row: from the entry's `since` date, the shares are added to
+    every point of that owner's series and the percent recomputed over the
+    point's own denominator, so the chart beneath the band ends where the
+    band says. Points before the date, and other owners' points, are left
+    alone."""
+    for a in adds or []:
+        for r in rows:
+            if a.owner_cik and str(r.get("owner_cik") or "").lstrip("0") != a.owner_cik.lstrip("0"):
+                continue
+            if (r.get("date") or "") < a.since:
+                continue
+            try:
+                sh = float(r.get("shares_split_adjusted") or r.get("shares") or 0) + float(a.shares)
+                r["shares_split_adjusted"] = sh
+                out = float(r.get("outstanding") or 0)
+                if out:
+                    r["pct"] = round(100.0 * sh / out, 4)
+            except (TypeError, ValueError):
+                continue
