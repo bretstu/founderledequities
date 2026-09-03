@@ -546,10 +546,13 @@ const P=runPage();
       assert(tints[z]==="194"&&tints[z+1]==="11","the -10% to 0% box is red and the 0% to +10% box is green");}
      els["#perfdist"]=els["#perfdist"]||el("#perfdist");
      P.renderDist(d);
-     assert(els["#perfdist"]._html.includes("beat the S&amp;P 500 over the same months"),"the caption says how many beat the benchmark, each over its own months");
-     assert(els["#perfdist"]._html.includes("joined during the window"),"and how many joined during the window");
-     assert(!els["#perfdist"]._html.includes("too recently"),"no 'too recently' bucket: every constituent is in a bin");
-     assert(!/fill-opacity="0.55"/.test(els["#perfdist"]._html)&&/<circle /.test(els["#perfdist"]._html)&&els["#perfdist"]._html.includes('class="dotkey"'),"an entrant's tile is marked with a dot, and the caption carries the key");
+     {const h=els["#perfdist"]._html;
+      assert(h.includes('class="disth"')&&h.indexOf('class="disth"')<h.indexOf("<svg"),"a title above the histogram");
+      assert(h.includes("beat the S&amp;P 500 over the same months")&&h.indexOf("distsub")<h.indexOf("<svg"),"one line of context above it");
+      assert(h.includes('class="distkey"')&&h.indexOf("distkey")>h.indexOf("</svg>"),"legend and notes below it");
+      assert(h.includes("joined the index during the window")&&h.includes('class="dot"'),"the legend explains the dot");
+      assert(!h.includes("too recently"),"no 'too recently' bucket: every constituent is in a bin");
+      assert(/<circle /.test(h),"an entrant's tile is marked with a dot");}
      // the bins scale with the window
      assert([P.perfBins("12"),P.perfBins("36"),P.perfBins("60")].every(e=>e.length===12),"thirteen columns on every window");
      assert(P.perfBins("12").slice(-1)[0]===100&&P.perfBins("36").slice(-1)[0]===300&&P.perfBins("60").slice(-1)[0]===500,"each window's edges spaced for its moves");
