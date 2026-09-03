@@ -360,6 +360,11 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     # (fle/exclusions.py) exists because a filer left a directly held class
     # out of the tables; the day a table reports it, the tables win and the
     # addition suspends. Vehicle keys are (direct, nature); "D" is direct.
+    # Recorded as the ledger's own designator ("class:B", "series:A",
+    # ":" for an undesignated common) so that "Class B", "Class B Common
+    # Stock" and "Restricted Class B Common Stock, par value $0.001" are
+    # one class to the guard, exactly as they are one class to the walk.
+    from .ledger import title_letter
     direct = []
     for g in led.groups.values():
         held = 0.0
@@ -367,7 +372,8 @@ def build(client, cik: int, company: str = "", ticker: str = "",
             if isinstance(v, tuple) and v and v[0] == "D":
                 held += n or 0.0
         if held > 0:
-            direct.append(g.security.strip().lower())
+            tl = title_letter(g.security)
+            direct.append(f"{tl[0]}:{tl[1]}" if tl else g.security.strip().lower())
     rec.direct_classes = "|".join(sorted(set(direct)))
     rec.filings_read = led.filings_read
     rec.settled = led.settled

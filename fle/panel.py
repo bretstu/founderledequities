@@ -139,6 +139,16 @@ def feed_fingerprint(client, cik: int, owner_cik=None) -> str:
 SCHEMA_FIELDS = ("remarks", "direct_classes")
 
 
+def _addition_current(row: dict, exclusions) -> bool:
+    """A carried row keeps the addition it was given; if the curated file's
+    entry for its ticker has since changed (or been added, or removed), the
+    row is stale and walks again, so an edit to the file takes effect the
+    next night without anyone forcing it."""
+    adds = exclusions.additions_for(row.get("ticker") or "") if exclusions else []
+    want = "|".join(sorted(f"{a.ticker}:{int(a.shares)}:{a.source}" for a in adds))
+    return (row.get("addition_key") or "") == want
+
+
 def _reusable(row: dict) -> bool:
     """A prior row worth carrying: it produced a figure, settled, carries
     the fingerprint that says what it was computed from, and was computed
@@ -184,10 +194,13 @@ def apply_additions(row: dict, adds: list) -> None:
         return
     caut = row.get("cautions") or ""
     remark = (row.get("remarks") or "").strip()
+    from .ledger import title_letter
     direct = set((row.get("direct_classes") or "").split("|")) - {""}
     live, notes = [], []
     for a in adds:
-        sec = (a.security or "").split("(")[0].strip().lower()
+        # the entry's class, read by the same rule the walk reads filing titles with
+        tl = title_letter((a.security or "").split("(")[0])
+        sec = f"{tl[0]}:{tl[1]}" if tl else (a.security or "").strip().lower()
         if sec and sec in direct:
             notes.append(f"addition of {int(a.shares):,} shares suspended: the tables now report "
                          f"{a.security} held directly -- read the filing and settle universe/exclusions.csv")
@@ -209,6 +222,7 @@ def apply_additions(row: dict, adds: list) -> None:
             except (TypeError, ValueError, ZeroDivisionError):
                 pass
         row["stake_source"] = "manual"
+        row["addition_key"] = "|".join(sorted(f"{a.ticker}:{int(a.shares)}:{a.source}" for a in live))
         for a in live:
             notes.append(f"includes {int(a.shares):,} shares of {a.security or 'stock'} the filings disclose "
                          f"in a remark rather than a table; {int(base):,} in the tables. Source: {a.source}")
@@ -277,7 +291,7 @@ def run_panel(client, members, checkpoint: str, redo: str = "none",
         i, m = item
         old = prior.get(m.cik)
         fp = None
-        if old is not None and _reusable(old):
+        if old is not None and _reusable(old) and _addition_current(old, exclusions):
             try:
                 fp = feed_fingerprint(client, m.cik, old.get("owner_cik"))
             except Stopped:

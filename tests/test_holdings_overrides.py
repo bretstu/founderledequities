@@ -40,7 +40,7 @@ def test_the_tables_win_when_the_class_appears_held_directly():
     nothing is counted twice."""
     row = {"shares": 4766475230.0 + 66_700_000, "outstanding": 13181779945.0, "pct": 36.7, "cautions": "",
            "remarks": "This Form 4 does not include 1,235,372,285 shares ...",
-           "direct_classes": "class b common stock"}
+           "direct_classes": "class:B"}
     apply_additions(row, [_add()])
     assert row["shares"] == 4766475230.0 + 66_700_000, "the tables' figure stands alone"
     assert "suspended" in row["cautions"] and "held directly" in row["cautions"]
@@ -120,3 +120,29 @@ def test_a_row_from_an_older_schema_is_recomputed_not_carried():
 def test_stake_source_reaches_the_csv():
     from fle.panel import COLUMNS
     assert "stake_source" in COLUMNS and "shares_tabled" in COLUMNS and "remarks" in COLUMNS
+
+
+def test_the_guard_reads_class_titles_the_way_the_walk_does():
+    """'Class B', 'Class B Common Stock' and 'Restricted Class B Common
+    Stock, par value $0.001' are one class to the walk; the guard must not
+    miss a table line because the filer phrased the title differently."""
+    from fle.ledger import title_letter
+    for title in ("Class B", "Class B Common Stock", "Restricted Class B Common Stock, par value $0.001",
+                  "Class B common stock"):
+        assert title_letter(title) == ("class", "B"), title
+    row = {"shares": 100.0, "outstanding": 1000.0, "pct": 10.0, "cautions": "",
+           "remarks": "does not include 50 shares", "direct_classes": "class:B"}
+    apply_additions(row, [_add(security="Restricted Class B Common Stock, par value $0.001", shares=50.0)])
+    assert row["shares"] == 100.0 and "suspended" in row["cautions"], "a differently worded table line still wins"
+
+
+def test_an_edited_entry_makes_the_carried_row_stale():
+    from fle.panel import _addition_current
+    ex = read_exclusions(os.path.join(ROOT, "universe", "exclusions.csv"))
+    a = ex.additions_for("SPCX")[0]
+    key = f"SPCX:{int(a.shares)}:{a.source}"
+    assert _addition_current({"ticker": "SPCX", "addition_key": key}, ex), "same entry: carry"
+    assert not _addition_current({"ticker": "SPCX", "addition_key": "SPCX:1:x"}, ex), "changed entry: walk again"
+    assert not _addition_current({"ticker": "SPCX"}, ex), "entry added since: walk again"
+    assert _addition_current({"ticker": "TSLA"}, ex), "no entry, none before: carry"
+    assert not _addition_current({"ticker": "TSLA", "addition_key": "TSLA:5:y"}, ex), "entry removed since: walk again"
