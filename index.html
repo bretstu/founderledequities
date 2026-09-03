@@ -412,7 +412,18 @@ td.src a:hover{color:var(--blue)}
 #perfchart svg{width:100%;height:auto;display:block}
 .distbox{margin-top:26px}
 .distbox svg{width:100%;height:auto;display:block}
-.distbox .dbin:hover rect{filter:brightness(0.92)}
+.distbox .dbin:hover rect,.distbox .dbin.open rect{filter:brightness(0.9)}
+.distbox .dbin:hover .hit,.distbox .dbin.open .hit{fill:var(--wash)}
+.distcap .hint{color:var(--faint)}
+.dpanel{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:14px 16px 16px;background:#fff}
+.dph{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--mut);margin-bottom:12px}
+.dph b{color:var(--ink);font-family:var(--mono)}
+.dpscreen{margin-left:auto;color:var(--blue);cursor:pointer;font-size:12.5px}
+.dpx{border:0;background:transparent;font-size:18px;line-height:1;color:var(--faint);cursor:pointer;padding:0 2px}
+.dtiles{display:flex;flex-wrap:wrap;gap:6px}
+.dtile{display:inline-flex;align-items:baseline;gap:6px;padding:5px 9px;border-radius:5px;text-decoration:none;color:#fff;font-family:var(--mono);font-size:11.5px;line-height:1}
+.dtile b{font-weight:600}.dtile span{opacity:.85;font-size:10.5px}
+.dtile:hover{filter:brightness(0.9)}
 .distcap{font-size:13px;color:var(--mut);margin-bottom:8px}
 .distcap b{color:var(--ink)}
 .fsw{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
@@ -873,7 +884,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,tbRange:null,pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
+const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,tbRange:null,distOpen:null,pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -1375,43 +1386,44 @@ function binLabel(lo,hi){
   if(hi===null)return `above ${f(lo)}`;
   return `${f(lo)} to ${f(hi)}`;
 }
-function distMarquee(dist){
-  /* THE NAMES A VISITOR KNOWS. Ten largest stakes in the cohort, plus the
-     three best and three worst returns: about sixteen anchors on a
-     picture of hundreds. Everything else stays a block with a hover. */
+function distCrown(items){
+  /* THE COLUMN'S FACE. Up to three tiles at the top of every column, tall
+     enough to carry their tickers, for the three largest stakes in the bin
+     -- the names a visitor knows -- and the rest of the bin beneath them
+     as the blocks it is. Chosen by stake, not return: the bin already says
+     the return. */
   const val=tk=>{const p=PANEL.find(r=>r.tk===tk);return p&&p.val?p.val:0;};
-  const byVal=[...dist.items].sort((a,b)=>val(b.tk)-val(a.tk)).slice(0,10).map(i=>i.tk);
-  const byRet=[...dist.items].sort((a,b)=>b.ret-a.ret);
-  return new Set([...byVal,...byRet.slice(0,3).map(i=>i.tk),...byRet.slice(-3).map(i=>i.tk)]);
+  const crown=[...items].sort((a,b)=>val(b.tk)-val(a.tk)).slice(0,3).map(i=>i.tk);
+  return new Set(crown);
 }
 function distChart(dist,edges,{w=940}={}){
   const bins=[];
   for(let i=0;i<=edges.length;i++)bins.push({lo:i?edges[i-1]:null,hi:i<edges.length?edges[i]:null,items:[]});
   const place=r=>{let i=0;while(i<edges.length&&r>=edges[i])i++;return i;};
   for(const it of dist.items)bins[place(it.ret)].items.push(it);
-  const marquee=distMarquee(dist);
   const val=tk=>{const p=PANEL.find(r=>r.tk===tk);return p&&p.val?p.val:0;};
-  /* within a bin: the names that get a label first, so the labels above
-     the stack point at its top; then by stake value */
-  for(const b of bins)b.items.sort((a,c)=>(marquee.has(c.tk)-marquee.has(a.tk))||(val(c.tk)-val(a.tk))||(c.ret-a.ret));
-  const maxN=Math.max(1,...bins.map(b=>b.items.length));
-  const maxLab=Math.max(0,...bins.map(b=>Math.min(3,b.items.filter(i=>marquee.has(i.tk)).length)));
-  const cols=bins.length,gap=6,pad={l:8,r:8,t:30+maxLab*13,b:30};
+  for(const b of bins){
+    b.crown=distCrown(b.items);
+    /* crowned first, then by return, so the column reads top-down: the names, then the mass */
+    b.items.sort((a,c)=>(b.crown.has(c.tk)-b.crown.has(a.tk))||(val(c.tk)-val(a.tk))||(c.ret-a.ret));
+  }
+  const CH=20;                                    /* a crowned tile */
+  const maxRest=Math.max(0,...bins.map(b=>b.items.length-Math.min(3,b.items.length)));
+  const cols=bins.length,gap=6,pad={l:8,r:8,t:30,b:30};
   const cw=(w-pad.l-pad.r-gap*(cols-1))/cols;
-  const chartH=Math.min(420,Math.max(160,maxN*20));
-  const th=Math.min(20,(chartH)/maxN);           /* tile height: readable while it can be */
-  const labelled=th>=14;
+  const restH=Math.min(300,Math.max(60,maxRest*12));
+  const th=maxRest?Math.min(12,restH/maxRest):12;   /* a block */
+  const chartH=3*CH+restH;
   const h=pad.t+chartH+pad.b;
-  const zero=edges.indexOf(0);                  /* bins left of index `zero` are losses */
+  const zero=edges.indexOf(0);
   const tint=(i)=>{
     const neg=i<zero;const k=neg?(zero-i):(i-zero+1);const steps=neg?zero:(cols-zero);
     const a=0.22+0.78*Math.min(1,k/steps);
     return neg?`rgba(194,42,42,${a.toFixed(2)})`:`rgba(11,122,75,${a.toFixed(2)})`;
   };
+  const ink=(i)=>i<zero?(i<=zero-3?"#fff":"#5a1414"):(i>=zero+3?"#fff":"#0c3d27");
   let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="distribution of returns across the founder-led companies">`;
   const baseY=pad.t+chartH;
-  /* the benchmark, where its value falls inside its bin, drawn first so the
-     tiles sit over the line rather than under it */
   const fx=v=>{const i=place(v);const b=bins[i];const x=pad.l+i*(cw+gap);
     const frac=(b.lo===null||b.hi===null)?0.5:(v-b.lo)/(b.hi-b.lo);return x+cw*Math.min(0.94,Math.max(0.06,frac));};
   if(dist.spy!==null){
@@ -1419,7 +1431,6 @@ function distChart(dist,edges,{w=940}={}){
     out+=`<line x1="${x.toFixed(1)}" y1="${pad.t-10}" x2="${x.toFixed(1)}" y2="${baseY+3}" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.7"/>`;
     out+=`<text x="${x.toFixed(1)}" y="${pad.t-16}" text-anchor="middle" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">S&amp;P 500 ${(dist.spy>=0?"+":"")+dist.spy.toFixed(0)}%</text>`;
   }
-  /* the axis: the edges between the bins, not a range under each */
   out+=`<line x1="${pad.l}" y1="${baseY+1}" x2="${w-pad.r}" y2="${baseY+1}" stroke="var(--line)" stroke-width="1"/>`;
   edges.forEach((e,i)=>{
     const x=pad.l+(i+1)*(cw+gap)-gap/2;
@@ -1428,31 +1439,41 @@ function distChart(dist,edges,{w=940}={}){
   bins.forEach((b,i)=>{
     const x=pad.l+i*(cw+gap);
     const lab=binLabel(b.lo,b.hi);
-    /* the bin is a door to the screener, sorted by return */
-    out+=`<g class="dbin" data-lo="${b.lo===null?"":b.lo}" data-hi="${b.hi===null?"":b.hi}" style="cursor:pointer">`;
-    /* the whole column is the door, not just the number above it */
-    out+=`<rect x="${(x-gap/2).toFixed(1)}" y="${pad.t-24}" width="${(cw+gap).toFixed(1)}" height="${(chartH+24+pad.b).toFixed(1)}" fill="transparent"><title>${lab}: ${b.items.length} — click for the list</title></rect>`;
+    const n=b.items.length,nc=Math.min(3,n),nr=n-nc;
+    const colH=nc*CH+nr*th;
+    out+=`<g class="dbin" data-i="${i}" data-lo="${b.lo===null?"":b.lo}" data-hi="${b.hi===null?"":b.hi}" style="cursor:pointer">`;
+    /* the whole column is the door */
+    out+=`<rect class="hit" x="${(x-gap/2).toFixed(1)}" y="${pad.t-24}" width="${(cw+gap).toFixed(1)}" height="${(chartH+24).toFixed(1)}" rx="4" fill="transparent"><title>${lab}: ${n} — click to see everyone in it</title></rect>`;
+    let y=baseY-colH;
     b.items.forEach((it,j)=>{
-      const y=baseY-(b.items.length-j)*th;   /* item 0 at the top of the stack, under its callout */
-      const mk=marquee.has(it.tk)&&!labelled;
-      out+=`<a href="/company/${it.tk}/"><rect x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}" width="${cw.toFixed(1)}" height="${Math.max(1,th-2).toFixed(1)}" rx="2" fill="${tint(i)}"${mk?' stroke="var(--ink)" stroke-width="1.2"':""}><title>${it.tk} · ${(it.ret>=0?"+":"")+it.ret.toFixed(0)}% · ${(PANEL.find(p=>p.tk===it.tk)||{}).ceo||""} · ${lab}</title></rect>`;
-      if(labelled)out+=`<text x="${(x+cw/2).toFixed(1)}" y="${(y+th/2+3.5).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="${i<zero?(i<=zero-3?"#fff":"#5a1414"):(i>=zero+3?"#fff":"#0c3d27")}">${it.tk}</text>`;
+      const crowned=j<nc;const hh=crowned?CH:th;
+      out+=`<a href="/company/${it.tk}/"><rect x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}" width="${cw.toFixed(1)}" height="${Math.max(1,hh-2).toFixed(1)}" rx="2" fill="${tint(i)}"><title>${it.tk} · ${(it.ret>=0?"+":"")+it.ret.toFixed(0)}% · ${(PANEL.find(p=>p.tk===it.tk)||{}).ceo||""} · ${lab}</title></rect>`;
+      if(crowned)out+=`<text class="crown" x="${(x+cw/2).toFixed(1)}" y="${(y+CH/2+3.5).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="${ink(i)}" pointer-events="none">${it.tk}</text>`;
       out+=`</a>`;
+      y+=hh;
     });
-    if(b.items.length)out+=`<text x="${(x+cw/2).toFixed(1)}" y="${(baseY-b.items.length*th-6).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--mut)"><title>${lab}: ${b.items.length}</title>${b.items.length}</text>`;
-    if(!labelled){
-      /* the callouts: up to three named tiles per bin, listed above the
-         count in the order they sit at the top of the stack */
-      const named=b.items.filter(it=>marquee.has(it.tk)).slice(0,3);
-      named.forEach((it,k)=>{
-        out+=`<text x="${(x+cw/2).toFixed(1)}" y="${(baseY-b.items.length*th-20-k*13).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="var(--ink)"><title>${it.tk} · ${(it.ret>=0?"+":"")+it.ret.toFixed(0)}%</title>${it.tk}</text>`;
-      });
-    }
+    if(n)out+=`<text x="${(x+cw/2).toFixed(1)}" y="${(baseY-colH-6).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--mut)">${n}</text>`;
     out+=`</g>`;
   });
   out+=`</svg>`;
-  return out;
+  return {svg:out,bins,tint};
 }
+function distPanel(bin,i,tint){
+  /* THE BUCKET, BY NAME. Opens in place beneath the chart: every company
+     in the bin as a readable tile, sorted by return, each a door to its
+     page. A × closes it; a small link hands the same set to the screener. */
+  const lab=binLabel(bin.lo,bin.hi);
+  const items=[...bin.items].sort((a,b)=>b.ret-a.ret);
+  const tiles=items.map(it=>{const p=PANEL.find(r=>r.tk===it.tk)||{};
+    return `<a class="dtile" href="/company/${it.tk}/" style="background:${tint(i)}" title="${(p.ceo||"")} · ${(p.co||"")}"><b>${it.tk}</b><span>${(it.ret>=0?"+":"")+it.ret.toFixed(0)}%</span></a>`;}).join("");
+  return `<div class="dpanel" data-i="${i}">
+    <div class="dph"><b>${lab}</b> · ${items.length} compan${items.length===1?"y":"ies"}
+      <a class="dpscreen" onclick="state.tbI=true;state.sort={key:'ret',dir:-1};state.tbRange={lo:${bin.lo===null?"null":bin.lo},hi:${bin.hi===null?"null":bin.hi}};renderTable();document.querySelector('#table').scrollIntoView({behavior:'smooth'})">Open these in the screener →</a>
+      <button class="dpx" onclick="closeDistPanel()" title="close">×</button></div>
+    <div class="dtiles">${tiles}</div></div>`;
+}
+function closeDistPanel(){const p=$("#distpanel");if(p)p.innerHTML="";state.distOpen=null;
+  document.querySelectorAll("#perfdist .dbin").forEach(g=>g.classList.remove("open"));}
 function renderDist(d){
   const box=$("#perfdist");if(!box)return;
   const dist=perfReturns(d);
@@ -1462,16 +1483,22 @@ function renderDist(d){
   const cap=`<div class="distcap">Where each of the ${n} landed, ${dist.from} to ${dist.end}`
     +(beat!==null?` — <b>${beat}</b> of ${n} beat the S&amp;P 500`:"")
     +(dist.skipped?` · ${dist.skipped} listed too recently for the whole window`:"")
-    +`</div>`;
-  box.innerHTML=cap+distChart(dist,edges);
+    +` <span class="hint">· click a column to see everyone in it</span></div>`;
+  const {svg,bins,tint}=distChart(dist,edges);
+  box.innerHTML=cap+svg+`<div id="distpanel"></div>`;
+  const open=i=>{
+    const g=box.querySelector(`.dbin[data-i="${i}"]`);
+    box.querySelectorAll(".dbin").forEach(x=>x.classList.remove("open"));
+    if(state.distOpen===i){closeDistPanel();return;}
+    state.distOpen=i;if(g)g.classList.add("open");
+    $("#distpanel").innerHTML=distPanel(bins[i],i,tint);
+    hit("click","distbin",binLabel(bins[i].lo,bins[i].hi));
+  };
   box.querySelectorAll(".dbin").forEach(g=>g.addEventListener("click",e=>{
-    if(e.target.closest("a"))return;            /* a tile goes to its page; the bin goes to the screener */
-    state.tbI=true;state.sort={key:"ret",dir:-1};
-    state.tbRange={lo:g.dataset.lo===""?null:+g.dataset.lo,hi:g.dataset.hi===""?null:+g.dataset.hi};
-    renderTable();
-    const t=$("#table");if(t&&t.scrollIntoView)t.scrollIntoView({behavior:"smooth"});
-    hit("click","distbin",g.dataset.lo+".."+g.dataset.hi);
+    if(e.target.closest("a"))return;            /* a tile goes to its page; the column opens the bucket */
+    open(+g.dataset.i);
   }));
+  if(state.distOpen!==null&&state.distOpen!==undefined&&bins[state.distOpen])open(state.distOpen);
 }
 function renderPerf(){
   const sec=document.querySelector("#perfsec");

@@ -61,7 +61,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,nFilings,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,soldTickers,sparkline,lastTrades,exportTable,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,perfReturns,perfBins,distChart,renderDist,distMarquee,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,nFilings,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,soldTickers,sparkline,lastTrades,exportTable,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,perfReturns,perfBins,distChart,renderDist,distCrown,distPanel,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -505,26 +505,29 @@ const P=runPage();
      assert(Math.abs(dist.spy-10)<1,"and the benchmark's own return over the same window (half its two-year 20%): "+dist.spy);
      assert(Math.abs(P.perfReturns(full).spy-20)<1,"over the whole record, the benchmark's full 20%");
      assert(!dist.items.some(i=>i.tk==="LATE")&&dist.skipped===1,"the late entrant has no close at the window's start and is counted as listed too recently, not placed");
-     const svg=P.distChart(dist,P.perfBins("12"));
+     const {svg,bins,tint}=P.distChart(dist,P.perfBins("12"));
      assert((svg.match(/<a href="\/company\/[^"]+"><rect /g)||[]).length===dist.items.length,"one tile per company (the transparent hit areas are not tiles)");
      assert((svg.match(/<a href="\/company\//g)||[]).length===dist.items.length,"every tile is a door to its company page");
      assert(svg.includes("S&amp;P 500 +10%"),"the benchmark is marked where it lands");
      assert(svg.includes(">0%<")&&svg.includes(">+40%<")&&svg.includes(">-40%<"),"the axis is the edges between the bins");
      assert(!/<text[^>]*>[^<]*to \+/.test(svg),"no range label under each bin -- the edges say it (ranges live only in hover titles)");
-     assert((svg.match(/fill="transparent"/g)||[]).length===P.perfBins("12").length+1,"every column is a door, not just the number above it");
-     // the names that matter: a marquee of the largest stakes and the extremes
-     {const big={}; dist.items.forEach((it,k)=>big[it.tk]=k);
-      const mq=P.distMarquee(dist);
-      assert(mq.size>0&&mq.size<=16,"a marquee of at most sixteen names: "+mq.size);
-      const best=[...dist.items].sort((a,b)=>b.ret-a.ret)[0].tk,worst=[...dist.items].sort((a,b)=>a.ret-b.ret)[0].tk;
-      assert(mq.has(best)&&mq.has(worst),"the best and the worst are always named");}
-     // a wide cohort: tiles become blocks, the marquee names get callouts above their column and an outline on their tile
-     {const many={items:[],spy:10,from:dist.from,end:dist.end,skipped:0};
-      for(let k=0;k<120;k++)many.items.push({tk:"T"+k,ret:-3+k*0.05});   /* all in one bin: 120 deep, tiles become blocks */
+     assert((svg.match(/class="hit"/g)||[]).length===P.perfBins("12").length+1,"every column is a door, not just the number above it");
+     // the crowns: up to three named tiles at the top of every column, chosen by stake
+     {const crowned=(svg.match(/class="crown"/g)||[]).length;
+      const expect=bins.reduce((n,b)=>n+Math.min(3,b.items.length),0);
+      assert(crowned===expect,"three crowned tiles per column, or all of a small bin: "+crowned+" vs "+expect);
+      const many={items:[],spy:10,from:dist.from,end:dist.end,skipped:0};
+      for(let k=0;k<120;k++)many.items.push({tk:"T"+k,ret:1+k*0.05});   /* all in the 0..+10% bin */
       const big=P.distChart(many,P.perfBins("12"));
-      assert(!/font-size="10" font-weight="600"/.test(big),"a hundred-plus tiles carry no per-tile ticker");
-      assert((big.match(/stroke="var\(--ink\)" stroke-width="1.2"/g)||[]).length>=6,"the marquee tiles are outlined");
-      assert(/font-size="10.5" font-weight="600" fill="var\(--ink\)"/.test(big),"and named in callouts above their column");}
+      assert((big.svg.match(/class="crown"/g)||[]).length===3,"a hundred-deep bin still shows exactly three names");
+      assert((big.svg.match(/<a href="\/company\//g)||[]).length===120,"and every one of the hundred is a tile");
+      // the panel: the bucket by name, sorted by return, every one a door
+      const full=big.bins.find(b=>b.items.length===120);
+      const panel=P.distPanel(full,big.bins.indexOf(full),big.tint);
+      assert((panel.match(/class="dtile"/g)||[]).length===120,"the panel names everyone in the bucket");
+      assert(panel.includes("120 companies")&&panel.includes("Open these in the screener"),"with the count and a way to the screener");
+      const order=[...panel.matchAll(/<b>(T\d+)<\/b>/g)].map(m=>m[1]);
+      assert(order[0]==="T119"&&order[119]==="T0","sorted by return, best first");}
      els["#perfdist"]=els["#perfdist"]||el("#perfdist");
      P.renderDist(d);
      assert(els["#perfdist"]._html.includes("beat the S&amp;P 500"),"the caption says how many beat the benchmark");
