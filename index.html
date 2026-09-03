@@ -1409,7 +1409,7 @@ function distChart(dist,edges,{w=940}={}){
   }
   const CH=20;                                    /* a crowned tile */
   const maxRest=Math.max(0,...bins.map(b=>b.items.length-Math.min(3,b.items.length)));
-  const cols=bins.length,gap=6,pad={l:8,r:8,t:30,b:30};
+  const cols=bins.length,gap=6,pad={l:8,r:8,t:30,b:44};
   const cw=(w-pad.l-pad.r-gap*(cols-1))/cols;
   const restH=Math.min(300,Math.max(60,maxRest*12));
   const th=maxRest?Math.min(12,restH/maxRest):12;   /* a block */
@@ -1431,10 +1431,16 @@ function distChart(dist,edges,{w=940}={}){
     out+=`<line x1="${x.toFixed(1)}" y1="${pad.t-10}" x2="${x.toFixed(1)}" y2="${baseY+3}" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.7"/>`;
     out+=`<text x="${x.toFixed(1)}" y="${pad.t-16}" text-anchor="middle" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">S&amp;P 500 ${(dist.spy>=0?"+":"")+dist.spy.toFixed(0)}%</text>`;
   }
-  out+=`<line x1="${pad.l}" y1="${baseY+1}" x2="${w-pad.r}" y2="${baseY+1}" stroke="var(--line)" stroke-width="1"/>`;
-  edges.forEach((e,i)=>{
-    const x=pad.l+(i+1)*(cw+gap)-gap/2;
-    out+=`<text x="${x.toFixed(1)}" y="${baseY+18}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="${e===0?"var(--ink)":"var(--faint)"}"${e===0?' font-weight="600"':""}>${e>0?"+":""}${e}%</text>`;
+  /* THE AXIS IS A ROW OF LABELLED BOXES, one under each column, in the
+     column's own tint, so the range and the colour are read together. */
+  const f=v=>(v>0?"+":"")+v+"%";
+  bins.forEach((b,i)=>{
+    const x=pad.l+i*(cw+gap);
+    const l1=b.lo===null?"below":b.hi===null?"above":`${f(b.lo)} to`;
+    const l2=b.lo===null?f(b.hi):b.hi===null?f(b.lo):f(b.hi);
+    out+=`<rect x="${x.toFixed(1)}" y="${baseY+4}" width="${cw.toFixed(1)}" height="34" rx="3" fill="${tint(i)}"/>`;
+    out+=`<text x="${(x+cw/2).toFixed(1)}" y="${baseY+18}" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="${ink(i)}" pointer-events="none">${l1}</text>`;
+    out+=`<text x="${(x+cw/2).toFixed(1)}" y="${baseY+31}" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="${ink(i)}" pointer-events="none">${l2}</text>`;
   });
   bins.forEach((b,i)=>{
     const x=pad.l+i*(cw+gap);
@@ -1443,7 +1449,7 @@ function distChart(dist,edges,{w=940}={}){
     const colH=nc*CH+nr*th;
     out+=`<g class="dbin" data-i="${i}" data-lo="${b.lo===null?"":b.lo}" data-hi="${b.hi===null?"":b.hi}" style="cursor:pointer">`;
     /* the whole column is the door */
-    out+=`<rect class="hit" x="${(x-gap/2).toFixed(1)}" y="${pad.t-24}" width="${(cw+gap).toFixed(1)}" height="${(chartH+24).toFixed(1)}" rx="4" fill="transparent"><title>${lab}: ${n} — click to see everyone in it</title></rect>`;
+    out+=`<rect class="hit" x="${(x-gap/2).toFixed(1)}" y="${pad.t-24}" width="${(cw+gap).toFixed(1)}" height="${(chartH+24+42).toFixed(1)}" rx="4" fill="transparent"><title>${lab}: ${n} — click to see everyone in it</title></rect>`;
     let y=baseY-colH;
     b.items.forEach((it,j)=>{
       const crowned=j<nc;const hh=crowned?CH:th;

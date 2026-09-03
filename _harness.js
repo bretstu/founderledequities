@@ -506,12 +506,17 @@ const P=runPage();
      assert(Math.abs(P.perfReturns(full).spy-20)<1,"over the whole record, the benchmark's full 20%");
      assert(!dist.items.some(i=>i.tk==="LATE")&&dist.skipped===1,"the late entrant has no close at the window's start and is counted as listed too recently, not placed");
      const {svg,bins,tint}=P.distChart(dist,P.perfBins("12"));
-     assert((svg.match(/<rect x=/g)||[]).length===dist.items.length,"one tile per company (the transparent hit areas are not tiles)");
+     assert((svg.match(/rx="2" fill="rgba/g)||[]).length===dist.items.length,"one tile per company (hit areas and axis boxes are not tiles)");
      {const crownedN=bins.reduce((n,b)=>n+Math.min(3,b.items.length),0);
       assert((svg.match(/<a href="\/company\//g)||[]).length===crownedN,"only a named tile is a link; a block is part of the column");}
      assert(svg.includes("S&amp;P 500 +10%"),"the benchmark is marked where it lands");
-     assert(svg.includes(">0%<")&&svg.includes(">+40%<")&&svg.includes(">-40%<"),"the axis is the edges between the bins");
-     assert(!/<text[^>]*>[^<]*to \+/.test(svg),"no range label under each bin -- the edges say it (ranges live only in hover titles)");
+     assert(svg.includes(">below<")&&svg.includes(">above<")&&svg.includes(">-40% to<")&&svg.includes(">0% to<")&&svg.includes(">+40%<"),"a labelled box under every column says its range");
+     {const boxes=(svg.match(/<rect x="[^"]+" y="[^"]+" width="[^"]+" height="34" rx="3" fill="(rgba[^"]+)"/g)||[]);
+      assert(boxes.length===P.perfBins("12").length+1,"one box per column");
+      const tiles=[...svg.matchAll(/<rect x="([^"]+)" y="[^"]+" width="[^"]+" height="[^"]+" rx="2" fill="(rgba[^"]+)"/g)];
+      const byX={};for(const m of tiles)byX[m[1]]=m[2];
+      const boxX=[...svg.matchAll(/<rect x="([^"]+)" y="[^"]+" width="[^"]+" height="34" rx="3" fill="(rgba[^"]+)"/g)];
+      assert(boxX.every(m=>!(m[1] in byX)||byX[m[1]]===m[2]),"each box wears exactly its column's tint");}
      assert((svg.match(/class="hit"/g)||[]).length===P.perfBins("12").length+1,"every column is a door, not just the number above it");
      // the crowns: up to three named tiles at the top of every column, chosen by stake
      {const crowned=(svg.match(/class="crown"/g)||[]).length;
@@ -521,7 +526,7 @@ const P=runPage();
       for(let k=0;k<120;k++)many.items.push({tk:"T"+k,ret:1+k*0.05});   /* all in the 0..+10% bin */
       const big=P.distChart(many,P.perfBins("12"));
       assert((big.svg.match(/class="crown"/g)||[]).length===3,"a hundred-deep bin still shows exactly three names");
-      assert((big.svg.match(/<rect x=/g)||[]).length===120&&(big.svg.match(/<a href="\/company\//g)||[]).length===3,"every one of the hundred is a tile; only the three named ones are links");
+      assert((big.svg.match(/rx="2" fill="rgba/g)||[]).length===120&&(big.svg.match(/<a href="\/company\//g)||[]).length===3,"every one of the hundred is a tile; only the three named ones are links");
       // the panel: the bucket by name, sorted by return, every one a door
       const full=big.bins.find(b=>b.items.length===120);
       const panel=P.distPanel(full,big.bins.indexOf(full),big.tint);
