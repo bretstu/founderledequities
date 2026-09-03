@@ -61,7 +61,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,nFilings,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,soldTickers,sparkline,lastTrades,exportTable,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,perfReturns,perfBins,distChart,renderDist,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,nFilings,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,soldTickers,sparkline,lastTrades,exportTable,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,perfReturns,perfBins,distChart,renderDist,distMarquee,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -506,11 +506,25 @@ const P=runPage();
      assert(Math.abs(P.perfReturns(full).spy-20)<1,"over the whole record, the benchmark's full 20%");
      assert(!dist.items.some(i=>i.tk==="LATE")&&dist.skipped===1,"the late entrant has no close at the window's start and is counted as listed too recently, not placed");
      const svg=P.distChart(dist,P.perfBins("12"));
-     assert((svg.match(/<rect /g)||[]).length===dist.items.length,"one tile per company");
+     assert((svg.match(/<a href="\/company\/[^"]+"><rect /g)||[]).length===dist.items.length,"one tile per company (the transparent hit areas are not tiles)");
      assert((svg.match(/<a href="\/company\//g)||[]).length===dist.items.length,"every tile is a door to its company page");
      assert(svg.includes("S&amp;P 500 +10%"),"the benchmark is marked where it lands");
      assert(svg.includes(">0%<")&&svg.includes(">+40%<")&&svg.includes(">-40%<"),"the axis is the edges between the bins");
-     assert(!svg.includes("to +"),"no range label under each bin -- the edges say it");
+     assert(!/<text[^>]*>[^<]*to \+/.test(svg),"no range label under each bin -- the edges say it (ranges live only in hover titles)");
+     assert((svg.match(/fill="transparent"/g)||[]).length===P.perfBins("12").length+1,"every column is a door, not just the number above it");
+     // the names that matter: a marquee of the largest stakes and the extremes
+     {const big={}; dist.items.forEach((it,k)=>big[it.tk]=k);
+      const mq=P.distMarquee(dist);
+      assert(mq.size>0&&mq.size<=16,"a marquee of at most sixteen names: "+mq.size);
+      const best=[...dist.items].sort((a,b)=>b.ret-a.ret)[0].tk,worst=[...dist.items].sort((a,b)=>a.ret-b.ret)[0].tk;
+      assert(mq.has(best)&&mq.has(worst),"the best and the worst are always named");}
+     // a wide cohort: tiles become blocks, the marquee names get callouts above their column and an outline on their tile
+     {const many={items:[],spy:10,from:dist.from,end:dist.end,skipped:0};
+      for(let k=0;k<120;k++)many.items.push({tk:"T"+k,ret:-3+k*0.05});   /* all in one bin: 120 deep, tiles become blocks */
+      const big=P.distChart(many,P.perfBins("12"));
+      assert(!/font-size="10" font-weight="600"/.test(big),"a hundred-plus tiles carry no per-tile ticker");
+      assert((big.match(/stroke="var\(--ink\)" stroke-width="1.2"/g)||[]).length>=6,"the marquee tiles are outlined");
+      assert(/font-size="10.5" font-weight="600" fill="var\(--ink\)"/.test(big),"and named in callouts above their column");}
      els["#perfdist"]=els["#perfdist"]||el("#perfdist");
      P.renderDist(d);
      assert(els["#perfdist"]._html.includes("beat the S&amp;P 500"),"the caption says how many beat the benchmark");
@@ -529,6 +543,15 @@ const P=runPage();
      assert(uniq.size===dist.items.length&&shown.every(tk=>dist.items.some(i=>i.tk===tk)),"the Founders index chip keeps only constituents: "+[...uniq].join(","));
      P.state.tbI=false;P.renderTable();
      assert(els["#tbody"]._html.includes("not in the Founders index"),"a company outside the index shows a dash in the column");
+     // a bin click is a real filter: the bucket, by name, with a chip to clear it
+     els["#rangechip"]=els["#rangechip"]||el("#rangechip");
+     P.state.tbI=true;P.state.tbRange={lo:40,hi:null};P.renderTable();
+     const inb=[...els["#tbody"]._html.matchAll(/onclick="openDrawer\('([A-Z0-9.-]+)'\)"/g)].map(m=>m[1]);
+     assert(inb.length>0&&inb.every(tk=>{const it=dist.items.find(i=>i.tk===tk);return it&&it.ret>=40;}),"the range keeps only the bucket's companies: "+inb.join(","));
+     assert(els["#rangechip"]._html.includes("Return above +40%"),"and the chip names the bucket");
+     P.state.tbRange={lo:0,hi:10};P.renderTable();
+     assert(!/onclick="openDrawer/.test(els["#tbody"]._html),"an empty bucket shows no rows");
+     P.state.tbRange=null;P.state.tbI=false;
      P.PANEL=savedPanel2;P.state.sort={key:"pct",dir:-1};}
     assert(els["#perfnote"]._html.includes("portrait, not a strategy"),
       "the caveat ships with the chart");

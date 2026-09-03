@@ -231,6 +231,8 @@ td.src a:hover{color:var(--blue)}
 .c-lt .ns{display:inline-block;font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);background:var(--wash);border-radius:4px;padding:2px 6px;margin-top:4px}
 .c-lt .lt{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .chip.export{margin-left:auto}
+.chip.rangechip{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chip.rangechip .x{margin-left:6px;opacity:.7}
 .c-lt .ltd{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 
 /* ---------- trends ---------- */
@@ -434,7 +436,7 @@ td.src a:hover{color:var(--blue)}
 .aplan{display:block;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.05em;margin-top:4px}
 .apx{font-family:var(--mono);font-size:11px;color:var(--faint);display:block;font-weight:400;margin-top:2px}
 .pwarn{cursor:help;color:var(--amber)}
-.apx{cursor:help;color:var(--amber)}
+.approx{cursor:help;color:var(--amber)}
 td.asrc a{font-family:var(--mono);font-size:11px;color:var(--faint)}
 td.asrc a:hover{color:var(--blue)}
 .efoot{padding:12px 2px 0;font-size:13px;color:var(--mut)}
@@ -725,6 +727,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
         title="only the companies in the Founders index — the cohort the performance chart is drawn from">Founders index<span class="tr"><i></i></span></span>
     <span class="fsw" id="hchip" role="switch" aria-checked="false" tabindex="0"
         title="not one stake-reducing sale on record since the company was public — options cashed and units converted the same day don't count against anyone">Never sold<span class="tr"><i></i></span></span>
+    <button class="chip rangechip hide" id="rangechip" onclick="state.tbRange=null;renderTable()" title="set by a click on the distribution above; click to clear"></button>
     <button class="chip export" onclick="exportTable()" title="the rows as filtered and sorted, every field, as a CSV">Export CSV ↓</button>
   </div>
   <!-- NO HORIZONTAL SCROLL. Ten columns, fixed widths that add up to the
@@ -870,7 +873,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
+const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,tbRange:null,pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -1372,14 +1375,28 @@ function binLabel(lo,hi){
   if(hi===null)return `above ${f(lo)}`;
   return `${f(lo)} to ${f(hi)}`;
 }
+function distMarquee(dist){
+  /* THE NAMES A VISITOR KNOWS. Ten largest stakes in the cohort, plus the
+     three best and three worst returns: about sixteen anchors on a
+     picture of hundreds. Everything else stays a block with a hover. */
+  const val=tk=>{const p=PANEL.find(r=>r.tk===tk);return p&&p.val?p.val:0;};
+  const byVal=[...dist.items].sort((a,b)=>val(b.tk)-val(a.tk)).slice(0,10).map(i=>i.tk);
+  const byRet=[...dist.items].sort((a,b)=>b.ret-a.ret);
+  return new Set([...byVal,...byRet.slice(0,3).map(i=>i.tk),...byRet.slice(-3).map(i=>i.tk)]);
+}
 function distChart(dist,edges,{w=940}={}){
   const bins=[];
   for(let i=0;i<=edges.length;i++)bins.push({lo:i?edges[i-1]:null,hi:i<edges.length?edges[i]:null,items:[]});
   const place=r=>{let i=0;while(i<edges.length&&r>=edges[i])i++;return i;};
   for(const it of dist.items)bins[place(it.ret)].items.push(it);
-  for(const b of bins)b.items.sort((a,c)=>c.ret-a.ret);
+  const marquee=distMarquee(dist);
+  const val=tk=>{const p=PANEL.find(r=>r.tk===tk);return p&&p.val?p.val:0;};
+  /* within a bin: the names that get a label first, so the labels above
+     the stack point at its top; then by stake value */
+  for(const b of bins)b.items.sort((a,c)=>(marquee.has(c.tk)-marquee.has(a.tk))||(val(c.tk)-val(a.tk))||(c.ret-a.ret));
   const maxN=Math.max(1,...bins.map(b=>b.items.length));
-  const cols=bins.length,gap=6,pad={l:8,r:8,t:30,b:30};
+  const maxLab=Math.max(0,...bins.map(b=>Math.min(3,b.items.filter(i=>marquee.has(i.tk)).length)));
+  const cols=bins.length,gap=6,pad={l:8,r:8,t:30+maxLab*13,b:30};
   const cw=(w-pad.l-pad.r-gap*(cols-1))/cols;
   const chartH=Math.min(420,Math.max(160,maxN*20));
   const th=Math.min(20,(chartH)/maxN);           /* tile height: readable while it can be */
@@ -1413,13 +1430,24 @@ function distChart(dist,edges,{w=940}={}){
     const lab=binLabel(b.lo,b.hi);
     /* the bin is a door to the screener, sorted by return */
     out+=`<g class="dbin" data-lo="${b.lo===null?"":b.lo}" data-hi="${b.hi===null?"":b.hi}" style="cursor:pointer">`;
+    /* the whole column is the door, not just the number above it */
+    out+=`<rect x="${(x-gap/2).toFixed(1)}" y="${pad.t-24}" width="${(cw+gap).toFixed(1)}" height="${(chartH+24+pad.b).toFixed(1)}" fill="transparent"><title>${lab}: ${b.items.length} — click for the list</title></rect>`;
     b.items.forEach((it,j)=>{
-      const y=baseY-(j+1)*th;
-      out+=`<a href="/company/${it.tk}/"><rect x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}" width="${cw.toFixed(1)}" height="${Math.max(1,th-2).toFixed(1)}" rx="2" fill="${tint(i)}"><title>${it.tk} · ${(it.ret>=0?"+":"")+it.ret.toFixed(0)}% · ${(PANEL.find(p=>p.tk===it.tk)||{}).ceo||""} · ${lab}</title></rect>`;
+      const y=baseY-(b.items.length-j)*th;   /* item 0 at the top of the stack, under its callout */
+      const mk=marquee.has(it.tk)&&!labelled;
+      out+=`<a href="/company/${it.tk}/"><rect x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}" width="${cw.toFixed(1)}" height="${Math.max(1,th-2).toFixed(1)}" rx="2" fill="${tint(i)}"${mk?' stroke="var(--ink)" stroke-width="1.2"':""}><title>${it.tk} · ${(it.ret>=0?"+":"")+it.ret.toFixed(0)}% · ${(PANEL.find(p=>p.tk===it.tk)||{}).ceo||""} · ${lab}</title></rect>`;
       if(labelled)out+=`<text x="${(x+cw/2).toFixed(1)}" y="${(y+th/2+3.5).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="${i<zero?(i<=zero-3?"#fff":"#5a1414"):(i>=zero+3?"#fff":"#0c3d27")}">${it.tk}</text>`;
       out+=`</a>`;
     });
     if(b.items.length)out+=`<text x="${(x+cw/2).toFixed(1)}" y="${(baseY-b.items.length*th-6).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--mut)"><title>${lab}: ${b.items.length}</title>${b.items.length}</text>`;
+    if(!labelled){
+      /* the callouts: up to three named tiles per bin, listed above the
+         count in the order they sit at the top of the stack */
+      const named=b.items.filter(it=>marquee.has(it.tk)).slice(0,3);
+      named.forEach((it,k)=>{
+        out+=`<text x="${(x+cw/2).toFixed(1)}" y="${(baseY-b.items.length*th-20-k*13).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="var(--ink)"><title>${it.tk} · ${(it.ret>=0?"+":"")+it.ret.toFixed(0)}%</title>${it.tk}</text>`;
+      });
+    }
     out+=`</g>`;
   });
   out+=`</svg>`;
@@ -1438,7 +1466,9 @@ function renderDist(d){
   box.innerHTML=cap+distChart(dist,edges);
   box.querySelectorAll(".dbin").forEach(g=>g.addEventListener("click",e=>{
     if(e.target.closest("a"))return;            /* a tile goes to its page; the bin goes to the screener */
-    state.tbI=true;state.sort={key:"ret",dir:-1};renderTable();
+    state.tbI=true;state.sort={key:"ret",dir:-1};
+    state.tbRange={lo:g.dataset.lo===""?null:+g.dataset.lo,hi:g.dataset.hi===""?null:+g.dataset.hi};
+    renderTable();
     const t=$("#table");if(t&&t.scrollIntoView)t.scrollIntoView({behavior:"smooth"});
     hit("click","distbin",g.dataset.lo+".."+g.dataset.hi);
   }));
@@ -1661,6 +1691,8 @@ function renderTable(){
   paintSw("fchip",state.tbF);
   paintSw("hchip",state.tbH);
   paintSw("ichip",state.tbI);
+  {const rc=$("#rangechip");if(rc){const rg=state.tbRange;rc.classList.toggle("hide",!rg);
+    if(rg)rc.innerHTML=`Return ${binLabel(rg.lo,rg.hi)} <span class="x">×</span>`;}}
   const {last,sold}=lastTrades();
   /* the Return column follows the performance chart's window */
   let rets=null;
@@ -1678,7 +1710,9 @@ function renderTable(){
   }
   let rows=PANEL.filter(r=>{
     const q=state.q.toLowerCase();
-    const fOK=fOnly(r.tk,state.tbF)&&(!state.tbH||r.ns)&&(!state.tbI||(rets&&r.tk in rets));
+    const rg=state.tbRange;
+    const inRange=!rg||(r.ret!==undefined&&r.ret!==null&&(rg.lo===null||r.ret>=rg.lo)&&(rg.hi===null||r.ret<rg.hi));
+    const fOK=fOnly(r.tk,state.tbF)&&(!state.tbH||r.ns)&&(!state.tbI||(rets&&r.tk in rets))&&inRange;
     /* SEALED COMPANIES ARE NOT ROWS. The free table is the S&P 500,
        complete; the sealed remainder exists as a stated fact (hero and
        footer), not as 1,635 rows of dashes. A subscriber's panel has no
@@ -2195,7 +2229,7 @@ function evPctCell(e){
   if(unchangedKind(e)!==null)return '<span class="nopr" title="the shares sold did not come out of the position on record — a percentage of a stake that did not move is not a number">unchanged</span>';
   const p=pctOf(e);
   if(!p)return `<span class="nopr" title="${pctWhy(e)}">—</span>`;
-  const t=p.approx?`<span class="apx" title="${approxNote(e)}">≈ `:"";
+  const t=p.approx?`<span class="approx" title="${approxNote(e)}">≈ `:"";
   const c=p.approx?"</span>":"";
   if(p.v>=100)return `${t}<span title="${Math.round(p.v).toLocaleString()}% — the trade was many times the position on record before it">≥100%</span>${c}`;
   return t+p.v.toFixed(p.v<1?2:1)+"%"+c;
@@ -2473,7 +2507,7 @@ function renderDay(){
     const pp=pctOf(e);
     const pc=side==="exsell"?`<span title="options exercised and the shares sold the same day — the stake did not move">stake unchanged</span>`
       :!pp?`<span class="nopr" title="${pctWhy(e)}">share of stake not stated</span>`
-      :`${pp.approx?`<span class="apx" title="${approxNote(e)}">≈ </span>`:""}${side==="buys"?"+":"−"}${pp.v>=100?"100%+":pp.v.toFixed(pp.v<1?2:1)+"%"} of stake`;
+      :`${pp.approx?`<span class="approx" title="${approxNote(e)}">≈ </span>`:""}${side==="buys"?"+":"−"}${pp.v>=100?"100%+":pp.v.toFixed(pp.v<1?2:1)+"%"} of stake`;
     const man=side==="exsell"?"":e.pl==="plan"?` · <span title="sold under a Rule 10b5-1 plan, set up long before the trade date and executed automatically">planned</span>`:e.pl==="discretionary"?` · <span title="not under a pre-set plan — their own decision, at their own timing">discretionary</span>`:"";
     const when=`<span class="dtd" title="the trade date; the filing reached EDGAR ${e.fd}${lagNote(e)}">traded ${shortDay(e.td||e.fd)}</span>`;
     return `<div class="dayrow" onclick="openDrawer('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
