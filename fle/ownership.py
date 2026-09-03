@@ -143,7 +143,7 @@ class Ownership:
     # assertions; with them it is a worksheet.
     form4_url: str = ""
     remarks: str = ""              # the newest filing's remark, verbatim (structural presence; prose never parsed)
-    direct_classes: str = ""       # classes with shares held DIRECTLY in the tables ("class b common stock|...")
+    shares_tabled: float | None = None   # when a supplement was injected: what the tables alone report
     cover_url: str = ""
 
     @property
@@ -356,25 +356,16 @@ def build(client, cik: int, company: str = "", ticker: str = "",
         f"{t} = {v:,.0f}" for t, v in
         sorted(led.unnamed_class.items(), key=lambda kv: -kv[1])[:3])
     rec.converted = "|".join(sorted(set(led.converted)))
-    # WHICH CLASSES THE TABLES REPORT AS HELD DIRECTLY. A curated addition
-    # (fle/exclusions.py) exists because a filer left a directly held class
-    # out of the tables; the day a table reports it, the tables win and the
-    # addition suspends. Vehicle keys are (direct, nature); "D" is direct.
-    # Recorded as the ledger's own designator ("class:B", "series:A",
-    # ":" for an undesignated common) so that "Class B", "Class B Common
-    # Stock" and "Restricted Class B Common Stock, par value $0.001" are
-    # one class to the guard, exactly as they are one class to the walk.
-    from .ledger import title_letter
-    direct = []
-    for g in led.groups.values():
-        held = 0.0
-        for v, n in list(g.last_txn.items()) + list(g.hold_by_vehicle.items()):
-            if isinstance(v, tuple) and v and v[0] == "D":
-                held += n or 0.0
-        if held > 0:
-            tl = title_letter(g.security)
-            direct.append(f"{tl[0]}:{tl[1]}" if tl else g.security.strip().lower())
-    rec.direct_classes = "|".join(sorted(set(direct)))
+    # A SUPPLEMENT THE WALK INJECTED (fle/exclusions.py): the row says so,
+    # keeps the tables' own figure beside the total, and carries the receipt.
+    if led.supplemented and rec.shares is not None:
+        added = sum(sh for sh, _ in led.supplemented.values())
+        rec.shares_tabled = rec.shares - added
+        rec.stake_source = "manual"
+        for sec, (sh, note) in led.supplemented.items():
+            rec.graded.append(("caution",
+                f"includes {int(sh):,} shares of {sec} the filings disclose in a remark rather than a table; "
+                f"{int(rec.shares_tabled):,} in the tables. {note}"))
     rec.filings_read = led.filings_read
     rec.settled = led.settled
     rec.form4_url = led.last_url

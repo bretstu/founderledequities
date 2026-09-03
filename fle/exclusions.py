@@ -30,19 +30,27 @@ The same thing S&P Global does, which is what Simply Wall St resells: a
 person reads the filing and records the decision. Smaller, and more honest,
 because the reasoning is written down where it can be checked.
 
-THE SAME FILE RUNS THE OTHER WAY.
+THE SAME FILE RUNS THE OTHER WAY: SUPPLEMENTS.
 
 Musk's SpaceX Forms 3 and 4 both state, in a remark, that 1,302,072,285
 restricted Class B shares "issued to and held of record by the Reporting
 Person" are not in their tables -- shares the prospectus counts as
 outstanding. The tables under-report; a sentence says by how much. No regex
 or model turns that sentence into a number here. A person reads it once and
-records the number in this file, with the filing as source, as an ADDITION:
-an entry with a `shares` column. The panel adds it after the walk, labels
-the row's source `manual`, keeps the tables' figure beside it, and writes
-the receipt into the row's cautions. An addition lapses on its own the day
-the newest filing stops carrying a remark (see panel.apply_additions), so
-a hand-recorded number can never outlive its source.
+records the number in this file, with the filing as source, as a SUPPLEMENT:
+an entry with a `shares` column and the owner's CIK. The walk then treats
+every one of that owner's filings that still states the figure in its
+remark AS IF the filer had written one more table line: the class, held
+directly, that many shares. Every stage downstream -- the panel, the
+history, the events, the split adjustments -- inherits it the way it
+would a real line. The row is labelled `manual` and carries the receipt.
+
+It stops on its own. A filing whose remark no longer states the figure
+gets no line (a vested tranche, a typo, a change of position); a filing
+whose tables already report the class held directly gets no line (the
+tables win); and a filing by anyone else gets nothing (a successor does
+not inherit). No prose is interpreted: the rule matches a recorded digit
+string, it never extracts one.
 
 RULES FOR ENTRIES.
 
@@ -50,8 +58,9 @@ RULES FOR ENTRIES.
   - the panel reports every entry applied; nothing is silently adjusted.
   - an entry names ONE class at ONE company. It cannot affect anything else.
   - an exclusion (no `shares`) does not expire: the filing will not change.
-  - an addition (`shares` set) applies only while the newest filing carries
-    a remark, and says so on the row when it lapses.
+  - a supplement (`shares` set) is injected only into filings by the named
+    owner whose remark still states the figure and whose tables do not
+    already report the class held directly.
 """
 from __future__ import annotations
 
@@ -73,9 +82,9 @@ class Exclusion:
     direct: str = ""               # "D", "I", or blank for both
     reason: str = ""
     source: str = ""
-    shares: float | None = None    # set: an ADDITION the tables leave out; unset: an exclusion
-    owner_cik: str = ""            # an addition belongs to a PERSON; it applies only to that owner's row
-    since: str = ""                # an addition applies from this date (the filing that stated it)
+    shares: float | None = None    # set: a SUPPLEMENT the tables leave out; unset: an exclusion
+    owner_cik: str = ""            # a supplement belongs to a PERSON; only that owner's filings get it
+    since: str = ""                # informational: the filing that first stated it
 
     @property
     def is_addition(self) -> bool:
@@ -93,8 +102,9 @@ class Exclusions:
     path: str = ""
 
     def for_issuer(self, cik) -> list:
-        """The exclusions for an issuer -- what the walk removes."""
-        return [e for e in self.by_cik.get(str(int(cik)), []) if not e.is_addition]
+        """Every entry for an issuer: exclusions (what the walk removes) and
+        supplements (what the walk injects); each stage picks its kind."""
+        return list(self.by_cik.get(str(int(cik)), []))
 
     def additions_for(self, ticker: str) -> list:
         """The additions for a ticker -- what the panel adds after the walk."""
@@ -135,8 +145,7 @@ def read_exclusions(path: str | None = None) -> Exclusions:
                 if not (row.get("owner_cik") or "").strip().isdigit():
                     # a PERSON holds the shares; a new chief executive must not inherit them
                     raise ValueError(f"{p}: {row.get('ticker') or cik} adds shares without the owner's CIK")
-                if not re.match(r"\d{4}-\d{2}-\d{2}$", (row.get("since") or "").strip()):
-                    raise ValueError(f"{p}: {row.get('ticker') or cik} adds shares without a since date (the filing that stated them)")
+
             out.by_cik.setdefault(str(int(cik)), []).append(Exclusion(
                 cik=str(int(cik)),
                 ticker=(row.get("ticker") or "").strip().upper(),
@@ -147,3 +156,13 @@ def read_exclusions(path: str | None = None) -> Exclusions:
                 owner_cik=str(int(row.get("owner_cik"))) if shares is not None else "",
                 since=(row.get("since") or "").strip()))
     return out
+
+
+def figure_stated(text: str, n: float) -> bool:
+    """Is the recorded figure asserted in the text? Commas, spaces and thin
+    spaces between digits are ignored; the match must be a whole number,
+    not a substring of a longer one. String matching, never interpretation."""
+    if not text:
+        return False
+    flat = re.sub(r"(?<=\d)[,\s\u202f\u00a0](?=\d)", "", text)
+    return re.search(rf"(?<!\d){int(n)}(?!\d)", flat) is not None

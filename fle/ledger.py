@@ -517,6 +517,40 @@ def _owners(root) -> list[tuple[str, str, str, bool]]:
 
 
 
+def supplement_rows(root, rows: list, form: str, when: str, acc: str, entries) -> list:
+    """SHARES THE FILER STATES IN A REMARK, AS ONE MORE TABLE LINE.
+
+    Musk's SpaceX Forms 3 and 4 say, in their remarks, that 1,302,072,285
+    restricted Class B shares held of record by him are not in the tables.
+    A person recorded that figure in universe/exclusions.csv with the filing
+    as source. Here, a filing by that owner whose remark still states the
+    figure, and whose tables do not already report the class held directly,
+    gets the line the filer left out: the class, direct, that many shares.
+    Every downstream stage then treats it as it would a real line. No prose
+    is read: the rule matches a recorded digit string."""
+    adds = [e for e in (entries or ()) if getattr(e, "is_addition", False)]
+    if not adds:
+        return []
+    from .exclusions import figure_stated
+    owner = (root.findtext("reportingOwner/reportingOwnerId/rptOwnerCik") or "").strip().lstrip("0")
+    remark = (root.findtext("remarks") or "")
+    out = []
+    for a in adds:
+        if a.owner_cik and owner != a.owner_cik.lstrip("0"):
+            continue
+        if not figure_stated(remark, a.shares):
+            continue
+        title = (a.security or "").split("(")[0].strip()
+        tl = title_letter(title)
+        if any(r.direct == "D" and (title_letter(r.security) == tl if tl else
+                                     r.security.strip().lower() == title.lower()) for r in rows):
+            continue   # the tables report it now; they win
+        out.append(Line(security=title, direct="D", nature=None,
+                        notes=f"supplement: stated in the filing's remark, recorded from {a.source}",
+                        shares=float(a.shares), as_of=when, accession=acc, form=form, table="I"))
+    return out
+
+
 def _rows(root, form: str, when: str, acc: str) -> list[Line]:
     """Table I in document order, then Table II's share classes."""
     out = []
@@ -702,6 +736,7 @@ class Ledger:
     discovered_classes: set = field(default_factory=set)  # counted, absent from cover
     # label -> (shares, reason, source), from the curated list
     excluded: dict = field(default_factory=dict)
+    supplemented: dict = field(default_factory=dict)   # {security: (shares, note)} lines the walk injected
 
     @property
     def total(self) -> float:
@@ -968,6 +1003,11 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
         led.first_filing = when
 
         rows = _rows(root, form, when, acc)
+        extra = supplement_rows(root, rows, form, when, acc, exclude)
+        if extra:
+            rows = rows + extra
+            for x in extra:
+                led.supplemented.setdefault(x.security, (x.shares, x.notes))
 
         # Flows are a different question -- every transaction ever, not a
         # position -- so they read every filing, not just the settling one.
@@ -1094,7 +1134,8 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
         # is no rule for this.
         for key in list(here):
             hit = next((e for e in exclude
-                        if e.matches(here[key].security, here[key].direct)),
+                        if not getattr(e, "is_addition", False)
+                        and e.matches(here[key].security, here[key].direct)),
                        None)
             if hit:
                 led.excluded.setdefault(
