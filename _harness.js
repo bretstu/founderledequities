@@ -506,8 +506,9 @@ const P=runPage();
      assert(Math.abs(P.perfReturns(full).spy-20)<1,"over the whole record, the benchmark's full 20%");
      assert(!dist.items.some(i=>i.tk==="LATE")&&dist.skipped===1,"the late entrant has no close at the window's start and is counted as listed too recently, not placed");
      const {svg,bins,tint}=P.distChart(dist,P.perfBins("12"));
-     assert((svg.match(/<a href="\/company\/[^"]+"><rect /g)||[]).length===dist.items.length,"one tile per company (the transparent hit areas are not tiles)");
-     assert((svg.match(/<a href="\/company\//g)||[]).length===dist.items.length,"every tile is a door to its company page");
+     assert((svg.match(/<rect x=/g)||[]).length===dist.items.length,"one tile per company (the transparent hit areas are not tiles)");
+     {const crownedN=bins.reduce((n,b)=>n+Math.min(3,b.items.length),0);
+      assert((svg.match(/<a href="\/company\//g)||[]).length===crownedN,"only a named tile is a link; a block is part of the column");}
      assert(svg.includes("S&amp;P 500 +10%"),"the benchmark is marked where it lands");
      assert(svg.includes(">0%<")&&svg.includes(">+40%<")&&svg.includes(">-40%<"),"the axis is the edges between the bins");
      assert(!/<text[^>]*>[^<]*to \+/.test(svg),"no range label under each bin -- the edges say it (ranges live only in hover titles)");
@@ -520,7 +521,7 @@ const P=runPage();
       for(let k=0;k<120;k++)many.items.push({tk:"T"+k,ret:1+k*0.05});   /* all in the 0..+10% bin */
       const big=P.distChart(many,P.perfBins("12"));
       assert((big.svg.match(/class="crown"/g)||[]).length===3,"a hundred-deep bin still shows exactly three names");
-      assert((big.svg.match(/<a href="\/company\//g)||[]).length===120,"and every one of the hundred is a tile");
+      assert((big.svg.match(/<rect x=/g)||[]).length===120&&(big.svg.match(/<a href="\/company\//g)||[]).length===3,"every one of the hundred is a tile; only the three named ones are links");
       // the panel: the bucket by name, sorted by return, every one a door
       const full=big.bins.find(b=>b.items.length===120);
       const panel=P.distPanel(full,big.bins.indexOf(full),big.tint);

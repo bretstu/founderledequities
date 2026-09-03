@@ -1447,9 +1447,12 @@ function distChart(dist,edges,{w=940}={}){
     let y=baseY-colH;
     b.items.forEach((it,j)=>{
       const crowned=j<nc;const hh=crowned?CH:th;
-      out+=`<a href="/company/${it.tk}/"><rect x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}" width="${cw.toFixed(1)}" height="${Math.max(1,hh-2).toFixed(1)}" rx="2" fill="${tint(i)}"><title>${it.tk} · ${(it.ret>=0?"+":"")+it.ret.toFixed(0)}% · ${(PANEL.find(p=>p.tk===it.tk)||{}).ceo||""} · ${lab}</title></rect>`;
-      if(crowned)out+=`<text class="crown" x="${(x+cw/2).toFixed(1)}" y="${(y+CH/2+3.5).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="${ink(i)}" pointer-events="none">${it.tk}</text>`;
-      out+=`</a>`;
+      /* ONLY A NAMED TILE IS A LINK. A block you cannot read is part of the
+         column: hovering names it, clicking opens the bucket. Otherwise a
+         click meant for the column sometimes left the page. */
+      const tile=`<rect x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}" width="${cw.toFixed(1)}" height="${Math.max(1,hh-2).toFixed(1)}" rx="2" fill="${tint(i)}"><title>${it.tk} · ${(it.ret>=0?"+":"")+it.ret.toFixed(0)}% · ${(PANEL.find(p=>p.tk===it.tk)||{}).ceo||""} · ${lab}${crowned?"":" — click for everyone in it"}</title></rect>`;
+      if(crowned)out+=`<a href="/company/${it.tk}/">${tile}<text class="crown" x="${(x+cw/2).toFixed(1)}" y="${(y+CH/2+3.5).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="${ink(i)}" pointer-events="none">${it.tk}</text></a>`;
+      else out+=tile;
       y+=hh;
     });
     if(n)out+=`<text x="${(x+cw/2).toFixed(1)}" y="${(baseY-colH-6).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--mut)">${n}</text>`;
