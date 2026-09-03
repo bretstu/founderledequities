@@ -2382,10 +2382,12 @@ function filingDays(){
 function dayRows(day,all){
   /* the strip lists trades that moved a stake; the table (all=true) holds
      every trade of the day, the unchanged ones badged for what they are */
+  /* LARGEST FIRST, BUYS AND SALES TOGETHER. The badge carries the side; the
+     order carries the size, so the day's biggest trade is the first line
+     whichever way it went. Kept-apart trades stay beneath the line. */
   return EVENTS.filter(e=>e.fd===day&&(all||unchangedKind(e)===null)).sort((a,b)=>{
-    const sa=evSide(a),sb=evSide(b);
-    const r={buys:0,sells:1,exsell:2,"":3};
-    if(r[sa]!==r[sb])return r[sa]-r[sb];
+    const ka=unchangedKind(a)===null?0:1,kb=unchangedKind(b)===null?0:1;
+    if(ka!==kb)return ka-kb;
     return ((b.fl?0:b.v)||0)-((a.fl?0:a.v)||0);
   });
 }

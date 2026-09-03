@@ -107,9 +107,10 @@ const P=runPage();
   assert(rows.every(e=>P.unchangedKind(e)===null),"the strip lists only trades that moved a stake");
   const allDay=dayRows(newest,true);
   assert(allDay.length>=rows.length&&allDay.every(e=>e.fd===newest),"the day's table holds every trade: "+allDay.length);
-  const sides=rows.map(P.evSide);
-  const firstSell=sides.indexOf("sells"),lastBuy=sides.lastIndexOf("buys");
-  assert(firstSell<0||lastBuy<firstSell,"purchases lead the day, then stake reductions");
+  const vals=rows.map(e=>(e.fl?0:e.v)||0);
+  assert(vals.every((v,i)=>i===0||v<=vals[i-1]),"the day's rows run largest to smallest by value, buys and sales together");
+  const kinds=allDay.map(e=>P.unchangedKind(e)===null?0:1);
+  assert(kinds.every((k,i)=>i===0||k>=kinds[i-1]),"and the kept-apart trades stay beneath the line");
   if(allDay.length>rows.length){
     assert(els["#actday"]._html.includes("Also filed:")&&els["#actday"]._html.includes("kept apart"),
       "a day with unchanged-stake sales says so in one line beneath the strip");
