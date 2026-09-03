@@ -61,7 +61,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,nFilings,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,soldTickers,sparkline,lastTrades,exportTable,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,nFilings,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evFiltered,evValCell,evPctCell,evTable,openDrawer,money,sortTape,renderFeed,sellKind,evBase,evSide,mannerOK,toggleKind,setKind,setView,setWin,evAgg,evColumn,renderCols,renderDay,dayShown,dayRows,dayText,gotoDay,filingDays,trajStats,soldTickers,sparkline,lastTrades,exportTable,chartBlock,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,renderPerf,perfReturns,perfBins,distChart,renderDist,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -497,6 +497,38 @@ const P=runPage();
     assert(svg.includes("Founders index")&&svg.includes("S&amp;P 500 (SPY)"),
       "end labels name the lines, not a dollar figure first");
     assert(P.state.pw==="60","a five-year record defaults to the 5-year preset, max chip hidden");
+    // ---- inside the index: the distribution behind the line ----
+    {const d=P.perfWindow(full,"12");
+     const dist=P.perfReturns(d);
+     assert(dist.items.length>=5&&dist.items.every(i=>typeof i.ret==="number"),"a return per constituent with a close at both ends of the window");
+     assert(Math.abs(dist.spy-10)<1,"and the benchmark's own return over the same window (half its two-year 20%): "+dist.spy);
+     assert(Math.abs(P.perfReturns(full).spy-20)<1,"over the whole record, the benchmark's full 20%");
+     assert(!dist.items.some(i=>i.tk==="LATE")&&dist.skipped===1,"the late entrant has no close at the window's start and is counted as listed too recently, not placed");
+     const svg=P.distChart(dist,P.perfBins("12"));
+     assert((svg.match(/<rect /g)||[]).length===dist.items.length,"one tile per company");
+     assert((svg.match(/<a href="\/company\//g)||[]).length===dist.items.length,"every tile is a door to its company page");
+     assert(svg.includes("S&amp;P 500 +10%"),"the benchmark is marked where it lands");
+     assert(svg.includes(">0%<")&&svg.includes(">+40%<")&&svg.includes(">-40%<"),"the axis is the edges between the bins");
+     assert(!svg.includes("to +"),"no range label under each bin -- the edges say it");
+     els["#perfdist"]=els["#perfdist"]||el("#perfdist");
+     P.renderDist(d);
+     assert(els["#perfdist"]._html.includes("beat the S&amp;P 500"),"the caption says how many beat the benchmark");
+     // the bins scale with the window
+     assert(P.perfBins("12").length===9&&P.perfBins("60")[0]===-75&&P.perfBins("60").slice(-1)[0]===500,"a year moves in tens, five years in hundreds");
+     // the screener follows: a Return column and the index chip
+     const savedPanel2=P.PANEL;
+     /* FE is FirstEnergy, a real S&P company: never inject a row the panel already has */
+     P.PANEL=[...savedPanel2,...dist.items.filter(i=>!savedPanel2.some(p=>p.tk===i.tk)).map(i=>({tk:i.tk,co:"Co "+i.tk,ceo:"A Founder",pct:5,sh:1,out:1,val:1e9,conf:"high"}))];
+     P.state._perfWin=d;P.state.tbI=true;P.state.q="";P.state.min=0;P.state.tbF=false;P.state.tbH=false;P.state.sort={key:"ret",dir:-1};
+     P.renderTable();
+     const tb=els["#tbody"]._html;
+     assert(/c-ret"><span class="d3 (up|down|flat)"[^>]*><b>[+−]\d+%<\/b>/.test(tb),"a Return column with a signed figure");
+     const shown=[...tb.matchAll(/onclick="openDrawer\('([A-Z0-9.-]+)'\)"/g)].map(m=>m[1]);
+     const uniq=new Set(shown);
+     assert(uniq.size===dist.items.length&&shown.every(tk=>dist.items.some(i=>i.tk===tk)),"the Founders index chip keeps only constituents: "+[...uniq].join(","));
+     P.state.tbI=false;P.renderTable();
+     assert(els["#tbody"]._html.includes("not in the Founders index"),"a company outside the index shows a dash in the column");
+     P.PANEL=savedPanel2;P.state.sort={key:"pct",dir:-1};}
     assert(els["#perfnote"]._html.includes("portrait, not a strategy"),
       "the caveat ships with the chart");
     P.FOUNDERS=savedF;

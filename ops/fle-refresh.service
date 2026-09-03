@@ -8,7 +8,10 @@ Type=oneshot
 # --- edit these three paths/values for the mini PC ---
 User=bretstu
 WorkingDirectory=/home/bretstu/projects/founderledequities
-Environment=FLE_USER_AGENT=FounderLedEquities bretstu corrections@founderledequities.com
+# The EDGAR user agent lives in .env (FLE_USER_AGENT="Name email"), which
+# the pipeline reads on start. Do NOT set it here: systemd splits an unquoted
+# value on spaces, the contact address is dropped, and EDGAR answers 403 to
+# every request -- which is how the night of 2026-09-03 was lost.
 # a real contact address in the user agent is what keeps EDGAR from 403ing you
 Environment=FLE_DEPLOY_CMD=/home/bretstu/projects/founderledequities/ops/deploy.sh
 # optional: a healthchecks.io (or similar) ping URL; pages you when a night fails
