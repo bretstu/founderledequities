@@ -570,7 +570,7 @@ def cmd_panel(args) -> int:
         excl = read_exclusions(args.exclusions)
         n_add = sum(1 for es in excl.by_cik.values() for e in es if e.is_addition)
         if n_add:
-            print(f"  {n_add} cited addition(s) in {excl.path} -- shares the filing tables leave out")
+            print(f"  {n_add} supplement(s) in {excl.path} -- shares a filer states in a remark, injected as table lines")
         rows = run_panel(client, members, args.checkpoint, redo=args.redo,
                          exclusions=excl,
                          on_row=row_done, on_filing=on_filing,
