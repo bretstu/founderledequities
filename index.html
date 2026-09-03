@@ -412,8 +412,8 @@ td.src a:hover{color:var(--blue)}
 #perfchart svg{width:100%;height:auto;display:block}
 .distbox{margin-top:26px}
 .distbox svg{width:100%;height:auto;display:block}
-.distbox .dbin:hover rect,.distbox .dbin.open rect{filter:brightness(0.9)}
-.distbox .dbin:hover .hit,.distbox .dbin.open .hit{fill:var(--wash)}
+.distbox .dbin:hover .hit{stroke:var(--line2);stroke-width:1.2}
+.distbox .dbin.open .hit{stroke:var(--ink);stroke-width:1.2}
 .distcap .hint{color:var(--faint)}
 .dpanel{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:14px 16px 16px;background:#fff}
 .dph{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--mut);margin-bottom:12px}
@@ -1415,13 +1415,16 @@ function distChart(dist,edges,{w=940}={}){
   const th=maxRest?Math.min(12,restH/maxRest):12;   /* a block */
   const chartH=3*CH+restH;
   const h=pad.t+chartH+pad.b;
+  /* bin i ends at edges[i]; a bin ending AT zero is a loss, not a gain */
   const zero=edges.indexOf(0);
+  const negBins=zero+1,posBins=cols-negBins;
+  const isNeg=i=>i<=zero;
   const tint=(i)=>{
-    const neg=i<zero;const k=neg?(zero-i):(i-zero+1);const steps=neg?zero:(cols-zero);
+    const neg=isNeg(i);const k=neg?(zero-i+1):(i-zero);const steps=neg?negBins:posBins;
     const a=0.22+0.78*Math.min(1,k/steps);
     return neg?`rgba(194,42,42,${a.toFixed(2)})`:`rgba(11,122,75,${a.toFixed(2)})`;
   };
-  const ink=(i)=>i<zero?(i<=zero-3?"#fff":"#5a1414"):(i>=zero+3?"#fff":"#0c3d27");
+  const ink=(i)=>isNeg(i)?(i<=zero-2?"#fff":"#5a1414"):(i>=zero+3?"#fff":"#0c3d27");
   let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="distribution of returns across the founder-led companies">`;
   const baseY=pad.t+chartH;
   const fx=v=>{const i=place(v);const b=bins[i];const x=pad.l+i*(cw+gap);
@@ -1472,7 +1475,7 @@ function distPanel(bin,i,tint){
      in the bin as a readable tile, sorted by return, each a door to its
      page. A × closes it; a small link hands the same set to the screener. */
   const lab=binLabel(bin.lo,bin.hi);
-  const items=[...bin.items].sort((a,b)=>b.ret-a.ret);
+  const items=[...bin.items].sort((a,b)=>a.ret-b.ret);   /* lowest to highest */
   const tiles=items.map(it=>{const p=PANEL.find(r=>r.tk===it.tk)||{};
     return `<a class="dtile" href="/company/${it.tk}/" style="background:${tint(i)}" title="${(p.ceo||"")} · ${(p.co||"")}"><b>${it.tk}</b><span>${(it.ret>=0?"+":"")+it.ret.toFixed(0)}%</span></a>`;}).join("");
   return `<div class="dpanel" data-i="${i}">

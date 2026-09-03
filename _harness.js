@@ -533,7 +533,11 @@ const P=runPage();
       assert((panel.match(/class="dtile"/g)||[]).length===120,"the panel names everyone in the bucket");
       assert(panel.includes("120 companies")&&panel.includes("Open these in the screener"),"with the count and a way to the screener");
       const order=[...panel.matchAll(/<b>(T\d+)<\/b>/g)].map(m=>m[1]);
-      assert(order[0]==="T119"&&order[119]==="T0","sorted by return, best first");}
+      assert(order[0]==="T0"&&order[119]==="T119","sorted by return, lowest first");
+      // a bin that ends at zero is a loss: red, not green
+      const z=P.perfBins("12").indexOf(0);
+      const tints=[...svg.matchAll(/height="34" rx="3" fill="(rgba\((\d+)[^)]*\))"/g)].map(m=>m[2]);
+      assert(tints[z]==="194"&&tints[z+1]==="11","the -10% to 0% box is red and the 0% to +10% box is green");}
      els["#perfdist"]=els["#perfdist"]||el("#perfdist");
      P.renderDist(d);
      assert(els["#perfdist"]._html.includes("beat the S&amp;P 500"),"the caption says how many beat the benchmark");
