@@ -549,9 +549,9 @@ const P=runPage();
      assert(els["#perfdist"]._html.includes("beat the S&amp;P 500 over the same months"),"the caption says how many beat the benchmark, each over its own months");
      assert(els["#perfdist"]._html.includes("joined during the window"),"and how many joined during the window");
      assert(!els["#perfdist"]._html.includes("too recently"),"no 'too recently' bucket: every constituent is in a bin");
-     assert(/fill-opacity="0.55"/.test(els["#perfdist"]._html)&&/<circle /.test(els["#perfdist"]._html),"an entrant's tile is lighter and marked with a dot");
+     assert(!/fill-opacity="0.55"/.test(els["#perfdist"]._html)&&/<circle /.test(els["#perfdist"]._html)&&els["#perfdist"]._html.includes('class="dotkey"'),"an entrant's tile is marked with a dot, and the caption carries the key");
      // the bins scale with the window
-     assert(P.perfBins("12").length===9&&P.perfBins("60")[0]===-75&&P.perfBins("60").slice(-1)[0]===500,"a year moves in tens, five years in hundreds");
+     assert(P.perfBins("12").length===12&&P.perfBins("12").slice(-1)[0]===100&&P.perfBins("60")[0]===-75&&P.perfBins("60").slice(-1)[0]===500,"a year moves in tens with room to +100%, five years in hundreds");
      // the screener follows: a Return column and the index chip
      const savedPanel2=P.PANEL;
      /* FE is FirstEnergy, a real S&P company: never inject a row the panel already has */
