@@ -743,7 +743,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
         title="only the companies in the Founders index — the cohort the performance chart is drawn from">Founders index<span class="tr"><i></i></span></span>
     <span class="fsw" id="hchip" role="switch" aria-checked="false" tabindex="0"
         title="not one stake-reducing sale on record since the company was public — options cashed and units converted the same day don't count against anyone">Never sold<span class="tr"><i></i></span></span>
-    <button class="chip rangechip hide" id="rangechip" onclick="state.tbRange=null;renderTable()" title="set by a click on the distribution above; click to clear"></button>
+    <button class="chip rangechip hide" id="rangechip" onclick="state.tbRange=null;state.retWin='36';renderTable()" title="set by a click on the distribution above; click to clear"></button>
     <button class="chip export" onclick="exportTable()" title="the rows as filtered and sorted, every field, as a CSV">Export CSV ↓</button>
   </div>
   <!-- NO HORIZONTAL SCROLL. Ten columns, fixed widths that add up to the
@@ -767,7 +767,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
       <th class="sortable n" data-key="val" title="the stake's value: shares held at the latest close">Value<span class="arr"></span></th>
       <th class="sortable n h-mc" data-key="mcap" title="market capitalization: shares outstanding at the latest close">Mkt cap<span class="arr"></span></th>
       <th class="sortable n h-d3" data-key="d3" title="the ownership percentage now against three years ago">3-yr change<span class="arr"></span></th>
-      <th class="sortable n h-ret" data-key="ret" title="price return over the performance chart's window, for the companies in the Founders index">Return<span class="arr"></span></th>
+      <th class="sortable n h-ret" data-key="ret" title="price return over the last 3 years, for the companies in the Founders index">3-yr return<span class="arr"></span></th>
       <th class="sortable h-lt" data-key="lt" title="the newest trade that moved the public-company stake: what, how much, and the trade date">Last trade<span class="arr"></span></th>
       <th class="sortable c h-ns" data-key="ns" title="not one stake-reducing sale since the company was public">Never sold<span class="arr"></span></th>
       <th class="sortable h-conf" data-key="conf">Confidence<span class="arr"></span></th>
@@ -889,7 +889,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,tbRange:null,distOpen:null,pc:"sp",pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
+const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,tbRange:null,retWin:"36",distOpen:null,pc:"sp",pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -1497,7 +1497,7 @@ function distPanel(bin,i,tint){
     return `<a class="dtile" href="/company/${it.tk}/" style="background:${tint(i)}" title="${(p.ceo||"")} · ${(p.co||"")}"><b>${it.tk}</b><span>${(it.ret>=0?"+":"")+it.ret.toFixed(0)}%</span></a>`;}).join("");
   return `<div class="dpanel" data-i="${i}">
     <div class="dph"><b>${lab}</b> · ${items.length} compan${items.length===1?"y":"ies"}
-      <a class="dpscreen" onclick="state.tbI=true;state.sort={key:'ret',dir:-1};state.tbRange={lo:${bin.lo===null?"null":bin.lo},hi:${bin.hi===null?"null":bin.hi}};renderTable();document.querySelector('#table').scrollIntoView({behavior:'smooth'})">Open these in the screener →</a>
+      <a class="dpscreen" onclick="state.tbI=true;state.sort={key:'ret',dir:-1};state.tbRange={lo:${bin.lo===null?"null":bin.lo},hi:${bin.hi===null?"null":bin.hi}};state.retWin=state.pw||'60';renderTable();document.querySelector('#table').scrollIntoView({behavior:'smooth'})">Open these in the screener →</a>
       <button class="dpx" onclick="closeDistPanel()" title="close">×</button></div>
     <div class="dtiles">${tiles}</div></div>`;
 }
@@ -1553,7 +1553,12 @@ function renderPerf(){
   $("#perfsub").textContent=`Growth of $10,000, ${d.from} to ${d.months[n-1]} — an equal-weight index of ${who}, against the S&P 500`;
   $("#perfchart").innerHTML=perfChart(d);
   renderDist(d);
-  state._perfWin=d;renderTable();   /* the screener's Return column follows the window */
+  /* THE SCREENER'S RETURN COLUMN FOLLOWS THE WINDOW, NOT THE COHORT CHIP.
+     A founder-led company with five years of prices has a return whether
+     or not the chart is currently showing the S&P subset; the column and
+     the Founders index chip always use the whole cohort. */
+  const pc=state.pc;state.pc="all";state._perfFull=perfSeries();state.pc=pc;
+  renderTable();
   $("#perfnote").innerHTML=`Equal weight, rebalanced monthly; split-adjusted month-end closes, dividends excluded on every line; companies enter when their price history begins. `
     +`Founders: ${cagr(d.founders).toFixed(1)}%/yr · S&amp;P 500 (SPY, cap-weighted): ${cagr(d.spy).toFixed(1)}%/yr`
     +(d.rsp?` · S&amp;P 500 equal weight (RSP): ${cagr(d.rsp).toFixed(1)}%/yr — the fair comparison for an equal-weight cohort`:"")+` over this window. `
@@ -1699,7 +1704,7 @@ function exportTable(){
      open set into a spreadsheet and screen it their own way. */
   const rows=state._rows||[];
   const cols=["ticker","company","chief_executive","founder","ownership_pct","shares_held","shares_outstanding",
-              "close","stake_value","market_cap","change_3y_pts","change_3y_since","return_pct","last_trade_date","last_trade",
+              "close","stake_value","market_cap","change_3y_pts","change_3y_since","return_pct_"+Math.round((+state.retWin||60)/12)+"y","last_trade_date","last_trade",
               "last_trade_value","never_sold","holding_as_of","confidence","form4_url"];
   const q=v=>{v=v===null||v===undefined?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
   const lines=[cols.join(",")];
@@ -1750,11 +1755,20 @@ function renderTable(){
   paintSw("hchip",state.tbH);
   paintSw("ichip",state.tbI);
   {const rc=$("#rangechip");if(rc){const rg=state.tbRange;rc.classList.toggle("hide",!rg);
-    if(rg)rc.innerHTML=`Return ${binLabel(rg.lo,rg.hi)} <span class="x">×</span>`;}}
+    if(rg){const y=Math.round((+state.retWin||60)/12);rc.innerHTML=`${y}-yr return ${binLabel(rg.lo,rg.hi)} <span class="x">×</span>`;}}}
   const {last,sold}=lastTrades();
   /* the Return column follows the performance chart's window */
+  /* THE RETURN COLUMN NAMES ITS OWN PERIOD. Three years by default, the
+     same window as the 3-yr change beside it, so the two columns answer
+     one question: what the stake did and what the stock did over the same
+     span. The distribution's hand-off is the one thing that changes it,
+     to the chart's window, and the header says so while the chip is on. */
   let rets=null;
-  if(state._perfWin){rets={};for(const it of perfReturns(state._perfWin).items)rets[it.tk]=it.ret;}
+  if(state._perfFull){state._perfWin=perfWindow(state._perfFull,state.retWin);
+    rets={};for(const it of perfReturns(state._perfWin).items)rets[it.tk]=it.ret;}
+  {const th=$("th.h-ret");if(th){const y=Math.round((+state.retWin||60)/12);
+    th.innerHTML=`${y}-yr return<span class="arr"></span>`;
+    th.title=`price return over the last ${y} year${y===1?"":"s"}, for the companies in the Founders index`+(state.tbRange?" (the distribution's window while its filter is on)":"");}}
   const H3=1095;
   for(const r of PANEL){
     if(r.masked)continue;

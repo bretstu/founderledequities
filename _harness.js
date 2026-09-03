@@ -549,8 +549,10 @@ const P=runPage();
      const savedPanel2=P.PANEL;
      /* FE is FirstEnergy, a real S&P company: never inject a row the panel already has */
      P.PANEL=[...savedPanel2,...dist.items.filter(i=>!savedPanel2.some(p=>p.tk===i.tk)).map(i=>({tk:i.tk,co:"Co "+i.tk,ceo:"A Founder",pct:5,sh:1,out:1,val:1e9,conf:"high"}))];
-     P.state._perfWin=d;P.state.tbI=true;P.state.q="";P.state.min=0;P.state.tbF=false;P.state.tbH=false;P.state.sort={key:"ret",dir:-1};
+     P.state._perfFull=full;P.state.retWin="12";P.state.tbI=true;P.state.q="";P.state.min=0;P.state.tbF=false;P.state.tbH=false;P.state.sort={key:"ret",dir:-1};
+     els["th.h-ret"]=els["th.h-ret"]||el("th.h-ret");
      P.renderTable();
+     assert((els["th.h-ret"]._html||"").includes("1-yr return"),"the column names its own period: "+els["th.h-ret"]._html);
      const tb=els["#tbody"]._html;
      assert(/c-ret"><span class="d3 (up|down|flat)"[^>]*><b>[+−]\d+%<\/b>/.test(tb),"a Return column with a signed figure");
      const shown=[...tb.matchAll(/onclick="openDrawer\('([A-Z0-9.-]+)'\)"/g)].map(m=>m[1]);
@@ -560,10 +562,10 @@ const P=runPage();
      assert(els["#tbody"]._html.includes("not in the Founders index"),"a company outside the index shows a dash in the column");
      // a bin click is a real filter: the bucket, by name, with a chip to clear it
      els["#rangechip"]=els["#rangechip"]||el("#rangechip");
-     P.state.tbI=true;P.state.tbRange={lo:40,hi:null};P.renderTable();
+     P.state.tbI=true;P.state.tbRange={lo:40,hi:null};P.state.retWin="12";P.renderTable();
      const inb=[...els["#tbody"]._html.matchAll(/onclick="openDrawer\('([A-Z0-9.-]+)'\)"/g)].map(m=>m[1]);
      assert(inb.length>0&&inb.every(tk=>{const it=dist.items.find(i=>i.tk===tk);return it&&it.ret>=40;}),"the range keeps only the bucket's companies: "+inb.join(","));
-     assert(els["#rangechip"]._html.includes("Return above +40%"),"and the chip names the bucket");
+     assert(/\d-yr return above \+40%/.test(els["#rangechip"]._html),"and the chip names the bucket and its period: "+els["#rangechip"]._html);
      P.state.tbRange={lo:0,hi:10};P.renderTable();
      assert(!/onclick="openDrawer/.test(els["#tbody"]._html),"an empty bucket shows no rows");
      P.state.tbRange=null;P.state.tbI=false;
@@ -585,6 +587,7 @@ const P=runPage();
      assert(els["#perfsub"]._html.includes("all ")||els["#perfsub"].textContent.includes("all "),"the subtitle names the cohort");
      P.state.pc="sp";P.renderPerf();
      assert((els["#perfsub"].textContent||els["#perfsub"]._html).includes("in the S&P 500"),"and says S&P 500 when that is the cohort");
+     assert(P.state._perfFull&&P.state._perfFull.count===al.count,"but the screener's return column still covers the whole cohort: "+P.state._perfFull.count);
      P.state.pc="all";P.PANEL=savedPanel3;P.renderPerf();}
     assert(els["#perfnote"]._html.includes("portrait, not a strategy"),
       "the caveat ships with the chart");
