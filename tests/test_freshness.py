@@ -133,9 +133,9 @@ def test_a_company_with_nothing_new_keeps_its_row(tmp_path, monkeypatch):
              77: [_f("4", "2026-07-01", "0077-26-1")]}
     client = _Feeds(feeds)
     prior = {1: {"cik": 1, "ticker": "A", "owner_cik": "77", "settled": True,
-                 "fingerprint": "2026-08-01 0001-26-1 | 2026-07-01 0077-26-1", "pct": 5.0},
+                 "fingerprint": "2026-08-01 0001-26-1 | 2026-07-01 0077-26-1", "remarks": "", "direct_classes": "", "pct": 5.0},
              2: {"cik": 2, "ticker": "B", "owner_cik": "", "settled": True,
-                 "fingerprint": "2026-08-01 0002-26-1", "pct": 1.0}}
+                 "fingerprint": "2026-08-01 0002-26-1", "remarks": "", "direct_classes": "", "pct": 1.0}}
     ck = tmp_path / "p.jsonl"
     rows = P.run_panel(client, [Member(1, "A", "A Co"), Member(2, "B", "B Co")],
                        str(ck), prior=prior)

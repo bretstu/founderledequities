@@ -125,11 +125,23 @@ def feed_fingerprint(client, cik: int, owner_cik=None) -> str:
     return fp
 
 
+# THE ROW'S SCHEMA. A row carried from the checkpoint was computed by some
+# earlier version of the walk; if that version did not produce a field the
+# current one relies on, the row is not a faithful copy of what a recompute
+# would give, and it is walked again once. The SpaceX row, carried across
+# the night the `remarks` field was added, had no remark to test the curated
+# addition against and the addition was reported lapsed; this is what makes
+# such a row recompute instead.
+SCHEMA_FIELDS = ("remarks", "direct_classes")
+
+
 def _reusable(row: dict) -> bool:
-    """A prior row worth carrying: it produced a figure, settled, and
-    carries the fingerprint that says what it was computed from."""
+    """A prior row worth carrying: it produced a figure, settled, carries
+    the fingerprint that says what it was computed from, and was computed
+    by a walk that produced every field the current one relies on."""
     return bool(row.get("fingerprint")) and not row.get("error") \
-        and bool(row.get("settled"))
+        and bool(row.get("settled")) \
+        and all(f in row for f in SCHEMA_FIELDS)
 
 
 def _digits_present(text: str, n: float) -> bool:

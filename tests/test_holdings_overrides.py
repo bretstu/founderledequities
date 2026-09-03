@@ -104,3 +104,14 @@ def test_the_repo_entry_for_spacex_is_exactly_the_remark():
     assert "does not include 1,302,072,285" in adds[0].reason
     assert "000162828026044069" in adds[0].source
     assert [e.ticker for e in ex.for_issuer(1973266)] == ["TKO"], "the TKO exclusion is untouched"
+
+
+def test_a_row_from_an_older_schema_is_recomputed_not_carried():
+    """A carried row computed before `remarks` existed has nothing to test a
+    curated addition against; it must be walked again once, not reported
+    lapsed forever."""
+    from fle.panel import _reusable
+    old = {"fingerprint": "abc", "error": "", "settled": "1", "shares": 1.0}
+    assert not _reusable(old)
+    new = dict(old, remarks="", direct_classes="")
+    assert _reusable(new), "an empty remark is a value; a missing field is not"
