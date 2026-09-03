@@ -686,6 +686,7 @@ class Ledger:
     first_filing: str = ""
     last_filing: str = ""
     last_url: str = ""
+    last_remarks: str = ""    # the newest filing's <remarks>, verbatim; empty when it has none
     source: str = ""
     settled: bool = False
     note: str = ""
@@ -955,8 +956,15 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
         led.filings_read += 1
         led.forms_seen[form] = led.forms_seen.get(form, 0) + 1
         led.last_filing = led.last_filing or when
-        led.last_url = led.last_url or _doc_url(
-            issuer_cik, acc, f.get("primaryDocument", ""))
+        if not led.last_url:
+            led.last_url = _doc_url(issuer_cik, acc, f.get("primaryDocument", ""))
+            # A REMARK IS A STRUCTURED FACT ABOUT AN UNSTRUCTURED ONE. The
+            # element either exists or it does not; what it says is prose
+            # the pipeline never interprets. Its presence goes on the row so
+            # a person reads it once (Musk's SpaceX filings disclose 1.30B
+            # restricted shares only here); its text rides along for the
+            # override file to cite.
+            led.last_remarks = (root.findtext("remarks") or "").strip()
         led.first_filing = when
 
         rows = _rows(root, form, when, acc)

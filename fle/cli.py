@@ -567,8 +567,12 @@ def cmd_panel(args) -> int:
         if prior:
             print(f"  prior rows: {len(prior)} from {prior_path} -- a company "
                   f"whose feeds show nothing new keeps its row")
+        excl = read_exclusions(args.exclusions)
+        n_add = sum(1 for es in excl.by_cik.values() for e in es if e.is_addition)
+        if n_add:
+            print(f"  {n_add} cited addition(s) in {excl.path} -- shares the filing tables leave out")
         rows = run_panel(client, members, args.checkpoint, redo=args.redo,
-                         exclusions=read_exclusions(args.exclusions),
+                         exclusions=excl,
                          on_row=row_done, on_filing=on_filing,
                          workers=max(1, int(getattr(args, "workers", 1) or 1)),
                          prior=prior)

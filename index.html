@@ -1007,6 +1007,11 @@ function mapPanel(recs){
     asof:r.shares_as_of||"", conf:(r.confidence||"").toLowerCase()||"medium",
     cik:num(r.cik)||0, form4:r.form4_url||"",
     excl:num(r.excluded_shares)||0, excld:r.excluded_detail||"",
+    /* A CITED CORRECTION. When a filer states in a remark that shares
+       held of record are left out of the tables (Musk's 1.30B restricted
+       SpaceX shares), a person recorded them with the filing as evidence;
+       `tabled` is what the tables alone say, so the page can show both. */
+    tabled:num(r.shares_tabled),
     flags:[r.problems,r.cautions].filter(Boolean).join("\n"),
     /* THE UNRANKABLE STAKE. Blackstone's chief executive holds his
        economics as Blackstone Holdings partnership units, exchangeable

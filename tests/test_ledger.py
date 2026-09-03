@@ -3099,6 +3099,7 @@ def test_spacex_a_catch_up_form_4_sorts_by_its_newest_transaction():
              + txn("2026-04-02", "S", 11_390, 526_165_900)
              + txn("2026-06-15", "C", 282_614_850, 808_780_270)
              + txn("2026-06-15", "C", 33_311_400, 842_091_670)
+             + '<remarks>This Form 4 does not include 1,302,072,285 shares of unvested performance-based  restricted Class B Common Stock.</remarks>'
              + '</ownershipDocument>')
     docs = {"f3": form3, "f4": form4}
     feed = [
@@ -3128,6 +3129,10 @@ def test_spacex_a_catch_up_form_4_sorts_by_its_newest_transaction():
     # the panel: the Form 4's closing balance, dated the day it happened
     led = build_ledger(_Edgar(), 1494730, owner_cik="1494730", share_classes=1)
     assert led.total == 842_091_670, "the IPO-day conversions count"
+    # A REMARK IS A STRUCTURED FACT ABOUT AN UNSTRUCTURED ONE: its presence
+    # and text ride on the ledger, verbatim; the number in it is never
+    # parsed here (see tests/test_holdings_overrides.py for what is).
+    assert led.last_remarks.startswith("This Form 4 does not include 1,302,072,285"), led.last_remarks
     assert led.last_filing == "2026-06-15"
 
     # the walk: the Form 3 is the earlier moment, the Form 4 the later; the

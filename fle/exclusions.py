@@ -30,12 +30,28 @@ The same thing S&P Global does, which is what Simply Wall St resells: a
 person reads the filing and records the decision. Smaller, and more honest,
 because the reasoning is written down where it can be checked.
 
+THE SAME FILE RUNS THE OTHER WAY.
+
+Musk's SpaceX Forms 3 and 4 both state, in a remark, that 1,302,072,285
+restricted Class B shares "issued to and held of record by the Reporting
+Person" are not in their tables -- shares the prospectus counts as
+outstanding. The tables under-report; a sentence says by how much. No regex
+or model turns that sentence into a number here. A person reads it once and
+records the number in this file, with the filing as source, as an ADDITION:
+an entry with a `shares` column. The panel adds it after the walk, labels
+the row's source `manual`, keeps the tables' figure beside it, and writes
+the receipt into the row's cautions. An addition lapses on its own the day
+the newest filing stops carrying a remark (see panel.apply_additions), so
+a hand-recorded number can never outlive its source.
+
 RULES FOR ENTRIES.
 
   - a source URL is required. Not "we decided" but "the proxy says".
-  - the panel reports every exclusion applied; nothing is silently adjusted.
+  - the panel reports every entry applied; nothing is silently adjusted.
   - an entry names ONE class at ONE company. It cannot affect anything else.
-  - it does not expire, because the underlying filing will not change.
+  - an exclusion (no `shares`) does not expire: the filing will not change.
+  - an addition (`shares` set) applies only while the newest filing carries
+    a remark, and says so on the row when it lapses.
 """
 from __future__ import annotations
 
@@ -45,7 +61,7 @@ from pathlib import Path
 
 DEFAULT = "universe/exclusions.csv"
 
-COLUMNS = ["cik", "ticker", "security", "direct", "reason", "source"]
+COLUMNS = ["cik", "ticker", "security", "direct", "reason", "source", "shares"]
 
 
 @dataclass(frozen=True)
@@ -56,6 +72,11 @@ class Exclusion:
     direct: str = ""               # "D", "I", or blank for both
     reason: str = ""
     source: str = ""
+    shares: float | None = None    # set: an ADDITION the tables leave out; unset: an exclusion
+
+    @property
+    def is_addition(self) -> bool:
+        return self.shares is not None
 
     def matches(self, security: str, direct: str) -> bool:
         if self.security.strip().lower() != (security or "").strip().lower():
@@ -69,7 +90,13 @@ class Exclusions:
     path: str = ""
 
     def for_issuer(self, cik) -> list:
-        return self.by_cik.get(str(int(cik)), [])
+        """The exclusions for an issuer -- what the walk removes."""
+        return [e for e in self.by_cik.get(str(int(cik)), []) if not e.is_addition]
+
+    def additions_for(self, ticker: str) -> list:
+        """The additions for a ticker -- what the panel adds after the walk."""
+        t = (ticker or "").strip().upper()
+        return [e for es in self.by_cik.values() for e in es if e.is_addition and e.ticker == t]
 
     def __bool__(self) -> bool:
         return bool(self.by_cik)
@@ -92,11 +119,21 @@ def read_exclusions(path: str | None = None) -> Exclusions:
                 # guess with a CSV around it.
                 raise ValueError(
                     f"{p}: {row.get('ticker') or cik} has no source URL")
+            shares = None
+            raw = (row.get("shares") or "").strip().replace(",", "")
+            if raw:
+                try:
+                    shares = float(raw)
+                except ValueError:
+                    raise ValueError(f"{p}: {row.get('ticker') or cik} has a non-numeric shares value {raw!r}")
+                if not (row.get("reason") or "").strip():
+                    # an addition's reason IS the sentence it came from
+                    raise ValueError(f"{p}: {row.get('ticker') or cik} adds shares without quoting the filing")
             out.by_cik.setdefault(str(int(cik)), []).append(Exclusion(
                 cik=str(int(cik)),
                 ticker=(row.get("ticker") or "").strip().upper(),
                 security=(row.get("security") or "").strip(),
                 direct=(row.get("direct") or "").strip().upper(),
                 reason=(row.get("reason") or "").strip(),
-                source=src))
+                source=src, shares=shares))
     return out

@@ -142,6 +142,8 @@ class Ownership:
     # Where to look to check the row. A panel without these is a list of
     # assertions; with them it is a worksheet.
     form4_url: str = ""
+    remarks: str = ""              # the newest filing's remark, verbatim (structural presence; prose never parsed)
+    direct_classes: str = ""       # classes with shares held DIRECTLY in the tables ("class b common stock|...")
     cover_url: str = ""
 
     @property
@@ -276,6 +278,7 @@ def build(client, cik: int, company: str = "", ticker: str = "",
             rec.settled = led.settled
             rec.shares_as_of = led.last_filing
             rec.form4_url = led.last_url
+            rec.remarks = led.last_remarks
         else:
             # FOREIGN-REGIME FALLBACK. A 20-F/40-F issuer's insiders are
             # exempt from Section 16 (Rule 3a12-3(b)), so an empty ledger
@@ -353,9 +356,23 @@ def build(client, cik: int, company: str = "", ticker: str = "",
         f"{t} = {v:,.0f}" for t, v in
         sorted(led.unnamed_class.items(), key=lambda kv: -kv[1])[:3])
     rec.converted = "|".join(sorted(set(led.converted)))
+    # WHICH CLASSES THE TABLES REPORT AS HELD DIRECTLY. A curated addition
+    # (fle/exclusions.py) exists because a filer left a directly held class
+    # out of the tables; the day a table reports it, the tables win and the
+    # addition suspends. Vehicle keys are (direct, nature); "D" is direct.
+    direct = []
+    for g in led.groups.values():
+        held = 0.0
+        for v, n in list(g.last_txn.items()) + list(g.hold_by_vehicle.items()):
+            if isinstance(v, tuple) and v and v[0] == "D":
+                held += n or 0.0
+        if held > 0:
+            direct.append(g.security.strip().lower())
+    rec.direct_classes = "|".join(sorted(set(direct)))
     rec.filings_read = led.filings_read
     rec.settled = led.settled
     rec.form4_url = led.last_url
+    rec.remarks = led.last_remarks
 
     if led.excluded:
         flag(NOTE, f"{rec.excluded_shares:,.0f} shares excluded from the "

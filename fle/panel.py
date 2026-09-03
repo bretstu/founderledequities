@@ -19,6 +19,7 @@ you want.
 from __future__ import annotations
 
 import csv
+import re
 import json
 import os
 from dataclasses import asdict
@@ -42,6 +43,10 @@ COLUMNS = [
     # HOW TO CHECK IT BY HAND. Two links: the filing the numerator came
     # from, and the one the denominator came from.
     "form4_url", "cover_url",
+    # A REMARK IS A STRUCTURED FACT ABOUT AN UNSTRUCTURED ONE: the newest
+    # filing's <remarks>, verbatim, for a person to read; and when a cited
+    # override adds shares the tables leave out, the tabled figure beside it.
+    "remarks", "shares_tabled",
 
     # HOW THE STAKE WAS ACQUIRED. Lifetime flows, split-adjusted, never a
     # position -- `codes` carries the full tally so the buckets need not.
@@ -127,10 +132,83 @@ def _reusable(row: dict) -> bool:
         and bool(row.get("settled"))
 
 
+def _digits_present(text: str, n: float) -> bool:
+    """Is the figure asserted in the text? Commas, spaces and thin spaces
+    between digits are ignored; the match must be a whole number, not a
+    substring of a longer one. String matching, never interpretation."""
+    if not text:
+        return False
+    flat = re.sub(r"(?<=\d)[,\s\u202f\u00a0](?=\d)", "", text)
+    return re.search(rf"(?<!\d){int(n)}(?!\d)", flat) is not None
+
+
+def apply_additions(row: dict, adds: list) -> None:
+    """THE PIPELINE READS TABLES; A PERSON READS REMARKS. An addition in
+    universe/exclusions.csv (an entry with `shares`) records shares a filer
+    states, in a remark, are held of record but left out of the tables.
+    This adds them after the walk, labels the source `manual`, keeps the
+    tables' figure in `shares_tabled`, and writes the receipt into the
+    row's cautions so the page can show "held" and "of it, in the tables".
+
+    THREE GUARDS, ALL STRUCTURAL, so a hand-recorded number can never
+    outlive its source, and never double-counts:
+      1. the tables win: if the walk now finds that class held DIRECTLY in
+         a table (a vesting tranche, a change of filing position), the
+         addition suspends and the row says so;
+      2. the figure must still be asserted: the newest filing's remark
+         must contain the recorded number (commas or not); a changed
+         number -- vesting, a typo, anything -- suspends it;
+      3. no remark, no addition: the row says to read the filing.
+    Every suspension is a caution a person reads. None reads the sentence."""
+    if not adds or row.get("shares") in (None, ""):
+        return
+    try:
+        base = float(row["shares"])
+    except (TypeError, ValueError):
+        return
+    caut = row.get("cautions") or ""
+    remark = (row.get("remarks") or "").strip()
+    direct = set((row.get("direct_classes") or "").split("|")) - {""}
+    live, notes = [], []
+    for a in adds:
+        sec = (a.security or "").split("(")[0].strip().lower()
+        if sec and sec in direct:
+            notes.append(f"addition of {int(a.shares):,} shares suspended: the tables now report "
+                         f"{a.security} held directly -- read the filing and settle universe/exclusions.csv")
+        elif not remark:
+            notes.append(f"addition of {int(a.shares):,} shares lapsed: the newest filing carries no remark "
+                         f"-- read it and settle universe/exclusions.csv")
+        elif not _digits_present(remark, a.shares):
+            notes.append(f"addition of {int(a.shares):,} shares suspended: the newest filing's remark no longer "
+                         f"states that figure -- read it and settle universe/exclusions.csv")
+        else:
+            live.append(a)
+    if live:
+        total = sum(float(a.shares) for a in live)
+        row["shares"] = base + total
+        row["shares_tabled"] = base
+        if row.get("outstanding") not in (None, ""):
+            try:
+                row["pct"] = round(100.0 * row["shares"] / float(row["outstanding"]), 4)
+            except (TypeError, ValueError, ZeroDivisionError):
+                pass
+        row["stake_source"] = "manual"
+        for a in live:
+            notes.append(f"includes {int(a.shares):,} shares of {a.security or 'stock'} the filings disclose "
+                         f"in a remark rather than a table; {int(base):,} in the tables. Source: {a.source}")
+    for n in notes:
+        caut = f"{caut}|{n}" if caut else n
+    row["cautions"] = caut
+
+
 def run_panel(client, members, checkpoint: str, redo: str = "none",
               on_row=None, on_filing=None, exclusions=None,
               workers: int = 1, prior: dict | None = None) -> list[dict]:
     """-> every row, finished or resumed.
+
+    `exclusions` (fle.exclusions.Exclusions) carries both directions of the
+    curated file: what the walk removes, and the additions applied to every
+    row after it (see apply_additions).
 
     `redo` is "none" (skip anything done), "failed" (retry errors and rows
     that did not settle), or "all".
@@ -219,6 +297,11 @@ def run_panel(client, members, checkpoint: str, redo: str = "none",
         row["cautions"] = "|".join(t for l, t in rec.graded if l == "caution")
         row.update(ticker=m.ticker,
                    checked_shares="", checked_by="", note="")
+        if row.get("remarks"):
+            # structural: the element is there; what it says is for a person
+            row["cautions"] = (row["cautions"] + "|" if row["cautions"] else "") + \
+                "the newest filing carries a remark; read it (remarks column)"
+
         row.setdefault("form4_url", "")
         row.setdefault("cover_url", "")
         # the fingerprint is taken from the same feeds the recompute just
@@ -265,6 +348,12 @@ def run_panel(client, members, checkpoint: str, redo: str = "none",
         ex.shutdown(wait=True)
 
     rows = [rows_by_cik[m.cik] for m in members if m.cik in rows_by_cik]
+    # A CITED CORRECTION APPLIES TO EVERY ROW, RECOMPUTED OR CARRIED, ONCE.
+    # A row carried from the checkpoint already carries its correction
+    # (shares_tabled is set); a fresh walk does not. Idempotent by that mark.
+    for row in rows:
+        if exclusions and row.get("shares_tabled") in (None, ""):
+            apply_additions(row, exclusions.additions_for(row.get("ticker") or ""))
     if prior:
         print(f"  {carried} carried over unchanged, "
               f"{len(rows) - carried - len(done)} recomputed")

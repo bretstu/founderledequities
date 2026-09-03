@@ -35,7 +35,7 @@ function band(r){
   const mcap=r.price&&r.out?r.out*r.price:null;
   const big=r.units?`<div class="p s">Held as partnership units</div><div class="pl">Exchangeable units rather than common stock, so a percent of common shares cannot describe the stake.</div>`
     :r.pct===null?`<div class="p s">Not measured</div><div class="pl">${esc(r.flags||"the record could not settle on a figure")}</div>`
-    :`<div class="p">${r.pct.toFixed(r.pct<1?3:2)}%</div><div class="pl">of ${esc(C.co)}'s common shares, computed from the filings — never estimated</div>`;
+    :`<div class="p">${r.pct.toFixed(r.pct<1?3:2)}%</div><div class="pl">of ${esc(C.co)}'s common shares, computed from the filings — never estimated${r.tabled!==null&&r.out?`<br><span title="${esc((r.flags||"").split("\n").find(f=>/in a remark/.test(f))||"")}">${(100*r.tabled/r.out).toFixed(2)}% of it is in the filing tables; the rest is stated in a remark and counted here</span>`:""}</div>`;
   const chg=st===null?`<div class="v">—</div><div class="s">no three-year record</div>`
     :Math.abs(st.d)>100?`<div class="v">⚠</div><div class="s">the record's three-year point is not reconciled</div>`
     :`<div class="v ${st.d>0.05?"up":st.d<-0.05?"down":""}">${(st.d>=0?"+":"−")+Math.abs(st.d).toFixed(Math.abs(st.d)<1?2:1)}%</div><div class="s">${st.base.toFixed(2)}% → ${st.cur.toFixed(2)}% since ${st.baseDate.slice(0,7)}</div>`;
@@ -43,7 +43,7 @@ function band(r){
     <div>${big}</div>
     <div class="cstat"><div class="k">Stake value</div><div class="v">${r.val?money(r.val):"—"}</div><div class="s">${r.price?"at $"+r.price.toFixed(2)+" · "+(PRICES_ASOF||"latest close"):"no close on file"}</div></div>
     <div class="cstat"><div class="k">Market cap</div><div class="v">${mcap?money(mcap):"—"}</div><div class="s">${r.out?fmt(r.out)+" shares outstanding":""}</div></div>
-    <div class="cstat"><div class="k">Shares held</div><div class="v">${r.sh!==null?compact(r.sh):"—"}</div><div class="s">${r.sh!==null?fmt(r.sh):""}</div></div>
+    <div class="cstat"><div class="k">Shares held</div><div class="v">${r.sh!==null?compact(r.sh):"—"}</div><div class="s">${r.sh!==null?fmt(r.sh):""}${r.tabled!==null&&r.sh!==null&&r.out?`<br>${fmt(r.tabled)} in the filing tables (${(100*r.tabled/r.out).toFixed(2)}%); the rest disclosed in a remark`:""}</div></div>
     <div class="cstat"><div class="k">3-year change</div>${chg}</div>
   </div>
   <div class="cmeta">

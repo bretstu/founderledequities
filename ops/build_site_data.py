@@ -39,10 +39,10 @@ LIST_COLS = ["ticker", "cik", "company", "ceo", "pct", "shares",
              "outstanding", "shares_as_of", "confidence", "stake_source",
              "problems", "cautions", "excluded_shares", "excluded_detail",
              "operating_partnership", "flags", "error", "form4_url",
-             "cover_url", "masked", "sp"]
+             "cover_url", "shares_tabled", "masked", "sp"]
 # what a sealed row must not carry: anything that states or bounds the stake
 MASKED_COLS = ("pct", "shares", "form4_url", "cover_url",
-               "excluded_shares", "excluded_detail")
+               "excluded_shares", "excluded_detail", "shares_tabled")
 
 
 def _overlay(base_rows, fresh_path, sp, key="ticker"):
