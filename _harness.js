@@ -196,7 +196,7 @@ const P=runPage();
     "one sentence for the section says what was kept out and opens the table");
   assert(!note.includes("compensation"),"and never calls units compensation");
   const aboutTxt=require("fs").readFileSync("about.html","utf8");
-  assert(aboutTxt.includes("does not move the stake is recorded")&&aboutTxt.includes("partnership units"),
+  assert(aboutTxt.includes("Kept apart")&&aboutTxt.includes("did not move the stake")&&aboutTxt.includes("Partnership units"),
     "the About page discloses the rule and its known limit");
   // a converted-and-sold row (Schwarzman-shaped) is apart, badged, and never called options
   const conv={tk:"BX",ceo:"S",c:"S",lb:"convert and sell",pl:"discretionary",sh:1,v:1,fd:"2026-01-01",td:"2026-01-01",pc:null,ha:0,nc:0,rs:null};
@@ -651,16 +651,31 @@ const P=runPage();
   assert((idx.match(/about\.html/g)||[]).length>=2,
     "the About page is reachable from the nav and the footer");
   const about=require("fs").readFileSync("about.html","utf8");
-  for(const t of ["Not investment advice","source of truth","One person",
-                  "options","the 10-Q","10-K","survivorship bias",
-                  "corrections@founderledequities.com","hello@founderledequities.com",
-                  "Get in touch"])
+  // THE ABOUT PAGE IS THE METHOD, IN PLAIN LANGUAGE. What a reader must find there:
+  for(const t of ["ownership = shares the CEO holds",              // the definition, as a formula
+                  "shares the company has outstanding",
+                  "Unvested restricted stock",                     // what counts, and what does not
+                  "Options and restricted stock units",
+                  "Partnership units",
+                  "10-Q or 10-K",                                  // the denominator's source
+                  "beneficial ownership",                          // why other numbers differ
+                  "Voting power",
+                  "The one exception",                             // remarks, read by a person
+                  "Kept apart",                                    // trades that did not move the stake
+                  "10b5-1",
+                  "proxy statement decides",                       // who is a founder
+                  "A portrait, not a strategy",                    // the index's caveat
+                  "dividends excluded",
+                  "RSP",
+                  "high","medium","low",                           // the marks
+                  "Nothing here is investment advice",
+                  "One person",
+                  "corrections@founderledequities.com","hello@founderledequities.com"])
     assert(about.includes(t),"about.html carries: "+t);
   assert(about.includes('href="./"'),"and links back to the site");
-  assert(about.indexOf("Who makes this")<about.indexOf("How the numbers are made"),
-    "who makes this comes before the method");
-  assert(about.indexOf("Get in touch")<about.indexOf("The fine print"),
-    "and contact sits just before the fine print");
+  assert(about.indexOf("How ownership is calculated")<about.indexOf("What counts as a trade")
+       &&about.indexOf("What counts as a trade")<about.indexOf("The fine print"),
+    "the method comes before the fine print");
 
   // ---- payments wiring on the page ----
   assert(idx.includes('href="/api/checkout"')&&idx.includes("$5/month"),
