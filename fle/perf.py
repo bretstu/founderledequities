@@ -158,6 +158,37 @@ def build_perf(client, founder_tickers, api_key: str,
     return perf
 
 
+def registration_month(client, cik: int) -> str:
+    """The month the company became a Section 16 filer: the earliest Form
+    3/4/5 on its own feed. The same boundary the events stage uses to tell
+    a public-company trade from a pre-registration catch-up.
+
+    WHY THE PRICE HISTORY NEEDS IT. Polygon answers by symbol, and symbols
+    are recycled. Asked for SPCX it returned sixty months of a SPAC that
+    carried the ticker until 2026, stitched onto three months of SpaceX,
+    and the chart called that a 545% three-year return. A company has no
+    price history before it was a public filer; anything earlier under its
+    symbol belongs to someone else."""
+    from .ledger import SECTION16
+    try:
+        subs = client.submissions(cik)
+    except Exception:  # noqa: BLE001 -- no feed, no floor; the caller keeps the series
+        return ""
+    reg = min((f.get("filingDate") or "" for f in subs.get("_filings", [])
+               if f.get("form") in SECTION16 and f.get("filingDate")), default="")
+    return reg[:7]
+
+
+def apply_floors(series: dict, floors: dict) -> dict:
+    """Drop every month before a ticker's registration month. `floors` maps
+    TICKER -> "YYYY-MM"; tickers without a floor are left alone."""
+    out = {}
+    for tk, pts in series.items():
+        fl = floors.get(tk.upper())
+        out[tk] = [p for p in pts if not fl or p[0] >= fl] if fl else list(pts)
+    return out
+
+
 def write_perf(perf: Perf, path: str) -> int:
     import csv
     rows = 0

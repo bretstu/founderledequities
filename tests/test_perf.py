@@ -95,3 +95,29 @@ def test_a_renamed_ticker_gets_its_old_symbols_years():
     # SQ's months before XYZ begins are prepended; its overlap month is not
     assert perf.series["XYZ"] == [("2024-01", 80.0), ("2024-02", 85.0),
                                   ("2024-03", 90.0)]
+
+
+def test_no_price_before_the_company_was_a_filer():
+    """Polygon answers by symbol and symbols are recycled: SPCX carried a
+    SPAC's sixty months before SpaceX's three. The registration month from
+    EDGAR is the floor; everything under a symbol before it is someone else's."""
+    from fle.perf import apply_floors, registration_month
+
+    class _Client:
+        def submissions(self, cik):
+            return {"_filings": [
+                {"form": "S-1", "filingDate": "2026-05-20"},
+                {"form": "3", "filingDate": "2026-06-11"},
+                {"form": "4", "filingDate": "2026-06-17"},
+            ]}
+    assert registration_month(_Client(), 1181412) == "2026-06"
+    series = {"SPCX": [("2021-09", 28.74), ("2026-05", 29.0), ("2026-06", 161.0), ("2026-07", 115.0)],
+              "TSLA": [("2021-09", 250.0), ("2026-07", 310.0)]}
+    cut = apply_floors(series, {"SPCX": "2026-06"})
+    assert [m for m, _ in cut["SPCX"]] == ["2026-06", "2026-07"], "the SPAC's months are gone"
+    assert cut["TSLA"] == series["TSLA"], "a ticker without a floor is untouched"
+
+    class _NoFeed:
+        def submissions(self, cik):
+            raise RuntimeError("offline")
+    assert registration_month(_NoFeed(), 1) == "", "no feed, no floor -- the series is kept, never guessed"
