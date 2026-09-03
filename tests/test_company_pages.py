@@ -70,6 +70,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert "Sealed universe" not in sealed and "open to everyone" in tsla
     # the machinery around them
     assert os.path.exists(os.path.join(out, "company.js"))
+    assert 'src="/company.js?v=' in tsla and 'href="/site.css?v=' in tsla, "a new script is a new address"
     assert os.path.exists(os.path.join(out, "site.css"))
     sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
     assert sm.count("<loc>") == 4 and "/company/SEALD/" in sm, "every company is in the sitemap, sealed ones too"

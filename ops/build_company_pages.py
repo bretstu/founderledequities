@@ -23,6 +23,7 @@ and the founder verdict -- public already -- and no figure; company.js fills
 the numbers in from /pro/ for a signed-in subscriber.
 """
 import csv
+import hashlib
 import html
 import json
 import os
@@ -155,10 +156,18 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir):
               'let PANEL=[],HIST={},PRICES={},PRICES_ASOF="",FOUNDERS={},EVENTS=[];\n'
               'const state={pro:false,live:{}};\n')
     os.makedirs(out_dir, exist_ok=True)
+    js_text = header + shared + "\n\n" + page_js
+    css_text = extract_style(index_html)
     with open(os.path.join(out_dir, "company.js"), "w", encoding="utf-8") as fh:
-        fh.write(header + shared + "\n\n" + page_js)
+        fh.write(js_text)
     with open(os.path.join(out_dir, "site.css"), "w", encoding="utf-8") as fh:
-        fh.write(extract_style(index_html))
+        fh.write(css_text)
+    # A NEW SCRIPT IS A NEW ADDRESS. Browsers and the edge cache company.js
+    # and site.css by name; a deploy that changed them was served stale
+    # under the new HTML, and the page rendered unstyled. The pages point
+    # at company.js?v=<hash> and site.css?v=<hash>, so a change is fetched.
+    js_v = hashlib.sha256(js_text.encode("utf-8")).hexdigest()[:10]
+    css_v = hashlib.sha256(css_text.encode("utf-8")).hexdigest()[:10]
     topnav = extract_topnav(index_html)
 
     sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
@@ -210,6 +219,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir):
                 .replace("{{COMPANY}}", html.escape(payload["co"]))
                 .replace("{{CEO}}", html.escape(payload["ceo"]))
                 .replace("{{TOPNAV}}", topnav)
+                .replace('href="/site.css"', f'href="/site.css?v={css_v}"')
+                .replace('src="/company.js"', f'src="/company.js?v={js_v}"')
                 .replace("{{COMPANY_JSON}}", json.dumps(payload).replace("</", "<\\/")))
         d = os.path.join(out_dir, "company", tk)
         os.makedirs(d, exist_ok=True)
