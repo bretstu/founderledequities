@@ -346,7 +346,8 @@ const P=runPage();
    const savedE=P.EVENTS;P.EVENTS=[lag];P.HIST={SPCX:[["2025-07-01",36.2,4.7e9],["2026-06-11",33.76,4.45e9]]};
    P.state.sort={key:"pct",dir:-1};P.state.q="";P.state.min=0;P.state.tbH=false;P.renderTable();
    const cell=els["#tbody"]._html;
-   assert(/class="ltd">2026-04-02</.test(cell)&&cell.includes("filed 2026-06-17"),"the screener's last trade leads with the trade date, filing date on hover");
+   assert(/c-ltd"><span class="ltd"[^>]*>2026-04-02</.test(cell)&&cell.includes("filed 2026-06-17"),"the screener's Traded column is the trade date, filing date on hover");
+   assert(/c-lt"><span class="lt"[^>]*><span class="abadge/.test(cell)&&!/<b class="ltv">[^<]*<\/b><span class="ltd"/.test(cell),"and Last trade is the badge and the amount alone, on one line");
    openDrawer("SPCX");
    assert(/class="adate"[^>]*>2026-04-02</.test(els["#drawer"]._html),"the drawer's latest trades lead with the trade date");
    assert(P.dayText("2026-06-17",[lag]).includes("(traded 2026-04-02)"),"the copy text names the trade date when it is not the filing day");
@@ -559,7 +560,8 @@ const P=runPage();
      // the screener follows: a Return column and the index chip
      const savedPanel2=P.PANEL;
      /* FE is FirstEnergy, a real S&P company: never inject a row the panel already has */
-     P.PANEL=[...savedPanel2,...dist.items.filter(i=>!savedPanel2.some(p=>p.tk===i.tk)).map(i=>({tk:i.tk,co:"Co "+i.tk,ceo:"A Founder",pct:5,sh:1,out:1,val:1e9,conf:"high"}))];
+     P.PANEL=[...savedPanel2,...dist.items.filter(i=>!savedPanel2.some(p=>p.tk===i.tk)).map(i=>({tk:i.tk,co:"Co "+i.tk,ceo:"A Founder",pct:5,sh:1,out:1,val:1e9,conf:"high",ret3:i.ret}))];
+     P.PANEL.forEach(r=>{const it=dist.items.find(i=>i.tk===r.tk);if(it&&(r.ret3===undefined||r.ret3===null))r.ret3=it.ret;});
      P.state._perfFull=full;P.state.retWin="12";P.state.tbI=true;P.state.q="";P.state.min=0;P.state.tbF=false;P.state.tbH=false;P.state.sort={key:"ret",dir:-1};
      els["th.h-ret"]=els["th.h-ret"]||el("th.h-ret");
      P.renderTable();
@@ -570,7 +572,7 @@ const P=runPage();
      const uniq=new Set(shown);
      assert(uniq.size===dist.items.length&&shown.every(tk=>dist.items.some(i=>i.tk===tk)),"the Founders index chip keeps only constituents: "+[...uniq].join(","));
      P.state.tbI=false;P.renderTable();
-     assert(els["#tbody"]._html.includes("not in the Founders index"),"a company outside the index shows a dash in the column");
+     assert(els["#tbody"]._html.includes("no 36 months of prices on file"),"a company without three years of prices shows a dash in the column");
      // a bin click is a real filter: the bucket, by name, with a chip to clear it
      els["#rangechip"]=els["#rangechip"]||el("#rangechip");
      P.state.tbI=true;P.state.tbRange={lo:40,hi:null};P.state.retWin="12";P.renderTable();

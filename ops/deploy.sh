@@ -18,27 +18,7 @@ cd "$(dirname "$0")/.."
 SP_LIST="${FLE_SP_LIST:-$(ls universe/sp500-????-??-??.csv | sort | tail -1)}"
 echo "  S&P list: $SP_LIST"
 
-# ---- 1. the site's data, generated fresh ----
-python3 ops/build_site_data.py \
-  panel.csv history.csv events.csv founders.csv \
-  "$SP_LIST" site-data/
-
-# ---- 1b. price the whole universe ----
-# Polygon's grouped-daily endpoint returns the entire market in ONE call;
-# the ticker list only filters the output. Pricing 2,135 costs the same
-# request as pricing 500. A failure keeps yesterday's file -- the deploy
-# never publishes an empty prices.csv over a good one.
-python3 -m fle.cli prices --panel site-data/pro/universe.csv --out prices.csv \
-  || echo "  prices: fetch failed; keeping the existing prices.csv"
-
-# ---- 1b'. the card a shared link unfurls into, from tonight's numbers ----
-# Pillow lives in the venv; the system python may lack it, and a missing
-# picture must never stop a deploy -- the script keeps the last og.png.
-OGPY=python3; [ -x .venv/bin/python ] && OGPY=.venv/bin/python
-$OGPY ops/og_image.py panel.csv "$SP_LIST" prices.csv founders.csv og.png \
-  || echo "  og image: not drawn; keeping the existing og.png"
-
-# ---- 1c. the founders index, universe-wide ----
+# ---- 0. prices for the chart and the returns, BEFORE the site build reads them ----
 # The chart's cohort is founders.csv INTERSECT perf.csv; the generator just
 # merged the universe founder labels, so fetching monthly closes for that
 # list turns the 47-company S&P index into the ~354-company universe index
@@ -60,8 +40,9 @@ try:
     newest = max(r["month"] for r in csv.DictReader(open("perf.csv", encoding="utf-8-sig")))
 except (OSError, ValueError):
     print("  perf: no usable perf.csv; fetching"); sys.exit(0)
-want = {r["ticker"] for r in csv.DictReader(open("site-data/pro/founders.csv", encoding="utf-8-sig"))
+want = {r["ticker"] for r in csv.DictReader(open("founders.csv", encoding="utf-8-sig"))
         if (r.get("founder") or "").lower() == "yes"}
+want |= {r["ticker"].upper() for r in csv.DictReader(open("panel.csv", encoding="utf-8-sig")) if r.get("ticker")}
 want |= {"SPY", "RSP"}   # both benchmarks must be on file
 missing = sorted(want - have)
 if missing:
@@ -87,9 +68,29 @@ if newest < datetime.date.today().strftime("%Y-%m"):
 print(f"  perf: current through {newest}, cohort complete; skipping"); sys.exit(1)
 PYGUARD
 then
-  python3 -m fle.cli perf --founders site-data/pro/founders.csv --out perf.csv \
+  python3 -m fle.cli perf --founders founders.csv --universe panel.csv --out perf.csv \
     || echo "  perf: fetch failed; keeping the existing perf.csv"
 fi
+
+# ---- 1. the site's data, generated fresh ----
+python3 ops/build_site_data.py \
+  panel.csv history.csv events.csv founders.csv \
+  "$SP_LIST" site-data/
+
+# ---- 1b. price the whole universe ----
+# Polygon's grouped-daily endpoint returns the entire market in ONE call;
+# the ticker list only filters the output. Pricing 2,135 costs the same
+# request as pricing 500. A failure keeps yesterday's file -- the deploy
+# never publishes an empty prices.csv over a good one.
+python3 -m fle.cli prices --panel site-data/pro/universe.csv --out prices.csv \
+  || echo "  prices: fetch failed; keeping the existing prices.csv"
+
+# ---- 1b'. the card a shared link unfurls into, from tonight's numbers ----
+# Pillow lives in the venv; the system python may lack it, and a missing
+# picture must never stop a deploy -- the script keeps the last og.png.
+OGPY=python3; [ -x .venv/bin/python ] && OGPY=.venv/bin/python
+$OGPY ops/og_image.py panel.csv "$SP_LIST" prices.csv founders.csv og.png \
+  || echo "  og image: not drawn; keeping the existing og.png"
 
 rm -rf public && mkdir -p public
 cp index.html about.html public/
@@ -122,9 +123,9 @@ python3 ops/stamp_static.py panel.csv "$SP_LIST" prices.csv founders.csv public/
 # company.js and site.css are extracted from index.html here, so the pages
 # and the home page share one source for every rule; sitemap.xml lists them.
 python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" public/
-for f in prices.csv perf.csv; do
-  [ -s "$f" ] && cp "$f" public/
-done
+[ -s prices.csv ] && cp prices.csv public/
+# perf.csv is published by build_site_data, cut to the chart's cohort; the
+# full file (every company's closes) stays on disk for the 3-year returns.
 # NO ROOT COPY OF THE PANEL. It is the whole unmasked universe, and a copy
 # at the root would publish every sealed stake. The page reads universe.csv.
 

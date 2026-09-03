@@ -1019,12 +1019,29 @@ def cmd_perf(args) -> int:
     if not founders:
         print("  no founder-led companies in the file; nothing to chart")
         return 0
+    # EVERY COMPANY, NOT ONLY THE COHORT. The chart is founders-only by
+    # label, but the screener's 3-year return column is for every row, and
+    # a dash on a non-founder read as missing data. --universe (the panel)
+    # adds the rest; the site build cuts the published perf.csv back to the
+    # cohort and writes each company's return into universe.csv instead.
+    tickers = list(founders)
+    upath = getattr(args, "universe", None)
+    if upath:
+        try:
+            with open(upath, encoding="utf-8-sig") as fh:
+                seen = set(t.upper() for t in tickers)
+                for row in csv.DictReader(fh):
+                    t = (row.get("ticker") or "").upper()
+                    if t and t not in seen:
+                        tickers.append(t); seen.add(t)
+        except OSError:
+            print(f"  {upath} missing; fetching the cohort only")
 
     client = _client(args)
     def _p(i, n, tk):
         sys.stdout.write(f"\r  prices {i}/{n} {tk}...      ")
         sys.stdout.flush()
-    perf = build_perf(client, founders, SETTINGS.polygon_api_key, on_step=_p)
+    perf = build_perf(client, tickers, SETTINGS.polygon_api_key, on_step=_p)
     _clear()
     # months already on disk outlive the plan's rolling window
     stored = {}
@@ -2223,6 +2240,7 @@ def main(argv=None) -> int:
                         help="monthly closes for the founder cohort and SPY")
     pf.add_argument("--founders", default="founders.csv")
     pf.add_argument("--panel", default=None, help="ticker->cik (default: site-data/pro/universe.csv, then panel.csv)")
+    pf.add_argument("--universe", default=None, help="a list with a ticker column; every company in it is fetched too")
     pf.add_argument("--out", default="perf.csv")
     pf.set_defaults(func=cmd_perf)
     pr.add_argument("--out", default="prices.csv")

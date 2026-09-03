@@ -111,3 +111,29 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     assert 'class="brow"' in page and 'href="/company/TSLA/"' in page and "28.44% of co." in page, "the board's rows are real HTML"
     assert 'class="hstat"' in page and "Founder-led companies" in page, "and so is the stat strip"
     assert "<b>20</b> of 500" not in page
+
+
+def test_every_company_gets_a_three_year_return_and_the_chart_file_is_the_cohort(tmp_path):
+    """The site build writes ret_3y for every ticker with 36 months of closes
+    on file, and publishes perf.csv cut to the founders plus the benchmarks."""
+    import build_site_data as bsd
+    months = [f"{2020 + i // 12}-{i % 12 + 1:02d}" for i in range(80)]
+    perf = tmp_path / "perf.csv"
+    with open(perf, "w", newline="") as fh:
+        w = csv.writer(fh); w.writerow(["ticker", "month", "close"])
+        for m_i, m in enumerate(months):
+            w.writerow(["SPY", m, 100 + m_i])
+            w.writerow(["RSP", m, 100 + m_i])
+            w.writerow(["TSLA", m, 200 + 2 * m_i])
+            w.writerow(["MSFT", m, 300 + m_i])
+        w.writerow(["NEWB", months[-1], 50])   # one month only: no 3-year return
+    r = bsd.returns_3y(str(perf))
+    i_end, i_start = 79, 79 - 36
+    assert abs(r["TSLA"] - ((200 + 2 * i_end) / (200 + 2 * i_start) - 1) * 100) < 0.01
+    assert "MSFT" in r and "NEWB" not in r, "a company without both months gets no figure"
+    founders = tmp_path / "founders.csv"
+    founders.write_text("ticker,founder,evidence,source\nTSLA,yes,co-founded,x\nMSFT,no,,x\n", encoding="utf-8")
+    out = tmp_path / "out"; out.mkdir()
+    n = bsd.write_perf_for_chart(str(perf), str(founders), str(out))
+    kept = {row["ticker"] for row in csv.DictReader(open(out / "perf.csv", encoding="utf-8"))}
+    assert kept == {"SPY", "RSP", "TSLA"} and n == 240, "the chart's file is founders plus the benchmarks"
