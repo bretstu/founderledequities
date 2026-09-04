@@ -25,7 +25,8 @@ WAYFAIR = ("Our Board is co-chaired by Niraj Shah, our Co-Founder and Chief "
 
 
 def _reply(obj):
-    return {"content": [{"type": "text", "text": json.dumps(obj)}]}
+    # the forced tool call: the API hands back a validated dict
+    return {"content": [{"type": "tool_use", "name": "record_verdict", "input": obj}]}
 
 
 def test_the_regex_still_finds_the_window_it_no_longer_decides():
@@ -51,6 +52,7 @@ def test_one_call_carries_every_window_and_names_the_person_and_company():
     assert "[1] " + SNOW in prompt and "[2] Mr. Ramaswamy co-founded" in prompt
     assert "Sridhar Ramaswamy" in prompt and "Snowflake Inc." in prompt
     assert seen[0]["temperature"] == 0
+    assert seen[0]["tool_choice"] == {"type": "tool", "name": "record_verdict"}
     assert got["founder"] == "no" and got["other_company"] == "Neeva"
     assert got["founders_named"] == "Benoit Dageville"
 
@@ -161,6 +163,8 @@ def test_the_cache_key_changes_with_the_prompt_version(monkeypatch):
 def test_parse_reply_tolerates_fences_and_rejects_nonsense():
     assert parse_reply({"content": [{"type": "text", "text":
         '```json\n{"founder": "YES", "evidence": "x"}\n```'}]})["founder"] == "yes"
+    assert parse_reply({"content": [{"type": "tool_use", "name": "record_verdict",
+                                     "input": {"founder": "unclear"}}]})["founder"] == "unclear"
     assert parse_reply({"content": [{"type": "text", "text": "I think yes."}]}) is None
     assert parse_reply({"content": [{"type": "text", "text": '{"founder": "maybe"}'}]}) is None
 
@@ -187,3 +191,60 @@ def test_an_api_failure_raises_not_uncertain():
     with pytest.raises(FoundersApiError, match="failed twice"):
         llm_verdict([SNOW], "Jane Doe", "Co", api_key="k", post=broken_post)
     assert len(calls) == 2   # the one retry happened
+
+
+def test_the_prompt_says_whose_filing_it_is():
+    """SpaceX's S-1 describes xAI's business for pages. Handed excerpts
+    about Grok and "our founder Elon Musk" with no filer named, the reader
+    decided "our" meant xAI and said no, with "Musk is our founder, Chief
+    Executive Officer ... and the Chairman of our board" in front of it."""
+    seen = []
+
+    def post(body):
+        seen.append(json.loads(body))
+        return _reply({"founder": "yes", "evidence": "Musk is our founder, Chief Executive Officer",
+                       "founders_named": "Elon Musk", "other_company": "", "reason": "r"})
+
+    llm_verdict(["Grok is built on our founder Elon Musk's mission. Musk is our founder, "
+                 "Chief Executive Officer, Chief Technical Officer and the Chairman of our board."],
+                "Elon Musk", "Space Exploration Technologies Corp", "k", post=post,
+                source="S-1 2026-05-20 0001628280-26-036936")
+    prompt = seen[0]["messages"][0]["content"]
+    assert prompt.startswith("You are reading excerpts from a filing that "
+                             "Space Exploration Technologies Corp made with the SEC: "
+                             "its S-1 (registration statement) filed 2026-05-20.")
+    assert '"our", "us" and "the Company" mean Space Exploration Technologies Corp' in prompt
+
+
+def test_the_prompt_carries_the_rules_the_first_run_lacked():
+    """Each of these cost a wrong verdict in the first full run: Dell Inc.
+    read as a different company from Dell Technologies, "our immediate
+    predecessor" at Douglas Emmett, "founding organizer" at BankUnited,
+    "Founders Awards" at Ralcorp, Caroline DeWitte's title at Oklo."""
+    from fle.founders import PROMPT
+    for phrase in ("carries the company's own name (Dell Inc. for Dell Technologies Inc.)",
+                   '"our immediate predecessor"', '"Founding organizer"',
+                   '"Founders Awards"', "A shared surname is not a shared title",
+                   "UNCLEAR is for a genuine ambiguity"):
+        assert phrase in PROMPT, phrase
+
+
+def test_windows_snap_to_word_boundaries():
+    """A window cut mid-word made the reader's quote fail the verbatim
+    check fifty times in one run."""
+    text = ("x" * 400) + " Mr. Shah is our co-founder and has served as CEO. " + ("y" * 400)
+    text = "aaaa " + text.replace("x" * 400, "word " * 80).replace("y" * 400, "tail " * 80)
+    (w,) = founder_windows(text, ["Shah"])
+    assert not w.startswith("ord") and w.split()[0] in ("word", "Mr.", "aaaa")
+    assert w.split()[-1] in ("tail", "CEO.")
+
+
+def test_the_cache_key_changes_with_the_source():
+    k1 = VerdictCache.key("a", "b", ["w"], "m", "DEF 14A 2026")
+    k2 = VerdictCache.key("a", "b", ["w"], "m", "S-1 2020")
+    assert k1 != k2
+
+
+def test_a_text_json_reply_still_reads():
+    assert parse_reply({"content": [{"type": "text", "text":
+        '{"founder": "no", "evidence": ""}'}]})["founder"] == "no"

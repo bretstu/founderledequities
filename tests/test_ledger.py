@@ -1504,7 +1504,7 @@ def _reader(yes_if=None, founders_named="", other_company=""):
             obj = {"founder": "no", "evidence": "",
                    "founders_named": founders_named,
                    "other_company": other_company, "reason": "not this person"}
-        return {"content": [{"type": "text", "text": _json.dumps(obj)}]}
+        return {"content": [{"type": "tool_use", "name": "record_verdict", "input": obj}]}
     return post
 
 

@@ -72,7 +72,7 @@ FOUNDER_STEM = re.compile(r"\b(?:co[-\s]?)?found(?:er|ers|ed|ing)\b",
                           re.IGNORECASE)
 
 SUFFIXES = {"jr", "jr.", "sr", "sr.", "ii", "iii", "iv", "v", "m.d.", "ph.d."}
-WINDOW = 240          # characters of context kept around a founder term
+WINDOW = 320          # characters of context kept around a founder term
 NEAR = 90             # how close the surname must be to count as a candidate
 
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
@@ -228,7 +228,14 @@ def founder_windows(text: str, names: list[str]) -> list[str]:
     """Every stretch of proxy where founder language and the name meet."""
     hits = []
     for m in FOUNDER_STEM.finditer(text):
-        lo, hi = max(0, m.start() - WINDOW), m.end() + WINDOW
+        lo, hi = max(0, m.start() - WINDOW), min(len(text), m.end() + WINDOW)
+        # SNAP TO WORDS. A window cut mid-word ("...ounder and has served")
+        # made the reader's quote fail the verbatim check fifty times in one
+        # run: the sentence it copied began one character before the cut.
+        while lo > 0 and not text[lo - 1].isspace():
+            lo -= 1
+        while hi < len(text) and not text[hi - 1].isspace():
+            hi += 1
         window = text[lo:hi]
         if any(re.search(rf"\b{re.escape(n)}\b", window) for n in names):
             hits.append(window.strip())
@@ -249,29 +256,60 @@ def founder_windows(text: str, names: list[str]) -> list[str]:
 
 # BUMP WHEN THE PROMPT CHANGES. It is part of the cache key: an old answer
 # to a different question is not an answer.
-PROMPT_VERSION = "2"
+PROMPT_VERSION = "3"
 
-PROMPT = """You are reading excerpts from a company's SEC filing (a proxy statement, annual report or registration statement). Each excerpt is a stretch of text around the word "founder", "founded" or "founding" that also mentions the name {ceo}.
+# WHOSE FILING IT IS comes first, because the reader will otherwise infer
+# it from the excerpts. SpaceX's S-1 describes xAI's business for pages;
+# handed nine excerpts about Grok and "our founder Elon Musk" with no
+# filer named, the reader concluded "our" was xAI and answered no, with
+# "Musk is our founder, Chief Executive Officer ... and the Chairman of
+# our board" among the excerpts. Version 2 never said who "our" was.
+PROMPT = """You are reading excerpts from a filing that {company} made with the SEC: its {source}. In these excerpts "we", "our", "us" and "the Company" mean {company}, whatever businesses the excerpts describe; a registrant describes the businesses it owns.
 
-Question: do these excerpts describe {ceo}, the chief executive of {company}, as a founder or co-founder of {company} itself?
+Each excerpt is a stretch of text around the word "founder", "founded" or "founding" that also contains the name {ceo}.
 
-Rules:
-- A founder title belongs to the person it is attached to. "Jane Roe, our Founder" is about Jane Roe and nobody else, even if another name appears in the same sentence or list.
-- Founding a DIFFERENT company (one this company acquired, a former employer, a foundation) is NO for this question; record that company under other_company.
-- A predecessor or a subsidiary under another name counts only if the excerpt says {company} is that business.
-- If the excerpts never attach founder language to {ceo}, the answer is NO. Use UNCLEAR only when the text genuinely could be read either way about this person and this company.
+Question: do these excerpts describe {ceo}, the chief executive of {company}, as a founder or co-founder of {company}?
 
-Answer with a single JSON object and nothing else:
-{{"founder": "yes" | "no" | "unclear",
-  "evidence": "<the one sentence from the excerpts that decides it, copied exactly; empty if none>",
-  "founders_named": "<people the excerpts call founders or co-founders of {company}, comma separated; empty if none>",
-  "other_company": "<a company the excerpts say {ceo} founded that is not {company}; empty if none>",
-  "reason": "<one sentence>"}}
+How to read them:
+- A founder title belongs to the person it is attached to. "Jane Roe, our Founder" is about Jane Roe and nobody else, even when other names sit in the same sentence or list. A shared surname is not a shared title: "Ms. DeWitte, our co-founder" says nothing about Mr. DeWitte.
+- {company} includes its predecessors, subsidiaries and earlier corporate forms. A business the filing calls "our predecessor", "our immediate predecessor" or "our operating company", or one that carries the company's own name (Dell Inc. for Dell Technologies Inc.), is this company; founding it is founding {company}.
+- A different business is different: a company that {company} later acquired or merged with, a former employer, an investment firm that manages or sponsors {company}, a foundation. Founding one of those is NO here; record it under other_company.
+- "Founding organizer", "founding partner", "founding officer", "member of the founding team" and "founded {company} in <year>" all count as co-founder language.
+- "Founders Awards", "Founder Grants" and similar are names of pay programs, not statements about founding. A skills-matrix column headed "Founder" attaches to nobody.
+- If no excerpt attaches founder language about {company} to {ceo}, the answer is NO, however prominent the person is elsewhere. UNCLEAR is for a genuine ambiguity about this person and this company, and should be rare.
+
+Record your verdict with the record_verdict tool. The evidence must be one sentence copied exactly from an excerpt; if no sentence supports a YES, leave it empty. founders_named is whom the excerpts call founders or co-founders of {company}; other_company is a business the excerpts say {ceo} founded that is not {company}.
 
 Excerpts:
 {excerpts}"""
 
-MAX_TOKENS = 400
+# THE VERDICT IS A TOOL CALL, NOT PROSE. Asked for JSON in text, the model
+# answered Oklo twice with something the parser could not read (a quote
+# inside the quoted evidence, most likely) and the code recorded
+# "uncertain" for a reader that had never been understood. A forced tool
+# call returns a structure the API has already validated against the
+# schema; there is nothing to parse.
+VERDICT_TOOL = {
+    "name": "record_verdict",
+    "description": "Record whether the chief executive is described as a "
+                   "founder of this company, with the evidence.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "founder": {"type": "string", "enum": ["yes", "no", "unclear"]},
+            "evidence": {"type": "string",
+                         "description": "One sentence copied exactly from an excerpt; empty if none."},
+            "founders_named": {"type": "string",
+                               "description": "People the excerpts call founders or co-founders of this company, comma separated; empty if none."},
+            "other_company": {"type": "string",
+                              "description": "A business the excerpts say the chief executive founded that is not this company; empty if none."},
+            "reason": {"type": "string", "description": "One sentence."},
+        },
+        "required": ["founder", "evidence", "founders_named", "other_company", "reason"],
+    },
+}
+
+MAX_TOKENS = 600
 
 
 class VerdictCache:
@@ -293,8 +331,10 @@ class VerdictCache:
                 self.data = {}
 
     @staticmethod
-    def key(ceo: str, company: str, windows: list, model: str) -> str:
-        raw = "\x1f".join([PROMPT_VERSION, model, ceo, company] + list(windows))
+    def key(ceo: str, company: str, windows: list, model: str,
+            source: str = "") -> str:
+        raw = "\x1f".join([PROMPT_VERSION, model, ceo, company, source]
+                           + list(windows))
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
     def get(self, k: str):
@@ -343,17 +383,27 @@ def quote_is_verbatim(quote: str, windows: list) -> bool:
 
 
 def parse_reply(data: dict) -> dict | None:
-    """The JSON object in the model's reply, or None."""
-    text = "".join(b.get("text", "") for b in data.get("content", [])
-                   if b.get("type") == "text").strip()
-    text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text)
-    m = re.search(r"\{.*\}", text, re.S)
-    if not m:
-        return None
-    try:
-        got = json.loads(m.group(0))
-    except ValueError:
-        return None
+    """The verdict in the model's reply, or None.
+
+    A forced tool call arrives as a tool_use block whose input is already a
+    dict; a JSON object in text is accepted too, so a reply from a client
+    that ignores tools still reads."""
+    got = None
+    for b in data.get("content", []):
+        if b.get("type") == "tool_use" and isinstance(b.get("input"), dict):
+            got = b["input"]
+            break
+    if got is None:
+        text = "".join(b.get("text", "") for b in data.get("content", [])
+                       if b.get("type") == "text").strip()
+        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text)
+        m = re.search(r"\{.*\}", text, re.S)
+        if not m:
+            return None
+        try:
+            got = json.loads(m.group(0))
+        except ValueError:
+            return None
     if not isinstance(got, dict):
         return None
     f = str(got.get("founder") or "").strip().lower()
@@ -366,8 +416,26 @@ def parse_reply(data: dict) -> dict | None:
             "reason": str(got.get("reason") or "").strip()}
 
 
+def _describe(source: str) -> str:
+    """'DEF 14A 2026-05-18 0001640147-26-000019' -> 'DEF 14A (proxy
+    statement) filed 2026-05-18'."""
+    kinds = {"DEF 14A": "proxy statement", "10-K": "annual report",
+             "S-1": "registration statement", "F-1": "registration statement",
+             "10-12B": "registration statement", "424B4": "prospectus",
+             "S-4": "registration statement", "20-F": "annual report"}
+    parts = (source or "").split()
+    if not parts:
+        return "filing"
+    date = next((p for p in parts if re.fullmatch(r"\d{4}-\d{2}-\d{2}", p)), "")
+    form = " ".join(p for p in parts if p != date and not re.fullmatch(r"\d{10}-\d{2}-\d{6}", p))
+    kind = kinds.get(form)
+    out = f"{form} ({kind})" if kind else form
+    return f"{out} filed {date}" if date else out
+
+
 def llm_verdict(windows: list, ceo: str, company: str, api_key: str,
-                post=None, cache: VerdictCache | None = None) -> dict:
+                post=None, cache: VerdictCache | None = None,
+                source: str = "") -> dict:
     """One call, every window, a JSON verdict for THIS person at THIS
     company. Returns {founder, evidence, founders_named, other_company,
     reason, verbatim}; founder is yes / no / unclear.
@@ -376,7 +444,7 @@ def llm_verdict(windows: list, ceo: str, company: str, api_key: str,
     filing, its evidence is checked against those spans, and both are
     written to the CSV beside the answer."""
     model = ANTHROPIC_MODEL
-    k = VerdictCache.key(ceo, company, windows, model)
+    k = VerdictCache.key(ceo, company, windows, model, source)
     if cache is not None:
         got = cache.get(k)
         if got is not None:
@@ -385,8 +453,11 @@ def llm_verdict(windows: list, ceo: str, company: str, api_key: str,
     excerpts = "\n\n".join(f"[{i}] {w}" for i, w in enumerate(windows, 1))
     body = json.dumps({
         "model": model, "max_tokens": MAX_TOKENS, "temperature": 0,
+        "tools": [VERDICT_TOOL],
+        "tool_choice": {"type": "tool", "name": "record_verdict"},
         "messages": [{"role": "user", "content": PROMPT.format(
-            ceo=ceo, company=company or "this company", excerpts=excerpts)}],
+            ceo=ceo, company=company or "this company",
+            source=_describe(source), excerpts=excerpts)}],
     }).encode()
     send = post if post is not None else (lambda b: _post(b, api_key))
 
@@ -434,7 +505,8 @@ def _decide(text: str, src: str, names: list, ceo: str, company: str,
         v.founder, v.method = "uncertain", "unread"
         v.evidence = windows[0]
         return v
-    got = llm_verdict(windows, ceo, company, api_key, post=post, cache=cache)
+    got = llm_verdict(windows, ceo, company, api_key, post=post, cache=cache,
+                      source=src)
     v.founder = {"yes": "yes", "no": "no"}.get(got["founder"], "uncertain")
     v.method = "llm"
     v.founders_named = got.get("founders_named", "")

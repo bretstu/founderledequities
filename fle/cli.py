@@ -615,21 +615,6 @@ def _filings_for(client, issuer_cik: int, owner_cik: str):
 
 
 
-def _filings_for(client, issuer_cik: int, owner_cik: str):
-    """That person's filings for this issuer, newest first."""
-    from .ledger import SECTION16
-    subs = client.submissions(issuer_cik)
-    theirs = client.submissions(int(owner_cik)) if owner_cik else {}
-    accs = {f.get("accessionNumber") for f in theirs.get("_filings", [])}
-    out = [f for f in subs.get("_filings", [])
-           if f.get("form") in SECTION16
-           and (not accs or f.get("accessionNumber") in accs)]
-    out.sort(key=lambda f: (f.get("filingDate") or ""), reverse=True)
-    return out
-
-
-
-
 def cmd_history(args) -> int:
     _lock = _exclusive(args.out)          # noqa: F841 -- held until return
     """A snapshot after every filing, for each company in the universe.
