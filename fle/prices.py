@@ -32,6 +32,7 @@ GROUPED = ("https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/"
 @dataclass
 class Prices:
     by_ticker: dict = field(default_factory=dict)   # panel ticker -> close
+    all_closes: dict = field(default_factory=dict)  # every symbol the day returned
     as_of: str = ""
     matched: int = 0
     missing: list = field(default_factory=list)
@@ -83,6 +84,7 @@ def fetch_prices(client, tickers, api_key: str | None,
             close[t] = float(c)
 
     out.as_of = when.isoformat()
+    out.all_closes = close
     for t in tickers:
         got = close.get(t.upper()) or close.get(t.upper().replace("-", "."))
         if got is not None:

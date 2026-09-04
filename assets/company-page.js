@@ -142,22 +142,100 @@ function stakeChart(pts,evs,{w=940,h=300,mode="pct"}={}){
   out+=`</svg>`;
   return out;
 }
+
+/* ---- the price, with the trades on it ----
+   THE QUESTION THIS CHART ANSWERS is the one a reader actually has about an
+   insider: did they sell into a top, did they buy the crash. The stake
+   charts say how much; this says when, against what the market was doing.
+   Daily closes, split-adjusted, from the price store; every dot sits at
+   the price ON THE FILING, restated in today's shares, so the gap between
+   a dot and the line is itself information (a block sold below the close,
+   a plan filled through the day). Grants, gifts and withholding are not
+   decisions about price and are not drawn. */
+let PRICES_DAILY=null;   /* [[date, close], ...] for this ticker, or null */
+function priceChart(px,evs,{w=940,h=300}={}){
+  const pad={l:64,r:22,t:18,b:30};
+  if(!px||px.length<2)return "";
+  const t0=Date.parse(px[0][0]),t1=Date.parse(px[px.length-1][0])||t0+1;
+  /* LOG SCALE. A stock up 10x over five years is a flat line for four of
+     them on a linear axis, and every early trade sits in the mud. */
+  /* only the trades inside the price record shape the axis; a 2016 sale
+     restated to $14 must not drag a $100 to $500 chart down to $20 */
+  const drawn=evs.filter(e=>{const dt=e.td||e.fd;return dt>=px[0][0]&&dt<=px[px.length-1][0];}).sort((a,b)=>(b.v||0)-(a.v||0));
+  let lo=Infinity,hi=-Infinity;for(const p of px){if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];}
+  for(const e of drawn){const y=e.apa||null;if(y&&y>0){if(y<lo)lo=y;if(y>hi)hi=y;}}
+  lo=Math.max(lo,1e-3);
+  const L0=Math.log(lo)-(Math.log(hi)-Math.log(lo))*0.08,L1=Math.log(hi)+(Math.log(hi)-Math.log(lo))*0.10;
+  const X=d=>pad.l+(Date.parse(d)-t0)/((t1-t0)||1)*(w-pad.l-pad.r);
+  const Y=v=>h-pad.b-(Math.log(v)-L0)/((L1-L0)||1)*(h-pad.t-pad.b);
+  const dollars=v=>Math.abs(v-Math.round(v))<1e-9&&v>=1?"$"+Math.round(v).toLocaleString("en-US"):v>=1000?"$"+Math.round(v).toLocaleString("en-US"):v>=100?"$"+v.toFixed(0):v>=10?"$"+v.toFixed(1):"$"+v.toFixed(2);
+  /* gridlines at round prices, thinned to at most five */
+  const ticks=[];
+  for(let e=Math.floor(Math.log10(lo))-1;e<=Math.ceil(Math.log10(hi));e++)for(const m of [1,1.5,2,3,5,7]){const v=m*Math.pow(10,e);if(Math.log(v)>L0&&Math.log(v)<L1)ticks.push(v);}
+  while(ticks.length>5){for(let i=ticks.length-2;i>=0;i-=2)ticks.splice(i,1);}
+  let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="the share price, with the chief executive's trades on it">`;
+  for(const v of ticks){const y=Y(v);
+    out+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
+    out+=`<text x="${pad.l-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">${dollars(v)}</text>`;}
+  const y0=new Date(t0).getUTCFullYear(),y1=new Date(t1).getUTCFullYear();
+  for(let yr=y0+1;yr<=y1;yr++){const x=X(`${yr}-01-01`);if(x<pad.l||x>w-pad.r)continue;
+    out+=`<text x="${x.toFixed(1)}" y="${h-10}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">${yr}</text>`;}
+  /* the line: one point per trading day, thinned to the pixel so a
+     five-year series is a few hundred segments, not thirteen hundred */
+  let d="",lastX=-9;
+  for(const p of px){const x=X(p[0]);if(x-lastX<0.7&&d)continue;lastX=x;d+=(d?" L ":"M ")+x.toFixed(1)+" "+Y(p[1]).toFixed(1);}
+  const xEnd=X(px[px.length-1][0]);
+  out+=`<path d="${d} V ${(h-pad.b).toFixed(1)} H ${X(px[0][0]).toFixed(1)} Z" fill="var(--ink)" opacity="0.035"/>`;
+  out+=`<path d="${d}" fill="none" stroke="var(--ink)" stroke-opacity="0.72" stroke-width="1.1" stroke-linejoin="round"/>`;
+  /* hover: the month's close range, one invisible band per month */
+  const months=[];for(const p of px){const m=p[0].slice(0,7);const cur=months[months.length-1];if(cur&&cur.m===m){cur.hi=Math.max(cur.hi,p[1]);cur.lo=Math.min(cur.lo,p[1]);cur.last=p;}else months.push({m,lo:p[1],hi:p[1],first:p,last:p});}
+  for(let i=0;i<months.length;i++){const o=months[i];const x0=X(o.first[0]),x1=i+1<months.length?X(months[i+1].first[0]):w-pad.r;
+    out+=`<rect x="${x0.toFixed(1)}" y="${pad.t}" width="${Math.max(1,x1-x0).toFixed(1)}" height="${(h-pad.t-pad.b).toFixed(1)}" fill="transparent"><title>${monthLabel(o.m)} · closed ${dollars(o.last[1])} · ${dollars(o.lo)} to ${dollars(o.hi)}</title></rect>`;}
+  /* the trades: at the filed price in today's shares, sized by value.
+     A trade whose filed price could not be restated sits on the line at
+     that day's close and says so. */
+  const at=dt=>{let v=px[0][1];for(const p of px){if(p[0]<=dt)v=p[1];else break;}return v;};
+  const vmax=Math.max(1,...drawn.map(e=>e.v||0));
+  for(const e of drawn){
+    const dt=e.td||e.fd;const onLine=!(e.apa>0);const y=onLine?at(dt):e.apa;
+    const x=X(dt),rr=3+5*Math.sqrt((e.v||0)/vmax);const buy=e.c==="P";
+    const px_=onLine?`at the ${dollars(y)} close (price on the filing not restated)`:`at ${dollars(e.apa)}${e.ap&&Math.abs(e.ap-e.apa)>0.005?` (filed at ${dollars(e.ap)}, before splits)`:""}`;
+    out+=`<a href="${e.u||"#"}" target="_blank" rel="noopener"><circle cx="${x.toFixed(1)}" cy="${Y(y).toFixed(1)}" r="${rr.toFixed(1)}" fill="${buy?"var(--blue)":"#c22a2a"}" fill-opacity="0.82" stroke="#fff" stroke-width="1.2"><title>${buy?"Bought":"Sold"} ${e.v?money(e.v):compact(e.sh)+" sh"} · ${compact(e.sh)} sh ${px_} · ${dt}${e.pl==="plan"?" · planned":e.pl==="discretionary"?" · discretionary":""}</title></circle></a>`;
+  }
+  const last=px[px.length-1];
+  out+=`<text x="${(xEnd-6).toFixed(1)}" y="${(Y(last[1])-9).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">${dollars(last[1])}</text>`;
+  out+=`</svg>`;
+  return out;
+}
 function recordBlock(r){
   const raw=HIST[r.tk];
-  if(!raw||!raw.length)return `<div class="csec"><h2>The stake over time</h2><div class="sub">No record yet — this company has no walkable filing history.</div></div>`;
-  const pts=cleanHist(r.tk);const left=raw.length-pts.length;
+  const px=PRICES_DAILY;
+  const modes=[["price","Price","the share price, daily, split-adjusted, with every purchase and sale at the price on its filing"],
+               ["pct","% of company","the share of the company: moves when the holding changes and when the share count changes"],
+               ["shares","Shares held","the shares held, split-adjusted: moves only when the person buys, sells, is granted, gifts, or forfeits shares; flat while the company dilutes"]];
+  const havePx=!!(px&&px.length>1),haveRec=!!(raw&&raw.length);
+  let mode=window._chartMode||"price";
+  if(mode==="price"&&!havePx)mode="pct";
+  if(mode!=="price"&&!haveRec&&havePx)mode="price";
+  const chips=`<div class="chips" role="group" aria-label="chart view">${modes.filter(m=>m[0]==="price"?havePx:haveRec).map(m=>`<button class="chip${mode===m[0]?" on":""}" onclick="setChartMode('${m[0]}')" title="${m[2]}">${m[1]}</button>`).join("")}</div>`;
   const moving=EVENTS.filter(e=>e.tk===r.tk&&unchangedKind(e)===null&&(e.c==="P"||e.c==="S"));
   const buys=moving.filter(e=>e.c==="P"),sells=moving.filter(e=>e.c==="S");
   const sum=a=>a.reduce((t,e)=>t+((e.fl?0:e.v)||0),0);
+  const tradeLine=moving.length?` Since 2016: <b>${buys.length?`bought ${money(sum(buys))} in ${buys.length} trade${buys.length===1?"":"s"}`:"no purchases"}</b>, <b>${sells.length?`sold ${money(sum(sells))} in ${sells.length}`:"no sales"}</b>.`:"";
+  if(mode==="price"&&havePx){
+    const first=px[0][0],lastD=px[px.length-1][0];
+    const before=moving.filter(e=>(e.td||e.fd)<first).length;
+    return `<div class="csec"><div class="cshead"><h2>The price, and when they traded</h2>${chips}</div>
+      <div class="sub">${first.slice(0,4)} to ${lastD}, daily closes, split-adjusted. Dots sit at the price on the filing.${tradeLine}${before?` ${before} earlier trade${before===1?"":"s"} predate${before===1?"s":""} the price record.`:""}</div>
+      <div class="cchart">${priceChart(px,moving)}</div>
+      <div class="ckey">${moving.length?`<span class="b"><i></i>bought</span><span class="s"><i></i>sold</span><span>· dot size follows the trade's value · click a dot for the filing ·</span>`:""}<span>hover the line for the month</span></div>
+    </div>`;
+  }
+  if(!haveRec)return `<div class="csec"><h2>The stake over time</h2><div class="sub">No record yet — this company has no walkable filing history.</div></div>`;
+  const pts=cleanHist(r.tk);const left=raw.length-pts.length;
   const series=pts.length>1?pts:raw;
-  const mode=window._chartMode||"pct";
-  return `<div class="csec"><div class="cshead"><h2>${mode==="shares"?"Shares held over time":"The stake over time"}</h2>
-    <div class="chips" role="group" aria-label="chart view">
-      <button class="chip${mode==="pct"?" on":""}" onclick="setChartMode('pct')" title="the share of the company: moves when the holding changes and when the share count changes">% of company</button>
-      <button class="chip${mode==="shares"?" on":""}" onclick="setChartMode('shares')" title="the shares held, split-adjusted: moves only when the person buys, sells, is granted, gifts, or forfeits shares; flat while the company dilutes">Shares held</button>
-    </div></div>
-    <div class="sub">${series[0][0].slice(0,4)} to ${series[series.length-1][0]}, one point per month-end${left?` — ${left} point${left===1?"":"s"} left out where the record lied`:""}.
-      ${moving.length?` Since 2016: <b>${buys.length?`bought ${money(sum(buys))} in ${buys.length} trade${buys.length===1?"":"s"}`:"no purchases"}</b>, <b>${sells.length?`sold ${money(sum(sells))} in ${sells.length}`:"no sales"}</b>.`:""}</div>
+  return `<div class="csec"><div class="cshead"><h2>${mode==="shares"?"Shares held over time":"The stake over time"}</h2>${chips}</div>
+    <div class="sub">${series[0][0].slice(0,4)} to ${series[series.length-1][0]}, one point per month-end${left?` — ${left} point${left===1?"":"s"} left out where the record lied`:""}.${tradeLine}</div>
     <div class="cchart">${stakeChart(series,moving,{mode})}</div>
     <div class="ckey">${moving.length?`<span class="b"><i></i>bought</span><span class="s"><i></i>sold</span><span>· dot size follows the trade's value · click a dot for the filing ·</span>`:""}<span>${mode==="shares"?"steps without a dot are grants, gifts, tax withholding or options exercised":"steps without a dot are grants, gifts, or the share count changing"} · hover the line for the month</span></div>
   </div>`;
@@ -235,11 +313,13 @@ async function fetchText(paths){
   setRow(row);
   renderOpen(row);   /* the numbers first; the record and trades fill in */
   const base=(C.sp||!pro)?"":"/pro";
-  const [h,e]=await Promise.all([
+  const [h,e,p]=await Promise.all([
     fetchText([`${base}/history/${C.tk}.csv`,`/history/${C.tk}.csv`]),
-    fetchText([`${base}/events/${C.tk}.csv`,`/events/${C.tk}.csv`])]);
+    fetchText([`${base}/events/${C.tk}.csv`,`/events/${C.tk}.csv`]),
+    fetchText([`/prices/${C.tk}.csv`])]);   /* prices are public on every page */
   if(h){const m=mapHistory(parseCSV(h));if(m[C.tk])HIST=m;}
   if(e){EVENTS=mapEvents(parseCSV(e)).filter(x=>x.tk===C.tk);}
+  if(p){PRICES_DAILY=parseCSV(p).map(r=>[String(r.date||"").slice(0,10),num(r.close)]).filter(x=>x[0].length===10&&x[1]>0);if(!PRICES_DAILY.length)PRICES_DAILY=null;}
   renderOpen(row);
 })();
 

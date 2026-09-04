@@ -115,3 +115,18 @@ def test_nothing_still_calls_the_panel_sp500():
                 bad.append(f"{name}:{i}")
     assert not bad, "the panel is panel.csv now: " + ", ".join(bad)
     assert "panel.csv" in (HERE / ".gitignore").read_text()
+
+
+def test_price_shards_are_public_for_every_ticker(tmp_path):
+    """The seal is on the stake, never on the market: a sealed company's
+    price file sits at the root like an open one's, straight from the
+    daily store, so its page still draws the line."""
+    from ops import build_site_data as bsd
+    store = tmp_path / "store"
+    store.mkdir()
+    (store / "TSLA.csv").write_text("date,close\n2026-09-01,350.0000\n")
+    (store / "SEALD.csv").write_text("date,close\n2026-09-01,10.0000\n")
+    out = tmp_path / "site"
+    assert bsd.write_price_shards(str(store), str(out)) == 2
+    assert (out / "prices" / "SEALD.csv").read_text().splitlines()[1] == "2026-09-01,10.0000"
+    assert bsd.write_price_shards(None, str(out)) == 0, "no store, no shards, no error"

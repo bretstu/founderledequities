@@ -186,4 +186,9 @@ def test_the_stake_chart_is_month_end_with_a_shares_view_and_hover_causes():
     assert "function monthEnds(" in js and 'mode==="shares"' in js
     assert "share count changed" in js and '"granted"' in js and '"tax withholding"' in js
     assert "steps without a dot are grants, gifts, or the share count changing" in js
-    assert 'setChartMode(\'shares\')' in js and "% of company" in js
+    # three views now: the price (default when the store has the ticker),
+    # the share of the company, the shares held
+    assert '["price","Price"' in js and '["shares","Shares held"' in js and "% of company" in js
+    assert "function priceChart(" in js and "split-adjusted. Dots sit at the price on the filing" in js
+    assert "e.apa" in js, "dots sit at the filed price restated in today's shares"
+    assert 'fetchText([`/prices/${C.tk}.csv`])' in js, "prices are fetched from the public root on every page"

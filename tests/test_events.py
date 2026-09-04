@@ -204,3 +204,23 @@ def test_a_trade_before_registration_is_a_catch_up_not_an_insider_trade():
     assert not post.pre_registration
     unknown = _e(traded="2026-04-02", filed="2026-06-17", registered="")
     assert not unknown.pre_registration, "no registration date asserts nothing"
+
+
+# ------------------------------------------------------ the chart's price
+
+def test_a_filed_price_is_restated_in_todays_shares_for_the_chart():
+    """Musk's 2021 sales were filed near $1,000 a share; Tesla split 3-for-1
+    in 2022, so against a split-adjusted price line they belong at about
+    $333. History's own snapshot carries the factor (adjusted / raw
+    shares); no second splits fetch, and the filed figure is untouched."""
+    from fle.events import _split_factor
+    hist = [("2021-11-08", 170_000_000, 510_000_000, 0.0),   # pre-split day: x3
+            ("2022-12-14", 411_000_000, 411_000_000, 0.0)]  # after it: x1
+    assert _split_factor(hist, "2021-11-08") == 3.0
+    assert _split_factor(hist, "2022-12-14") == 1.0
+    # a day between snapshots takes the next snapshot's factor
+    assert _split_factor(hist, "2022-06-01") == 1.0
+    # a day after the last snapshot takes the last
+    assert _split_factor(hist, "2026-01-01") == 1.0
+    assert _split_factor([], "2021-11-08") is None
+    assert _split_factor([("2021-11-08", 0, 0, 0.0)], "2021-11-08") is None

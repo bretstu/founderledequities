@@ -1067,7 +1067,7 @@ function mapEvents(recs){
   return recs.map(r=>({
     tk:(r.ticker||"").toUpperCase(),ceo:r.ceo||"",fd:(r.filed||"").slice(0,10),
     td:(r.traded||"").slice(0,10),c:r.code||"",lb:r.label||"",
-    sh:num(r.shares)||0,v:num(r.value),ap:num(r.avg_price),
+    sh:num(r.shares)||0,v:num(r.value),ap:num(r.avg_price),apa:num(r.avg_price_adjusted),
     pc:num(r.pct_of_holding),pa:num(r.pct_approx),nc:num(r.net_change),ha:num(r.holding_after),
     rs:num(r.residue),pl:r.plan||"unknown",u:r.url||"",fl:r.price_flag||"",acc:r.accession||"",
     pre:String(r.pre_ipo||"")==="1",reg:r.registered||""

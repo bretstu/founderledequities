@@ -31,3 +31,4 @@ history.csv.pre-*
 history-state.json
 .perf-attempt
 weekly/
+price-history/

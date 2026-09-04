@@ -782,12 +782,14 @@ def cmd_history(args) -> int:
     return 0
 
 
+PRICE_STORE = "price-history"   # one <TICKER>.csv per ticker, date,close
+
 EVENT_COLUMNS = ["ticker", "cik", "ceo", "owner_cik", "filed", "traded",
                  "code", "label", "shares", "value", "avg_price",
                  "pct_of_holding", "pct_approx", "net_change", "holding_after", "residue",
                  "plan", "other_codes", "rows", "unpriced_rows", "securities",
                  "direct", "form", "accession", "price_flag", "url",
-                 "registered", "pre_ipo"]
+                 "registered", "pre_ipo", "avg_price_adjusted"]
 
 
 def cmd_events(args) -> int:
@@ -852,7 +854,8 @@ def cmd_events(args) -> int:
                 "" if e.residue is None else f"{e.residue:.0f}",
                 e.plan, e.other_codes, e.rows, e.unpriced_rows, e.securities,
                 e.direct, e.form, e.accession, e.price_flag, e.url,
-                e.registered, "1" if e.pre_registration else ""])
+                e.registered, "1" if e.pre_registration else "",
+                "" if e.avg_price_adjusted is None else f"{e.avg_price_adjusted:.4f}"])
 
     buys = sum(1 for e in out if e.buy)
     flagged = sum(1 for e in out if e.residue)
@@ -897,6 +900,40 @@ def cmd_prices(args) -> int:
         print(f"  no price for: {', '.join(got.missing[:12])}"
               + (f" and {len(got.missing)-12} more" if len(got.missing) > 12 else ""))
     print(f"  wrote {args.out}")
+
+    # THE SAME CLOSES KEEP THE DAILY STORE CURRENT. One request a night
+    # already carries every ticker's close; appending it here is what lets
+    # the price chart and the performance index share one record without
+    # a per-ticker fetch. A ticker whose close moved more than 2x on the
+    # day is re-asked in full: a split the store has not been told about
+    # looks exactly like that, and the feed knows which it was.
+    store = getattr(args, "store", None) or PRICE_STORE
+    if os.path.isdir(store):
+        from .dailies import append_day, fetch_daily, merge, read_one, write_one
+        # the benchmarks are not in the panel; the store carries them
+        for_store = list(tickers) + [b for b in ("SPY", "RSP") if b not in tickers]
+        appended, suspect, refetched = 0, [], []
+        for t in for_store:
+            close = got.by_ticker.get(t) if t in got.by_ticker else got.all_closes.get(t)
+            if close is None:
+                continue
+            series = read_one(store, t)
+            if not series:
+                continue                 # not backfilled yet; the weekly refresh will
+            if append_day(series, got.as_of, close):
+                suspect.append(t)
+                if SETTINGS.polygon_api_key:
+                    fresh = fetch_daily(client, t, SETTINGS.polygon_api_key)
+                    if fresh:
+                        series = merge(series, fresh)
+                        refetched.append(t)
+            write_one(store, t, series)
+            appended += 1
+        print(f"  price store: {got.as_of} appended to {appended} series"
+              + (f"; re-asked {len(refetched)} after a >2x move: "
+                 + ", ".join(refetched[:8]) if refetched else "")
+              + (f"; could not re-ask: {', '.join(x for x in suspect if x not in refetched)}"
+                 if len(suspect) > len(refetched) else ""))
     return 0
 
 
@@ -981,70 +1018,89 @@ def edge_confidence(panel_path: str, history_path: str,
 
 
 def cmd_perf(args) -> int:
-    """Monthly closes for the founder cohort and SPY -> perf.csv.
+    """Refresh the daily price store for every ticker, then cut perf.csv.
 
-    The performance section draws an equal-weight founders line against the
-    benchmark. This stage only gathers the raw monthly closes; the chaining
-    is done in the page, beside the chart, where the method is inspectable.
+    THE STORE IS THE MECHANISM. One request per ticker, every ticker in
+    the panel plus the two benchmarks, five years of adjusted daily closes
+    (or whatever the plan returns); days older than the plan's window are
+    preserved from the stored file and rescaled if a split restated the
+    overlap. perf.csv is the month-end close of each series; the site
+    build cuts it to the chart's cohort, and the company page reads the
+    daily file for its price chart.
+
+    Weekly is enough: the nightly `prices` stage appends each day's close
+    to the same files, so between refreshes the store is one day behind
+    at most.
     """
-    from .perf import build_perf, write_perf
+    from .dailies import fetch_daily, merge, read_store, write_store
+    from .perf import (FORMER_TICKER, apply_floors, build_perf,
+                       listing_month, write_perf)
 
     if not SETTINGS.polygon_api_key:
-        print("  no price API key; perf.csv not written")
+        print("  no price API key; the price store and perf.csv not written")
         return 0
-    founders = []
+    tickers = []
     try:
-        with open(args.founders, encoding="utf-8-sig") as fh:
+        with open(args.panel, encoding="utf-8-sig") as fh:
             for row in csv.DictReader(fh):
-                if (row.get("founder") or "").lower() == "yes"                         and row.get("ticker"):
-                    founders.append(row["ticker"])
+                t = (row.get("ticker") or "").strip().upper()
+                if t and t not in tickers:
+                    tickers.append(t)
     except OSError:
-        print(f"  {args.founders} missing; run the founders stage first")
+        print(f"  {args.panel} missing; run the panel stage first")
         return 1
-    if not founders:
-        print("  no founder-led companies in the file; nothing to chart")
-        return 0
+    only = {t.strip().upper() for t in (getattr(args, "only", None) or "").split(",") if t.strip()}
+    if only:
+        tickers = [t for t in tickers if t in only]
+    store = getattr(args, "store", None) or PRICE_STORE
     client = _client(args)
-    def _p(i, n, tk):
-        sys.stdout.write(f"\r  prices {i}/{n} {tk}...      ")
+    stored = read_store(store)
+    todo = ["SPY", "RSP"] + tickers
+    fresh, missing = {}, []
+    for i, tk in enumerate(todo, 1):
+        sys.stdout.write(f"\r  prices {i}/{len(todo)} {tk}...      ")
         sys.stdout.flush()
-    perf = build_perf(client, founders, SETTINGS.polygon_api_key, on_step=_p)
+        pts = fetch_daily(client, tk, SETTINGS.polygon_api_key)
+        former = FORMER_TICKER.get(tk)
+        if former:
+            before = fetch_daily(client, former, SETTINGS.polygon_api_key)
+            cut = pts[0][0] if pts else "9999-99-99"
+            pts = [p for p in before if p[0] < cut] + pts
+        if pts:
+            fresh[tk] = merge(stored.get(tk, []), pts)
+        else:
+            missing.append(tk)
     _clear()
-    # months already on disk outlive the plan's rolling window
-    stored = {}
-    try:
-        with open(args.out, encoding="utf-8-sig", newline="") as fh:
-            for row in csv.DictReader(fh):
-                stored.setdefault(row["ticker"], []).append(
-                    (row["month"], float(row["close"])))
-    except (OSError, ValueError, KeyError):
-        stored = {}
-    from .perf import merge_history, listing_month, apply_floors
-    perf.series = merge_history(stored, perf.series)
     # NO PRICE BEFORE THIS SECURITY TRADED UNDER THE SYMBOL. Symbols are
     # recycled; the vendor's per-security list_date is the floor under
     # every ticker's history (see perf.listing_month for why not EDGAR's
     # registration date).
     floors, cut = {}, []
-    for tk in perf.series:
+    for tk in fresh:
         if tk in ("SPY", "RSP"):
             continue
         fl = listing_month(client, tk, SETTINGS.polygon_api_key)
         if fl:
-            floors[tk.upper()] = fl
-            gone = sum(1 for p in perf.series[tk] if p[0] < fl)
+            floors[tk] = fl
+            gone = sum(1 for p in fresh[tk] if p[0] < fl)
             if gone:
-                cut.append(f"{tk} ({gone} months before {fl})")
-    perf.series = apply_floors(perf.series, floors)
+                cut.append(f"{tk} ({gone} days before {fl})")
+    fresh = apply_floors(fresh, floors)
     if cut:
         print(f"  dropped price history from before the symbol's listing for {len(cut)}: "
               + ", ".join(cut[:8]) + (" ..." if len(cut) > 8 else ""))
+    # tickers no longer in the panel leave the store with it, unless this
+    # was a partial run
+    keep = fresh if not only else {**stored, **fresh}
+    n = write_store(store, keep)
+    days = sum(len(v) for v in keep.values())
+    print(f"  price store: {n} tickers, {days:,} daily closes -> {store}/")
+    if missing:
+        print(f"  no history for: {', '.join(missing[:12])}"
+              + (" ..." if len(missing) > 12 else ""))
+    perf = build_perf(keep, [t for t in keep if t not in ("SPY", "RSP")])
     rows = write_perf(perf, args.out)
-    print(f"  {len(perf.series)} tickers, {rows} monthly closes "
-          f"-> {args.out}")
-    if perf.missing:
-        print(f"  no history for: {', '.join(perf.missing[:12])}"
-              + (" ..." if len(perf.missing) > 12 else ""))
+    print(f"  {len(perf.series)} tickers, {rows} month-end closes -> {args.out}")
     if perf.note:
         print(f"  NOTE: {perf.note}")
     return 0
@@ -1347,7 +1403,8 @@ def _refresh(args, log) -> int:
 
     # 4 -- prices
     run("prices", lambda: cmd_prices(ns(
-        panel=path("panel.csv"), out=path("prices.csv"), date=None)))
+        panel=path("panel.csv"), out=path("prices.csv"), date=None,
+        store=PRICE_STORE)))
 
     # 5 -- events: the trade feed. Runs after history because the position
     # columns are read from the file history just wrote, and it is the
@@ -1381,7 +1438,7 @@ def _refresh(args, log) -> int:
         if os.path.exists(ppath) else 999
     if page >= 6:
         run("perf", lambda: cmd_perf(ns(
-            founders=path("founders.csv"), out=path("perf.csv"))))
+            panel=path("panel.csv"), out=path("perf.csv"), store=PRICE_STORE)))
     else:
         log(f"perf: {page:.1f} days old, skipping (weekly)")
         shutil.copy2(ppath, path("perf.csv"))
@@ -2210,12 +2267,18 @@ def main(argv=None) -> int:
     pr.add_argument("--date", default=None,
                     help="trading day to price at (default: most recent)")
     pf = sub.add_parser("perf",
-                        help="monthly closes for the founder cohort and SPY")
-    pf.add_argument("--founders", default="founders.csv")
-    pf.add_argument("--panel", default=None, help="ticker->cik (default: site-data/pro/universe.csv, then panel.csv)")
+                        help="refresh the daily price store for every ticker "
+                             "and cut perf.csv (month-end closes) from it")
+    pf.add_argument("--panel", default="panel.csv")
+    pf.add_argument("--store", default=PRICE_STORE,
+                    help="folder of <TICKER>.csv daily closes")
+    pf.add_argument("--only", default=None,
+                    help="comma-separated tickers; refresh just these")
     pf.add_argument("--out", default="perf.csv")
     pf.set_defaults(func=cmd_perf)
     pr.add_argument("--out", default="prices.csv")
+    pr.add_argument("--store", default=PRICE_STORE,
+                    help="folder of <TICKER>.csv daily closes to append the day to")
     pr.set_defaults(func=cmd_prices)
 
     rf = sub.add_parser("refresh",

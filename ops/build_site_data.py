@@ -13,6 +13,8 @@ Layout produced (paths relative to the output dir):
     founders.csv            passthrough (small)
     history/<T>.csv         per-ticker walk shards, S&P tickers
     events/<T>.csv          per-ticker event shards, S&P tickers
+    prices/<T>.csv          daily closes for EVERY ticker (public; with
+                            --prices <store>)
     pro/universe.csv        every company, nothing masked
     pro/history/<T>.csv     non-S&P shards (serve behind auth)
     pro/events/<T>.csv      non-S&P shards (serve behind auth)
@@ -87,8 +89,28 @@ def write_perf_for_chart(perf_p: str, founders_p: str, out_dir: str) -> int:
     return n
 
 
+def write_price_shards(store: str, out_dir: str) -> int:
+    """One prices/<TICKER>.csv per ticker, straight from the daily store.
+
+    PRICES ARE PUBLIC. The seal is on the stake, never on the market; a
+    close is the same number on every finance site, so every company's
+    price file sits at the root, and a sealed page still draws the line.
+    """
+    import shutil
+    if not store or not os.path.isdir(store):
+        return 0
+    dest = os.path.join(out_dir, "prices")
+    os.makedirs(dest, exist_ok=True)
+    n = 0
+    for name in os.listdir(store):
+        if name.endswith(".csv"):
+            shutil.copyfile(os.path.join(store, name), os.path.join(dest, name))
+            n += 1
+    return n
+
+
 def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
-         fresh_dir=None, perf_p="perf.csv") -> int:
+         fresh_dir=None, perf_p="perf.csv", prices_dir=None) -> int:
     sp = {r["ticker"] for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
     panel = list(csv.DictReader(open(panel_p, encoding="utf-8-sig")))
 
@@ -122,6 +144,8 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     write_list(os.path.join(out_dir, "universe.csv"), mask_new=True)
     n_perf = write_perf_for_chart(perf_p, founders_p, out_dir)
     print(f"  perf.csv (chart cohort)  {n_perf} monthly closes -- founders and the two benchmarks only")
+    n_px = write_price_shards(prices_dir, out_dir)
+    print(f"  prices/<T>.csv       {n_px} daily series (public; the company page's price chart)")
     write_list(os.path.join(out_dir, "pro", "universe.csv"), mask_new=False)
 
     # ---- founders: fresh S&P labels over the snapshot ----
@@ -312,4 +336,10 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(*sys.argv[1:8]))
+    argv = list(sys.argv[1:])
+    prices_dir = None
+    if "--prices" in argv:
+        i = argv.index("--prices")
+        prices_dir = argv[i + 1]
+        del argv[i:i + 2]
+    raise SystemExit(main(*argv[:7], prices_dir=prices_dir))

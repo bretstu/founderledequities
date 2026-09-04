@@ -19,22 +19,18 @@ SP_LIST="${FLE_SP_LIST:-$(ls universe/sp500-????-??-??.csv | sort | tail -1)}"
 echo "  S&P list: $SP_LIST"
 
 # ---- 0. prices for the chart and the returns, BEFORE the site build reads them ----
-# The chart's cohort is founders.csv INTERSECT perf.csv; the generator just
-# merged the universe founder labels, so fetching monthly closes for that
-# list turns the 47-company S&P index into the ~354-company universe index
-# with zero page changes -- the caption's count is computed, and young
-# listings enter when their price history begins (the method note already
-# says so). One Polygon aggs call per ticker, full history each, and
-# merge_history keeps every month ever fetched. A failure keeps the
-# existing perf.csv.
-# Monthly data earns monthly fetches. The stage re-pulls full history per
-# ticker (355 calls), so it runs only with a reason: a founder ticker
-# missing from perf.csv (gap-healing -- the cohort can never silently
-# lack a line), a month rollover, or FLE_PERF_FORCE=1.
+# One daily price store (price-history/<TICKER>.csv) feeds the company
+# page's price chart and the performance index; perf.csv is its month-ends.
+# The nightly `prices` stage appends each day's close, so the full refresh
+# (one Polygon call per ticker, ~2,140) runs only with a reason: the store
+# is empty, a founder ticker has no series, a month rolled, or
+# FLE_PERF_FORCE=1. A failure keeps what is on disk.
 if python3 - << 'PYGUARD'
 import csv, datetime, os, sys
 if os.environ.get("FLE_PERF_FORCE") == "1":
     print("  perf: forced"); sys.exit(0)
+if not os.path.isdir("price-history") or not os.listdir("price-history"):
+    print("  perf: no price store yet; backfilling"); sys.exit(0)
 try:
     have = {r["ticker"] for r in csv.DictReader(open("perf.csv", encoding="utf-8-sig"))}
     newest = max(r["month"] for r in csv.DictReader(open("perf.csv", encoding="utf-8-sig")))
@@ -67,22 +63,24 @@ if newest < datetime.date.today().strftime("%Y-%m"):
 print(f"  perf: current through {newest}, cohort complete; skipping"); sys.exit(1)
 PYGUARD
 then
-  python3 -m fle.cli perf --founders founders.csv --out perf.csv \
-    || echo "  perf: fetch failed; keeping the existing perf.csv"
+  python3 -m fle.cli perf --panel panel.csv --store price-history --out perf.csv \
+    || echo "  perf: fetch failed; keeping the existing price store and perf.csv"
 fi
 
-# ---- 1. the site's data, generated fresh ----
-python3 ops/build_site_data.py \
-  panel.csv history.csv events.csv founders.csv \
-  "$SP_LIST" site-data/
-
-# ---- 1b. price the whole universe ----
+# ---- 1. price the whole universe ----
 # Polygon's grouped-daily endpoint returns the entire market in ONE call;
 # the ticker list only filters the output. Pricing 2,135 costs the same
-# request as pricing 500. A failure keeps yesterday's file -- the deploy
-# never publishes an empty prices.csv over a good one.
-python3 -m fle.cli prices --panel site-data/pro/universe.csv --out prices.csv \
+# request as pricing 500. The same closes are appended to the daily price
+# store, which is why this runs BEFORE the site build copies the store's
+# files into place. A failure keeps yesterday's file -- the deploy never
+# publishes an empty prices.csv over a good one.
+python3 -m fle.cli prices --panel panel.csv --store price-history --out prices.csv \
   || echo "  prices: fetch failed; keeping the existing prices.csv"
+
+# ---- 1b. the site's data, generated fresh ----
+python3 ops/build_site_data.py \
+  panel.csv history.csv events.csv founders.csv \
+  "$SP_LIST" site-data/ --prices price-history
 
 # ---- 1b'. the card a shared link unfurls into, from tonight's numbers ----
 # Pillow lives in the venv; the system python may lack it, and a missing

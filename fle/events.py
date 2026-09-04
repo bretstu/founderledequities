@@ -61,9 +61,9 @@ document is worth less than a wrong one they can.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from .ledger import (SECTION16, Line, _doc_url, _parse, _rows,
+from .ledger import (SECTION16, _doc_url, _parse, _rows,
                      displace_amended)
 
 # A market trade, and nothing else. See the module docstring.
@@ -112,6 +112,7 @@ class Event:
     shares: float = 0.0                # gross shares this code moved
     value: float | None = None         # sum of shares x price, as filed
     avg_price: float | None = None
+    avg_price_adjusted: float | None = None   # in today's shares, for the price chart
     rows: int = 0                      # lines folded into this event
     unpriced_rows: int = 0
     securities: str = ""
@@ -296,6 +297,30 @@ def load_history(path: str) -> dict:
     return out
 
 
+def _split_factor(hist_rows: list, day: str) -> float | None:
+    """How many of today's shares one share on `day` has become, read off
+    history's own snapshot (shares_split_adjusted / shares) rather than a
+    second splits fetch. The snapshot ON the day carries exactly the
+    factor the day's trade needs; failing that, the next snapshot after
+    it (a split between the two would be missed, and is rare enough that
+    re-asking the feed here would be a second mechanism for one job).
+    None when history has nothing to say."""
+    if not hist_rows:
+        return None
+    pick = None
+    for d, raw, adj, _u in hist_rows:
+        if d >= day:
+            pick = (raw, adj)
+            break
+    if pick is None:
+        raw, adj = hist_rows[-1][1], hist_rows[-1][2]
+    else:
+        raw, adj = pick
+    if not raw or not adj:
+        return None
+    return adj / raw
+
+
 def _position(hist_rows: list, day: str):
     """-> (holding_after_raw, net_change_adj, residue) for one trading day.
 
@@ -419,13 +444,20 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
             shares, value = g["shares"], g["value"]
             priced = g["rows"] - g["unpriced"]
             after, net, resid = _position(hist_rows, day)
+            price = (value / shares) if (priced and shares) else None
+            # THE CHART NEEDS TODAY'S UNITS. A Tesla sale filed at $1,000
+            # in 2021 sits at $333 against a split-adjusted price line;
+            # drawn as filed it would float above the whole chart. The
+            # filed figure is kept beside it, untouched.
+            factor = _split_factor(hist_rows, day) if price else None
             out.append(Event(
                 ticker=ticker, issuer_cik=issuer_cik, ceo=ceo,
                 owner_cik=str(owner_cik), accession=acc, form=form,
                 filed=(f.get("filingDate") or "")[:10], traded=day, code=code,
                 buy=(code == "P"), shares=shares,
                 value=value if priced else None,
-                avg_price=(value / shares) if (priced and shares) else None,
+                avg_price=price,
+                avg_price_adjusted=(price / factor) if (price and factor) else None,
                 rows=g["rows"], unpriced_rows=g["unpriced"],
                 securities=" | ".join(sorted(g["secs"])),
                 direct="".join(sorted(g["dirs"])), plan=plan,
