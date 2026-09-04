@@ -52,13 +52,27 @@ function band(r){
   </div>`;
 }
 
-/* ---- the record: the stake over time, with the trades on the line ---- */
-/* ONE POINT PER MONTH-END. The record steps at every filing and every
-   cover-page count; at a ten-year scale that is a staircase of same-week
-   moves that means nothing and looks like noise. Each month keeps its last
-   point, and remembers why the month moved: a trade, a grant, a gift, tax
-   withholding, options exercised, or the share count changing with no
-   change in the holding. Trades keep their exact dates as dots. */
+/* ---- the record: the price and the stake, with the trades on the line ----
+   ONE POINT PER MONTH-END for the stake. The record steps at every filing
+   and every cover-page count; at a ten-year scale that is a staircase of
+   same-week moves that means nothing and looks like noise. Each month keeps
+   its last point, and remembers why the month moved: a trade, a grant, a
+   gift, tax withholding, options exercised, or the share count changing
+   with no change in the holding. Trades keep their exact dates as dots.
+
+   THE PRICE CHART answers the question a reader actually has about an
+   insider: did they sell into a top, did they buy the crash. Daily closes,
+   split-adjusted, from the price store; every dot sits at the price ON THE
+   FILING, restated in today's shares, so the gap between a dot and the
+   line is itself information. Grants, gifts and withholding are not
+   decisions about price and are not drawn.
+
+   ONE STORY PER CHART. The largest sale and the largest purchase in view
+   get a label; nothing else does. The biggest trades get a halo so a
+   cluster reads as heat. The line draws in once on load. Hover is a
+   crosshair with the day and the nearest trade, not the browser's grey
+   tooltip. */
+let PRICES_DAILY=null;   /* [[date, close], ...] for this ticker, or null */
 const CODE_WORDS={P:"bought",S:"sold",A:"granted",G:"gift",F:"tax withholding",M:"options exercised",C:"converted",D:"returned to the company",J:"other",X:"options exercised"};
 function monthEnds(pts){
   const out=[];let cur=null;
@@ -82,162 +96,195 @@ function monthEnds(pts){
   return series;
 }
 function monthLabel(m){const [y,mo]=m.split("-");return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+mo-1]+" "+y;}
-function compactD(n,dec){
-  const a=Math.abs(n);
-  for(const [div,suf] of [[1e12,"T"],[1e9,"B"],[1e6,"M"],[1e3,"K"]])if(a>=div)return (n/div).toFixed(dec)+suf;
-  return Math.round(n).toLocaleString("en-US");
-}
-function stakeChart(pts,evs,{w=940,h=300,mode="pct"}={}){
-  const pad={l:64,r:22,t:18,b:30};
-  const ms=monthEnds(pts);if(ms.length<2)return "";
-  const val=o=>mode==="shares"?o.sh:o.pct;
-  const t0=Date.parse(ms[0].d),t1=Date.parse(ms[ms.length-1].d)||t0+1;
-  let lo=Infinity,hi=-Infinity;for(const o of ms){const v=val(o);if(v<lo)lo=v;if(v>hi)hi=v;}
-  let span=hi-lo;
-  if(span<=Math.abs(hi)*1e-6){/* a flat record (never traded, never diluted): a ±2% band, not a line on a hairline */
-    lo=hi*0.98;hi=hi*1.02;span=hi-lo;}
-  else{lo=Math.max(0,lo-span*0.12);hi=hi+span*0.12;}
-  const X=d=>pad.l+(Date.parse(d)-t0)/((t1-t0)||1)*(w-pad.l-pad.r);
-  const Y=v=>h-pad.b-(v-lo)/(hi-lo)*(h-pad.t-pad.b);
-  /* axis labels must differ: a narrow range gets more digits, not four copies of one */
-  const ticks=[0,1,2,3].map(k=>lo+(hi-lo)*k/3);
-  const fmtAt=dec=>v=>mode==="shares"?compactD(v,dec):v.toFixed(dec)+"%";
-  let dec=mode==="shares"?2:(hi<10?2:1);
-  while(dec<4&&new Set(ticks.map(fmtAt(dec))).size<ticks.length)dec++;
-  const fmt=fmtAt(dec);
-  /* a step line: the value holds between month-ends */
-  let d="";ms.forEach((o,i)=>{const x=X(o.d),y=Y(val(o));d+=i?` H ${x.toFixed(1)} V ${y.toFixed(1)}`:`M ${x.toFixed(1)} ${y.toFixed(1)}`;});
-  const last=[ms[ms.length-1].d,val(ms[ms.length-1])];
-  const first=[ms[0].d,val(ms[0])];
-  const area=d+` V ${(h-pad.b).toFixed(1)} H ${X(first[0]).toFixed(1)} Z`;
-  let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${mode==="shares"?"shares held over time":"the stake over time"}">`;
-  /* the axis: four gridlines */
-  for(let k=0;k<=3;k++){const v=lo+(hi-lo)*k/3;const y=Y(v);
-    out+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
-    out+=`<text x="${pad.l-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">${fmt(v)}</text>`;}
-  /* years along the bottom */
-  const y0=new Date(t0).getUTCFullYear(),y1=new Date(t1).getUTCFullYear();
-  for(let yr=y0+1;yr<=y1;yr++){const x=X(`${yr}-01-01`);if(x<pad.l||x>w-pad.r)continue;
-    out+=`<text x="${x.toFixed(1)}" y="${h-10}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">${yr}</text>`;}
-  out+=`<path d="${area}" fill="var(--blue)" opacity="0.06"/>`;
-  out+=`<path d="${d}" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linejoin="round"/>`;
-  /* EVERY STEP EXPLAINS ITSELF ON HOVER: one invisible band per month,
-     titled with the value and why it moved. */
-  for(let i=0;i<ms.length;i++){
-    const o=ms[i];const x0=X(o.d),x1=i+1<ms.length?X(ms[i+1].d):w-pad.r;
-    const move=i?(mode==="shares"?(o.dS?`${o.dS>0?"+":"−"}${compact(Math.abs(o.dS))} sh`:"no change"):(Math.abs(o.dP)>1e-6?`${o.dP>0?"+":"−"}${Math.abs(o.dP).toFixed(2)} pts`:"no change")):"start";
-    const why=o.why?` · ${o.why}`:"";
-    out+=`<rect x="${x0.toFixed(1)}" y="${pad.t}" width="${Math.max(1,x1-x0).toFixed(1)}" height="${(h-pad.t-pad.b).toFixed(1)}" fill="transparent"><title>${monthLabel(o.m)} · ${o.pct.toFixed(2)}% · ${compact(o.sh)} sh · ${move}${why}</title></rect>`;
+function dayLabel(d){return monthLabel(d.slice(0,7)).replace(" ",` ${+d.slice(8,10)}, `);}
+const dollars=v=>Math.abs(v-Math.round(v))<1e-9&&v>=1?"$"+Math.round(v).toLocaleString("en-US"):v>=1000?"$"+Math.round(v).toLocaleString("en-US"):v>=100?"$"+v.toFixed(0):v>=10?"$"+v.toFixed(1):"$"+v.toFixed(2);
+/* the frame: narrow screens get a taller box so the line has room */
+function frame(){const narrow=(window.innerWidth||1000)<600;return narrow?{w:520,h:340,pad:{l:54,r:16,t:26,b:30}}:{w:940,h:320,pad:{l:64,r:22,t:26,b:30}};}
+const SELL="#c22a2a";
+/* the dots, shared by both charts: sized by value, haloed when large,
+   the largest sale and purchase labelled */
+function dots(evs,X,Y,at,fr){
+  const drawn=evs.slice().sort((a,b)=>(b.v||0)-(a.v||0));
+  const vmax=Math.max(1,...drawn.map(e=>e.v||0));
+  let out="";
+  const bigS=drawn.find(e=>e.c==="S"&&e.v),bigP=drawn.find(e=>e.c==="P"&&e.v);
+  drawn.forEach((e,i)=>{
+    const dt=e.td||e.fd;const [y,note]=at(e);const x=X(dt),yy=Y(y);
+    const rr=3+5*Math.sqrt((e.v||0)/vmax);const buy=e.c==="P";const col=buy?"var(--blue)":SELL;
+    const halo=(e.v||0)>=vmax*0.3?`<circle cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="${(rr*2.2).toFixed(1)}" fill="${col}" opacity="0.13"/>`:"";
+    out+=`<a href="${e.u||"#"}" target="_blank" rel="noopener" class="dot" style="--i:${Math.min(i,40)}">${halo}<circle cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="${rr.toFixed(1)}" fill="${col}" fill-opacity="0.85" stroke="#fff" stroke-width="1.2"><title>${buy?"Bought":"Sold"} ${e.v?money(e.v):compact(e.sh)+" sh"} · ${compact(e.sh)} sh${note} · ${dt}${e.pl==="plan"?" · planned":e.pl==="discretionary"?" · discretionary":""}</title></circle></a>`;
+  });
+  /* the two labels: above a purchase, below a sale, kept inside the frame */
+  for(const e of [bigS,bigP]){
+    if(!e)continue;const dt=e.td||e.fd;const [y]=at(e);const x=X(dt),yy=Y(y);const buy=e.c==="P";
+    const rr=3+5*Math.sqrt((e.v||0)/vmax);
+    const ty=buy?yy-rr-8:yy+rr+13;const anchor=x>fr.w-140?"end":x<fr.pad.l+90?"start":"middle";
+    out+=`<text class="ann" x="${x.toFixed(1)}" y="${Math.max(fr.pad.t+4,Math.min(fr.h-fr.pad.b-4,ty)).toFixed(1)}" text-anchor="${anchor}" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="${buy?"var(--blue)":SELL}">${e.v?money(e.v):compact(e.sh)+" sh"} ${buy?"bought":"sold"} · ${monthLabel(dt.slice(0,7))}</text>`;
   }
-  /* the trades, on the line at their trade date, sized by value */
-  const at=dt=>{let v=val(ms[0]);for(const o of ms){if(o.d<=dt)v=val(o);else break;}return v;};
-  const vmax=Math.max(1,...evs.map(e=>e.v||0));
-  for(const e of evs){
-    const dt=e.td||e.fd;if(dt<pts[0][0]||dt>last[0])continue;
-    const x=X(dt),y=Y(at(dt));const rr=3+5*Math.sqrt((e.v||0)/vmax);
-    const buy=e.c==="P";
-    out+=`<a href="${e.u||"#"}" target="_blank" rel="noopener"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rr.toFixed(1)}" fill="${buy?"var(--blue)":"#c22a2a"}" fill-opacity="0.85" stroke="#fff" stroke-width="1.2"><title>${buy?"Bought":"Sold"} ${e.v?money(e.v):compact(e.sh)+" sh"} · ${dt}${e.pl==="plan"?" · planned":e.pl==="discretionary"?" · discretionary":""}</title></circle></a>`;
-  }
-  out+=`<text x="${(X(last[0])-6).toFixed(1)}" y="${(Y(last[1])-9).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--blue)">${fmt(last[1])}</text>`;
-  out+=`</svg>`;
   return out;
 }
-
-/* ---- the price, with the trades on it ----
-   THE QUESTION THIS CHART ANSWERS is the one a reader actually has about an
-   insider: did they sell into a top, did they buy the crash. The stake
-   charts say how much; this says when, against what the market was doing.
-   Daily closes, split-adjusted, from the price store; every dot sits at
-   the price ON THE FILING, restated in today's shares, so the gap between
-   a dot and the line is itself information (a block sold below the close,
-   a plan filled through the day). Grants, gifts and withholding are not
-   decisions about price and are not drawn. */
-let PRICES_DAILY=null;   /* [[date, close], ...] for this ticker, or null */
-function priceChart(px,evs,{w=940,h=300}={}){
-  const pad={l:64,r:22,t:18,b:30};
+function yearsAxis(X,t0,t1,fr){
+  let out="";const y0=new Date(t0).getUTCFullYear(),y1=new Date(t1).getUTCFullYear();
+  const every=(y1-y0)>7&&fr.w<600?2:1;
+  for(let yr=y0+1;yr<=y1;yr++){if((yr-y0)%every)continue;const x=X(`${yr}-01-01`);if(x<fr.pad.l||x>fr.w-fr.pad.r)continue;
+    out+=`<text x="${x.toFixed(1)}" y="${fr.h-10}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">${yr}</text>`;}
+  return out;
+}
+/* the hover's data rides on the svg: one row per x-position the cursor can
+   land on, [date, label lines...], plus the frame it was drawn in */
+function hoverAttrs(rows,fr,t0,t1){
+  return `data-t0="${t0}" data-t1="${t1}" data-l="${fr.pad.l}" data-r="${fr.pad.r}" data-w="${fr.w}" data-t="${fr.pad.t}" data-b="${fr.pad.b}" data-h="${fr.h}" data-rows="${esc(JSON.stringify(rows))}"`;
+}
+function priceChart(px,evs){
+  const fr=frame(),{w,h,pad}=fr;
   if(!px||px.length<2)return "";
   const t0=Date.parse(px[0][0]),t1=Date.parse(px[px.length-1][0])||t0+1;
-  /* LOG SCALE. A stock up 10x over five years is a flat line for four of
-     them on a linear axis, and every early trade sits in the mud. */
   /* only the trades inside the price record shape the axis; a 2016 sale
      restated to $14 must not drag a $100 to $500 chart down to $20 */
-  const drawn=evs.filter(e=>{const dt=e.td||e.fd;return dt>=px[0][0]&&dt<=px[px.length-1][0];}).sort((a,b)=>(b.v||0)-(a.v||0));
+  const drawn=evs.filter(e=>{const dt=e.td||e.fd;return dt>=px[0][0]&&dt<=px[px.length-1][0];});
+  /* LOG SCALE. A stock up 10x over five years is a flat line for four of
+     them on a linear axis, and every early trade sits in the mud. */
   let lo=Infinity,hi=-Infinity;for(const p of px){if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];}
   for(const e of drawn){const y=e.apa||null;if(y&&y>0){if(y<lo)lo=y;if(y>hi)hi=y;}}
   lo=Math.max(lo,1e-3);
-  const L0=Math.log(lo)-(Math.log(hi)-Math.log(lo))*0.08,L1=Math.log(hi)+(Math.log(hi)-Math.log(lo))*0.10;
+  const L0=Math.log(lo)-(Math.log(hi)-Math.log(lo))*0.08,L1=Math.log(hi)+(Math.log(hi)-Math.log(lo))*0.12;
   const X=d=>pad.l+(Date.parse(d)-t0)/((t1-t0)||1)*(w-pad.l-pad.r);
   const Y=v=>h-pad.b-(Math.log(v)-L0)/((L1-L0)||1)*(h-pad.t-pad.b);
-  const dollars=v=>Math.abs(v-Math.round(v))<1e-9&&v>=1?"$"+Math.round(v).toLocaleString("en-US"):v>=1000?"$"+Math.round(v).toLocaleString("en-US"):v>=100?"$"+v.toFixed(0):v>=10?"$"+v.toFixed(1):"$"+v.toFixed(2);
-  /* gridlines at round prices, thinned to at most five */
   const ticks=[];
   for(let e=Math.floor(Math.log10(lo))-1;e<=Math.ceil(Math.log10(hi));e++)for(const m of [1,1.5,2,3,5,7]){const v=m*Math.pow(10,e);if(Math.log(v)>L0&&Math.log(v)<L1)ticks.push(v);}
   while(ticks.length>5){for(let i=ticks.length-2;i>=0;i-=2)ticks.splice(i,1);}
-  let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="the share price, with the chief executive's trades on it">`;
+  /* the line: one point per trading day, thinned to the pixel */
+  let d="",lastX=-9;const hover=[];
+  for(const p of px){const x=X(p[0]);if(x-lastX<0.7&&d)continue;lastX=x;d+=(d?" L ":"M ")+x.toFixed(1)+" "+Y(p[1]).toFixed(1);}
+  /* the trades nearest each day, for the crosshair */
+  const byDay={};for(const e of drawn){const dt=e.td||e.fd;(byDay[dt]=byDay[dt]||[]).push(e);}
+  for(const p of px){const tr=byDay[p[0]];let line2="";
+    if(tr){const b=tr.filter(e=>e.c==="P"),sl=tr.filter(e=>e.c==="S");const sum=a=>a.reduce((t,e)=>t+(e.v||0),0);
+      line2=[b.length?`bought ${money(sum(b))}`:"",sl.length?`sold ${money(sum(sl))}`:""].filter(Boolean).join(", ");}
+    hover.push([p[0],dayLabel(p[0])+" · "+dollars(p[1]),line2]);}
+  let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="the share price, with the chief executive's trades on it" class="fchart" ${hoverAttrs(hover,fr,t0,t1)}>
+  <defs><linearGradient id="pxg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--blue)" stop-opacity="0.16"/><stop offset="1" stop-color="var(--blue)" stop-opacity="0"/></linearGradient></defs>`;
   for(const v of ticks){const y=Y(v);
     out+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
     out+=`<text x="${pad.l-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">${dollars(v)}</text>`;}
-  const y0=new Date(t0).getUTCFullYear(),y1=new Date(t1).getUTCFullYear();
-  for(let yr=y0+1;yr<=y1;yr++){const x=X(`${yr}-01-01`);if(x<pad.l||x>w-pad.r)continue;
-    out+=`<text x="${x.toFixed(1)}" y="${h-10}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">${yr}</text>`;}
-  /* the line: one point per trading day, thinned to the pixel so a
-     five-year series is a few hundred segments, not thirteen hundred */
-  let d="",lastX=-9;
-  for(const p of px){const x=X(p[0]);if(x-lastX<0.7&&d)continue;lastX=x;d+=(d?" L ":"M ")+x.toFixed(1)+" "+Y(p[1]).toFixed(1);}
-  const xEnd=X(px[px.length-1][0]);
-  out+=`<path d="${d} V ${(h-pad.b).toFixed(1)} H ${X(px[0][0]).toFixed(1)} Z" fill="var(--ink)" opacity="0.035"/>`;
-  out+=`<path d="${d}" fill="none" stroke="var(--ink)" stroke-opacity="0.72" stroke-width="1.1" stroke-linejoin="round"/>`;
-  /* hover: the month's close range, one invisible band per month */
-  const months=[];for(const p of px){const m=p[0].slice(0,7);const cur=months[months.length-1];if(cur&&cur.m===m){cur.hi=Math.max(cur.hi,p[1]);cur.lo=Math.min(cur.lo,p[1]);cur.last=p;}else months.push({m,lo:p[1],hi:p[1],first:p,last:p});}
-  for(let i=0;i<months.length;i++){const o=months[i];const x0=X(o.first[0]),x1=i+1<months.length?X(months[i+1].first[0]):w-pad.r;
-    out+=`<rect x="${x0.toFixed(1)}" y="${pad.t}" width="${Math.max(1,x1-x0).toFixed(1)}" height="${(h-pad.t-pad.b).toFixed(1)}" fill="transparent"><title>${monthLabel(o.m)} · closed ${dollars(o.last[1])} · ${dollars(o.lo)} to ${dollars(o.hi)}</title></rect>`;}
-  /* the trades: at the filed price in today's shares, sized by value.
-     A trade whose filed price could not be restated sits on the line at
-     that day's close and says so. */
-  const at=dt=>{let v=px[0][1];for(const p of px){if(p[0]<=dt)v=p[1];else break;}return v;};
-  const vmax=Math.max(1,...drawn.map(e=>e.v||0));
-  for(const e of drawn){
-    const dt=e.td||e.fd;const onLine=!(e.apa>0);const y=onLine?at(dt):e.apa;
-    const x=X(dt),rr=3+5*Math.sqrt((e.v||0)/vmax);const buy=e.c==="P";
-    const px_=onLine?`at the ${dollars(y)} close (price on the filing not restated)`:`at ${dollars(e.apa)}${e.ap&&Math.abs(e.ap-e.apa)>0.005?` (filed at ${dollars(e.ap)}, before splits)`:""}`;
-    out+=`<a href="${e.u||"#"}" target="_blank" rel="noopener"><circle cx="${x.toFixed(1)}" cy="${Y(y).toFixed(1)}" r="${rr.toFixed(1)}" fill="${buy?"var(--blue)":"#c22a2a"}" fill-opacity="0.82" stroke="#fff" stroke-width="1.2"><title>${buy?"Bought":"Sold"} ${e.v?money(e.v):compact(e.sh)+" sh"} · ${compact(e.sh)} sh ${px_} · ${dt}${e.pl==="plan"?" · planned":e.pl==="discretionary"?" · discretionary":""}</title></circle></a>`;
-  }
+  out+=yearsAxis(X,t0,t1,fr);
+  out+=`<path class="fill" d="${d} V ${(h-pad.b).toFixed(1)} H ${X(px[0][0]).toFixed(1)} Z" fill="url(#pxg)"/>`;
+  out+=`<path class="line" d="${d}" fill="none" stroke="var(--ink)" stroke-opacity="0.8" stroke-width="1.2" stroke-linejoin="round"/>`;
+  const closeAt=dt=>{let v=px[0][1];for(const p of px){if(p[0]<=dt)v=p[1];else break;}return v;};
+  out+=dots(drawn,X,Y,e=>{const dt=e.td||e.fd;return e.apa>0?[e.apa,` at ${dollars(e.apa)}${e.ap&&Math.abs(e.ap-e.apa)>0.005?` (filed at ${dollars(e.ap)}, before splits)`:""}`]:[closeAt(dt),` at the ${dollars(closeAt(dt))} close (price on the filing not restated)`];},fr);
   const last=px[px.length-1];
-  out+=`<text x="${(xEnd-6).toFixed(1)}" y="${(Y(last[1])-9).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">${dollars(last[1])}</text>`;
-  out+=`</svg>`;
+  out+=`<text x="${(X(last[0])-6).toFixed(1)}" y="${(Y(last[1])-9).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">${dollars(last[1])}</text>`;
+  out+=`<g class="xh" style="display:none"><line y1="${pad.t}" y2="${h-pad.b}" stroke="var(--ink)" stroke-opacity="0.35" stroke-dasharray="2 3"/><circle r="3.5" fill="var(--ink)"/><rect rx="3" fill="var(--ink)"/><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text></g></svg>`;
   return out;
+}
+function stakeChart(pts,evs){
+  const fr=frame(),{w,h,pad}=fr;
+  const ms=monthEnds(pts);if(ms.length<2)return "";
+  const t0=Date.parse(ms[0].d),t1=Date.parse(ms[ms.length-1].d)||t0+1;
+  let lo=Infinity,hi=-Infinity;for(const o of ms){if(o.pct<lo)lo=o.pct;if(o.pct>hi)hi=o.pct;}
+  let span=hi-lo;
+  if(span<=Math.abs(hi)*1e-6){lo=hi*0.98;hi=hi*1.02;span=hi-lo;}   /* a flat record: a band, not a hairline */
+  else{lo=Math.max(0,lo-span*0.12);hi=hi+span*0.14;}
+  const X=d=>pad.l+(Date.parse(d)-t0)/((t1-t0)||1)*(w-pad.l-pad.r);
+  const Y=v=>h-pad.b-(v-lo)/(hi-lo)*(h-pad.t-pad.b);
+  const ticks=[0,1,2,3].map(k=>lo+(hi-lo)*k/3);
+  let dec=hi<10?2:1;const fmtAt=dc=>v=>v.toFixed(dc)+"%";
+  while(dec<4&&new Set(ticks.map(fmtAt(dec))).size<ticks.length)dec++;
+  const fmt=fmtAt(dec);
+  let d="";ms.forEach((o,i)=>{const x=X(o.d),y=Y(o.pct);d+=i?` H ${x.toFixed(1)} V ${y.toFixed(1)}`:`M ${x.toFixed(1)} ${y.toFixed(1)}`;});
+  const hover=ms.map((o,i)=>{const move=i?(Math.abs(o.dP)>1e-6?`${o.dP>0?"+":"−"}${Math.abs(o.dP).toFixed(2)} pts`:"no change"):"start";
+    return [o.d,`${monthLabel(o.m)} · ${o.pct.toFixed(2)}% · ${compact(o.sh)} sh`,`${move}${o.why?" · "+o.why:""}`];});
+  let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="the stake over time" class="fchart" ${hoverAttrs(hover,fr,t0,t1)}>
+  <defs><linearGradient id="stg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--blue)" stop-opacity="0.16"/><stop offset="1" stop-color="var(--blue)" stop-opacity="0"/></linearGradient></defs>`;
+  for(let k=0;k<=3;k++){const v=lo+(hi-lo)*k/3;const y=Y(v);
+    out+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
+    out+=`<text x="${pad.l-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">${fmt(v)}</text>`;}
+  out+=yearsAxis(X,t0,t1,fr);
+  out+=`<path class="fill" d="${d} V ${(h-pad.b).toFixed(1)} H ${X(ms[0].d).toFixed(1)} Z" fill="url(#stg)"/>`;
+  out+=`<path class="line" d="${d}" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linejoin="round"/>`;
+  const at=dt=>{let v=ms[0].pct;for(const o of ms){if(o.d<=dt)v=o.pct;else break;}return v;};
+  const drawn=evs.filter(e=>{const dt=e.td||e.fd;return dt>=pts[0][0]&&dt<=ms[ms.length-1].d;});
+  out+=dots(drawn,X,Y,e=>[at(e.td||e.fd),""],fr);
+  const lastO=ms[ms.length-1];
+  out+=`<text x="${(X(lastO.d)-6).toFixed(1)}" y="${(Y(lastO.pct)-9).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--blue)">${fmt(lastO.pct)}</text>`;
+  out+=`<g class="xh" style="display:none"><line y1="${pad.t}" y2="${h-pad.b}" stroke="var(--ink)" stroke-opacity="0.35" stroke-dasharray="2 3"/><circle r="3.5" fill="var(--blue)"/><rect rx="3" fill="var(--ink)"/><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text></g></svg>`;
+  return out;
+}
+/* THE CROSSHAIR. One handler for both charts: the cursor's x becomes a
+   date, the nearest row supplies the label, the box stays inside the
+   frame. Touch works the same way. */
+function attachHover(svg){
+  const rows=JSON.parse(svg.getAttribute("data-rows")||"[]");if(!rows.length)return;
+  const g=svg.querySelector(".xh");if(!g)return;
+  const t0=+svg.dataset.t0,t1=+svg.dataset.t1,L=+svg.dataset.l,R=+svg.dataset.r,W=+svg.dataset.w,T=+svg.dataset.t,B=+svg.dataset.b,H=+svg.dataset.h;
+  const line=g.querySelector("line"),dot=g.querySelector("circle"),box=g.querySelector("rect"),[t1El,t2El]=g.querySelectorAll("text");
+  const path=svg.querySelector("path.line");
+  const X=t=>L+(t-t0)/((t1-t0)||1)*(W-L-R);
+  const times=rows.map(r=>Date.parse(r[0]));
+  function yOnLine(x){
+    /* walk the drawn path for the y at this x: cheap at a few hundred points */
+    if(!path)return T;const n=path.getTotalLength();let a=0,b=n;
+    for(let k=0;k<18;k++){const m=(a+b)/2;if(path.getPointAtLength(m).x<x)a=m;else b=m;}
+    return path.getPointAtLength((a+b)/2).y;
+  }
+  function show(clientX){
+    const r=svg.getBoundingClientRect();const x=(clientX-r.left)/r.width*W;
+    if(x<L||x>W-R){g.style.display="none";return;}
+    const t=t0+(x-L)/(W-L-R)*(t1-t0);
+    let i=0;while(i<times.length-1&&Math.abs(times[i+1]-t)<Math.abs(times[i]-t))i++;
+    const row=rows[i];const xx=X(times[i]);const yy=yOnLine(xx);
+    line.setAttribute("x1",xx);line.setAttribute("x2",xx);dot.setAttribute("cx",xx);dot.setAttribute("cy",yy);
+    t1El.textContent=row[1];t2El.textContent=row[2]||"";
+    const w1=row[1].length*6.4,w2=(row[2]||"").length*6.4,bw=Math.max(w1,w2)+16,bh=row[2]?34:20;
+    let bx=xx+10;if(bx+bw>W-R)bx=xx-10-bw;const by=Math.max(T,Math.min(yy-bh/2,H-B-bh));
+    box.setAttribute("x",bx);box.setAttribute("y",by);box.setAttribute("width",bw);box.setAttribute("height",bh);
+    t1El.setAttribute("x",bx+8);t1El.setAttribute("y",by+13.5);t2El.setAttribute("x",bx+8);t2El.setAttribute("y",by+28);
+    g.style.display="";
+  }
+  svg.addEventListener("mousemove",e=>show(e.clientX));
+  svg.addEventListener("mouseleave",()=>{g.style.display="none";});
+  svg.addEventListener("touchstart",e=>{show(e.touches[0].clientX);},{passive:true});
+  svg.addEventListener("touchmove",e=>{show(e.touches[0].clientX);},{passive:true});
+}
+/* ONE MOTION, ON LOAD: the line draws in, then the dots appear. Once per
+   render; the reduced-motion rule in the stylesheet switches it off. */
+function drawIn(svg){
+  const path=svg.querySelector("path.line");if(!path)return;
+  const n=path.getTotalLength();path.style.strokeDasharray=n;path.style.strokeDashoffset=n;
+  path.getBoundingClientRect();
+  path.style.transition="stroke-dashoffset 900ms ease-out";path.style.strokeDashoffset="0";
+  path.addEventListener("transitionend",()=>{path.style.strokeDasharray="";path.style.strokeDashoffset="";},{once:true});
+  svg.classList.add("drawn");
 }
 function recordBlock(r){
   const raw=HIST[r.tk];
   const px=PRICES_DAILY;
-  const modes=[["price","Price","the share price, daily, split-adjusted, with every purchase and sale at the price on its filing"],
-               ["pct","% of company","the share of the company: moves when the holding changes and when the share count changes"],
-               ["shares","Shares held","the shares held, split-adjusted: moves only when the person buys, sells, is granted, gifts, or forfeits shares; flat while the company dilutes"]];
   const havePx=!!(px&&px.length>1),haveRec=!!(raw&&raw.length);
   let mode=window._chartMode||"price";
   if(mode==="price"&&!havePx)mode="pct";
   if(mode!=="price"&&!haveRec&&havePx)mode="price";
+  const modes=[["price","Price","the share price, daily, split-adjusted, with every purchase and sale at the price on its filing"],
+               ["pct","Stake","the share of the company: moves when the holding changes and when the share count changes"]];
   const chips=`<div class="chips" role="group" aria-label="chart view">${modes.filter(m=>m[0]==="price"?havePx:haveRec).map(m=>`<button class="chip${mode===m[0]?" on":""}" onclick="setChartMode('${m[0]}')" title="${m[2]}">${m[1]}</button>`).join("")}</div>`;
   const moving=EVENTS.filter(e=>e.tk===r.tk&&unchangedKind(e)===null&&(e.c==="P"||e.c==="S"));
   const buys=moving.filter(e=>e.c==="P"),sells=moving.filter(e=>e.c==="S");
   const sum=a=>a.reduce((t,e)=>t+((e.fl?0:e.v)||0),0);
   const tradeLine=moving.length?` Since 2016: <b>${buys.length?`bought ${money(sum(buys))} in ${buys.length} trade${buys.length===1?"":"s"}`:"no purchases"}</b>, <b>${sells.length?`sold ${money(sum(sells))} in ${sells.length}`:"no sales"}</b>.`:"";
+  const key=`<div class="ckey">${moving.length?`<span class="b"><i></i>bought</span><span class="s"><i></i>sold</span><span>· dot size follows the trade's value · click a dot for the filing</span>`:""}</div>`;
   if(mode==="price"&&havePx){
     const first=px[0][0],lastD=px[px.length-1][0];
     const before=moving.filter(e=>(e.td||e.fd)<first).length;
     return `<div class="csec"><div class="cshead"><h2>The price, and when they traded</h2>${chips}</div>
       <div class="sub">${first.slice(0,4)} to ${lastD}, daily closes, split-adjusted. Dots sit at the price on the filing.${tradeLine}${before?` ${before} earlier trade${before===1?"":"s"} predate${before===1?"s":""} the price record.`:""}</div>
-      <div class="cchart">${priceChart(px,moving)}</div>
-      <div class="ckey">${moving.length?`<span class="b"><i></i>bought</span><span class="s"><i></i>sold</span><span>· dot size follows the trade's value · click a dot for the filing ·</span>`:""}<span>hover the line for the month</span></div>
+      <div class="cchart">${priceChart(px,moving)}</div>${key}
     </div>`;
   }
   if(!haveRec)return `<div class="csec"><h2>The stake over time</h2><div class="sub">No record yet — this company has no walkable filing history.</div></div>`;
   const pts=cleanHist(r.tk);const left=raw.length-pts.length;
   const series=pts.length>1?pts:raw;
-  return `<div class="csec"><div class="cshead"><h2>${mode==="shares"?"Shares held over time":"The stake over time"}</h2>${chips}</div>
-    <div class="sub">${series[0][0].slice(0,4)} to ${series[series.length-1][0]}, one point per month-end${left?` — ${left} point${left===1?"":"s"} left out where the record lied`:""}.${tradeLine}</div>
-    <div class="cchart">${stakeChart(series,moving,{mode})}</div>
-    <div class="ckey">${moving.length?`<span class="b"><i></i>bought</span><span class="s"><i></i>sold</span><span>· dot size follows the trade's value · click a dot for the filing ·</span>`:""}<span>${mode==="shares"?"steps without a dot are grants, gifts, tax withholding or options exercised":"steps without a dot are grants, gifts, or the share count changing"} · hover the line for the month</span></div>
+  return `<div class="csec"><div class="cshead"><h2>The stake over time</h2>${chips}</div>
+    <div class="sub">${series[0][0].slice(0,4)} to ${series[series.length-1][0]}, one point per month-end${left?` — ${left} point${left===1?"":"s"} left out where the record lied`:""}.${tradeLine} Steps without a dot are grants, gifts, or the share count changing.</div>
+    <div class="cchart">${stakeChart(series,moving)}</div>${key}
   </div>`;
 }
 
@@ -287,10 +334,12 @@ function reportBlock(r){
     If a number here looks wrong, <a href="mailto:hello@founderledequities.com?subject=${subj}&body=${body}">say so</a> — every figure links to the filing it came from, and corrections are made in the open.`;
 }
 
-function renderOpen(r){
+function renderOpen(r,{animate=true}={}){
   window._lastRow=r;
   $("#cbody").innerHTML=band(r)+recordBlock(r)+tradesBlock(r)+whyBlock(r);
   $("#creport").innerHTML=reportBlock(r);
+  const svg=document.querySelector(".cchart svg.fchart");
+  if(svg){attachHover(svg);if(animate)drawIn(svg);}
 }
 
 async function fetchText(paths){
@@ -311,7 +360,7 @@ async function fetchText(paths){
   if(!row){setRow({tk:C.tk,co:C.co,ceo:C.ceo,pct:null,sh:null,out:null,asof:"",conf:"medium"});renderSealed();return;}
   if(C.price){row.price=C.price;row.val=row.sh?row.sh*C.price:null;PRICES_ASOF=C.price_date||"";}
   setRow(row);
-  renderOpen(row);   /* the numbers first; the record and trades fill in */
+  renderOpen(row,{animate:false});   /* the numbers first; the record and trades fill in */
   const base=(C.sp||!pro)?"":"/pro";
   const [h,e,p]=await Promise.all([
     fetchText([`${base}/history/${C.tk}.csv`,`/history/${C.tk}.csv`]),
@@ -324,3 +373,4 @@ async function fetchText(paths){
 })();
 
 function setChartMode(m){window._chartMode=m;if(window._lastRow)renderOpen(window._lastRow);}
+let _rsz=null;window.addEventListener("resize",()=>{clearTimeout(_rsz);_rsz=setTimeout(()=>{if(window._lastRow)renderOpen(window._lastRow,{animate:false});},150);});

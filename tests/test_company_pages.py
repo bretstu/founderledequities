@@ -179,16 +179,18 @@ def test_the_seo_layer(tmp_path):
     assert "<lastmod>2026-07-06</lastmod>" in sm, "a company page is dated by its as-of"
 
 
-def test_the_stake_chart_is_month_end_with_a_shares_view_and_hover_causes():
-    """The page script draws one point per month-end, offers a shares-held
-    view, and titles every month with why it moved."""
+def test_the_record_has_two_views_and_one_story_per_chart():
+    """The page script draws the price (default) and the stake, one point
+    per month-end for the stake, dots at the filed price restated in
+    today's shares, the largest sale and purchase labelled, a crosshair
+    hover, and one draw-in on load. The shares-held view is gone."""
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
-    assert "function monthEnds(" in js and 'mode==="shares"' in js
-    assert "share count changed" in js and '"granted"' in js and '"tax withholding"' in js
-    assert "steps without a dot are grants, gifts, or the share count changing" in js
-    # three views now: the price (default when the store has the ticker),
-    # the share of the company, the shares held
-    assert '["price","Price"' in js and '["shares","Shares held"' in js and "% of company" in js
+    assert "function monthEnds(" in js and "share count changed" in js and '"granted"' in js
+    assert '["price","Price"' in js and '["pct","Stake"' in js
+    assert '["shares","Shares held"' not in js and 'mode==="shares"' not in js
     assert "function priceChart(" in js and "split-adjusted. Dots sit at the price on the filing" in js
     assert "e.apa" in js, "dots sit at the filed price restated in today's shares"
     assert 'fetchText([`/prices/${C.tk}.csv`])' in js, "prices are fetched from the public root on every page"
+    assert "function attachHover(" in js and "function drawIn(" in js
+    assert 'class="ann"' in js and "linearGradient" in js
+    assert "steps without a dot are grants, gifts, or the share count changing" in js.lower()
