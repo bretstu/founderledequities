@@ -73,7 +73,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert 'src="/company.js?v=' in tsla and 'href="/site.css?v=' in tsla, "a new script is a new address"
     assert os.path.exists(os.path.join(out, "site.css"))
     sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
-    assert sm.count("<loc>") == 4 and "/company/SEALD/" in sm, "every company is in the sitemap, sealed ones too"
+    assert sm.count("<loc>") == 5 and "/company/SEALD/" in sm and "/companies/" in sm, "every company is in the sitemap, sealed ones too, and the index page"
     robots = open(os.path.join(out, "robots.txt"), encoding="utf-8").read()
     assert "Disallow: /pro/" in robots and "Sitemap:" in robots
     js = open(os.path.join(out, "company.js"), encoding="utf-8").read()
@@ -128,3 +128,32 @@ def test_the_published_perf_file_is_the_chart_cohort(tmp_path):
     n = bsd.write_perf_for_chart(str(perf), str(founders), str(out))
     kept = {row["ticker"] for row in csv.DictReader(open(out / "perf.csv", encoding="utf-8"))}
     assert kept == {"SPY", "RSP", "TSLA"} and n == 3
+
+
+def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path):
+    """A fetch without scripts must read the stake, the value, the record
+    and the last trade from the HTML; a sealed page reads the person and
+    the offer; and /companies/ links every page."""
+    panel, founders, prices, sp, _ = _fixture(tmp_path)
+    events = tmp_path / "events.csv"
+    events.write_text("ticker,code,label,traded,filed,value,plan,pre_ipo\n"
+                      "TSLA,S,sale,2026-08-29,2026-08-31,24200000,plan,0\n"
+                      "TSLA,P,purchase,2020-02-14,2020-02-18,10000000,discretionary,0\n"
+                      "TSLA,S,exercise and sell,2026-06-01,2026-06-02,50000000,,0\n", encoding="utf-8")
+    hist = tmp_path / "history.csv"
+    hist.write_text("ticker,date,pct\nTSLA,2016-03-01,21.10\nTSLA,2026-07-06,28.44\n", encoding="utf-8")
+    out = tmp_path / "pub"
+    bcp.main(panel, founders, prices, sp, str(out), str(events), str(hist))
+    tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
+    body = tsla[tsla.index('<div id="cbody">'):tsla.index('<div class="creport"')]
+    assert "28.44%" in body and "1,120,000,000" in body and "$370B" in body, "the answer band is in the HTML"
+    assert "from 21.10% in 2016 to 28.44% on 2026-07-06" in body, "the record, as a sentence"
+    assert "1 sale and 1 purchase" in body, "kept-apart trades do not count"
+    assert "planned sale of $24.2M on 2026-08-29" in body, "the last trade that moved it"
+    assert "names Elon Musk a founder" in body
+    sealed = open(out / "company" / "SEALD" / "index.html", encoding="utf-8").read()
+    sbody = sealed[sealed.index('<div id="cbody">'):sealed.index('<div class="creport"')]
+    assert "chief executive of" in sbody and "Pro tier" in sbody and "41.2" not in sbody, "a sealed page: the person and the offer, no numbers"
+    idx = open(out / "companies" / "index.html", encoding="utf-8").read()
+    assert 'href="/company/TSLA/"' in idx and 'href="/company/SEALD/"' in idx, "every page has a plain link"
+    assert "FOUNDER" in idx and "Pro</span>" in idx

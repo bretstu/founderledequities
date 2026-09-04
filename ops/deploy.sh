@@ -121,7 +121,7 @@ python3 ops/stamp_static.py panel.csv "$SP_LIST" prices.csv founders.csv public/
 # ---- 3a. one page per company, at its own address ----
 # company.js and site.css are extracted from index.html here, so the pages
 # and the home page share one source for every rule; sitemap.xml lists them.
-python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" public/
+python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" public/ events.csv history.csv
 [ -s prices.csv ] && cp prices.csv public/
 # perf.csv is published by build_site_data, cut to the chart's cohort; the
 # full file (every company's closes) stays on disk for the 3-year returns.

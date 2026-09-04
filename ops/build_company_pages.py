@@ -143,7 +143,154 @@ def page_text(r, sp: bool, price):
     return title, desc[:300]
 
 
-def main(panel_p, founders_p, prices_p, sp_p, out_dir):
+def compact(n: float) -> str:
+    """1,120,000,000 -> 1.12B; 17,074,104 -> 17.1M; the page's own rule."""
+    a = abs(n)
+    for div, suf in ((1e12, "T"), (1e9, "B"), (1e6, "M"), (1e3, "K")):
+        if a >= div:
+            v = n / div
+            return f"{v:.2f}{suf}" if v < 10 else f"{v:.1f}{suf}" if v < 100 else f"{v:.0f}{suf}"
+    return f"{int(n):,}"
+
+
+UNCHANGED = {"exercise and sell", "convert and sell", "sale, position unchanged", "purchase, position unchanged"}
+
+
+def load_summaries(events_p, hist_p):
+    """Per ticker, what a paragraph needs: the first and last points of the
+    record, how many purchases and sales moved the stake, and the last one
+    that did. Read once from the full files; the pages then say something
+    no other page says, from data, without a word of prose being guessed."""
+    ev = {}
+    try:
+        for r in csv.DictReader(open(events_p, encoding="utf-8-sig")):
+            tk = (r.get("ticker") or "").upper()
+            if not tk or r.get("code") not in ("P", "S"):
+                continue
+            if (r.get("label") or "") in UNCHANGED or (r.get("pre_ipo") or "") in ("1", "true", "True"):
+                continue
+            d = ev.setdefault(tk, {"buys": 0, "sells": 0, "last": None})
+            d["buys" if r["code"] == "P" else "sells"] += 1
+            key = (r.get("traded") or r.get("filed") or "", r.get("filed") or "")
+            if d["last"] is None or key > d["last"][0]:
+                d["last"] = (key, r)
+    except OSError:
+        pass
+    hist = {}
+    try:
+        for r in csv.DictReader(open(hist_p, encoding="utf-8-sig")):
+            tk = (r.get("ticker") or "").upper()
+            pct = num(r.get("pct"))
+            if not tk or pct is None or pct > 100:
+                continue
+            h = hist.setdefault(tk, {"first": None, "last": None})
+            key = r.get("date") or ""
+            if h["first"] is None or key < h["first"][0]:
+                h["first"] = (key, pct)
+            if h["last"] is None or key > h["last"][0]:
+                h["last"] = (key, pct)
+    except OSError:
+        pass
+    return ev, hist
+
+
+def static_body(payload, r, is_sp, price, price_date, ev, hist, founder):
+    """THE PAGE SAYS ITS NUMBERS IN HTML. A fetch without scripts (a
+    crawler's first pass, an assistant, a reader in the second before the
+    data arrives) read a name and a footer; the stake, the value, the
+    record and the last trade all arrived by script. Now the answer band
+    and a paragraph are written into the page; the script redraws over
+    them. A sealed page gets the paragraph without the numbers."""
+    co = html.escape(payload["co"]); ceo = html.escape(payload["ceo"] or "the chief executive")
+    fsent = ""
+    if founder and founder.get("f") == "yes":
+        fsent = f" The company's proxy statement names {ceo} a founder."
+    elif founder and founder.get("f") == "uncertain":
+        fsent = f" The proxy's language on whether {ceo} founded the company is ambiguous."
+    if not is_sp:
+        return (f'<p class="cprose">{ceo} is the chief executive of {co}.{fsent} '
+                f'The stake, its value, and every trade since 2016 are in the Pro tier; '
+                f'<a href="/api/checkout">Pro is $5 a month</a>, and the S&amp;P 500 is free.</p>')
+    pct = num(r.get("pct")); sh = num(r.get("shares")); out = num(r.get("outstanding"))
+    if pct is None or sh is None:
+        return f'<p class="cprose">{ceo} is the chief executive of {co}.{fsent} The record could not settle on a figure; the reasons are on the row.</p>'
+    val = f", worth about {money(sh * price)} at the {html.escape(price_date)} close" if price else ""
+    pd = html.escape(price_date)
+    band = ('<div class="cband">'
+            f'<div><div class="p">{pct:.2f}%</div><div class="pl">of {co}&#39;s common shares, computed from the filings, never estimated</div></div>'
+            f'<div class="cstat"><div class="k">Stake value</div><div class="v">{money(sh * price) if price else "&mdash;"}</div><div class="s">{("at $%.2f &middot; %s" % (price, pd)) if price else ""}</div></div>'
+            f'<div class="cstat"><div class="k">Market cap</div><div class="v">{money(out * price) if (price and out) else "&mdash;"}</div><div class="s">{(f"{int(out):,} shares outstanding") if out else ""}</div></div>'
+            f'<div class="cstat"><div class="k">Shares held</div><div class="v">{compact(sh)}</div><div class="s">{int(sh):,} as of {html.escape(r.get("shares_as_of") or "")}</div></div>'
+            f'<div class="cstat"><div class="k">Confidence</div><div class="v" style="font-size:20px">{html.escape(r.get("confidence") or "")}</div><div class="s"></div></div>'
+            '</div>')
+    h = hist.get(payload["tk"]) or {}
+    e = ev.get(payload["tk"]) or {}
+    moved = ""
+    if h.get("first") and h.get("last") and h["first"][0] < h["last"][0]:
+        moved = f" The stake has moved from {h['first'][1]:.2f}% in {h['first'][0][:4]} to {h['last'][1]:.2f}% on {h['last'][0]}"
+        if e:
+            ns, nb = e.get("sells", 0), e.get("buys", 0)
+            moved += f", across {ns} sale{'s' if ns != 1 else ''} and {nb} purchase{'s' if nb != 1 else ''} that moved it since 2016"
+        moved += "."
+    last = ""
+    if e.get("last"):
+        lr = e["last"][1]
+        v = num(lr.get("value")); plan = (lr.get("plan") or "")
+        kind = "purchase" if lr.get("code") == "P" else "sale"
+        how = "planned " if plan == "plan" else "discretionary " if plan == "discretionary" else ""
+        last = f" The last trade that moved it was a {how}{kind}{(' of ' + money(v)) if v else ''} on {html.escape(lr.get('traded') or lr.get('filed') or '')}."
+    if out:
+        prose = f'<p class="cprose">{ceo} owns {pct:.2f}% of {co}: {int(sh):,} of {int(out):,} shares{val}.{moved}{last}{fsent}</p>'
+    else:
+        prose = f'<p class="cprose">{ceo} owns {pct:.2f}% of {co}.{fsent}</p>'
+    return band + prose
+
+
+INDEX_CSS = ("""
+.cidx{padding:32px 0 60px}.cidx h1{font-family:var(--disp);font-size:clamp(28px,4vw,44px);font-weight:650;letter-spacing:-.02em;margin:0 0 8px}
+.cidx .sub{color:var(--mut);margin-bottom:18px}.cidx .letters{font-family:var(--mono);font-size:13px;display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}.cidx .letters a{color:var(--blue);text-decoration:none}
+.cidx section{margin-top:22px}.cidx h2{font-family:var(--mono);font-size:13px;color:var(--faint);letter-spacing:.14em;margin:0 0 8px}
+.cidx ul{list-style:none;margin:0;padding:0;columns:3;column-gap:32px}.cidx li{break-inside:avoid;padding:4px 0;font-size:13.5px}
+.cidx li a{font-family:var(--mono);font-weight:600;color:var(--blue);text-decoration:none}.cidx .co{color:var(--ink)}.cidx .ceo{color:var(--mut)}
+.cidx .seal{font-family:var(--mono);font-size:10px;color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:1px 5px;margin-left:4px}
+@media(max-width:900px){.cidx ul{columns:2}}@media(max-width:560px){.cidx ul{columns:1}}
+""")
+
+
+def companies_index(rows, founders, sp, out_dir, topnav, css_v):
+    """/companies/: one plain HTML link per company, grouped by letter, so
+    every page has an internal link a crawler can follow without scripts."""
+    by = {}
+    for r in rows:
+        by.setdefault(r["tk"][0], []).append(r)
+    parts = []
+    for letter in sorted(by):
+        items = []
+        for r in sorted(by[letter], key=lambda x: x["tk"]):
+            badge = ' <span class="fb yes">FOUNDER</span>' if (founders.get(r["tk"]) or {}).get("f") == "yes" else ""
+            seal = "" if r["tk"] in sp else ' <span class="seal">Pro</span>'
+            items.append(f'<li><a href="/company/{html.escape(r["tk"])}/">{html.escape(r["tk"])}</a> '
+                         f'<span class="co">{html.escape(r["co"])}</span> <span class="ceo">{html.escape(r["ceo"])}</span>{badge}{seal}</li>')
+        parts.append(f'<section><h2 id="{letter}">{letter}</h2><ul>{"".join(items)}</ul></section>')
+    nav = " ".join(f'<a href="#{l}">{l}</a>' for l in sorted(by))
+    n = f"{len(rows):,}"
+    page = ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n"
+            "<title>Every company &mdash; Founder Led Equities</title>\n"
+            f"<meta name=\"description\" content=\"Every one of the {n} US public companies on Founder Led Equities, with its chief executive and a page for what they own.\">\n"
+            "<link rel=\"canonical\" href=\"https://founderledequities.com/companies/\">\n"
+            f"<link rel=\"stylesheet\" href=\"/site.css?v={css_v}\">\n"
+            f"<style>{INDEX_CSS}</style></head><body>\n{topnav}\n"
+            "<main class=\"cidx\"><div class=\"wrap\"><h1>Every company</h1>\n"
+            f"<div class=\"sub\">{n} US public companies worth $1B or more, each with a page for what its chief executive owns. The S&amp;P 500 is open to everyone; the rest is the Pro tier.</div>\n"
+            f"<div class=\"letters\">{nav}</div>\n{''.join(parts)}\n</div></main>\n"
+            "<footer class=\"foot\"><div class=\"wrap\"><span><b>Founder Led <i>Equities</i></b> &middot; Computed from SEC EDGAR. Not investment advice. &middot; <a href=\"/about.html\">About &amp; method</a></span></div></footer>\n"
+            "</body></html>")
+    os.makedirs(os.path.join(out_dir, "companies"), exist_ok=True)
+    with open(os.path.join(out_dir, "companies", "index.html"), "w", encoding="utf-8") as fh:
+        fh.write(page)
+
+
+def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hist_p="history.csv"):
     here = os.path.dirname(os.path.abspath(__file__))
     root = os.path.dirname(here)
     index_html = open(os.path.join(root, "index.html"), encoding="utf-8").read()
@@ -188,7 +335,9 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir):
     except OSError:
         pass
 
+    ev, hist = load_summaries(events_p, hist_p)
     urls = []
+    index_rows = []
     n_open = n_sealed = 0
     for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
         tk = (r.get("ticker") or "").upper()
@@ -211,7 +360,10 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir):
         if price:   # the close is public data; a sealed page carries it and no shares
             payload["price"] = price
             payload["price_date"] = price_date
+        index_rows.append({"tk": tk, "co": payload["co"], "ceo": payload["ceo"]})
+        body = static_body(payload, r, is_sp, price, price_date, ev, hist, founders.get(tk))
         page = (template
+                .replace('<div id="cbody"></div>', '<div id="cbody">' + body + '</div>')
                 .replace("{{TITLE}}", html.escape(title))
                 .replace("{{DESCRIPTION}}", html.escape(desc))
                 .replace("{{TICKER}}", html.escape(tk))
@@ -228,6 +380,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir):
             fh.write(page)
         urls.append(f"{SITE}/company/{tk}/")
 
+    companies_index(index_rows, founders, sp, out_dir, topnav, css_v)
+    urls.append("https://founderledequities.com/companies/")
     with open(os.path.join(out_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
         fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
         for u in [f"{SITE}/", f"{SITE}/about.html"] + urls:
@@ -240,4 +394,4 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir):
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(*sys.argv[1:6]))
+    raise SystemExit(main(*sys.argv[1:8]))
