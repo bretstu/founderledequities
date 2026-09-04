@@ -1721,9 +1721,10 @@ def cmd_founders(args) -> int:
 
     Three verdicts, never two: yes and no come from the document, unknown
     means the document could not be read -- a failed fetch is not a no.
-    Every yes carries the sentence that earned it.
+    Every yes carries the sentence that earned it, checked against the
+    filing before it is written.
     """
-    from .founders import find_founder
+    from .founders import FoundersApiError, VerdictCache, find_founder
 
     client = _client(args)
     rows = []
@@ -1733,25 +1734,6 @@ def cmd_founders(args) -> int:
             t = (row.get("ticker") or "").strip()
             if t and (not only or t.upper() in only):
                 rows.append(row)
-    if only and args.verbose:
-        # SHOW THE WORK for a single company: every window the scan saw and
-        # what the object test made of each. Built for the day Tesla came
-        # back "no" and the only way to know why was to read the windows.
-        from .founders import (founder_windows, founded_objects, proxy_text,
-                               surnames, _about_this_company, _tight_match)
-        for row in rows:
-            cik = int(float(row.get("cik") or 0))
-            company = (row.get("company") or "").strip()
-            names = surnames((row.get("ceo") or "").strip())
-            text, src = proxy_text(client, cik)
-            ws = founder_windows(text, names)
-            print(f"  {row['ticker']}: {len(ws)} window(s) in {src}")
-            for i, w in enumerate(ws, 1):
-                objs = founded_objects(w)
-                hit = any(_about_this_company(o, company) for o in objs)
-                print(f"  [{i}] tight={_tight_match(w, names)} "
-                      f"objects={[o[:30] for o in objs]} this-company={hit}")
-                print(f"      ...{w[:220]}...")
 
     key = None if args.no_llm else SETTINGS.anthropic_api_key
     if not args.no_llm and not key:
@@ -1761,8 +1743,14 @@ def cmd_founders(args) -> int:
         # without the model is a choice the operator makes with a flag,
         # never a degradation the run makes for them.
         print("  no ANTHROPIC_API_KEY configured. Add it to .env, or pass "
-              "--no-llm to classify by heuristics alone (deliberately).")
+              "--no-llm to record the windows without a verdict (deliberately).")
         return 2
+
+    # ANSWERS ARE KEYED BY WHAT WAS READ. Unchanged proxies cost nothing on
+    # a re-run and cannot drift; a changed one is always asked afresh.
+    cache = VerdictCache(os.path.join(SETTINGS.cache_dir, "founders-verdicts.json"))
+    if cache.data:
+        print(f"  {len(cache.data)} cached verdict(s) in {cache.path}")
 
     overrides = {}
     if args.overrides:
@@ -1777,35 +1765,49 @@ def cmd_founders(args) -> int:
             pass
 
     counts: dict = {}
+    not_verbatim = 0
     with open(args.out, "w", newline="", encoding="utf-8-sig") as fh:
         w = csv.writer(fh)
         w.writerow(["ticker", "cik", "ceo", "founder", "method",
-                    "early_presence", "evidence", "source"])
+                    "early_presence", "evidence", "source", "founders_named"])
         for i, row in enumerate(rows, 1):
             tick, ceo = row["ticker"].strip(), (row.get("ceo") or "").strip()
+            company = (row.get("company") or "").strip()
             try:
                 cik = int(float(row.get("cik") or 0))
             except ValueError:
                 cik = 0
+            v = None
             if not cik or not ceo:
                 v_founder, v_method, ev, src = "unknown", "no-name", "", ""
-                early = ""
+                early, named = "", ""
             else:
-                from .founders import FoundersApiError
                 try:
-                    v = find_founder(client, cik, ceo,
-                                     company=(row.get("company") or "").strip(),
-                                     api_key=key,
-                                     escalate=not args.no_escalate)
+                    v = find_founder(client, cik, ceo, company=company,
+                                     api_key=key, escalate=not args.no_escalate,
+                                     cache=cache)
                 except FoundersApiError as exc:
                     print(f"\n  founders aborted at {tick}: {exc}")
                     print("  nothing usable written; fix the key/network "
                           "and rerun (or --only the remainder)")
                     return 2
-                _unused = None
                 v_founder, v_method = v.founder, v.method
                 ev, src = v.evidence[:400], v.source
-                early = v.early_presence
+                early, named = v.early_presence, v.founders_named[:120]
+                if "not verbatim" in v_method:
+                    not_verbatim += 1
+                if only and args.verbose:
+                    # SHOW THE WORK for a few companies: every window the
+                    # reader saw, and its reason. Built for the day Tesla
+                    # came back "no" and the only way to know why was to
+                    # read the windows.
+                    print(f"  {tick}: {v.founder} ({v.method}) from {src}")
+                    if v.reason:
+                        print(f"      reason: {v.reason}")
+                    if named:
+                        print(f"      founders named: {named}")
+                    for j, win in enumerate(v.snippets, 1):
+                        print(f"      [{j}] ...{win[:220]}...")
             ov = overrides.get(tick.upper())
             if ov:
                 # A HUMAN SETTLED THIS ONE, AND SAYS SO IN THE FILE.
@@ -1816,19 +1818,23 @@ def cmd_founders(args) -> int:
                 ev = (ov.get("evidence") or "")[:400]
                 src = ov.get("source") or "overrides.csv"
             counts[v_founder] = counts.get(v_founder, 0) + 1
-            if v_founder != "yes" and getattr(v, "other_company", ""):
+            if v_founder != "yes" and v is not None and v.other_company:
                 # Worth surfacing: they founded something, just not this.
                 v_method = f"{v_method} (founded {v.other_company[:40]})"
             w.writerow([tick, cik or "", ceo, v_founder, v_method, early,
-                        ev, src])
+                        ev, src, named])
             if i % 25 == 0 or i == len(rows):
                 print(f"  {i}/{len(rows)}  "
                       + "  ".join(f"{k}:{n}" for k, n in sorted(counts.items())))
     print(f"  wrote {args.out}")
+    print(f"  reader: {cache.misses} asked, {cache.hits} answered from cache")
+    if not_verbatim:
+        print(f"  {not_verbatim} verdict(s) whose quote was not verbatim; the "
+              "window is shown instead and the method says so")
     if counts.get("uncertain"):
         print(f"  {counts['uncertain']} uncertain -- their windows are in the "
-              "evidence column; re-run with an ANTHROPIC_API_KEY to resolve, "
-              "or settle them by hand")
+              "evidence column; settle them by hand in founder-overrides.csv "
+              "if the document is genuinely ambiguous")
     return 0
 
 
@@ -2256,7 +2262,7 @@ def main(argv=None) -> int:
     fo.add_argument("--only", default=None,
                     help="comma-separated tickers; run just these")
     fo.add_argument("--verbose", action="store_true",
-                    help="with --only: print every window and the object test")
+                    help="with --only: print every window the reader saw and its reason")
     fo.add_argument("--overrides", default="founder-overrides.csv",
                     help="hand-settled verdicts applied last (ticker,founder,"
                          "evidence,source); marked method=manual")
@@ -2265,7 +2271,8 @@ def main(argv=None) -> int:
                          "registration statement when the newest proxy is "
                          "silent (faster, and more false negatives)")
     fo.add_argument("--no-llm", action="store_true",
-                    help="never call the language model; ambiguous stays uncertain")
+                    help="never call the language model; every company with founder "
+                         "language near the name stays uncertain, windows recorded")
     fo.add_argument("--out", default="founders.csv")
     fo.set_defaults(func=cmd_founders)
 

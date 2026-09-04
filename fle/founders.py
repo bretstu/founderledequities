@@ -22,16 +22,39 @@ THREE VERDICTS, NOT TWO. "No founder language near the name" is a real no.
 it as a no would quietly mislabel every company whose filing failed to
 download. The two never share a value.
 
-THE TIERS. A sentence like "Mr. Huang co-founded NVIDIA" is decidable by
-pattern and costs nothing. A sentence like "Mr. Cook succeeded our
-co-founder, Steve Jobs" puts the term and the name in one window while
-meaning the opposite -- those windows go to a language model when a key is
-configured, and stay honestly UNCERTAIN when one is not. Every verdict,
-from either tier, carries its quoted evidence into the CSV.
+ONE READER, ALL THE EVIDENCE. The regex finds every stretch of the
+document where founder language and the chief executive's surname meet;
+it decides nothing. Those windows go, together, in ONE call to a language
+model that answers for this person and this company only, in JSON, with
+the sentence that decided it quoted back. The quote is checked against
+the windows before it is recorded, so the evidence column can never say
+something the filing did not.
+
+WHY THE REGEX NO LONGER DECIDES. It once did, for the "obvious" cases,
+and the obvious cases were where it was wrong. "Sridhar Ramaswamy, our
+CEO, and (ii) Benoit Dageville, our Founder" is one comma-spliced clause;
+the surname sat within ninety characters of the word and the rule handed
+Dageville's title to Ramaswamy. Arista, Ralph Lauren, Analog Devices,
+BlackLine, Wintrust, Element Solutions, FB Financial and Standard Nuclear
+were all the same shape: a proxy naming the real founder in the next
+breath, and the site crediting the chief executive beside them. A pattern
+cannot know which name a title belongs to; a reader can. So the failure
+mode moved from a wrong YES with a quote that looked like proof to a
+missed window and a visible NO, which is the direction this site prefers
+everywhere.
+
+A VERDICT IS CACHED BY WHAT WAS READ. Proxies change once a year, and a
+weekly re-run that re-asked the model every time would spend money to
+let answers drift. The cache key is the windows themselves (plus the
+model, the prompt version, the person and the company), so an unchanged
+document is never asked twice and a changed one always is.
+
 """
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import re
 import time
 import urllib.request
@@ -48,12 +71,6 @@ from dataclasses import dataclass, field
 FOUNDER_STEM = re.compile(r"\b(?:co[-\s]?)?found(?:er|ers|ed|ing)\b",
                           re.IGNORECASE)
 
-# "one of OUR founders", "the Company's co-founder" -- the claim on this
-# company is staked BEFORE the word, by a possessive, rather than after it
-# by an object. Both readings have to be looked for.
-POSSESSIVE_FOUNDER = re.compile(
-    r"\b(our|its|the\s+(?:Company|Firm|Issuer)'?s?)\s+"
-    r"(?:[a-z]+\s+){0,2}(?:co[-\s]?)?founders?\b", re.IGNORECASE)
 SUFFIXES = {"jr", "jr.", "sr", "sr.", "ii", "iii", "iv", "v", "m.d.", "ph.d."}
 WINDOW = 240          # characters of context kept around a founder term
 NEAR = 90             # how close the surname must be to count as a candidate
@@ -73,12 +90,14 @@ ANTHROPIC_MODEL = "claude-sonnet-4-6"
 @dataclass
 class Verdict:
     founder: str = "unknown"      # yes | no | uncertain | unknown
-    method: str = ""              # sentence-match | llm | no-mention | proxy-unavailable
+    method: str = ""              # llm | llm-unclear | no-mention | unread | proxy-unavailable | no-name
     evidence: str = ""            # the quoted window that decided it
     source: str = ""              # form, date and accession of the proxy read
     snippets: list = field(default_factory=list)
     other_company: str = ""       # they founded something -- just not this
     early_presence: str = ""      # present | absent | "" (not looked at)
+    founders_named: str = ""      # whom the document calls the founders, for the reader
+    reason: str = ""              # the reader's one-sentence reason (not published)
 
 
 def surnames(ceo: str) -> list[str]:
@@ -225,172 +244,222 @@ def founder_windows(text: str, names: list[str]) -> list[str]:
     return out[:48]
 
 
-GENERIC = {"inc", "inc.", "corp", "corp.", "corporation", "co", "co.",
-           "company", "companies", "holdings", "holding", "group", "groups",
-           "plc", "ltd", "ltd.", "llc", "l.l.c.", "lp", "l.p.", "nv", "n.v.",
-           "sa", "s.a.", "the", "and", "of", "&", "class", "common"}
-SELF_REF = re.compile(r"\b(?:the\s+)?(?:compan(?:y|ies)|firm|partnership|bank|"
-                      r"issuer|business|predecessor|organization|our\s+\w+|us|it)\b",
-                      re.IGNORECASE)
-FOUNDED_OBJ = re.compile(
-    r"(?:co[-\s]?founded|founded|co[-\s]?founder|founder)"
-    r"(?:\s+(?:and|,)\s*\w+)*"          # "founded and led", "Founder and CEO,"
-    r"\s*(?:of|,)?\s*"
-    r"([A-Z][\w&.'\-]*(?:\s+[A-Z][\w&.'\-]*){0,4}|the\s+\w+|our\s+\w+|us\b)")
+
+# ------------------------------------------------------------ the reader
+
+# BUMP WHEN THE PROMPT CHANGES. It is part of the cache key: an old answer
+# to a different question is not an answer.
+PROMPT_VERSION = "2"
+
+PROMPT = """You are reading excerpts from a company's SEC filing (a proxy statement, annual report or registration statement). Each excerpt is a stretch of text around the word "founder", "founded" or "founding" that also mentions the name {ceo}.
+
+Question: do these excerpts describe {ceo}, the chief executive of {company}, as a founder or co-founder of {company} itself?
+
+Rules:
+- A founder title belongs to the person it is attached to. "Jane Roe, our Founder" is about Jane Roe and nobody else, even if another name appears in the same sentence or list.
+- Founding a DIFFERENT company (one this company acquired, a former employer, a foundation) is NO for this question; record that company under other_company.
+- A predecessor or a subsidiary under another name counts only if the excerpt says {company} is that business.
+- If the excerpts never attach founder language to {ceo}, the answer is NO. Use UNCLEAR only when the text genuinely could be read either way about this person and this company.
+
+Answer with a single JSON object and nothing else:
+{{"founder": "yes" | "no" | "unclear",
+  "evidence": "<the one sentence from the excerpts that decides it, copied exactly; empty if none>",
+  "founders_named": "<people the excerpts call founders or co-founders of {company}, comma separated; empty if none>",
+  "other_company": "<a company the excerpts say {ceo} founded that is not {company}; empty if none>",
+  "reason": "<one sentence>"}}
+
+Excerpts:
+{excerpts}"""
+
+MAX_TOKENS = 400
 
 
-def _key(text: str) -> str:
-    """Company names compared without punctuation, spacing or suffixes."""
-    words = [w for w in re.split(r"[^A-Za-z0-9]+", text or "") if w]
-    return "".join(w.lower() for w in words if w.lower() not in GENERIC)
+class VerdictCache:
+    """Answers already given, keyed by exactly what was asked.
 
+    A JSON file in the document cache, written atomically after each new
+    answer so an interrupted run keeps what it paid for."""
 
-def founded_objects(window: str) -> list[str]:
-    """EVERY candidate the founder terms name, not just the first.
+    def __init__(self, path: str | None):
+        self.path = path
+        self.data: dict = {}
+        self.hits = 0
+        self.misses = 0
+        if path and os.path.exists(path):
+            try:
+                with open(path, encoding="utf-8") as fh:
+                    self.data = json.load(fh)
+            except (OSError, ValueError):
+                self.data = {}
 
-    "Our founder, David Ellison, founded Skydance in 2010" names the man
-    before it names the company. Reading only the first would conclude he
-    founded himself.
-    """
-    out = [m.group(1).strip() for m in FOUNDED_OBJ.finditer(window)]
-    # a possessive stakes the same claim from in front of the word
-    out += [m.group(0).strip() for m in POSSESSIVE_FOUNDER.finditer(window)]
-    return out
+    @staticmethod
+    def key(ceo: str, company: str, windows: list, model: str) -> str:
+        raw = "\x1f".join([PROMPT_VERSION, model, ceo, company] + list(windows))
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
-def founded_object(window: str) -> str:
-    """What the founder verb actually names.
-
-    This is the whole discriminator. Sanjay Mehrotra "co-founded and led
-    SanDisk Corporation" -- a true sentence about a man who did not found
-    Micron. Apple's proxy lists directors in a table where "Founder and CEO,
-    Calico" (Art Levinson) sits thirty characters from "Tim Cook". Proximity
-    called both of them founders of the company they run. Naming the object
-    of the verb is what separates them.
-    """
-    m = FOUNDED_OBJ.search(window)
-    return m.group(1).strip() if m else ""
-
-
-def _about_this_company(obj: str, company: str) -> bool:
-    """Did they found THIS company, or merely a company?"""
-    if not obj:
-        return False
-    if SELF_REF.fullmatch(obj.strip()) or SELF_REF.match(obj.strip()):
-        return True                       # "the Company", "our predecessor"
-    a, b = _key(obj), _key(company)
-    if not a or not b:
-        return False
-    # Supermicro vs Super Micro Computer; NVIDIA vs NVIDIA Corporation
-    return a.startswith(b[:8]) or b.startswith(a[:8]) or a in b or b in a
-
-
-# AN HONORIFIC IS NOT THE END OF A SENTENCE.
-#
-# The proximity test refuses to cross a full stop, so that "founded
-# Foundstone. Mr. Kurtz" cannot be read as one clause. But "Mr." is itself a
-# full stop, and it stands directly in front of almost every name a proxy
-# prints: "one of our founders and our largest shareholder, Mr. Musk" was
-# unreachable for exactly that reason. The abbreviations lose their dots
-# before the test runs; real sentence ends keep theirs.
-_TITLE_DOT = re.compile(
-    r"\b(Mr|Mrs|Ms|Dr|Prof|Messrs|Jr|Sr|St|Inc|Corp|Co|Ltd|No|Nos)\.",
-    re.IGNORECASE)
-
-
-def _flat(window: str) -> str:
-    return _TITLE_DOT.sub(lambda m: m.group(1), window)
-
-
-def _tight_match(window: str, names: list[str]) -> bool:
-    """A pattern so close it needs no model: the name and the founder term
-    inside one short span with nothing but connective tissue between --
-    "Mr. Huang co-founded", "founder and CEO, Jensen Huang".
-    """
-    window = _flat(window)
-    for n in names:
-        n = re.escape(n)
-        if re.search(rf"\b{n}\b[^.;]{{0,{NEAR}}}?"
-                     rf"(?:co[-\s]?)?found(?:er|ers|ed|ing)\b",
-                     window, re.IGNORECASE):
-            return True
-        if re.search(rf"\b(?:co[-\s]?)?founders?\b[^.;]{{0,{NEAR}}}?\b{n}\b",
-                     window, re.IGNORECASE):
-            return True
-    return False
-
-
-def _other_person_claims_it(window: str, names: list[str]) -> bool:
-    """Founder language attached to a DIFFERENT capitalized name --
-    "our co-founder, Steve Jobs" in Tim Cook's proxy."""
-    m = re.search(r"\b(?:co[-\s]?founder|founder)s?[,\s]+(?:and\s+)?"
-                  r"((?:[A-Z][a-z]+\s+){1,2}[A-Z][a-z]+)", window)
-    if not m:
-        return False
-    named = m.group(1)
-    return not any(n.lower() in named.lower() for n in names)
-
-
-def llm_verdict(window: str, ceo: str, api_key: str, company: str = "",
-                post=None) -> str | None:
-    """Ask a model about ONE ambiguous window. Returns yes / no / None.
-
-    The model never decides alone: its input is a quoted span of the proxy,
-    and the span itself is written into the CSV beside the answer.
-    """
-    body = json.dumps({
-        "model": ANTHROPIC_MODEL,
-        "max_tokens": 10,
-        "messages": [{"role": "user", "content":
-            "Text from a proxy statement:\n\n\"" + window + "\"\n\n"
-            f"Is {ceo} described as a founder or co-founder of "
-            f"{company or 'this company'} SPECIFICALLY? Founding a different "
-            "company, or another person being the founder, is NO. "
-            "Answer with exactly one word: YES, NO, or UNCLEAR."}],
-    }).encode()
-    try:
-        if post is None:
-            req = urllib.request.Request(
-                ANTHROPIC_URL, data=body,
-                headers={"content-type": "application/json",
-                         "x-api-key": api_key,
-                         "anthropic-version": "2023-06-01"})
-            with urllib.request.urlopen(req, timeout=30) as r:
-                data = json.loads(r.read())
+    def get(self, k: str):
+        got = self.data.get(k)
+        if got is not None:
+            self.hits += 1
         else:
-            data = post(body)
-        answer = "".join(b.get("text", "") for b in data.get("content", [])
-                         if b.get("type") == "text").strip().upper()
-    except Exception as exc:  # noqa: BLE001
-        # one retry for a transient blip; then the failure is the answer
+            self.misses += 1
+        return got
+
+    def put(self, k: str, value: dict) -> None:
+        self.data[k] = value
+        if not self.path:
+            return
+        tmp = f"{self.path}.{os.getpid()}.tmp"
         try:
-            time.sleep(2)
-            if post is None:
-                req = urllib.request.Request(
-                    ANTHROPIC_URL, data=body,
-                    headers={"content-type": "application/json",
-                             "x-api-key": api_key,
-                             "anthropic-version": "2023-06-01"})
-                with urllib.request.urlopen(req, timeout=30) as r:
-                    data = json.loads(r.read())
-            else:
-                data = post(body)
-            answer = "".join(b.get("text", "") for b in data.get("content", [])
-                             if b.get("type") == "text").strip().upper()
-        except Exception:  # noqa: BLE001
-            raise FoundersApiError(
-                f"API call failed twice ({type(exc).__name__}: "
-                f"{str(exc)[:120]})") from exc
-    if answer.startswith("YES"):
-        return "yes"
-    if answer.startswith("NO"):
-        return "no"
-    return None
+            os.makedirs(os.path.dirname(self.path) or ".", exist_ok=True)
+            with open(tmp, "w", encoding="utf-8") as fh:
+                json.dump(self.data, fh)
+            os.replace(tmp, self.path)
+        except OSError:
+            pass
+
+
+def _post(body: bytes, api_key: str) -> dict:
+    req = urllib.request.Request(
+        ANTHROPIC_URL, data=body,
+        headers={"content-type": "application/json", "x-api-key": api_key,
+                 "anthropic-version": "2023-06-01"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return json.loads(r.read())
+
+
+def _norm(s: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", (s or "").lower())
+
+
+def quote_is_verbatim(quote: str, windows: list) -> bool:
+    """Is the model's evidence really in the text it was given? Compared
+    with punctuation, case and whitespace removed, so a smart quote or a
+    decoded entity does not fail a real quote; anything else does."""
+    q = _norm(quote)
+    if len(q) < 12:
+        return False
+    return any(q in _norm(w) for w in windows)
+
+
+def parse_reply(data: dict) -> dict | None:
+    """The JSON object in the model's reply, or None."""
+    text = "".join(b.get("text", "") for b in data.get("content", [])
+                   if b.get("type") == "text").strip()
+    text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text)
+    m = re.search(r"\{.*\}", text, re.S)
+    if not m:
+        return None
+    try:
+        got = json.loads(m.group(0))
+    except ValueError:
+        return None
+    if not isinstance(got, dict):
+        return None
+    f = str(got.get("founder") or "").strip().lower()
+    if f not in ("yes", "no", "unclear"):
+        return None
+    return {"founder": f,
+            "evidence": str(got.get("evidence") or "").strip(),
+            "founders_named": str(got.get("founders_named") or "").strip(),
+            "other_company": str(got.get("other_company") or "").strip(),
+            "reason": str(got.get("reason") or "").strip()}
+
+
+def llm_verdict(windows: list, ceo: str, company: str, api_key: str,
+                post=None, cache: VerdictCache | None = None) -> dict:
+    """One call, every window, a JSON verdict for THIS person at THIS
+    company. Returns {founder, evidence, founders_named, other_company,
+    reason, verbatim}; founder is yes / no / unclear.
+
+    The model never decides alone: its input is quoted spans of the
+    filing, its evidence is checked against those spans, and both are
+    written to the CSV beside the answer."""
+    model = ANTHROPIC_MODEL
+    k = VerdictCache.key(ceo, company, windows, model)
+    if cache is not None:
+        got = cache.get(k)
+        if got is not None:
+            return dict(got)
+
+    excerpts = "\n\n".join(f"[{i}] {w}" for i, w in enumerate(windows, 1))
+    body = json.dumps({
+        "model": model, "max_tokens": MAX_TOKENS, "temperature": 0,
+        "messages": [{"role": "user", "content": PROMPT.format(
+            ceo=ceo, company=company or "this company", excerpts=excerpts)}],
+    }).encode()
+    send = post if post is not None else (lambda b: _post(b, api_key))
+
+    parsed = None
+    last_exc = None
+    for attempt in range(2):
+        try:
+            if attempt:
+                time.sleep(2)
+            parsed = parse_reply(send(body))
+        except Exception as exc:  # noqa: BLE001 -- transport; one retry
+            last_exc = exc
+            continue
+        if parsed is not None:
+            break
+    if last_exc is not None and parsed is None:
+        # the failure is the answer, and it must not be recorded as one
+        raise FoundersApiError(
+            f"API call failed twice ({type(last_exc).__name__}: "
+            f"{str(last_exc)[:120]})") from last_exc
+    if parsed is None:
+        # Read twice, never a JSON object: the model was asked and did
+        # not answer the question. Not cached, so the next run asks again.
+        return {"founder": "unclear", "evidence": "", "founders_named": "",
+                "other_company": "", "reason": "reply was not a JSON verdict",
+                "verbatim": False}
+    parsed["verbatim"] = quote_is_verbatim(parsed["evidence"], windows)
+    if cache is not None:
+        cache.put(k, parsed)
+    return dict(parsed)
+
+
+# ------------------------------------------------------------ the verdict
+
+def _decide(text: str, src: str, names: list, ceo: str, company: str,
+            api_key, post, cache) -> Verdict:
+    windows = founder_windows(text, names)
+    v = Verdict(source=src, snippets=windows)
+    if not windows:
+        v.founder, v.method = "no", "no-mention"
+        return v
+    if not api_key and post is None:
+        # deliberately running without the reader (--no-llm): the windows
+        # are recorded, the question is left open
+        v.founder, v.method = "uncertain", "unread"
+        v.evidence = windows[0]
+        return v
+    got = llm_verdict(windows, ceo, company, api_key, post=post, cache=cache)
+    v.founder = {"yes": "yes", "no": "no"}.get(got["founder"], "uncertain")
+    v.method = "llm"
+    v.founders_named = got.get("founders_named", "")
+    v.other_company = got.get("other_company", "")
+    v.reason = got.get("reason", "")
+    if got["founder"] == "unclear" and got.get("reason"):
+        v.method = "llm-unclear"
+    if got["evidence"] and got.get("verbatim"):
+        v.evidence = got["evidence"]
+    elif got["evidence"]:
+        # THE QUOTE MUST BE IN THE FILING. A paraphrase is not a receipt:
+        # the window it was drawn from is recorded instead, and the method
+        # says the quote was not verbatim so a reader knows to look.
+        v.method += " (quote not verbatim; window shown)"
+        v.evidence = next((w for w in windows
+                           if any(n.lower() in w.lower() for n in names)),
+                          windows[0])
+    else:
+        v.evidence = windows[0] if v.founder != "no" else ""
+    return v
 
 
 def find_founder(client, cik: int, ceo: str, company: str = "",
                  api_key: str | None = None, post=None,
-                 escalate: bool = True) -> Verdict:
+                 escalate: bool = True, cache: VerdictCache | None = None) -> Verdict:
     names = surnames(ceo)
     if not names:
         return Verdict(founder="unknown", method="no-name")
@@ -403,22 +472,16 @@ def find_founder(client, cik: int, ceo: str, company: str = "",
         # not evidence of anything.
         return Verdict(founder="unknown", method="proxy-unavailable")
 
-    v = _decide(text, src, names, ceo, company, api_key, post)
+    v = _decide(text, src, names, ceo, company, api_key, post, cache)
 
-    # THE SECOND LOOK.
+    # THE SECOND LOOK, FOR EVERY ANSWER THAT IS NOT YES.
     #
-    # "No founder language anywhere near the name" is only as good as the
-    # document it was read in. When the newest proxy says nothing, the
-    # earliest one and the registration statement are consulted before the
-    # answer is allowed to be no.
-    # THE SECOND LOOK IS FOR EVERY NO.
-    #
-    # It used to fire only when the proxy said nothing at all. But a bio
-    # that credits founding OTHER companies -- "founder of The Boring
-    # Company" in Musk's -- is the same faded-founding shape: the language
-    # about THIS company, if it exists, lives in the S-1 and the earliest
-    # proxy, not the newest one.
-    if escalate and v.founder == "no":
+    # "No founder language near the name" is only as good as the document
+    # it was read in, and founding language fades: a bio that credits
+    # founding OTHER companies ("founder of The Boring Company" in Musk's)
+    # is the same faded shape. The language about THIS company, if it
+    # exists, lives in the S-1 and the earliest proxy, not the newest one.
+    if escalate and v.founder in ("no", "uncertain"):
         try:
             docs = early_documents(client, cik)
         except Exception:  # noqa: BLE001
@@ -434,61 +497,21 @@ def find_founder(client, cik: int, ceo: str, company: str = "",
             # anything on its own: a proxy names directors and a few senior
             # officers, not everyone who founded the place. Steve Jobs appears
             # in no Apple proxy of 1994; he had been gone nine years and would
-            # return in 1997. Founders who leave and come back, and founders
-            # who were too junior to be named, are both invisible here.
+            # return in 1997.
             if not v.early_presence:
                 v.early_presence = ("present"
                                     if any(re.search(rf"\b{re.escape(n)}\b",
                                                      text2) for n in names)
                                     else "absent")
-            v2 = _decide(text2, src2, names, ceo, company, api_key, post)
+            v2 = _decide(text2, src2, names, ceo, company, api_key, post, cache)
             if v2.founder == "yes":
                 v2.method += " (early document)"
+                v2.early_presence = v.early_presence
                 return v2
             if v2.method != "no-mention":
                 v.other_company = v.other_company or v2.other_company
-        # the label keeps HOW the no was reached, and adds where we looked
+                v.founders_named = v.founders_named or v2.founders_named
+        # the label keeps HOW the answer was reached, and adds where we looked
         v.method = (f"{v.method or 'no-mention'} (early documents checked; "
                     f"name {v.early_presence or 'not found'} in them)")
-    return v
-
-
-def _decide(text: str, src: str, names: list, ceo: str, company: str,
-            api_key, post) -> Verdict:
-    windows = founder_windows(text, names)
-    v = Verdict(source=src, snippets=windows)
-    if not windows:
-        v.founder, v.method = "no", "no-mention"
-        return v
-
-    for w in windows:
-        if not _tight_match(w, names) or _other_person_claims_it(w, names):
-            continue
-        objs = founded_objects(w)
-        if not any(_about_this_company(o, company) for o in objs):
-            # what they DID found, for the record -- skipping their own name
-            obj = next((o for o in objs
-                        if not any(n.lower() in o.lower() for n in names)), "")
-            # Founder language about a DIFFERENT company. Keep looking: the
-            # real sentence may be further down the same proxy, as it is for
-            # George Kurtz, whose bio names Foundstone before CrowdStrike.
-            v.other_company = v.other_company or obj
-            continue
-        v.founder, v.method, v.evidence = "yes", "sentence-match", w
-        return v
-
-    if api_key:
-        for w in windows:
-            got = llm_verdict(w, ceo, api_key, company=company, post=post)
-            if got == "yes":
-                v.founder, v.method, v.evidence = "yes", "llm", w
-                return v
-            if got == "no":
-                v.founder, v.method, v.evidence = "no", "llm", w
-        if v.founder == "no":
-            return v
-
-    v.founder = "uncertain" if v.founder == "unknown" else v.founder
-    v.method = v.method or "ambiguous"
-    v.evidence = v.evidence or (windows[0] if windows else "")
     return v

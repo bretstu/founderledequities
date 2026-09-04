@@ -1488,6 +1488,26 @@ FILLER = ("<p>The Board of Directors solicits your proxy for the Annual "
           "ownership tables that follow in this statement.</p>" * 4)
 
 
+def _reader(yes_if=None, founders_named="", other_company=""):
+    """A fake reader: YES (quoting the phrase) when `yes_if` appears in the
+    excerpts it was shown, NO otherwise. Pins this code's contract with the
+    model, never the model."""
+    import json as _json
+
+    def post(body):
+        prompt = _json.loads(body)["messages"][0]["content"]
+        if yes_if and yes_if in prompt:
+            obj = {"founder": "yes", "evidence": yes_if,
+                   "founders_named": founders_named, "other_company": "",
+                   "reason": "the excerpt says so"}
+        else:
+            obj = {"founder": "no", "evidence": "",
+                   "founders_named": founders_named,
+                   "other_company": other_company, "reason": "not this person"}
+        return {"content": [{"type": "text", "text": _json.dumps(obj)}]}
+    return post
+
+
 def _proxy_client(html, form="DEF 14A"):
     """A real proxy runs to hundreds of pages; the fixture is padded so it
     clears the stub-document guard the way an actual filing would."""
@@ -1502,36 +1522,45 @@ def _proxy_client(html, form="DEF 14A"):
     return _C()
 
 
-def test_a_tight_founder_sentence_decides_without_a_model():
-    """'Mr. Huang co-founded NVIDIA in 1993' is proxy boilerplate and needs
-    no language model. The sentence itself travels into the CSV."""
+
+def test_the_founding_sentence_reaches_the_reader_and_its_quote_is_kept():
+    """'Mr. Huang co-founded NVIDIA in 1993' is proxy boilerplate. The regex
+    once decided it alone; now it hands the sentence to the reader, and the
+    reader's quote, checked against the filing, travels into the CSV."""
     from fle.founders import find_founder
     c = _proxy_client("<html><body>Jen-Hsun Huang co-founded NVIDIA in 1993 "
                       "and has served as President and CEO since inception."
                       "</body></html>")
-    v = find_founder(c, 1045810, "Jen-Hsun Huang", company="NVIDIA Corporation")
-    assert v.founder == "yes" and v.method == "sentence-match"
+    v = find_founder(c, 1045810, "Jen-Hsun Huang", company="NVIDIA Corporation",
+                     api_key="k", post=_reader(yes_if="co-founded NVIDIA in 1993"))
+    assert v.founder == "yes" and v.method == "llm"
     assert "co-founded" in v.evidence
 
 
+
 def test_founder_language_about_someone_else_is_not_a_yes():
-    """Tim Cook's proxy praises 'our co-founder, Steve Jobs'. Proximity alone
-    would flag Cook; the different name claiming the term must block the
-    deterministic yes."""
+    """Tim Cook's proxy praises 'our co-founder, Steve Jobs'. The window
+    is found (it must be: the reader has to see it) and the reader says
+    whose title it is."""
     from fle.founders import find_founder
     c = _proxy_client("<html>Mr. Cook succeeded our co-founder, Steve Jobs, "
                       "as Chief Executive Officer in 2011.</html>")
-    v = find_founder(c, 320193, "Timothy D. Cook", company="Apple Inc.")
-    assert v.founder in ("uncertain", "no")
-    assert v.founder != "yes"
+    v = find_founder(c, 320193, "Timothy D. Cook", company="Apple Inc.",
+                     api_key="k", post=_reader(founders_named="Steve Jobs"))
+    assert v.founder == "no" and v.founders_named == "Steve Jobs"
+    assert v.snippets and "Steve Jobs" in v.snippets[0]
+
 
 
 def test_no_founder_language_anywhere_is_a_real_no():
+    """No window, no call: silence is decided for free."""
     from fle.founders import find_founder
+    calls = []
     c = _proxy_client("<html>Mr. Cook has served as Chief Executive Officer "
                       "since 2011 and joined the Company in 1998.</html>")
-    v = find_founder(c, 320193, "Timothy D. Cook", company="Apple Inc.")
-    assert v.founder == "no"
+    v = find_founder(c, 320193, "Timothy D. Cook", company="Apple Inc.",
+                     api_key="k", post=lambda b: calls.append(b))
+    assert v.founder == "no" and not calls
     # the method records that the early documents were consulted too
     assert v.method.startswith("no-mention")
 
@@ -1549,48 +1578,59 @@ def test_a_failed_fetch_is_unknown_and_never_a_no():
     assert v.founder == "unknown" and v.method == "proxy-unavailable"
 
 
-def test_the_model_resolves_an_ambiguous_window_and_its_answer_is_quoted():
-    from fle.founders import find_founder
-    html = ("<html>The Company was founded in 1994. Mr. Bezos... Under "
+
+def test_the_reader_is_asked_once_with_every_window_and_answers_in_json():
+    from fle import founders as F
+    html = ("<html>The Company was founded in 1994. Mr. Jassy... Under "
             "Mr. Jassy the Company has grown.</html>")
-    c = _proxy_client(html.replace("Bezos", "Jassy"))   # ambiguous on purpose
+    c = _proxy_client(html)
+    seen = []
 
     def fake_post(body):
-        assert b"Jassy" in body
-        return {"content": [{"type": "text", "text": "NO"}]}
+        seen.append(body)
+        assert b"Jassy" in body and b"Amazon.com" in body
+        return {"content": [{"type": "text", "text":
+                '{"founder": "no", "evidence": "", "founders_named": "", '
+                '"other_company": "", "reason": "no founder language about him"}'}]}
 
-    from fle import founders as F
     v = F.find_founder(c, 1018724, "Andrew R. Jassy", company="Amazon.com",
-                       api_key="k", post=fake_post)
+                       api_key="k", post=fake_post, escalate=False)
     assert v.founder == "no" and v.method.startswith("llm")
+    assert len(seen) == 1
+
 
 
 def test_founding_a_different_company_is_not_founding_this_one():
     """Sanjay Mehrotra co-founded SanDisk. He runs Micron. The first run
-    called him Micron's founder because the sentence was true and nearby --
-    the object of the verb is what tells them apart."""
+    called him Micron's founder because the sentence was true and nearby.
+    The reader is asked about THIS company, and what he did found is kept."""
     from fle.founders import find_founder
     c = _proxy_client(
         "<html>Mr. Mehrotra has served as Micron's President and Chief "
         "Executive Officer since May 2017. Prior to that, Mr. Mehrotra "
         "co-founded and led SanDisk Corporation as a start-up in 1988."
         "</html>")
-    v = find_founder(c, 723125, "Sanjay Mehrotra", company="Micron Technology")
-    assert v.founder != "yes"
+    v = find_founder(c, 723125, "Sanjay Mehrotra", company="Micron Technology",
+                     api_key="k", post=_reader(other_company="SanDisk Corporation"))
+    assert v.founder == "no"
     assert "SanDisk" in v.other_company
+
 
 
 def test_a_director_table_does_not_make_the_ceo_a_founder():
     """Apple's proxy lists nominees in a table: 'Art Levinson Board Chair
     Founder and CEO, Calico ... Tim Cook CEO, Apple'. Thirty characters of
-    proximity made Tim Cook a founder of Apple in the first run."""
+    proximity made Tim Cook a founder of Apple in the first run. The window
+    still reaches the reader; nothing decides on proximity."""
     from fle.founders import find_founder
     c = _proxy_client(
         "<html>Name Occupation Independent Age Director Since "
         "Art Levinson Board Chair Founder and CEO, Calico 75 2000 "
         "Tim Cook CEO, Apple 65 2011 Wanda Austin Former President</html>")
-    v = find_founder(c, 320193, "Timothy D. Cook", company="Apple Inc.")
-    assert v.founder != "yes"
+    v = find_founder(c, 320193, "Timothy D. Cook", company="Apple Inc.",
+                     api_key="k", post=_reader())
+    assert v.founder == "no" and v.snippets
+
 
 
 def test_the_document_search_falls_through_to_a_registration_statement():
@@ -1610,9 +1650,11 @@ def test_the_document_search_falls_through_to_a_registration_statement():
                     "2010 and has served as Chief Executive Officer since "
                     "the combination.</html>" + FILLER)
 
-    v = find_founder(_NewIssuer(), 2041610, "David Ellison", company="Skydance")
+    v = find_founder(_NewIssuer(), 2041610, "David Ellison", company="Skydance",
+                     api_key="k", post=_reader(yes_if="founded Skydance in 2010"))
     assert v.founder == "yes"
     assert v.source.startswith("S-1")
+
 
 
 def test_one_unreadable_document_does_not_end_the_search():
@@ -1637,8 +1679,10 @@ def test_one_unreadable_document_does_not_end_the_search():
                     "has served as Chairman and CEO since.</html>" + FILLER)
 
     v = find_founder(_Flaky(), 1393818, "Stephen A. Schwarzman",
-                     company="Blackstone Inc.")
+                     company="Blackstone Inc.", api_key="k",
+                     post=_reader(yes_if="co-founded the Company in 1985"))
     assert v.founder == "yes"
+
 
 
 def test_a_faded_bio_is_rescued_by_the_early_documents():
@@ -1665,10 +1709,12 @@ def test_a_faded_bio_is_rescued_by_the_early_documents():
             return ("<html>Ms. Rivera founded Aurora Systems in 1993 and has "
                     "led it since inception.</html>" + FILLER)
 
-    v = find_founder(_Faded(), 7, "Ana Rivera", company="Aurora Systems")
+    v = find_founder(_Faded(), 7, "Ana Rivera", company="Aurora Systems",
+                     api_key="k", post=_reader(yes_if="founded Aurora Systems in 1993"))
     assert v.founder == "yes"
     assert "early document" in v.method
     assert v.source.startswith("S-1")
+
 
 
 def test_the_earliest_proxy_is_never_read_first():
@@ -1693,9 +1739,11 @@ def test_the_earliest_proxy_is_never_read_first():
             return ("<html>Mr. Prior, our founder, will retire.</html>"
                     + FILLER)
 
-    v = find_founder(_OldCo(), 8, "Luc Nadeau", company="Vantis Corp")
+    v = find_founder(_OldCo(), 8, "Luc Nadeau", company="Vantis Corp",
+                     api_key="k", post=_reader(yes_if="co-founded the Company in 2011"))
     assert v.founder == "yes"
     assert v.source.startswith("DEF 14A 2026")     # the current document
+
 
 
 def test_absence_from_the_earliest_filing_corroborates_but_never_decides():
@@ -1723,7 +1771,8 @@ def test_absence_from_the_earliest_filing_corroborates_but_never_decides():
             return ("<html>Mr. Spindler serves as Chief Executive Officer. "
                     "Mr. Markkula is Vice Chairman.</html>" + FILLER)
 
-    v = find_founder(_Returner(), 320193, "Steve Jobs", company="Apple Inc.")
+    v = find_founder(_Returner(), 320193, "Steve Jobs", company="Apple Inc.",
+                     api_key="k", post=_reader())
     assert v.early_presence == "absent"
     assert "absent" in v.method          # disclosed, and still only a no
     assert v.founder == "no"
@@ -2293,9 +2342,10 @@ def test_an_uncontradicted_flag_is_left_alone():
     assert hist.snapshots[0].traded == -200      # both still disposals
 
 
+
 def test_a_no_about_a_different_company_still_earns_the_second_look():
-    """Musk's newest proxy credits The Boring Company, so the verdict was an
-    llm-no and the S-1 was never consulted -- the escalation fired only on
+    """Musk's newest proxy credits The Boring Company, so the verdict was a
+    no and the S-1 was never consulted -- the escalation fired only on
     silence. A no reached because the founder language was about OTHER
     companies is exactly the faded-founding shape the second look is for."""
     from fle import founders as F
@@ -2318,11 +2368,10 @@ def test_a_no_about_a_different_company_still_earns_the_second_look():
                     "served as Chief Executive Officer since 2008.</html>"
                     + FILLER)
 
-    def fake_post(body):
-        return {"content": [{"type": "text", "text": "NO"}]}
-
     v = F.find_founder(_TwoDocs(), 99, "Marc Vann", company="Axiom Motors",
-                       api_key="k", post=fake_post)
+                       api_key="k",
+                       post=_reader(yes_if="co-founded Axiom Motors in 2003",
+                                    other_company="The Tunnel Company"))
     assert v.founder == "yes"
     assert "early document" in v.method
     assert v.source.startswith("S-1")
@@ -2341,29 +2390,24 @@ def test_the_bare_plural_founders_is_recognised():
         assert not FOUNDER_STEM.fullmatch(w), w
 
 
-def test_a_possessive_stakes_the_claim_as_surely_as_an_object():
-    """"one of our founders" names this company from in FRONT of the word,
-    where an object test looking only behind it finds nothing."""
-    from fle.founders import founded_objects, _about_this_company
-    objs = founded_objects("one of our founders and our largest shareholder, "
-                           "Mr. Musk brings continuity to the Board.")
-    assert any(_about_this_company(o, "Tesla, Inc.") for o in objs)
+
+def test_a_possessive_founder_phrase_still_builds_a_window():
+    """"one of our founders" stakes the claim from in FRONT of the word.
+    The regex no longer judges it; it must still hand it to the reader."""
+    from fle.founders import founder_windows, surnames
+    ws = founder_windows("one of our founders and our largest shareholder, "
+                         "Mr. Musk brings continuity to the Board.",
+                         surnames("Elon Musk"))
+    assert len(ws) == 1 and "our founders" in ws[0]
 
 
-def test_an_honorific_is_not_the_end_of_a_sentence():
-    """The proximity test refuses to cross a full stop so that "founded
-    Foundstone. Mr. Kurtz" is not read as one clause -- but "Mr." is a full
-    stop standing in front of nearly every name a proxy prints."""
-    from fle.founders import _tight_match, surnames
-    assert _tight_match("one of our founders and our largest shareholder, "
-                        "Mr. Musk brings continuity", surnames("Elon Musk"))
-    # a real sentence end still separates
-    assert not _tight_match("The Company was founded in 2003. Mr. Vance "
-                            "joined the board later.", surnames("Adam Vance"))
+
 
 
 def test_musk_end_to_end_from_the_proxy_sentence():
-    """The whole path, on the text Tesla actually files."""
+    """The whole path, on the text Tesla actually files: both founder
+    mentions (Tesla's, and The Boring Company's) reach the reader in one
+    call, and the Tesla sentence is the quote that comes back."""
     from fle.founders import find_founder
     c = _proxy_client(
         "<html>Director Bios. ELON MUSK. As our Chief Executive Officer, one "
@@ -2372,9 +2416,16 @@ def test_musk_end_to_end_from_the_proxy_sentence():
         "continuity to the Board. Mr. Musk is also a founder of The Boring "
         "Company, an infrastructure company, and Neuralink Corporation."
         "</html>")
-    v = find_founder(c, 1318605, "Elon Musk", company="Tesla, Inc.")
-    assert v.founder == "yes"
-    assert v.method.startswith("sentence-match")
+    seen = []
+    reader = _reader(yes_if="one of our founders and our largest shareholder")
+    def post(body):
+        seen.append(body)
+        return reader(body)
+    v = find_founder(c, 1318605, "Elon Musk", company="Tesla, Inc.",
+                     api_key="k", post=post)
+    assert v.founder == "yes" and v.method == "llm"
+    assert "our founders" in v.evidence
+    assert len(seen) == 1 and b"Boring" in seen[0]
 
 
 def test_echostar_index_json_omits_the_documents_it_holds():
