@@ -157,3 +157,23 @@ def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path
     idx = open(out / "companies" / "index.html", encoding="utf-8").read()
     assert 'href="/company/TSLA/"' in idx and 'href="/company/SEALD/"' in idx, "every page has a plain link"
     assert "FOUNDER" in idx and "Pro</span>" in idx
+
+
+def test_the_seo_layer(tmp_path):
+    """The query phrase is a heading; a sealed page carries the proxy's own
+    sentence and a count of filings; every page has neighbour links and
+    breadcrumbs; the sitemap dates each page."""
+    panel, founders, prices, sp, _ = _fixture(tmp_path)
+    hist = tmp_path / "history.csv"
+    hist.write_text("ticker,date,pct\nTSLA,2016-03-01,21.10\nTSLA,2026-07-06,28.44\nSEALD,2020-01-01,40.0\nSEALD,2021-01-01,41.2\n", encoding="utf-8")
+    out = tmp_path / "pub"
+    bcp.main(panel, founders, prices, sp, str(out), str(tmp_path / "none.csv"), str(hist))
+    tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
+    assert '<h2 class="p"><span class="vh">Elon Musk owns </span>28.44%<span class="vh"> of Tesla, Inc.</span></h2>' in tsla, "the query phrase is the heading; the number is what shows"
+    assert '"@type": "BreadcrumbList"' in tsla and '/companies/' in tsla
+    assert '<div id="cmore"><div class="cmore">' in tsla or '<div id="cmore"></div>' in tsla, "neighbour links live outside the block the script redraws"
+    sealed = open(out / "company" / "SEALD" / "index.html", encoding="utf-8").read()
+    assert "2 filings by the chief executive are on record" in sealed, "a count, never a number behind the seal"
+    assert "41.2" not in sealed
+    sm = open(out / "sitemap.xml", encoding="utf-8").read()
+    assert "<lastmod>2026-07-06</lastmod>" in sm, "a company page is dated by its as-of"

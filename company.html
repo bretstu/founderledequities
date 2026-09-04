@@ -34,7 +34,14 @@
     .cband{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;margin-top:28px}
     .cband>div{border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:#fff;min-height:118px;display:flex;flex-direction:column;justify-content:flex-end}
     .cband>div:first-child{background:var(--panel);border-color:var(--panel)}
-    .cband .p{font-family:var(--mono);font-size:clamp(40px,4.6vw,60px);font-weight:600;color:var(--blue);letter-spacing:-.02em;line-height:1}
+    .cband .p{font-family:var(--mono);font-size:clamp(40px,4.6vw,60px);font-weight:600;color:var(--blue);letter-spacing:-.02em;line-height:1;margin:0}
+    .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+    .cq{display:block;margin-top:8px;color:var(--ink)}
+    .cmore{margin-top:30px;padding-top:18px;border-top:1px solid var(--line)}
+    .cmore .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+    .cmore ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 22px}
+    .cmore li a{font-family:var(--mono);font-weight:600;color:var(--blue);text-decoration:none}
+    .cmore li span{color:var(--mut);font-size:13px;margin-left:6px}
     .cband .p.s{font-size:24px;color:var(--ink);font-family:var(--disp);font-weight:650;letter-spacing:-.01em;line-height:1.15}
     .cband .pl{color:var(--mut);font-size:13px;margin-top:8px;line-height:1.45}
     .cstat .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
@@ -89,6 +96,7 @@
     <div class="ce"><b>{{CEO}}</b> — CEO <span id="cbadge"></span></div>
   </div>
   <div id="cbody"></div>
+  <div id="cmore"></div>
   <div class="creport" id="creport"></div>
 </div></main>
 <footer class="foot"><div class="wrap">

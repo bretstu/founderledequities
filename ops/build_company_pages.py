@@ -23,6 +23,7 @@ and the founder verdict -- public already -- and no figure; company.js fills
 the numbers in from /pro/ for a signed-in subscriber.
 """
 import csv
+import datetime
 import hashlib
 import html
 import json
@@ -194,7 +195,24 @@ def load_summaries(events_p, hist_p):
     return ev, hist
 
 
-def static_body(payload, r, is_sp, price, price_date, ev, hist, founder):
+def founder_quote(founder) -> str:
+    """The proxy's own sentence, trimmed to whole sentences: public on every
+    page (the badge's receipt), and the one thing that makes a sealed page
+    say something a crawler can index."""
+    ev = (founder or {}).get("ev") or ""
+    ev = " ".join(ev.split())
+    if len(ev) < 40:
+        return ""
+    i = ev.find(". ")
+    if 0 < i < len(ev) - 60 and not ev[0].isupper():
+        ev = ev[i + 2:]
+    j = ev.rfind(".")
+    if j > 40:
+        ev = ev[:j + 1]
+    return html.escape(ev[:400])
+
+
+def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filings=0):
     """THE PAGE SAYS ITS NUMBERS IN HTML. A fetch without scripts (a
     crawler's first pass, an assistant, a reader in the second before the
     data arrives) read a name and a footer; the stake, the value, the
@@ -208,8 +226,11 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder):
     elif founder and founder.get("f") == "uncertain":
         fsent = f" The proxy's language on whether {ceo} founded the company is ambiguous."
     if not is_sp:
-        return (f'<p class="cprose">{ceo} is the chief executive of {co}.{fsent} '
-                f'The stake, its value, and every trade since 2016 are in the Pro tier; '
+        q = founder_quote(founder)
+        quote = f' <span class="cq">The proxy statement says: &ldquo;{q}&rdquo;</span>' if q else ""
+        onrec = f" {n_filings} filings by the chief executive are on record since 2016." if n_filings else ""
+        return (f'<p class="cprose">{ceo} is the chief executive of {co}.{fsent}{quote}{onrec} '
+                f'The stake, its value, and every trade are in the Pro tier; '
                 f'<a href="/api/checkout">Pro is $5 a month</a>, and the S&amp;P 500 is free.</p>')
     pct = num(r.get("pct")); sh = num(r.get("shares")); out = num(r.get("outstanding"))
     if pct is None or sh is None:
@@ -217,7 +238,7 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder):
     val = f", worth about {money(sh * price)} at the {html.escape(price_date)} close" if price else ""
     pd = html.escape(price_date)
     band = ('<div class="cband">'
-            f'<div><div class="p">{pct:.2f}%</div><div class="pl">of {co}&#39;s common shares, computed from the filings, never estimated</div></div>'
+            f'<div><h2 class="p"><span class="vh">{ceo} owns </span>{pct:.2f}%<span class="vh"> of {co}</span></h2><div class="pl">of {co}&#39;s common shares, computed from the filings, never estimated</div></div>'
             f'<div class="cstat"><div class="k">Stake value</div><div class="v">{money(sh * price) if price else "&mdash;"}</div><div class="s">{("at $%.2f &middot; %s" % (price, pd)) if price else ""}</div></div>'
             f'<div class="cstat"><div class="k">Market cap</div><div class="v">{money(out * price) if (price and out) else "&mdash;"}</div><div class="s">{(f"{int(out):,} shares outstanding") if out else ""}</div></div>'
             f'<div class="cstat"><div class="k">Shares held</div><div class="v">{compact(sh)}</div><div class="s">{int(sh):,} as of {html.escape(r.get("shares_as_of") or "")}</div></div>'
@@ -255,6 +276,24 @@ INDEX_CSS = ("""
 .cidx .seal{font-family:var(--mono);font-size:10px;color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:1px 5px;margin-left:4px}
 @media(max-width:900px){.cidx ul{columns:2}}@media(max-width:560px){.cidx ul{columns:1}}
 """)
+
+
+def neighbours_html(tk, ranked, sp, k=5):
+    """Five nearby founder-led companies by stake rank, open ones first, so
+    every page has five incoming links and a reader has somewhere to go."""
+    if tk not in ranked:
+        return ""
+    i = ranked.index(tk)
+    cand = [t for t in ranked[max(0, i - 12): i + 13] if t != tk]
+    cand.sort(key=lambda t: (t not in sp, abs(ranked.index(t) - i)))
+    picks = cand[:k]
+    if not picks:
+        return ""
+    items = "".join(f'<li><a href="/company/{html.escape(t)}/">{html.escape(t)}</a> <span>{html.escape(NAMES.get(t, ""))}</span></li>' for t in picks)
+    return f'<div class="cmore"><div class="k">More founder-led companies</div><ul>{items}</ul></div>'
+
+
+NAMES = {}
 
 
 def companies_index(rows, founders, sp, out_dir, topnav, css_v):
@@ -336,10 +375,31 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         pass
 
     ev, hist = load_summaries(events_p, hist_p)
+    # the founder-led companies ranked by stake value, for the neighbour links;
+    # the names for those links; and per company, how many filings the
+    # history walk saw (a count a sealed page may say)
+    panel_rows = [r for r in csv.DictReader(open(panel_p, encoding="utf-8-sig"))
+                  if re.match(r"^[A-Z0-9.\-]{1,8}$", (r.get("ticker") or "").upper())]
+    ranked = sorted((r for r in panel_rows
+                     if (founders.get((r.get("ticker") or "").upper()) or {}).get("f") == "yes"
+                     and num(r.get("shares")) and prices.get((r.get("ticker") or "").upper())),
+                    key=lambda r: -(num(r.get("shares")) * prices[(r.get("ticker") or "").upper()]))
+    ranked = [(r.get("ticker") or "").upper() for r in ranked]
+    NAMES.clear()
+    NAMES.update({(r.get("ticker") or "").upper(): (r.get("company") or "") for r in panel_rows})
+    filings = {}
+    try:
+        for r in csv.DictReader(open(hist_p, encoding="utf-8-sig")):
+            t = (r.get("ticker") or "").upper()
+            if t:
+                filings[t] = filings.get(t, 0) + 1
+    except OSError:
+        pass
     urls = []
+    lastmods = {}
     index_rows = []
     n_open = n_sealed = 0
-    for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
+    for r in panel_rows:
         tk = (r.get("ticker") or "").upper()
         if not tk or not re.match(r"^[A-Z0-9.\-]{1,8}$", tk):
             continue
@@ -361,9 +421,16 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
             payload["price"] = price
             payload["price_date"] = price_date
         index_rows.append({"tk": tk, "co": payload["co"], "ceo": payload["ceo"]})
-        body = static_body(payload, r, is_sp, price, price_date, ev, hist, founders.get(tk))
+        body = static_body(payload, r, is_sp, price, price_date, ev, hist, founders.get(tk), filings.get(tk, 0))
+        lastmods[tk] = (r.get("shares_as_of") or "")[:10]
+        crumbs = json.dumps({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Founder Led Equities", "item": f"{SITE}/"},
+            {"@type": "ListItem", "position": 2, "name": "Every company", "item": f"{SITE}/companies/"},
+            {"@type": "ListItem", "position": 3, "name": payload["co"], "item": f"{SITE}/company/{tk}/"}]})
         page = (template
                 .replace('<div id="cbody"></div>', '<div id="cbody">' + body + '</div>')
+                .replace('<div id="cmore"></div>', '<div id="cmore">' + neighbours_html(tk, ranked, sp) + '</div>')
+                .replace('</head>', f'<script type="application/ld+json">{crumbs}</script>\n</head>')
                 .replace("{{TITLE}}", html.escape(title))
                 .replace("{{DESCRIPTION}}", html.escape(desc))
                 .replace("{{TICKER}}", html.escape(tk))
@@ -384,8 +451,11 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     urls.append("https://founderledequities.com/companies/")
     with open(os.path.join(out_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
         fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+        today = datetime.date.today().isoformat()
         for u in [f"{SITE}/", f"{SITE}/about.html"] + urls:
-            fh.write(f"  <url><loc>{html.escape(u)}</loc></url>\n")
+            m = re.search(r"/company/([A-Z0-9.\-]+)/$", u)
+            lm = (lastmods.get(m.group(1)) if m else "") or today
+            fh.write(f"  <url><loc>{html.escape(u)}</loc><lastmod>{lm}</lastmod></url>\n")
         fh.write("</urlset>\n")
     with open(os.path.join(out_dir, "robots.txt"), "w", encoding="utf-8") as fh:
         fh.write(f"User-agent: *\nAllow: /\nDisallow: /pro/\nDisallow: /api/\nSitemap: {SITE}/sitemap.xml\n")
