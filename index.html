@@ -1208,6 +1208,9 @@ function applyPrices(){
 /* ---------------- charts ---------------- */
 /*@shared*/
 function chartSVG(pts,{w=520,h=200}={}){
+  /* ONE POINT PER MONTH-END, as on the company page: the last point of
+     each month, so the small chart is the shape and not the staircase. */
+  {const by=new Map();for(const p of pts)by.set(p[0].slice(0,7),p);pts=[...by.values()];}
   if(pts.length>140){const k=Math.ceil(pts.length/140);
     pts=pts.filter((_,i)=>i%k===0||i===pts.length-1);}
   const pad={l:46,r:16,t:16,b:26};

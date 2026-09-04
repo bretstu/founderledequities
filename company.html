@@ -56,7 +56,7 @@
     .csec .sub{font-size:13px;color:var(--mut);margin-bottom:14px}
     .csec .sub b{color:var(--ink);font-weight:600}
     .cchart svg{width:100%;height:auto;display:block}
-    .ckey{display:flex;gap:18px;font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:8px}
+    .ckey{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:8px;line-height:1.5}
     .ckey i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px}
     .ckey .b i{background:var(--blue)}.ckey .s i{background:#c22a2a}
     /* the trades */
@@ -80,6 +80,11 @@
     .cseal .l{color:var(--mut);max-width:56ch;line-height:1.55;margin-top:8px}
     .cseal .gopro{margin-top:18px}
     .cprose{font-size:15px;line-height:1.6;color:var(--mut);max-width:78ch;margin:18px 0 0}
+    .chead{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    .chead h2{margin:0}
+    .chead .chips{display:flex;gap:6px}
+    .chead .chip{font-family:var(--ui);font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--mut);cursor:pointer}
+    .chead .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
     .creport{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--mut);line-height:1.6}
     .creport a{color:var(--blue)}
     @media(max-width:900px){.cband{grid-template-columns:1fr 1fr}.cband>div:first-child{grid-column:1 / -1}}
