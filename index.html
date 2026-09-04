@@ -123,6 +123,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .shead{display:flex;justify-content:space-between;align-items:baseline;gap:18px;margin-bottom:20px;flex-wrap:wrap}
 .shead h2{font-family:var(--disp);font-weight:650;letter-spacing:-.025em;font-size:clamp(26px,2.9vw,40px);line-height:1.08}
 .shead .r{font-size:13px;color:var(--mut)}
+.shead .shr{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:flex-end}
 /* Ten bars in the frame, the rest a scroll away -- the ranking runs the
    whole index, so cutting it at ten hid 490 companies behind nothing at
    all. Room is left on the right so the scrollbar does not sit on the
@@ -653,7 +654,15 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
 <section class="activitysec" id="activity"><div class="wrap">
   <div class="shead">
     <h2>Recent activity</h2>
-    <div class="r" id="actsub"></div>
+    <div class="r shr">
+      <!-- ONE SWITCH FOR THE WHOLE SECTION. The day strip, its chips' counts,
+           the two columns and the trade table are one dataset at three zooms;
+           a filter that applied to two of them and not the first put a hired
+           CEO's sale above a founders-only column. -->
+      <span class="fsw" id="evf" role="switch" aria-checked="false" tabindex="0"
+        title="only companies still run by a person the proxy names as a founder — applies to the day strip, the columns and the table">Founders only<span class="tr"><i></i></span></span>
+      <span id="actsub"></span>
+    </div>
   </div>
   <div id="actday"></div>
   <!-- THE WINDOW AND THE FOUNDERS SWITCH ARE THE ONLY SHARED CONTROLS.
@@ -672,9 +681,6 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     <button class="chip win on" data-win="30" title="filings that reached EDGAR in the last 30 days">Last 30 days</button>
     <button class="chip win" data-win="90">90 days</button>
     <button class="chip win" data-win="365">12 months</button>
-    <span class="chipdiv" aria-hidden="true"></span>
-    <span class="fsw" id="evf" role="switch" aria-checked="false" tabindex="0"
-        title="only companies still run by a person the proxy names as a founder">Founders only<span class="tr"><i></i></span></span>
   </div>
   <div class="actcols" id="actcols"></div>
   <div class="actnote" id="actnote"></div>
@@ -2507,7 +2513,7 @@ function dayRows(day,all){
   /* LARGEST FIRST, BUYS AND SALES TOGETHER. The badge carries the side; the
      order carries the size, so the day's biggest trade is the first line
      whichever way it went. Kept-apart trades stay beneath the line. */
-  return EVENTS.filter(e=>e.fd===day&&(all||unchangedKind(e)===null)).sort((a,b)=>{
+  return EVENTS.filter(e=>e.fd===day&&(all||unchangedKind(e)===null)&&fOnly(e.tk,state.ev.f)).sort((a,b)=>{
     const ka=unchangedKind(a)===null?0:1,kb=unchangedKind(b)===null?0:1;
     if(ka!==kb)return ka-kb;
     return ((b.fl?0:b.v)||0)-((a.fl?0:a.v)||0);
@@ -2537,7 +2543,7 @@ function dayAlso(day){
   /* the sales that did not move a stake, said in one line: how many, and
      which kinds, so a reader checking the strip against a headline finds
      the filing accounted for rather than missing */
-  const ex=EVENTS.filter(e=>e.fd===day&&unchangedKind(e)!==null);
+  const ex=EVENTS.filter(e=>e.fd===day&&unchangedKind(e)!==null&&fOnly(e.tk,state.ev.f));
   if(!ex.length)return"";
   const nP=ex.filter(e=>unchangedKind(e)==="pre").length;
   const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nB=ex.filter(e=>unchangedKind(e)==="bought").length;
@@ -2587,7 +2593,7 @@ function renderDay(){
   if(day&&!recent.includes(day))recent=[day,...recent].sort().slice(-5);
   const chipDay=d=>{const t=Date.parse(d+"T00:00:00Z");
     const lab=shortDay(d);
-    const n=EVENTS.filter(e=>e.fd===d&&unchangedKind(e)===null).length;
+    const n=EVENTS.filter(e=>e.fd===d&&unchangedKind(e)===null&&fOnly(e.tk,state.ev.f)).length;
     return `<button class="chip${d===day?" on":""}" onclick="gotoDay('${d===days[days.length-1]?"":d}')" title="${niceDay(d)} — ${n} trade${n===1?"":"s"} that moved a stake">${lab}<i>${n}</i></button>`;};
   const scope=dayScope();
   const row=e=>{
@@ -2912,7 +2918,7 @@ document.querySelectorAll(".chip[data-min]").forEach(c=>c.addEventListener("clic
 $("#eq").addEventListener("input",e=>{state.ev.q=e.target.value;renderCols();renderFeed();});
 document.querySelectorAll(".chip.win").forEach(c=>
   c.addEventListener("click",()=>setWin(c.dataset.win)));
-wireSw("evf",()=>{state.ev.f=!state.ev.f;renderCols();if(state.ev.view)renderFeed();});
+wireSw("evf",()=>{state.ev.f=!state.ev.f;renderDay();renderCols();if(state.ev.view)renderFeed();});
 /* ?day=YYYY-MM-DD pins the day strip: the link in a post lands on the day
    the post was about, whatever day it is read */
 {const m=/[?&]day=(\d{4}-\d{2}-\d{2})/.exec(location.search);if(m)state.ev.day=m[1];}

@@ -45,9 +45,13 @@ def num(v):
 
 
 def money(v):
+    """The site's compact form above $1M; exact dollars below it, so a
+    founder's $66,390 purchase reads as the page shows it."""
     if v is None:
         return "—"
     a = abs(v)
+    if a < 1e6:
+        return f"${v:,.0f}"
     for div, suf in ((1e12, "T"), (1e9, "B"), (1e6, "M"), (1e3, "K")):
         if a >= div:
             x = v / div

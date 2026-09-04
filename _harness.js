@@ -733,5 +733,30 @@ const P=runPage();
     assert(sells>100,"and every sale — free means the whole S&P record: "+sells);
   }
 
+
+  // ---- ONE FOUNDERS SWITCH FOR THE WHOLE ACTIVITY SECTION ----
+  {
+  const savedE=P.EVENTS,savedF=P.FOUNDERS;
+  P.FOUNDERS={FND:{f:"yes",ev:"co-founded",src:"x"},HIRE:{f:"no",ev:"",src:"x"}};
+  P.EVENTS=[
+    {tk:"FND",ceo:"A Founder",c:"S",lb:"sale",pl:"plan",sh:100,v:1e6,fd:"2026-09-02",td:"2026-09-01",pc:10,ha:1000,nc:-100,rs:null},
+    {tk:"HIRE",ceo:"A Hire",c:"S",lb:"sale",pl:"discretionary",sh:100,v:5e6,fd:"2026-09-02",td:"2026-09-01",pc:20,ha:1000,nc:-100,rs:null},
+    {tk:"HIRE",ceo:"A Hire",c:"S",lb:"exercise and sell",pl:"plan",sh:10,v:2e5,fd:"2026-09-02",td:"2026-09-01",pc:null,ha:1000,nc:0,rs:null},
+  ];
+  P.state.ev.f=false;P.state.ev.day="2026-09-02";P.renderDay();
+  const off=els["#actday"]._html;
+  assert(off.includes("A Founder")&&off.includes("A Hire"),"switch off: the strip lists every CEO's stake-moving trade");
+  assert(/2026-09-02[^<]*<i>2<\/i>|<i>2<\/i>/.test(off),"and the day chip counts both");
+  P.state.ev.f=true;P.renderDay();
+  const on=els["#actday"]._html;
+  assert(on.includes("A Founder")&&!on.includes("A Hire"),"switch on: the strip is founders only");
+  assert(/<i>1<\/i>/.test(on),"the day chip counts founders only");
+  assert(!on.includes("kept apart"),"and the kept-apart line does not count a hired CEO's options cashed");
+  const shead=require("fs").readFileSync("index.html","utf8");
+  assert(/<div class="shead">\s*<h2>Recent activity<\/h2>[\s\S]{0,900}id="evf"/.test(shead)&&(shead.match(/id="evf"/g)||[]).length===1,"the one switch sits in the section header");
+  P.state.ev.f=false;P.EVENTS=savedE;P.FOUNDERS=savedF;
+}
+
   console.log("\nALL RENDER PATHS PASS");
 })().catch(e=>{console.error("HARNESS ERROR:",e);process.exit(1);});
+

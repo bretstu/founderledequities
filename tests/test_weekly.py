@@ -52,13 +52,13 @@ def test_the_briefing_follows_the_sites_rules(tmp_path):
     md = tmp_path / "b.md"; js = tmp_path / "b.json"
     weekly.build(root, "2026-08-28", "2026-09-04", str(md), str(js))
     text = md.read_text(encoding="utf-8"); b = json.load(open(js))
-    assert "**A Founder**, FND — $100K · +2.0% of stake · discretionary" in text, "the founder's purchase, sized and labelled"
+    assert "**A Founder**, FND — $100,000 · +2.0% of stake · discretionary" in text, "the founder's purchase, exact below $1M, labelled"
     assert "paid $100.00, now $110.00 (+10.0%)" in text, "and where the stock is now against what he paid"
     assert len(b["sections"]["founder_buys"]) == 1, "the hired CEO's purchase is not a founder purchase"
     assert "NON-FOUNDER" in text and "A Hire" in text, "but it appears in the comparison section, marked"
     assert "FIRST SALE ON RECORD" in text, "the founder's first stake-moving sale is flagged"
-    assert "KEPT APART: exercise and sell" in text and "$900K" in text, "options cashed is headline-vs-filing, never a stake move"
-    assert "$900K" not in "".join(b["sections"]["founder_sells_discretionary"]), "and never in the sales list"
+    assert "KEPT APART: exercise and sell" in text and "$900,000" in text, "options cashed is headline-vs-filing, never a stake move"
+    assert "$900,000" not in "".join(b["sections"]["founder_sells_discretionary"]), "and never in the sales list"
     assert "NEWC (New Co) began Section 16 reporting on 2026-09-01" in text, "a new registrant is a milestone"
     assert "1 of 2 S&P 500 CEOs own more than 5%" in text
     assert os.path.exists(tmp_path / "weekly" / "snapshots" / "2026-09-04.csv"), "the snapshot for next week"
