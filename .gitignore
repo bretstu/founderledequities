@@ -30,3 +30,4 @@ site-data/
 history.csv.pre-*
 history-state.json
 .perf-attempt
+weekly/
