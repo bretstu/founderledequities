@@ -68,8 +68,8 @@ function band(r){
    decisions about price and are not drawn.
 
    ONE STORY PER CHART. The largest sale and the largest purchase in view
-   get a label; nothing else does. The biggest trades get a halo so a
-   cluster reads as heat. The line draws in once on load. Hover is a
+   get a label; nothing else does. Dots are translucent, so a cluster
+   darkens where trades pile up. The line draws in once on load. Hover is a
    crosshair with the day and the nearest trade, not the browser's grey
    tooltip. */
 let PRICES_DAILY=null;   /* [[date, close], ...] for this ticker, or null */
@@ -101,8 +101,9 @@ const dollars=v=>Math.abs(v-Math.round(v))<1e-9&&v>=1?"$"+Math.round(v).toLocale
 /* the frame: narrow screens get a taller box so the line has room */
 function frame(){const narrow=(window.innerWidth||1000)<600;return narrow?{w:520,h:340,pad:{l:54,r:16,t:26,b:30}}:{w:940,h:320,pad:{l:64,r:22,t:26,b:30}};}
 const SELL="#c22a2a";
-/* the dots, shared by both charts: sized by value, haloed when large,
-   the largest sale and purchase labelled */
+/* the dots, shared by both charts: sized by value, translucent so a
+   cluster darkens where trades pile up, no rim, no halo. The largest sale
+   and purchase are labelled; nothing else is. */
 function dots(evs,X,Y,at,fr){
   const drawn=evs.slice().sort((a,b)=>(b.v||0)-(a.v||0));
   const vmax=Math.max(1,...drawn.map(e=>e.v||0));
@@ -110,14 +111,13 @@ function dots(evs,X,Y,at,fr){
   const bigS=drawn.find(e=>e.c==="S"&&e.v),bigP=drawn.find(e=>e.c==="P"&&e.v);
   drawn.forEach((e,i)=>{
     const dt=e.td||e.fd;const [y,note]=at(e);const x=X(dt),yy=Y(y);
-    const rr=3+5*Math.sqrt((e.v||0)/vmax);const buy=e.c==="P";const col=buy?"var(--blue)":SELL;
-    const halo=(e.v||0)>=vmax*0.3?`<circle cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="${(rr*2.2).toFixed(1)}" fill="${col}" opacity="0.13"/>`:"";
-    out+=`<a href="${e.u||"#"}" target="_blank" rel="noopener" class="dot" style="--i:${Math.min(i,40)}">${halo}<circle cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="${rr.toFixed(1)}" fill="${col}" fill-opacity="0.85" stroke="#fff" stroke-width="1.2"><title>${buy?"Bought":"Sold"} ${e.v?money(e.v):compact(e.sh)+" sh"} · ${compact(e.sh)} sh${note} · ${dt}${e.pl==="plan"?" · planned":e.pl==="discretionary"?" · discretionary":""}</title></circle></a>`;
+    const rr=2.4+4.6*Math.sqrt((e.v||0)/vmax);const buy=e.c==="P";const col=buy?"var(--blue)":SELL;
+    out+=`<a href="${e.u||"#"}" target="_blank" rel="noopener" class="dot" style="--i:${Math.min(i,40)}"><circle cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="${rr.toFixed(1)}" fill="${col}" fill-opacity="0.62"><title>${buy?"Bought":"Sold"} ${e.v?money(e.v):compact(e.sh)+" sh"} · ${compact(e.sh)} sh${note} · ${dt}${e.pl==="plan"?" · planned":e.pl==="discretionary"?" · discretionary":""}</title></circle></a>`;
   });
-  /* the two labels: above a purchase, below a sale, kept inside the frame */
+/* the two labels: above a purchase, below a sale, kept inside the frame */
   for(const e of [bigS,bigP]){
     if(!e)continue;const dt=e.td||e.fd;const [y]=at(e);const x=X(dt),yy=Y(y);const buy=e.c==="P";
-    const rr=3+5*Math.sqrt((e.v||0)/vmax);
+    const rr=2.4+4.6*Math.sqrt((e.v||0)/vmax);
     const ty=buy?yy-rr-8:yy+rr+13;const anchor=x>fr.w-140?"end":x<fr.pad.l+90?"start":"middle";
     out+=`<text class="ann" x="${x.toFixed(1)}" y="${Math.max(fr.pad.t+4,Math.min(fr.h-fr.pad.b-4,ty)).toFixed(1)}" text-anchor="${anchor}" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="${buy?"var(--blue)":SELL}">${e.v?money(e.v):compact(e.sh)+" sh"} ${buy?"bought":"sold"} · ${monthLabel(dt.slice(0,7))}</text>`;
   }
@@ -163,17 +163,18 @@ function priceChart(px,evs){
       line2=[b.length?`bought ${money(sum(b))}`:"",sl.length?`sold ${money(sum(sl))}`:""].filter(Boolean).join(", ");}
     hover.push([p[0],dayLabel(p[0])+" · "+dollars(p[1]),line2]);}
   let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="the share price, with the chief executive's trades on it" class="fchart" ${hoverAttrs(hover,fr,t0,t1)}>
-  <defs><linearGradient id="pxg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--blue)" stop-opacity="0.16"/><stop offset="1" stop-color="var(--blue)" stop-opacity="0"/></linearGradient></defs>`;
+  <defs><linearGradient id="pxg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--blue)" stop-opacity="0.16"/><stop offset="1" stop-color="var(--blue)" stop-opacity="0"/></linearGradient>
+  <clipPath id="pxc"><rect class="reveal" x="0" y="0" width="${w}" height="${h}"/></clipPath></defs>`;
   for(const v of ticks){const y=Y(v);
     out+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
     out+=`<text x="${pad.l-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">${dollars(v)}</text>`;}
   out+=yearsAxis(X,t0,t1,fr);
-  out+=`<path class="fill" d="${d} V ${(h-pad.b).toFixed(1)} H ${X(px[0][0]).toFixed(1)} Z" fill="url(#pxg)"/>`;
+  out+=`<path class="fill" clip-path="url(#pxc)" d="${d} V ${(h-pad.b).toFixed(1)} H ${X(px[0][0]).toFixed(1)} Z" fill="url(#pxg)"/>`;
   out+=`<path class="line" d="${d}" fill="none" stroke="var(--ink)" stroke-opacity="0.8" stroke-width="1.2" stroke-linejoin="round"/>`;
   const closeAt=dt=>{let v=px[0][1];for(const p of px){if(p[0]<=dt)v=p[1];else break;}return v;};
   out+=dots(drawn,X,Y,e=>{const dt=e.td||e.fd;return e.apa>0?[e.apa,` at ${dollars(e.apa)}${e.ap&&Math.abs(e.ap-e.apa)>0.005?` (filed at ${dollars(e.ap)}, before splits)`:""}`]:[closeAt(dt),` at the ${dollars(closeAt(dt))} close (price on the filing not restated)`];},fr);
   const last=px[px.length-1];
-  out+=`<text x="${(X(last[0])-6).toFixed(1)}" y="${(Y(last[1])-9).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">${dollars(last[1])}</text>`;
+  out+=`<text class="endlbl" x="${(X(last[0])-6).toFixed(1)}" y="${(Y(last[1])-9).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">${dollars(last[1])}</text>`;
   out+=`<g class="xh" style="display:none"><line y1="${pad.t}" y2="${h-pad.b}" stroke="var(--ink)" stroke-opacity="0.35" stroke-dasharray="2 3"/><circle r="3.5" fill="var(--ink)"/><rect rx="3" fill="var(--ink)"/><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text></g></svg>`;
   return out;
 }
@@ -195,18 +196,19 @@ function stakeChart(pts,evs){
   const hover=ms.map((o,i)=>{const move=i?(Math.abs(o.dP)>1e-6?`${o.dP>0?"+":"−"}${Math.abs(o.dP).toFixed(2)} pts`:"no change"):"start";
     return [o.d,`${monthLabel(o.m)} · ${o.pct.toFixed(2)}% · ${compact(o.sh)} sh`,`${move}${o.why?" · "+o.why:""}`];});
   let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="the stake over time" class="fchart" ${hoverAttrs(hover,fr,t0,t1)}>
-  <defs><linearGradient id="stg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--blue)" stop-opacity="0.16"/><stop offset="1" stop-color="var(--blue)" stop-opacity="0"/></linearGradient></defs>`;
+  <defs><linearGradient id="stg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--blue)" stop-opacity="0.16"/><stop offset="1" stop-color="var(--blue)" stop-opacity="0"/></linearGradient>
+  <clipPath id="stc"><rect class="reveal" x="0" y="0" width="${w}" height="${h}"/></clipPath></defs>`;
   for(let k=0;k<=3;k++){const v=lo+(hi-lo)*k/3;const y=Y(v);
     out+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
     out+=`<text x="${pad.l-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">${fmt(v)}</text>`;}
   out+=yearsAxis(X,t0,t1,fr);
-  out+=`<path class="fill" d="${d} V ${(h-pad.b).toFixed(1)} H ${X(ms[0].d).toFixed(1)} Z" fill="url(#stg)"/>`;
+  out+=`<path class="fill" clip-path="url(#stc)" d="${d} V ${(h-pad.b).toFixed(1)} H ${X(ms[0].d).toFixed(1)} Z" fill="url(#stg)"/>`;
   out+=`<path class="line" d="${d}" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linejoin="round"/>`;
   const at=dt=>{let v=ms[0].pct;for(const o of ms){if(o.d<=dt)v=o.pct;else break;}return v;};
   const drawn=evs.filter(e=>{const dt=e.td||e.fd;return dt>=pts[0][0]&&dt<=ms[ms.length-1].d;});
   out+=dots(drawn,X,Y,e=>[at(e.td||e.fd),""],fr);
   const lastO=ms[ms.length-1];
-  out+=`<text x="${(X(lastO.d)-6).toFixed(1)}" y="${(Y(lastO.pct)-9).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--blue)">${fmt(lastO.pct)}</text>`;
+  out+=`<text class="endlbl" x="${(X(lastO.d)-6).toFixed(1)}" y="${(Y(lastO.pct)-9).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--blue)">${fmt(lastO.pct)}</text>`;
   out+=`<g class="xh" style="display:none"><line y1="${pad.t}" y2="${h-pad.b}" stroke="var(--ink)" stroke-opacity="0.35" stroke-dasharray="2 3"/><circle r="3.5" fill="var(--blue)"/><rect rx="3" fill="var(--ink)"/><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text></g></svg>`;
   return out;
 }
@@ -246,15 +248,26 @@ function attachHover(svg){
   svg.addEventListener("touchstart",e=>{show(e.touches[0].clientX);},{passive:true});
   svg.addEventListener("touchmove",e=>{show(e.touches[0].clientX);},{passive:true});
 }
-/* ONE MOTION, ON LOAD: the line draws in, then the dots appear. Once per
-   render; the reduced-motion rule in the stylesheet switches it off. */
+/* ONE MOTION, ON LOAD: the line draws in and the shading under it is
+   revealed to exactly the same x, frame by frame, then the dots appear.
+   Once per render; a reader who asked for reduced motion gets the
+   finished chart at once. */
 function drawIn(svg){
-  const path=svg.querySelector("path.line");if(!path)return;
-  const n=path.getTotalLength();path.style.strokeDasharray=n;path.style.strokeDashoffset=n;
-  path.getBoundingClientRect();
-  path.style.transition="stroke-dashoffset 900ms ease-out";path.style.strokeDashoffset="0";
-  path.addEventListener("transitionend",()=>{path.style.strokeDasharray="";path.style.strokeDashoffset="";},{once:true});
-  svg.classList.add("drawn");
+  const path=svg.querySelector("path.line"),reveal=svg.querySelector("clipPath rect.reveal");
+  if(!path)return;
+  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches){svg.classList.add("drawn");return;}
+  const n=path.getTotalLength();const T=900,t0=performance.now();
+  svg.classList.add("animating");
+  path.style.strokeDasharray=n;path.style.strokeDashoffset=n;
+  if(reveal)reveal.setAttribute("width",0);
+  function frame(now){
+    const p=Math.min(1,(now-t0)/T),e=1-Math.pow(1-p,3);   /* ease-out */
+    path.style.strokeDashoffset=n*(1-e);
+    if(reveal)reveal.setAttribute("width",Math.max(0,path.getPointAtLength(n*e).x));
+    if(p<1)requestAnimationFrame(frame);
+    else{path.style.strokeDasharray="";path.style.strokeDashoffset="";if(reveal)reveal.setAttribute("width",svg.viewBox.baseVal.width);svg.classList.remove("animating");svg.classList.add("drawn");}
+  }
+  requestAnimationFrame(frame);
 }
 function recordBlock(r){
   const raw=HIST[r.tk];

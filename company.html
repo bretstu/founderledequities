@@ -58,7 +58,9 @@
     .cchart svg{width:100%;height:auto;display:block;overflow:visible}
     /* the dots arrive after the line has drawn; the reduced-motion rule in
        site.css switches every animation off */
-    .cchart svg.drawn a.dot{opacity:0;animation:dotin .35s ease-out forwards;animation-delay:calc(.75s + var(--i,0) * 18ms)}
+    .cchart svg.animating a.dot,.cchart svg.animating .ann,.cchart svg.animating .endlbl{opacity:0}
+    .cchart svg.drawn .ann,.cchart svg.drawn .endlbl{animation:dotin .4s ease-out .3s both}
+    .cchart svg.drawn a.dot{opacity:0;animation:dotin .35s ease-out forwards;animation-delay:calc(var(--i,0) * 14ms)}
     @keyframes dotin{to{opacity:1}}
     .cchart svg .xh{pointer-events:none}
     .cchart svg .ann{pointer-events:none;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
