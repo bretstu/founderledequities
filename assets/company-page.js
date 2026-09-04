@@ -12,6 +12,7 @@ function nav(me){
   if(me&&me.pro){b.textContent="Account";b.setAttribute("href","/api/portal");b.title="Manage your subscription";}
 }
 
+
 function setRow(row){
   PANEL=[row];
   if(C.founder)FOUNDERS[row.tk]=C.founder;
@@ -68,8 +69,7 @@ function band(r){
    decisions about price and are not drawn.
 
    ONE STORY PER CHART. The largest sale and the largest purchase in view
-   get a label; nothing else does. Dots are translucent, so a cluster
-   darkens where trades pile up. The line draws in once on load. Hover is a
+   get a label; nothing else does. The line draws in once on load. Hover is a
    crosshair with the day and the nearest trade, not the browser's grey
    tooltip. */
 let PRICES_DAILY=null;   /* [[date, close], ...] for this ticker, or null */
@@ -101,9 +101,9 @@ const dollars=v=>Math.abs(v-Math.round(v))<1e-9&&v>=1?"$"+Math.round(v).toLocale
 /* the frame: narrow screens get a taller box so the line has room */
 function frame(){const narrow=(window.innerWidth||1000)<600;return narrow?{w:520,h:340,pad:{l:54,r:16,t:26,b:30}}:{w:940,h:320,pad:{l:64,r:22,t:26,b:30}};}
 const SELL="#c22a2a";
-/* the dots, shared by both charts: sized by value, translucent so a
-   cluster darkens where trades pile up, no rim, no halo. The largest sale
-   and purchase are labelled; nothing else is. */
+/* the dots, shared by both charts: sized by value, a white rim so
+   neighbours stay distinct. The largest sale and purchase are labelled;
+   nothing else is. */
 function dots(evs,X,Y,at,fr){
   const drawn=evs.slice().sort((a,b)=>(b.v||0)-(a.v||0));
   const vmax=Math.max(1,...drawn.map(e=>e.v||0));
@@ -111,13 +111,13 @@ function dots(evs,X,Y,at,fr){
   const bigS=drawn.find(e=>e.c==="S"&&e.v),bigP=drawn.find(e=>e.c==="P"&&e.v);
   drawn.forEach((e,i)=>{
     const dt=e.td||e.fd;const [y,note]=at(e);const x=X(dt),yy=Y(y);
-    const rr=2.4+4.6*Math.sqrt((e.v||0)/vmax);const buy=e.c==="P";const col=buy?"var(--blue)":SELL;
-    out+=`<a href="${e.u||"#"}" target="_blank" rel="noopener" class="dot" style="--i:${Math.min(i,40)}"><circle cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="${rr.toFixed(1)}" fill="${col}" fill-opacity="0.62"><title>${buy?"Bought":"Sold"} ${e.v?money(e.v):compact(e.sh)+" sh"} · ${compact(e.sh)} sh${note} · ${dt}${e.pl==="plan"?" · planned":e.pl==="discretionary"?" · discretionary":""}</title></circle></a>`;
+    const rr=3+5*Math.sqrt((e.v||0)/vmax);const buy=e.c==="P";const col=buy?"var(--blue)":SELL;
+    out+=`<a href="${e.u||"#"}" target="_blank" rel="noopener" class="dot" style="--i:${Math.min(i,40)}"><circle cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="${rr.toFixed(1)}" fill="${col}" fill-opacity="0.85" stroke="#fff" stroke-width="1.2"><title>${buy?"Bought":"Sold"} ${e.v?money(e.v):compact(e.sh)+" sh"} · ${compact(e.sh)} sh${note} · ${dt}${e.pl==="plan"?" · planned":e.pl==="discretionary"?" · discretionary":""}</title></circle></a>`;
   });
 /* the two labels: above a purchase, below a sale, kept inside the frame */
   for(const e of [bigS,bigP]){
     if(!e)continue;const dt=e.td||e.fd;const [y]=at(e);const x=X(dt),yy=Y(y);const buy=e.c==="P";
-    const rr=2.4+4.6*Math.sqrt((e.v||0)/vmax);
+    const rr=3+5*Math.sqrt((e.v||0)/vmax);
     const ty=buy?yy-rr-8:yy+rr+13;const anchor=x>fr.w-140?"end":x<fr.pad.l+90?"start":"middle";
     out+=`<text class="ann" x="${x.toFixed(1)}" y="${Math.max(fr.pad.t+4,Math.min(fr.h-fr.pad.b-4,ty)).toFixed(1)}" text-anchor="${anchor}" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="${buy?"var(--blue)":SELL}">${e.v?money(e.v):compact(e.sh)+" sh"} ${buy?"bought":"sold"} · ${monthLabel(dt.slice(0,7))}</text>`;
   }

@@ -17,7 +17,9 @@ import os
 import sys
 
 
-def numbers(panel_p, sp_p, prices_p, founders_p):
+def numbers(panel_p, sp_p, prices_p, founders_p, everyone=False):
+    """The hero's numbers over the open set (the S&P 500), or with
+    `everyone` over the whole universe: what a Pro reader sees."""
     sp = {r["ticker"] for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
     prices = {}
     try:
@@ -41,16 +43,23 @@ def numbers(panel_p, sp_p, prices_p, founders_p):
     led_value = all_value = 0.0
     for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
         t = (r.get("ticker") or "").upper()
+        # A COMPANY WITHOUT A MEASURED STAKE IS STILL A COMPANY. The page's
+        # hero counts every open row and asks pct > 5 of each; a row with
+        # no figure is one of the 2,135 and none of the 199. Skipping it
+        # here stamped "of 2,100" beside a page that said 2,135.
         try:
             pct = float(r.get("pct") or "")
+        except ValueError:
+            pct = None
+        try:
             sh = float(r.get("shares") or 0)
         except ValueError:
-            continue
+            sh = 0.0
         total += 1
-        if t not in sp:
+        if t not in sp and not everyone:
             continue
         open_n += 1
-        if pct > 5:
+        if pct is not None and pct > 5:
             above5 += 1
         val = sh * prices[t] if t in prices else 0.0
         all_value += val

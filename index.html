@@ -897,7 +897,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,distOpen:null,pc:"sp",pro:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
+const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,distOpen:null,pc:"sp",pro:false,meKnown:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -1093,7 +1093,8 @@ async function loadData(){
      everything after keys off it. On a static dev server the call 404s and
      the site is simply free. */
   try{const r=await fetch("/api/me",{cache:"no-store"});
-      if(r.ok){const j=await r.json();state.pro=!!j.pro;state.acct=j.email||"";}}catch(e){}
+      if(r.ok){const j=await r.json();state.pro=!!j.pro;state.acct=j.email||"";state.meKnown=true;}}catch(e){}
+  syncNav();   /* an answer that never came leaves the server-rendered label alone */
   /* the universe file the deploy cuts; a raw panel.csv in a dev folder otherwise --
      the same page serves both eras */
   await fetchFirst(state.pro
@@ -1102,6 +1103,9 @@ async function loadData(){
     t=>{const p=mapPanel(parseCSV(t));
         if(!p.length)return false;
         PANEL=p;state.live.panel=true;return true;});
+  /* the headline as soon as the panel is here, not after the 7MB of
+     history behind it; the strip beneath it re-renders with the rest */
+  try{renderHero();syncNav();}catch(e){}
   await fetchFirst(state.pro
       ?["/pro/history-lite.csv","/pro/history.csv","history-free-lite.csv","history-free.csv","history.csv"]
       :["history-free-lite.csv","history-free.csv","history.csv"],
@@ -1633,7 +1637,11 @@ function renderHero(){
      that all look like a code; the word has a shape the digits do not, and
      the count gets its comma. CEO stays the label everywhere a reader
      scans; here, read once, the words are the words. */
-  $("#thesis").innerHTML=`<b>${above5}</b> of ${open.toLocaleString()} chief executives own more than 5% of the company they run.`+
+  /* THE STAMPED HERO OUTRANKS THE SAMPLE. Tonight's numbers are baked
+     into the page at deploy (and, for a subscriber, swapped server-side
+     before the first byte); the sample paint must not overwrite them with
+     "15 of 28" for the instant before the live panel arrives. */
+  if(state.live.panel)$("#thesis").innerHTML=`<b>${above5}</b> of ${open.toLocaleString()} chief executives own more than 5% of the company they run.`+
     (sealed?`<span style="color:var(--faint);font-size:0.55em;display:block;margin-top:10px;font-weight:400">${sealed.toLocaleString()} more companies measured <button class="gopro" onclick="openPro()" style="font-size:12.5px;padding:7px 14px;margin-left:14px;vertical-align:middle">Go Pro</button></span>`:"");
 
   // WHAT THE SITE IS ACTUALLY ABOUT, said with the numbers we have.
@@ -1675,7 +1683,7 @@ function renderHero(){
           panelOn&&panelOn!==filedOn?` — the newest filing that changed a headline stake was ${panelOn}`:""}">${filedOn}</div>`
       +`<div class="k">Latest filing${state.live.prices
         ?` · prices to ${PRICES_ASOF}`:""}</div></div>`;
-  $("#herostats").innerHTML=out;
+  if(state.live.panel)$("#herostats").innerHTML=out;   /* the stamped strip outranks the sample */
 }
 function renderBars(){
   const useVal=state.bmode==="val"&&state.live.prices;
@@ -2865,9 +2873,10 @@ function signIn(){
     .catch(()=>alert("Couldn't reach the sign-in service — try again in a minute."));
 }
 function syncNav(){
-  /* one button, two lives: the ask before, the account after */
+  /* one button, two lives: the ask before, the account after. Until
+     /api/me has answered, the server-rendered label stands. */
   const b=document.querySelector(".gopro");
-  if(!b)return;
+  if(!b||!state.meKnown)return;
   if(state.pro){b.textContent="Account";b.onclick=()=>{location.href="/api/portal"};
     b.title="Manage your subscription — cancel, change card, invoices";}
   else{b.textContent="Go Pro";b.onclick=openPro;b.title="";}

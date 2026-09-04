@@ -107,10 +107,18 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     out.write_text(src, encoding="utf-8")
     st.main(panel, founders, prices, sp, str(out))
     page = out.read_text(encoding="utf-8")
-    assert '<h1 id="thesis"><b>1</b> of 1 chief executives own' in page, "the hero is computed, not the placeholder"
+    assert '<h1 id="thesis" data-pro="2|2"><b>1</b> of 1 chief executives own' in page, \
+        "the hero is computed, not the placeholder, and carries the Pro sentence's numbers (the sealed row, at 41%, counts)"
     assert 'class="brow"' in page and 'href="/company/TSLA/"' in page and "28.44% of co." in page, "the board's rows are real HTML"
     assert 'class="hstat"' in page and "Founder-led companies" in page, "and so is the stat strip"
+    assert 'id="herostats" data-pro="' in page, "and the Pro strip rides along, escaped, for the first paint"
     assert "<b>20</b> of 500" not in page
+    # a subscriber's first byte already carries the Pro hero: the function
+    # on / rewrites from the same attributes the stamp wrote, and the page
+    # sets no cookie to do it
+    fn = open(os.path.join(ROOT, "functions", "index.js"), encoding="utf-8").read()
+    assert 'getAttribute("data-pro")' in fn and "HTMLRewriter" in fn and "isPro" in fn
+    assert "document.cookie" not in src
 
 
 def test_the_published_perf_file_is_the_chart_cohort(tmp_path):

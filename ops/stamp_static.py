@@ -88,19 +88,26 @@ def bars_html(rows):
 
 def main(panel_p, sp_p, prices_p, founders_p, index_out):
     n = numbers(panel_p, sp_p, prices_p, founders_p)
+    # THE PRO NUMBERS RIDE ALONG. A subscriber's first paint used to be the
+    # free hero (19 of 500), replaced seconds later by 199 of 2,135 once
+    # /api/me and a 1.3MB universe file had arrived. Both sentences are
+    # stamped; the page picks one before anything loads (see the tier
+    # cookie in index.html), and the fetched data only confirms it.
+    p = numbers(panel_p, sp_p, prices_p, founders_p, everyone=True)
     rows = top_rows(panel_p, sp_p, prices_p, founders_p)
     page = open(index_out, encoding="utf-8").read()
-    hero_re = re.compile(r'<h1 id="thesis"><b>\d+</b> of [\d,]+ chief executives own more than 5% of the company they run\.</h1>')
-    hero = (f'<h1 id="thesis"><b>{n["above5"]}</b> of {n["open"]:,} chief executives own more than 5% '
+    hero_re = re.compile(r'<h1 id="thesis"[^>]*><b>\d+</b> of [\d,]+ chief executives own more than 5% of the company they run\.</h1>')
+    hero = (f'<h1 id="thesis" data-pro="{p["above5"]}|{p["open"]:,}"><b>{n["above5"]}</b> of {n["open"]:,} chief executives own more than 5% '
             f'of the company they run.</h1>')
     if not hero_re.search(page):
         raise SystemExit("stamp_static: the hero placeholder was not found in index.html")
     page = hero_re.sub(hero, page, count=1)
-    stats = (f'<div class="hstat"><div class="n hl">{n["led"]}</div><div class="k">Founder-led companies</div></div>'
-             f'<div class="hstat"><div class="n">{money(n["led_value"])}</div><div class="k">Held by those founders</div></div>'
-             f'<div class="hstat"><div class="n">{n["share"]}%</div><div class="k">Of all CEO wealth</div></div>')
+    def stats(m):
+        return (f'<div class="hstat"><div class="n hl">{m["led"]}</div><div class="k">Founder-led companies</div></div>'
+                f'<div class="hstat"><div class="n">{money(m["led_value"])}</div><div class="k">Held by those founders</div></div>'
+                f'<div class="hstat"><div class="n">{m["share"]}%</div><div class="k">Of all CEO wealth</div></div>')
     page = page.replace('<div class="herostats" id="herostats"></div>',
-                        f'<div class="herostats" id="herostats">{stats}</div>', 1)
+                        f'<div class="herostats" id="herostats" data-pro="{html.escape(stats(p), quote=True)}">{stats(n)}</div>', 1)
     page = page.replace('<div class="bars" id="bars"></div>',
                         f'<div class="bars" id="bars">{bars_html(rows)}</div>', 1)
     with open(index_out, "w", encoding="utf-8") as fh:
