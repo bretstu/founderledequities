@@ -151,7 +151,7 @@ function recordBlock(r){
   const sum=a=>a.reduce((t,e)=>t+((e.fl?0:e.v)||0),0);
   const series=pts.length>1?pts:raw;
   const mode=window._chartMode||"pct";
-  return `<div class="csec"><div class="chead"><h2>${mode==="shares"?"Shares held over time":"The stake over time"}</h2>
+  return `<div class="csec"><div class="cshead"><h2>${mode==="shares"?"Shares held over time":"The stake over time"}</h2>
     <div class="chips" role="group" aria-label="chart view">
       <button class="chip${mode==="pct"?" on":""}" onclick="setChartMode('pct')" title="the share of the company: moves when the holding changes and when the share count changes">% of company</button>
       <button class="chip${mode==="shares"?" on":""}" onclick="setChartMode('shares')" title="the shares held, split-adjusted: moves only when the person buys, sells, is granted, gifts, or forfeits shares; flat while the company dilutes">Shares held</button>
