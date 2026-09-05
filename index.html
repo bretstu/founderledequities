@@ -141,12 +141,13 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .btrack{position:relative;height:46px;background:var(--panel);border-radius:6px;overflow:hidden}
 /* QUIET BARS. Ten saturated blue bars were the loudest thing on the page
    and the least informative: the answer is the number on the right, the
-   bar is an aid. Bars in a tenth of ink; the leader and the hovered row in
-   blue, so blue goes back to meaning "this one". */
+   bar is an aid. Bars in a tenth of ink; blue only for the row the reader
+   is on, so blue always means something the reader did. (Painting row 1
+   blue was tried and read as an endorsement of whoever led that day.) */
 .bfill{position:absolute;inset:0 auto 0 0;background:var(--bar);border-radius:6px;display:flex;align-items:center;min-width:0;transition:background .12s}
-.brow:hover .bfill,#bars .brow:first-child .bfill{background:var(--blue)}
+.brow:hover .bfill{background:var(--blue)}
 .blab{display:flex;align-items:baseline;gap:10px;padding:0 10px;white-space:nowrap;overflow:hidden;color:var(--ink)}
-.brow:hover .bfill .blab,#bars .brow:first-child .bfill .blab{color:#fff}
+.brow:hover .bfill .blab{color:#fff}
 .blab .tk{font-family:var(--mono);font-weight:600;font-size:13px}
 .blab .nm{font-size:13px;font-weight:600;opacity:.92;overflow:hidden;text-overflow:ellipsis}
 .blab.out{color:var(--ink);position:absolute;left:var(--w);top:0;bottom:0;padding-left:12px;align-items:center;display:flex;gap:10px;overflow:visible}
