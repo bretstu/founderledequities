@@ -135,10 +135,11 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .btrack{position:relative;height:46px;background:var(--panel);border-radius:6px;overflow:hidden}
 .bfill{position:absolute;inset:0 auto 0 0;background:var(--blue);border-radius:6px;display:flex;align-items:center;min-width:0;transition:background .12s}
 .brow:hover .bfill{background:var(--blue-d)}
-.blab{display:flex;align-items:baseline;gap:10px;padding:0 14px;white-space:nowrap;overflow:hidden;color:#fff}
+.blab{display:flex;align-items:baseline;gap:10px;padding:0 10px;white-space:nowrap;overflow:hidden;color:#fff}
 .blab .tk{font-family:var(--mono);font-weight:600;font-size:13px}
 .blab .nm{font-size:13px;font-weight:600;opacity:.92;overflow:hidden;text-overflow:ellipsis}
-.blab.out{color:var(--ink);position:absolute;left:var(--w);top:0;bottom:0;padding-left:12px;align-items:center;display:flex;gap:10px}
+.blab.out{color:var(--ink);position:absolute;left:var(--w);top:0;bottom:0;padding-left:12px;align-items:center;display:flex;gap:10px;overflow:visible}
+.blab.out .tk{color:var(--ink)}.blab.out .nm{color:var(--mut)}
 .bpct{font-family:var(--mono);font-weight:600;font-size:16px;text-align:right}
 .bpct .b2{display:block;font-size:11px;font-weight:500;color:var(--faint)}
 .bsub{margin:-10px 0 18px;font-size:13px;color:var(--mut)}
@@ -1095,35 +1096,34 @@ async function loadData(){
   try{const r=await fetch("/api/me",{cache:"no-store"});
       if(r.ok){const j=await r.json();state.pro=!!j.pro;state.acct=j.email||"";state.meKnown=true;}}catch(e){}
   syncNav();   /* an answer that never came leaves the server-rendered label alone */
-  /* the universe file the deploy cuts; a raw panel.csv in a dev folder otherwise --
-     the same page serves both eras */
-  await fetchFirst(state.pro
+
+  /* TWO WAVES, EACH IN PARALLEL.
+     The files used to arrive one after another, each waiting for the last,
+     with the 52KB of prices fetched after 19MB of history and trades. A
+     subscriber watched the board sit without values or founder badges for
+     five seconds. The small files the first screen needs (panel, prices,
+     founders, trends, perf: under 1.5MB) are fetched together and the hero,
+     strip and board render once, complete. The two large files (history
+     for the trend arrows, trades for the feed) arrive in a second wave and
+     re-render only the sections that use them. */
+  const loadPanel=fetchFirst(state.pro
       ?["/pro/universe.csv","universe.csv","panel.csv"]
       :["universe.csv","panel.csv"],
     t=>{const p=mapPanel(parseCSV(t));
         if(!p.length)return false;
         PANEL=p;state.live.panel=true;return true;});
-  /* the headline as soon as the panel is here, not after the 7MB of
-     history behind it; the strip beneath it re-renders with the rest */
-  try{renderHero();syncNav();}catch(e){}
-  await fetchFirst(state.pro
-      ?["/pro/history-lite.csv","/pro/history.csv","history-free-lite.csv","history-free.csv","history.csv"]
-      :["history-free-lite.csv","history-free.csv","history.csv"],
-    t=>{const h=mapHistory(parseCSV(t));
-        if(!Object.keys(h).length)return false;
-        HIST=h;state.live.hist=true;return true;});
-  await fetchFirst(state.pro?["/pro/founders.csv","founders.csv"]:["founders.csv"],
+  const loadFounders=fetchFirst(state.pro?["/pro/founders.csv","founders.csv"]:["founders.csv"],
     t=>{const m={};
         for(const r of parseCSV(t))if(r.ticker)m[r.ticker.toUpperCase()]=
           {f:(r.founder||"").toLowerCase(),ev:r.evidence||"",src:r.source||""};
         if(!Object.keys(m).length)return false;
         FOUNDERS=m;state.live.founders=true;return true;});
-  await fetchFirst(state.pro?["/pro/trends.csv","trends.csv"]:["trends.csv"],
+  const loadTrends=fetchFirst(state.pro?["/pro/trends.csv","trends.csv"]:["trends.csv"],
     t=>{const m={};
         for(const r of parseCSV(t))if(r.ticker&&r.direction)m[r.ticker.toUpperCase()]=r.direction;
         if(!Object.keys(m).length)return false;
         TRENDS=m;return true;});
-  try{const t=await (await fetch("perf.csv",{cache:"no-store"})).text();
+  const loadPerf=(async()=>{try{const t=await (await fetch("perf.csv",{cache:"no-store"})).text();
     const m={};
     for(const r of parseCSV(t)){
       if(!r.ticker||!r.month)continue;
@@ -1131,18 +1131,13 @@ async function loadData(){
       (m[r.ticker.toUpperCase()]=m[r.ticker.toUpperCase()]||[]).push([r.month,c]);
     }
     for(const tk in m)m[tk].sort((x,y)=>x[0]<y[0]?-1:1);
-    if(m.SPY&&Object.keys(m).length>1){PERF=m;state.live.perf=true;}}catch(e){}
-  await fetchFirst(state.pro
-      ?["/pro/events.csv","events-free.csv","events.csv"]
-      :["events-free.csv","events.csv"],
-    t=>{const ev=mapEvents(parseCSV(t));
-        if(!ev.length)return false;
-        EVENTS=ev;state.live.events=true;return true;});
-  try{const t=await (await fetch("prices.csv",{cache:"no-store"})).text();
+    if(m.SPY&&Object.keys(m).length>1){PERF=m;state.live.perf=true;}}catch(e){}})();
+  const loadPrices=(async()=>{try{const t=await (await fetch("prices.csv",{cache:"no-store"})).text();
       const m={};let asof="";
       for(const r of parseCSV(t)){const c=num(r.close);
         if(r.ticker&&c){m[r.ticker.toUpperCase()]=c;asof=r.as_of||asof;}}
-      if(Object.keys(m).length){PRICES=m;PRICES_ASOF=asof;state.live.prices=true;}}catch(e){}
+      if(Object.keys(m).length){PRICES=m;PRICES_ASOF=asof;state.live.prices=true;}}catch(e){}})();
+  await Promise.all([loadPanel,loadFounders,loadTrends,loadPerf,loadPrices]);
   applyPrices();
   // THE RE-RENDER MUST NOT MOVE THE READER.
   //
@@ -1154,13 +1149,28 @@ async function loadData(){
   // So the position is captured, the sections are rebuilt, and the reader is
   // put back -- on the anchor they asked for if there is one, otherwise
   // exactly where they were.
-  const y=window.scrollY, hash=location.hash;
-  renderAll();
-  requestAnimationFrame(()=>{
-    const target=hash&&document.querySelector(hash);
-    if(target)target.scrollIntoView({block:"start",behavior:"auto"});
-    else if(y)window.scrollTo(0,y);
-  });
+  const keep=fn=>{const y=window.scrollY, hash=location.hash;fn();
+    requestAnimationFrame(()=>{
+      const target=hash&&document.querySelector(hash);
+      if(target)target.scrollIntoView({block:"start",behavior:"auto"});
+      else if(y)window.scrollTo(0,y);});};
+  keep(renderAll);
+
+  /* the second wave: the record and the trades */
+  const loadHist=fetchFirst(state.pro
+      ?["/pro/history-lite.csv","/pro/history.csv","history-free-lite.csv","history-free.csv","history.csv"]
+      :["history-free-lite.csv","history-free.csv","history.csv"],
+    t=>{const h=mapHistory(parseCSV(t));
+        if(!Object.keys(h).length)return false;
+        HIST=h;state.live.hist=true;return true;});
+  const loadEvents=fetchFirst(state.pro
+      ?["/pro/events.csv","events-free.csv","events.csv"]
+      :["events-free.csv","events.csv"],
+    t=>{const ev=mapEvents(parseCSV(t));
+        if(!ev.length)return false;
+        EVENTS=ev;state.live.events=true;return true;});
+  await Promise.all([loadHist,loadEvents]);
+  keep(renderAll);
 }
 
 /*@shared*/
@@ -1279,6 +1289,8 @@ function chartBlock(tk){
 }
 
 /* ---------------- render ---------------- */
+let _bars_rsz=null;
+if(typeof window!=="undefined"&&window.addEventListener)window.addEventListener("resize",()=>{clearTimeout(_bars_rsz);_bars_rsz=setTimeout(()=>{if(state.live.panel)renderBars();},150);});
 function renderAll(){syncNav();renderStatus();renderHero();renderBars();renderTable();renderActivity();renderPerf();
   if(/[?&]welcome=1/.test(location.search)&&!state._welcomed){
     state._welcomed=true;
@@ -1685,6 +1697,29 @@ function renderHero(){
         ?` · prices to ${PRICES_ASOF}`:""}</div></div>`;
   if(state.live.panel)$("#herostats").innerHTML=out;   /* the stamped strip outranks the sample */
 }
+/* INSIDE WHEN IT FITS, MEASURED BY THE BROWSER. A fixed fifth of the track
+   was tuned when Tesla led at 2x the runner-up; with SpaceX at $898B the
+   yardstick, Dell at 17% sat outside a bar that had room for him. Every
+   label is drawn inside, then the ones the layout engine reports as
+   overflowing their bar are moved out beside it. Re-run on resize. */
+function fitLabels(){
+  if(typeof document==="undefined")return;
+  /* READ EVERYTHING, THEN WRITE EVERYTHING. Moving a label inside the
+     same loop that measures the next one forces a fresh layout of two
+     thousand rows per row: thirteen seconds. Two passes cost one layout. */
+  const move=[];
+  document.querySelectorAll("#bars .brow .bfill").forEach(fill=>{
+    const lab=fill.querySelector(".blab"),nm=lab&&lab.querySelector(".nm");
+    if(!lab||!lab.clientWidth)return;              /* no layout (a harness): leave it */
+    /* the name shrinks to an ellipsis before the label overflows, so the
+       name's own overflow is the earlier and truer signal */
+    if(lab.scrollWidth>lab.clientWidth+1||(nm&&nm.scrollWidth>nm.clientWidth+1))move.push([fill,lab]);
+  });
+  for(const [fill,lab] of move){
+    lab.classList.add("out");lab.style.setProperty("--w",fill.style.width);
+    fill.parentElement.appendChild(lab);           /* beside the bar, in the same track */
+  }
+}
 function renderBars(){
   const useVal=state.bmode==="val"&&state.live.prices;
   /* the mode strip stays visible without prices: it still holds the
@@ -1715,11 +1750,9 @@ function renderBars(){
   const max=metric(top[0])||1;
   $("#bars").innerHTML=top.map(r=>{
     const w=Math.max(2,metric(r)/max*100);
-    /* 34 was tuned when TSLA led at ~2x the runner-up; with SPCX at
-       $632B as the yardstick, META/NVDA/DELL (22-31%) all just missed
-       and looked like the leader got special treatment. A fifth of the
-       track (~230px) fits ticker + name + badge comfortably. */
-    const inside=w>20;
+    /* every label is drawn inside first; the pass after the render moves
+       out the ones the browser says overflow (see fitLabels) */
+    const inside=true;
     const main=useVal?money(r.val||0):r.pct.toFixed(2)+"%";
     const sub=useVal?r.pct.toFixed(2)+"% of co.":(r.val?money(r.val):"");
     return `<div class="brow" onclick="openDrawer('${r.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${r.tk}')">
@@ -1734,6 +1767,7 @@ function renderBars(){
       </div>
       <div class="bpct">${main}${sub?`<span class="b2">${sub}</span>`:""}</div>
     </div>`}).join("");
+  fitLabels();
 }
 function trendArrow(tk){
   /* the year-over-year direction, from trends.csv. Deliberately present

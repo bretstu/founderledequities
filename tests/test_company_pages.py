@@ -116,8 +116,10 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     # a subscriber's first byte already carries the Pro hero: the function
     # on / rewrites from the same attributes the stamp wrote, and the page
     # sets no cookie to do it
-    fn = open(os.path.join(ROOT, "functions", "index.js"), encoding="utf-8").read()
+    fn = open(os.path.join(ROOT, "functions", "_tier.js"), encoding="utf-8").read()
     assert 'getAttribute("data-pro")' in fn and "HTMLRewriter" in fn and "isPro" in fn
+    assert "proPage" in open(os.path.join(ROOT, "functions", "index.js")).read()
+    assert "proPage" in open(os.path.join(ROOT, "functions", "company", "[[path]].js")).read()
     assert "document.cookie" not in src
 
 
