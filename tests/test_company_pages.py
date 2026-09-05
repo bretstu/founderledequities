@@ -200,5 +200,6 @@ def test_the_record_has_two_views_and_one_story_per_chart():
     assert "e.apa" in js, "dots sit at the filed price restated in today's shares"
     assert 'fetchText([`/prices/${C.tk}.csv`])' in js, "prices are fetched from the public root on every page"
     assert "function attachHover(" in js and "function drawIn(" in js
-    assert 'class="ann"' in js and "linearGradient" in js
+    assert 'class="ann"' not in js and "linearGradient" in js
+    assert 'class="dot"' in js and 'class="dot"><circle' not in js and 'rel="noopener" class="dot"' not in js, "dots are marks, not links; the list carries the filing link"
     assert "steps without a dot are grants, gifts, or the share count changing" in js.lower()

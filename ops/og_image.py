@@ -43,23 +43,20 @@ def numbers(panel_p, sp_p, prices_p, founders_p, everyone=False):
     led_value = all_value = 0.0
     for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
         t = (r.get("ticker") or "").upper()
-        # A COMPANY WITHOUT A MEASURED STAKE IS STILL A COMPANY. The page's
-        # hero counts every open row and asks pct > 5 of each; a row with
-        # no figure is one of the 2,135 and none of the 199. Skipping it
-        # here stamped "of 2,100" beside a page that said 2,135.
+        # WHAT THE PAGE COUNTS. Its list keeps a company only when it has a
+        # measured stake and a share count (mapPanel's filter); 35 of the
+        # 2,135 do not, and the hero says 2,100. A stamp that counted every
+        # row said 2,135 for the first second and 2,100 after.
         try:
             pct = float(r.get("pct") or "")
-        except ValueError:
-            pct = None
-        try:
             sh = float(r.get("shares") or 0)
         except ValueError:
-            sh = 0.0
+            continue
         total += 1
         if t not in sp and not everyone:
             continue
         open_n += 1
-        if pct is not None and pct > 5:
+        if pct > 5:
             above5 += 1
         val = sh * prices[t] if t in prices else 0.0
         all_value += val
