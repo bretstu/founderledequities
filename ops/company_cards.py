@@ -145,7 +145,7 @@ def draw_card(out, fonts, tk, co, ceo, founder, sealed, pct, value, shares, seri
     # ---- the top: wordmark, ticker
     d.text((64, 44), "Founder Led", font=fonts.disp(24, 700), fill=INK)
     wm = d.textlength("Founder Led ", font=fonts.disp(24, 700))
-    d.text((64 + wm, 44), "Equities", font=fonts.disp(24, 700), fill=BLUE)
+    d.text((64 + wm, 44), "Equities", font=fonts.disp(24, 700), fill=INK)
     d.text((W - 64, 50), tk + ("  ·  S&P 500" if not sealed else "  ·  SEALED") + "  ·  founderledequities.com",
            font=fonts.mono(16), fill=FAINT, anchor="ra")
 

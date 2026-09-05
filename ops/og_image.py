@@ -110,7 +110,7 @@ def draw(n, out, fonts_dir):
     # wordmark
     d.text((72, 60), "Founder Led", font=disp(30, 700), fill=INK)
     wm = d.textlength("Founder Led ", font=disp(30, 700))
-    d.text((72 + wm, 60), "Equities", font=disp(30, 700), fill=BLUE)
+    d.text((72 + wm, 60), "Equities", font=disp(30, 700), fill=INK)
     d.text((W - 72, 68), "founderledequities.com", font=mono(18), fill=FAINT, anchor="ra")
 
     # the purpose, the hero's own sentence
@@ -118,7 +118,7 @@ def draw(n, out, fonts_dir):
     y = 150
     d.text((72, y), "What every ", font=big, fill=INK)
     x = 72 + d.textlength("What every ", font=big)
-    d.text((x, y), "CEO", font=big, fill=BLUE)
+    d.text((x, y), "CEO", font=big, fill=INK)
     x += d.textlength("CEO ", font=big)
     d.text((x, y), "owns", font=big, fill=INK)
     d.text((72, y + 84), "of the company they run.", font=big, fill=INK)
