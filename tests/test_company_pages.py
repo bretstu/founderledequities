@@ -205,3 +205,47 @@ def test_the_record_has_two_views_and_one_story_per_chart():
     assert 'class="ann"' not in js and "linearGradient" in js
     assert 'class="dot"' in js and 'class="dot"><circle' not in js and 'rel="noopener" class="dot"' not in js, "dots are marks, not links; the list carries the filing link"
     assert "steps without a dot are grants, gifts, or the share count changing" in js.lower()
+
+
+def test_each_page_unfurls_into_its_own_card_when_one_is_drawn(tmp_path):
+    """A shared company page pointed at the site-wide og.png; now it
+    points at og/<T>.png?v=<hash> when the deploy drew one, and keeps
+    og.png when it did not. The card holds the seal: a sealed company's
+    card has the name, the person, the public price line, and no stake."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("company_cards", os.path.join(ROOT, "ops", "company_cards.py"))
+    cc = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cc)
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    store = tmp_path / "store"
+    store.mkdir()
+    days = "".join(f"2024-{m:02d}-15,{100+m*5}.0\n" for m in range(1, 13))
+    (store / "TSLA.csv").write_text("date,close\n" + days)
+    (store / "SEALD.csv").write_text("date,close\n" + days)
+    events = tmp_path / "events.csv"
+    events.write_text("ticker,code,label,traded,filed,value,avg_price_adjusted,shares\n"
+                      "TSLA,S,sale,2024-06-15,2024-06-17,1000000,130.0,7692\n"
+                      "TSLA,S,exercise and sell,2024-07-15,2024-07-17,500000,135.0,3703\n"
+                      "SEALD,P,purchase,2024-06-15,2024-06-17,1000,130.0,8\n")
+    og = tmp_path / "og"
+    rc = cc.main(panel, sp, prices, founders, str(events), str(store), str(og))
+    assert rc == 0
+    assert sorted(p.name for p in og.iterdir()) == ["SEALD.png", "TSLA.png"]
+    v = cc.card_version(str(og), "TSLA")
+    assert len(v) == 10 and cc.card_version(str(og), "GHOST") == ""
+
+    bcp.main(panel, founders, prices, sp, out, og_dir=str(og))
+    tsla = open(os.path.join(out, "company", "TSLA", "index.html"), encoding="utf-8").read()
+    assert f'<meta property="og:image" content="https://founderledequities.com/og/TSLA.png?v={v}">' in tsla
+    assert f'<meta name="twitter:image" content="https://founderledequities.com/og/TSLA.png?v={v}">' in tsla
+    assert "founderledequities.com/og.png" not in tsla
+
+    # no card drawn: the page keeps the site's card
+    bcp.main(panel, founders, prices, sp, out)
+    tsla = open(os.path.join(out, "company", "TSLA", "index.html"), encoding="utf-8").read()
+    assert 'content="https://founderledequities.com/og.png"' in tsla
+
+    # the drawn images are real PNGs of the card's size
+    from PIL import Image
+    im = Image.open(og / "SEALD.png")
+    assert im.size == (1200, 630)

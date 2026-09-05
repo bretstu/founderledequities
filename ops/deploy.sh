@@ -124,7 +124,14 @@ python3 ops/stamp_static.py panel.csv "$SP_LIST" prices.csv founders.csv public/
 # ---- 3a. one page per company, at its own address ----
 # company.js and site.css are extracted from index.html here, so the pages
 # and the home page share one source for every rule; sitemap.xml lists them.
-python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" public/ events.csv history.csv
+# ---- 3b. one card per company, the price chart with the trades on it ----
+# Every company page used to unfurl into the site-wide og.png. The cards
+# are drawn from the price store and events.csv (about a minute for the
+# universe); a page whose card was not drawn keeps og.png.
+$OGPY ops/company_cards.py panel.csv "$SP_LIST" prices.csv founders.csv events.csv price-history og \
+  || echo "  company cards: not drawn; pages keep og.png"
+if [ -d og ] && [ -n "$(ls og 2>/dev/null)" ]; then mkdir -p public/og && cp og/*.png public/og/; fi
+python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" public/ events.csv history.csv --og og
 [ -s prices.csv ] && cp prices.csv public/
 # perf.csv is published by build_site_data, cut to the chart's cohort; the
 # full file (every company's closes) stays on disk for the 3-year returns.

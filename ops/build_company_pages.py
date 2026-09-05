@@ -329,7 +329,26 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
         fh.write(page)
 
 
-def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hist_p="history.csv"):
+def card_tags(page: str, tk: str, og_dir: str | None) -> str:
+    """Point the page's og:image and twitter:image at the company's own
+    card when one was drawn (ops/company_cards.py), versioned by the
+    card's hash so a redrawn card is a new URL to every unfurler's cache.
+    Without a card the page keeps the site-wide og.png."""
+    if not og_dir:
+        return page
+    from company_cards import card_version
+    v = card_version(og_dir, tk)
+    if not v:
+        return page
+    url = f"{SITE}/og/{tk}.png?v={v}"
+    return (page.replace('<meta property="og:image" content="https://founderledequities.com/og.png">',
+                         f'<meta property="og:image" content="{url}">')
+                .replace('<meta name="twitter:image" content="https://founderledequities.com/og.png">',
+                         f'<meta name="twitter:image" content="{url}">'))
+
+
+def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hist_p="history.csv",
+         og_dir=None):
     here = os.path.dirname(os.path.abspath(__file__))
     root = os.path.dirname(here)
     index_html = open(os.path.join(root, "index.html"), encoding="utf-8").read()
@@ -441,6 +460,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                 .replace('href="/site.css"', f'href="/site.css?v={css_v}"')
                 .replace('src="/company.js"', f'src="/company.js?v={js_v}"')
                 .replace("{{COMPANY_JSON}}", json.dumps(payload).replace("</", "<\\/")))
+        page = card_tags(page, tk, og_dir)
         d = os.path.join(out_dir, "company", tk)
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
@@ -464,4 +484,10 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(*sys.argv[1:8]))
+    argv = list(sys.argv[1:])
+    og_dir = None
+    if "--og" in argv:
+        i = argv.index("--og")
+        og_dir = argv[i + 1]
+        del argv[i:i + 2]
+    raise SystemExit(main(*argv[:7], og_dir=og_dir))
