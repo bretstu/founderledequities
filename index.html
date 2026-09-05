@@ -679,7 +679,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
        the row for the full record. -->
   <div class="shead">
     <h2>Every company</h2>
-    <div class="r">Click a column to sort · open a row for the full record</div>
+
   </div>
   <div class="sbody">
   <div class="controls">
@@ -811,7 +811,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"pct",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,distOpen:null,pc:"sp",pro:false,meKnown:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
+const state={q:"",min:0,sort:{key:"mcap",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,distOpen:null,pc:"sp",pro:false,meKnown:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -1449,7 +1449,7 @@ function renderPerf(){
   const cagr=a=>((Math.pow(a[a.length-1]/PERF_BASE,1/Math.max(yrsSpan,1/12))-1)*100);
   document.querySelectorAll(".chip.pc").forEach(c=>c.classList.toggle("on",c.dataset.pc===state.pc));
   const who=state.pc==="sp"?`the ${d.count} founder-led companies in the S&P 500`:`all ${d.count} founder-led US companies worth $1B or more`;
-  $("#perfsub").textContent=`Growth of $10,000, ${d.from} to ${d.months[n-1]} — an equal-weight index of ${who}, against the S&P 500`;
+  $("#perfsub").textContent=`Growth of $10,000 since ${d.from}, equal-weighted: ${who}, against the S&P 500`;
   $("#perfchart").innerHTML=perfChart(d);
   renderDist(d);
   /* THE SCREENER'S RETURN COLUMN FOLLOWS THE WINDOW, NOT THE COHORT CHIP.
@@ -1458,11 +1458,12 @@ function renderPerf(){
      the Founders index chip always use the whole cohort. */
   const pc=state.pc;state.pc="all";state._perfFull=perfSeries();state.pc=pc;
   renderTable();
-  $("#perfnote").innerHTML=`Equal weight, rebalanced monthly; split-adjusted month-end closes, dividends excluded on every line; companies enter when their price history begins. `
-    +`Founders: ${cagr(d.founders).toFixed(1)}%/yr · S&amp;P 500 (SPY, cap-weighted): ${cagr(d.spy).toFixed(1)}%/yr`
-    +(d.rsp?` · S&amp;P 500 equal weight (RSP): ${cagr(d.rsp).toFixed(1)}%/yr — the fair comparison for an equal-weight cohort`:"")+` over this window. `
-    +`<b>A portrait, not a strategy:</b> this applies <i>today's</i> founder-led cohort backward — companies whose founders left, or that left the index, aren't represented, which flatters the line. `
-    +`<a href="about.html">How every number is made</a>.`;
+  /* the result, the one caveat that keeps it honest, and where the method
+     lives; the method itself (equal weight, monthly rebalance, split-
+     adjusted closes, no dividends) is on About, once */
+  $("#perfnote").innerHTML=`Founders ${cagr(d.founders).toFixed(1)}%/yr · S&amp;P 500 ${cagr(d.spy).toFixed(1)}%/yr`
+    +(d.rsp?` · S&amp;P 500 equal weight ${cagr(d.rsp).toFixed(1)}%/yr`:"")
+    +`. Today's founder cohort applied backward, so survivors only. <a href="about.html">Method</a>.`;
 }
 function renderStatus(){
   // WHICH FILES ARE LIVE IS NOT THE READER'S PROBLEM.
@@ -1584,11 +1585,10 @@ function renderBars(){
   $("#boardtitle").textContent=useVal
     ?(state.lbF?"The wealthiest founders":"The wealthiest CEOs")
     :(state.lbF?"The largest founder stakes":"The largest ownership stakes");
-  $("#bsub").textContent=useVal
-    ?"The wealthiest stakes — shares held times the "+PRICES_ASOF+" close · "
-      +(state.lbF?pool.length+" founder-led companies ranked":"all "+pool.length+" ranked, scroll for more")
-    :(state.lbF?pool.length+" founders ranked by percent of shares outstanding"
-               :"Every CEO ranked by percent of shares outstanding · scroll for more");
+  /* no caption: the chip says the measure, the column says the number,
+     the scrollbar says there is more. A count here needed a footnote
+     (the value board can only rank companies with a close). */
+  $("#bsub").textContent="";
   const metric=r=>useVal?(r.val||0):r.pct;
   const top=[...pool].sort((a,b)=>metric(b)-metric(a));
   if(!top.length){$("#bars").innerHTML=
@@ -1750,7 +1750,7 @@ function renderTable(){
     </tr>`}).join("");
   const sealedN=PANEL.filter(r=>r.masked).length;
   $("#tcount").textContent=
-    `${total} compan${total===1?"y":"ies"} · scroll the table${state.live.panel?"":" · embedded sample — serve universe.csv beside this file to load all 500"}`;
+    `${total.toLocaleString()} compan${total===1?"y":"ies"}${state.live.panel?"":" · embedded sample — serve universe.csv beside this file to load all 500"}`;
   document.querySelectorAll("th.sortable").forEach(th=>{
     const on=th.dataset.key===state.sort.key;
     th.querySelector(".arr").textContent=on?(state.sort.dir<0?" ↓":" ↑"):"";
@@ -2243,7 +2243,7 @@ function dayScope(){
      masked column loaded (the harness, a dev folder, a lapsed session):
      the strip called the S&P "500 companies". */
   const sealed=PANEL.some(r=>r.masked);
-  return (state.pro&&!sealed)?PANEL.length.toLocaleString()+" companies":"S&P 500";
+  return (state.pro&&!sealed)?"":"S&P 500";
 }
 /*@shared*/
 function shortDay(d){
@@ -2327,7 +2327,7 @@ function renderDay(){
     </div>`;};
   el.innerHTML=`<div class="dayb">
     <div class="dayh">
-      <span class="dt">Filed <b>${day?niceDay(day):"—"}</b> · ${tradesAndFilings(rows)} · ${scope}</span>
+      <span class="dt">Filed <b>${day?niceDay(day):"—"}</b> · ${tradesAndFilings(rows)}${scope?` · ${scope}`:""}</span>
       <span class="dn">${recent.map(chipDay).join("")}</span>
     </div>
     <div class="daylist">${rows.length?rows.map(row).join(""):`<div class="dayempty">No CEO of these companies filed a trade that moved a stake on ${day?niceDay(day):"this day"}.</div>`}</div>
@@ -2424,10 +2424,10 @@ function actNote(){
   if(!ex.length)return"";
   const nP=ex.filter(e=>unchangedKind(e)==="pre").length;
   const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nB=ex.filter(e=>unchangedKind(e)==="bought").length;
-  const kinds=[nM?"options cashed":"",nC?"units converted and sold":"",nB?"purchases the position did not register":"",nP?`${nP} traded before the company was public`:""].filter(Boolean).join(", ")||"shares from outside the filing";
+  const kinds=[nM?"options cashed":"",nC?"units converted":"",nB?"purchases the position did not register":"",nP?`${nP} before the company was public`:""].filter(Boolean).join(", ")||"shares from outside the filing";
   const win={30:"the last 30 days",90:"the last 90 days",365:"the last 12 months"}[state.ev.win]||"this window";
   const n=ex.length;
-  return `Kept out of everything above: ${n.toLocaleString()} trade${n===1?"":"s"} in ${win} that did not move the public-company stake — ${kinds}. <a onclick="setView('exsell')">They are in the table →</a>`;
+  return `Kept out of everything above: ${n.toLocaleString()} trade${n===1?"":"s"} in ${win} did not move a stake (${kinds}). <a onclick="setView('exsell')">They are in the table →</a>`;
 }
 function renderCols(){
   const el=$("#actcols");if(!el)return;
@@ -2473,7 +2473,7 @@ function renderActivity(){
   $("#actgate").classList.add("hide");
   /* the badges, the tooltips and the columns already say what this
      section is; one line gives a first-time reader the reading itself */
-  $("#actsub").textContent="Most selling is scheduled years in advance; the rare purchase is the signal";
+  $("#actsub").textContent="";   /* the colours say it: planned in grey, the purchase in blue */
   renderDay();
   renderCols();
   const box=$("#acttable");

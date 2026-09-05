@@ -165,7 +165,7 @@ const P=runPage();
   const twoDay={};for(const e of P.evBase()){const k=e.acc;if(k)twoDay[k]=(twoDay[k]||0)+1;}
   const multi=Object.values(twoDay).some(n=>n>1);
   const strip=els["#actday"]._html;
-  assert(/\d+ trades?( in \d+ filings?)? · /.test(strip),"the strip counts trades, and filings when they differ");
+  assert(/\d+ trades?( in \d+ filings?)?( · S&amp;P 500)?<\/span>/.test(strip),"the strip counts trades, and filings when they differ; the scope only when it is a limit");
   if(multi)assert(P.nFilings(P.evBase())<P.evBase().length,"a two-day Form 4 counts as one filing, two trades");
   // the aggregate share of stake follows the pipeline's rule
   const one=[...B365.people,...S365.people].find(p=>p.n===1&&p.pc!==null);
@@ -577,13 +577,13 @@ const P=runPage();
      const svg3=P.perfChart(al);
      assert(svg3.includes("S&amp;P equal weight (RSP)")&&svg3.includes("stroke-dasharray"),"drawn dashed and labelled");
      P.renderPerf();
-     assert(els["#perfnote"]._html.includes("dividends excluded")&&els["#perfnote"]._html.includes("equal weight (RSP)"),"the footnote states the method precisely and names both benchmarks");
+     assert(/Founders -?[\d.]+%\/yr/.test(els["#perfnote"]._html)&&els["#perfnote"]._html.includes("S&amp;P 500 equal weight")&&els["#perfnote"]._html.includes('href="about.html"'),"the note under the chart is the returns, the caveat, and the method linkly and names both benchmarks");
      assert(els["#perfsub"]._html.includes("all ")||els["#perfsub"].textContent.includes("all "),"the subtitle names the cohort");
      P.state.pc="sp";P.renderPerf();
      assert((els["#perfsub"].textContent||els["#perfsub"]._html).includes("in the S&P 500"),"and says S&P 500 when that is the cohort");
      assert(P.state._perfFull&&P.state._perfFull.count===al.count,"but the screener's return column still covers the whole cohort: "+P.state._perfFull.count);
      P.state.pc="all";P.PANEL=savedPanel3;P.renderPerf();}
-    assert(els["#perfnote"]._html.includes("portrait, not a strategy"),
+    assert(els["#perfnote"]._html.includes("survivors only"),
       "the caveat ships with the chart");
     P.FOUNDERS=savedF;
   }
