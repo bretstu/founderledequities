@@ -39,7 +39,7 @@ def test_the_shared_code_is_extracted_whole_and_parses():
     idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
     js = bcp.extract_shared(idx)
     for name in ("function parseCSV(", "function mapPanel(", "function mapHistory(", "function mapEvents(",
-                 "function cleanHist(", "function trajStats(", "function chartSVG(", "function evBadge(",
+                 "function cleanHist(", "function trajStats(", "function evBadge(",
                  "function unchangedKind(", "function pctOf(", "function lagNote(", "const money=",
                  "const SEAL=", "let _cleanCache="):
         assert name in js, f"{name} is not marked @shared"

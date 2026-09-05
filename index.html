@@ -36,7 +36,7 @@
      reads as secondary, and clears 4.5:1. */
   --faint:#6F7379;
   --blue:#1B34E0;
-  --bar:#D6D6CE;       /* the leaderboard's bars: a grey that reads on white, so the numbers lead and blue means "this one" */
+  --bar:#DCE1F8;       /* the leaderboard's bars: a pale blue, distinct from the panel's warm grey, that deepens to blue on hover */
   --blue-d:#1226A6;
   --wash:#EEF1FF;
   --amber:#B06A00;
@@ -508,97 +508,15 @@ td.asrc a:hover{color:var(--blue)}
 .nopr{color:var(--faint);font-weight:400}
 .actlock{margin-top:16px}
 .actfree{margin-bottom:6px}
-.drow{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line2);flex-wrap:wrap}
 
 .fb{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;border-radius:4px;padding:2px 6px;margin-left:8px;vertical-align:1px}
 .fb.yes{background:var(--ink);color:#fff}
 .fb.unc{border:1px solid var(--faint);color:var(--mut)}
-/* ---------- focus view ---------- */
-.fscrim{position:fixed;inset:0;background:rgba(12,13,14,.45);opacity:0;pointer-events:none;transition:opacity .18s;z-index:60}
-.fscrim.on{opacity:1;pointer-events:auto}
-.focus{position:fixed;left:50%;top:50%;transform:translate(-50%,-48%) scale(.985);width:min(980px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:26px 30px 24px;z-index:61;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;box-shadow:0 24px 80px rgba(12,13,14,.18)}
-.focus.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
-.fhead{display:flex;align-items:baseline;gap:14px;margin-bottom:14px}
-.fhead .fl{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fhead .tk{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue);letter-spacing:.06em}
-.fhead .fco{font-size:19px;font-weight:650;letter-spacing:-.01em}
-.fhead .fce{font-size:13px;color:var(--mut)}
-.fdelta{font-family:var(--mono);font-size:12.5px;color:var(--mut);white-space:nowrap}
-.fdelta b{font-weight:600}
-.fdelta.up b,.fdelta.up .dir{color:#0b7a4b}.fdelta.down b,.fdelta.down .dir{color:#c22a2a}.fdelta.flat b{color:var(--mut)}
-.fx{border:none;background:none;font-size:26px;line-height:1;color:var(--mut);cursor:pointer;padding:0 2px}
-.fx:hover{color:var(--ink)}
-.fchartwrap{position:relative;border:1px solid var(--line);border-radius:10px;padding:10px 6px 4px;background:#FDFDFB}
-.fchartwrap svg{display:block;width:100%;height:auto;cursor:crosshair}
-.fcross{position:absolute;top:12px;bottom:10px;width:0;border-left:1px dashed #B9BDF3;pointer-events:none}
-.fdot{position:absolute;width:9px;height:9px;border-radius:50%;background:#fff;border:2px solid var(--blue);transform:translate(-50%,-50%);pointer-events:none}
-/* THE TOOLTIP IS THE FILING, IN MINIATURE: the date, the stake, and what
-   actually moved that day at what it fetched. */
-.ftip{position:absolute;min-width:190px;max-width:250px;background:var(--ink);color:#fff;border-radius:8px;padding:10px 12px;font-size:11.5px;line-height:1.5;pointer-events:none;z-index:5;transform:translate(-50%,0)}
-.ftip .d{font-family:var(--mono);font-size:10px;color:#B9BDC4;letter-spacing:.05em}
-.ftip .p{font-family:var(--mono);font-size:15px;font-weight:600;margin:1px 0 2px}
-.ftip .s{color:#D8DADF}
-.ftip .ev{margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,.14)}
-.ftip .t{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.1em;padding:1.5px 6px;border-radius:4px;background:rgba(255,255,255,.12)}
-.ftip .t.up{background:#0b7a4b}.ftip .t.down{background:#c22a2a}
-.ftip .amt{font-family:var(--mono)}
-.fhint{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin:8px 2px 0}
-.fstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:16px 0 18px}
-.fstats .c{background:#fff;padding:11px 14px}
-.fstats .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase}
-.fstats .v{font-family:var(--mono);font-size:14px;font-weight:600;margin-top:3px}
-.fstats .v small{font-size:10px;color:var(--mut);font-weight:400;margin-left:5px}
-.fevrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
-.fevh{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase}
-.fevents{display:flex;flex-direction:column}
-.fev{display:flex;align-items:baseline;gap:12px;padding:8px 2px;border-top:1px solid var(--line);font-size:12.5px}
-.fev .dt{font-family:var(--mono);font-size:11px;color:var(--mut);width:88px;flex:none}
-.fev .tag{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.1em;padding:2px 7px;border-radius:4px;flex:none}
-.fev .tag.up{background:#E7F3EC;color:#0b7a4b}.fev .tag.down{background:#FBEAEA;color:#c22a2a}
-.fev .tag.soft{background:#EEF0FE;color:var(--blue)}.fev .tag.dsoft{background:#F3F3EF;color:var(--mut)}.fev .tag.neu{background:#F3F3EF;color:var(--mut)}
-.fev .sh{font-family:var(--mono)}
-.fev .val{font-family:var(--mono);margin-left:auto;color:var(--ink)}
-.fev .val.dash{color:var(--faint)}
-
-/* ---------- drawer ---------- */
-.scrim{position:fixed;inset:0;background:rgba(12,13,14,.4);opacity:0;pointer-events:none;transition:opacity .18s;z-index:40}
-.scrim.on{opacity:1;pointer-events:auto}
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(600px,100%);background:var(--bg);border-left:1px solid var(--ink);transform:translateX(103%);transition:transform .24s cubic-bezier(.3,.8,.3,1);z-index:50;overflow-y:auto}
-.drawer.on{transform:none}
-.dhead{padding:26px 30px 18px;border-bottom:1px solid var(--line);position:relative}
-.dclose{position:absolute;top:20px;right:20px;width:34px;height:34px;border:1px solid var(--line);border-radius:9px;display:grid;place-items:center;background:#fff}
-.dclose:hover{border-color:var(--ink)}
-.dhead .tk{font-family:var(--mono);font-size:12px;color:var(--faint);letter-spacing:.06em}
-.dhead h3{font-family:var(--disp);font-weight:600;letter-spacing:-.02em;font-size:30px;margin:4px 0 2px}
-.dhead .ce{font-size:14px;color:var(--mut)}
-.dpct{padding:22px 30px 6px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
-.dpct .p{font-family:var(--mono);font-weight:600;font-size:52px;letter-spacing:-.03em;color:var(--blue);line-height:1}
-.dpct .l{font-size:13px;color:var(--mut);max-width:24ch;line-height:1.4}
-.dpct.wide{display:block}
-.dpct.wide .p{font-size:24px;letter-spacing:0;line-height:1.3;font-weight:600}
-.dpct.wide .l{max-width:60ch;margin-top:8px}
-.dstats{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:18px}
-.dstat{padding:14px 30px;border-bottom:1px solid var(--line2)}
-.dstat:nth-child(odd){border-right:1px solid var(--line2)}
-.dstat .k{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
-.dstat .v{font-family:var(--mono);font-size:15px;font-weight:500;margin-top:3px}
-.dstat .v.s{font-size:12.5px;color:var(--mut)}
-.dnote{margin:18px 30px 0;border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:0 9px 9px 0;padding:12px 15px;font-size:13px;color:var(--mut);background:var(--panel)}
-.dsec{padding:22px 30px}
-.dsec h4{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:12px;display:flex;gap:10px;align-items:center}
-.dflags{margin:14px 30px 0}
-.dflags summary{font-family:var(--mono);font-size:11.5px;color:var(--faint);cursor:pointer}
-.dflags pre{font-family:var(--mono);font-size:11px;color:var(--mut);white-space:pre-wrap;background:var(--panel);border-radius:8px;padding:12px 14px;margin-top:8px;line-height:1.6}
-.dfull{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--blue);text-decoration:none}
-.dhead h3 a.dco{color:inherit;text-decoration:none}
-.dhead h3 a.dco:hover{text-decoration:underline;text-decoration-color:var(--blue)}
+/* ---------- links that open a company's page ---------- */
 a.pglink{color:inherit;text-decoration:none}
 a.pglink:hover{text-decoration:underline}
-.dfull:hover{text-decoration:underline}
 td.c-co .tk a{color:inherit;text-decoration:none}
 td.c-co .tk a:hover{text-decoration:underline}
-.dsrc{padding:8px 30px 36px;font-size:12.5px;color:var(--mut)}
-.dsrc a{font-family:var(--mono);font-size:11.5px}
 
 /* ---------- modal ---------- */
 .modal{position:fixed;inset:0;display:none;place-items:center;z-index:60;padding:20px;background:rgba(12,13,14,.4)}
@@ -783,7 +701,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   </div>
   <!-- NO HORIZONTAL SCROLL. Ten columns, fixed widths that add up to the
        page, the two text columns truncating rather than the table growing.
-       Shares held and shares outstanding left the page for the drawer and
+       Shares held and shares outstanding left the page for the company page and
        the export -- a screen reads size as value and market cap, not as
        share counts. The chart preview left too: a sixty-pixel line of a
        record the walk has not finished repairing looked wrong more often
@@ -823,42 +741,10 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="legend">
     <span class="conf" title="the filings reconcile cleanly, often checked against an outside source such as the company's own proxy"><span class="dot high"></span>high</span>
     <span class="conf" title="the filings reconcile, with small residue the record cannot fully explain — usually an old split"><span class="dot medium"></span>medium</span>
-    <span class="conf" title="a known complication in this company's record — open its drawer for the specifics"><span class="dot low"></span>low</span>
+    <span class="conf" title="a known complication in this company's record — open its page for the specifics"><span class="dot low"></span>low</span>
     <span class="mono" id="footstamp"></span>
   </div>
 </div></footer>
-
-<div class="scrim" id="scrim" onclick="closeDrawer()"></div>
-
-<!-- THE FOCUS VIEW. One chart, full width, with every filing under the
-     cursor. A card in the grid is the thumbnail; this is the photograph. -->
-<div class="fscrim" id="fscrim" onclick="closeFocus()"></div>
-<div class="focus" id="focus" role="dialog" aria-modal="true" aria-label="Ownership chart">
-  <div class="fhead">
-    <div class="fl">
-      <span class="tk" id="f_tk"></span>
-      <span class="fco" id="f_co"></span>
-      <span class="fce" id="f_ce"></span>
-      <span id="f_badge"></span>
-    </div>
-    <div class="fdelta" id="f_delta"></div>
-    <button class="fx" onclick="closeFocus()" aria-label="Close">×</button>
-  </div>
-  <div class="fchartwrap" id="f_wrap">
-    <div id="f_chart"></div>
-    <div class="fcross hide" id="f_cross"></div>
-    <div class="fdot hide" id="f_dot"></div>
-    <div class="ftip hide" id="f_tip"></div>
-  </div>
-  <div class="fhint" id="f_hint"></div>
-  <div class="fstats" id="f_stats"></div>
-  <div class="fevrow">
-    <div class="fevh">The latest moves</div>
-    <button class="more" id="f_record">The filing record — sources &amp; links</button>
-  </div>
-  <div class="fevents" id="f_events"></div>
-</div>
-<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Company record"></aside>
 
 <div class="modal" id="promodal" role="dialog" aria-modal="true">
   <div class="mcard">
@@ -1244,75 +1130,6 @@ function applyPrices(){
        filters on beside the stake */
     r.mcap=r.price&&r.out?r.out*r.price:null;
   }
-}
-
-/* ---------------- charts ---------------- */
-/*@shared*/
-function chartSVG(pts,{w=520,h=200}={}){
-  /* ONE POINT PER MONTH-END, as on the company page: the last point of
-     each month, so the small chart is the shape and not the staircase. */
-  {const by=new Map();for(const p of pts)by.set(p[0].slice(0,7),p);pts=[...by.values()];}
-  if(pts.length>140){const k=Math.ceil(pts.length/140);
-    pts=pts.filter((_,i)=>i%k===0||i===pts.length-1);}
-  const pad={l:46,r:16,t:16,b:26};
-  const xs=pts.map(p=>+new Date(p[0])),ys=pts.map(p=>p[1]);
-  const x0=Math.min(...xs),x1=Math.max(...xs)||1;
-  let y0=Math.min(...ys),y1=Math.max(...ys);
-  const yr=(y1-y0)||1;y0=Math.max(0,y0-yr*.12);y1+=yr*.12;
-  const X=t=>pad.l+(t-x0)/((x1-x0)||1)*(w-pad.l-pad.r);
-  const Y=v=>h-pad.b-(v-y0)/(y1-y0)*(h-pad.t-pad.b);
-  let line="",area=`M ${X(xs[0])} ${h-pad.b}`;
-  pts.forEach((p,i)=>{const c=`${X(xs[i]).toFixed(1)} ${Y(p[1]).toFixed(1)}`;
-    line+=(i?" L ":"M ")+c;area+=` L ${c}`;});
-  area+=` L ${X(xs[xs.length-1])} ${h-pad.b} Z`;
-  const yrs=[...new Set(pts.map(p=>p[0].slice(0,4)))];
-  const step=Math.ceil(yrs.length/6);
-  // SMALL CHART = SHAPE. No dots in the grid, at any density.
-  //
-  // They used to appear below forty-eight points and vanish above, so Dell
-  // was stippled and EchoStar beside it was bare -- two charts apparently
-  // following different conventions, with nothing to say which. At card
-  // width the line has one job, and the footnote already reports how many
-  // transaction-days are on record. Events are marked in the focus view,
-  // where they can actually be hit.
-  return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Ownership over time">
-   ${[y0+(y1-y0)*.1,(y0+y1)/2,y1-(y1-y0)*.1].map(v=>`<line x1="${pad.l}" x2="${w-pad.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#F0F0EB"/><text x="${pad.l-8}" y="${Y(v)+3.5}" text-anchor="end" font-family="IBM Plex Mono" font-size="9.5" fill="#7A7E84">${v.toFixed(1)}%</text>`).join("")}
-   ${yrs.filter((_,i)=>i%step===0).map(y=>{const t=+new Date(y+"-06-30");if(t<x0||t>x1)return"";
-     return `<text x="${X(t)}" y="${h-8}" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#7A7E84">${y}</text>`}).join("")}
-   <path d="${area}" fill="#1B34E0" fill-opacity=".06"/>
-   <path d="${line}" fill="none" stroke="#1B34E0" stroke-width="1.8" stroke-linejoin="round"/>
-   <circle cx="${X(xs[xs.length-1])}" cy="${Y(ys[ys.length-1])}" r="3" fill="#1B34E0"/>
-   <text x="${X(xs[xs.length-1])-5}" y="${Y(ys[ys.length-1])-9}" text-anchor="end" font-family="IBM Plex Mono" font-size="10.5" font-weight="600" fill="#0C0D0E">${ys[ys.length-1].toFixed(2)}%</text>
-  </svg>`;
-}
-
-function edgeCaution(h){
-  /* A CRATER WITH NO TOMORROW YET.
-     mark_restated refuses to judge the newest filing -- a huge unexplained
-     drop at the trailing edge could be a partial report OR a real change,
-     and only the next filing settles it. So the site shows it as filed and
-     says so, instead of either hiding it or letting it read as a sale. */
-  if(!h||h.length<2)return"";
-  const last=h[h.length-1],prev=h[h.length-2];
-  const u=last[6]||0;
-  if(u<0&&Math.abs(u)>=0.5*Math.max(prev[2]||0,1)&&!last[7])
-    return `<div class="tnote" style="color:#B06A00">The newest filing reports a balance
-      far below the last without transactions to explain it — filings like this are
-      usually partial, naming only some vehicles, and the next filing completes the
-      picture. Shown as filed.</div>`;
-  return"";
-}
-function chartBlock(tk){
-  /* THE SEAL IS THE ONLY GATE. Free means the whole S&P experience --
-     every chart, every lens. What a free reader lacks is companies,
-     not features: the sealed 1,635 have no rows in the free files, so
-     data presence is the gate, and it enforces itself. */
-  const h=HIST[tk];
-  if(h)return `<div class="chartbox">${chartSVG(h)}</div>
-    <div class="tnote">${h.length} transaction-days on record — select for the filings behind the line.</div>`;
-  const _r=PANEL.find(p=>p.tk===tk);
-  if(_r&&_r.masked)return `<div class="tnote" style="padding:30px 0">This company's trajectory sits in the Pro tier with its stake.</div>`;
-  return `<div class="tnote" style="padding:30px 0">No trajectory yet — this record has no walkable filing history.</div>`;
 }
 
 /* ---------------- render ---------------- */
@@ -1759,7 +1576,7 @@ function renderBars(){
     b.classList.toggle("on",b.dataset.mode===(useVal?"val":"pct"));});
   paintSw("lbf",state.lbF);
   /* units-structured stakes cannot rank on a common-stock board -- their
-     honest reading lives in the table and the drawer, not at the bottom
+     honest reading lives in the table and the company page, not at the bottom
      of a list implying "owns nothing". A MASKED stake cannot rank
      either: there is no number to sort, and r.pct.toFixed on its null
      once aborted the whole render chain mid-flight. */
@@ -1784,7 +1601,7 @@ function renderBars(){
     const inside=true;
     const main=useVal?money(r.val||0):r.pct.toFixed(2)+"%";
     const sub=useVal?r.pct.toFixed(2)+"% of co.":(r.val?money(r.val):"");
-    return `<div class="brow" onclick="openDrawer('${r.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${r.tk}')">
+    return `<div class="brow" onclick="openCompany('${r.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${r.tk}')">
       <div class="btrack">
         <div class="bfill" style="width:${w}%">${inside?`<div class="blab"><span class="tk"><a class="pglink" href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></span><span class="nm">${r.ceo}</span>${fBadge(r.tk)}</div>`:""}</div>
         ${/* THE BADGE BELONGS TO THE PERSON, NOT TO THE WIDTH OF THEIR BAR.
@@ -1909,7 +1726,7 @@ function renderTable(){
   state._rows=rows;
 
   $("#tbody").innerHTML=rows.map((r,i)=>{
-    return `<tr onclick="openDrawer('${r.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${r.tk}')">
+    return `<tr onclick="openCompany('${r.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${r.tk}')">
      <td class="rk">${String(i+1).padStart(2,"0")}</td>
      <td class="c-co"><div class="tk"><a href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></div><div class="nm" title="${r.co.replace(/"/g,"&quot;")}">${r.co}</div></td>
      <td class="ceo h-ceo"><span class="ceow"><span class="cn" title="${r.ceo.replace(/"/g,"&quot;")}">${r.ceo}</span>${fBadge(r.tk)}</span></td>
@@ -2063,181 +1880,6 @@ function soldTickers(){
   for(const e of EVENTS)if(e.c==="S"&&unchangedKind(e)===null)out.add(e.tk);
   return out;
 }
-/* ---------------- the focus view ---------------- */
-
-let FOCUS=null;   // {tk, pts, X:[], Y:[], w, h}
-
-function bigChart(pts){
-  const w=940,h=380,pad={l:56,r:20,t:18,b:30};
-  const xs=pts.map(p=>+new Date(p[0])),ys=pts.map(p=>p[1]);
-  const x0=Math.min(...xs),x1=Math.max(...xs)||1;
-  let y0=Math.min(...ys),y1=Math.max(...ys);
-  const yr=(y1-y0)||1;y0=Math.max(0,y0-yr*.1);y1+=yr*.1;
-  const X=t=>pad.l+(t-x0)/((x1-x0)||1)*(w-pad.l-pad.r);
-  const Y=v=>h-pad.b-(v-y0)/(y1-y0)*(h-pad.t-pad.b);
-  let line="",area=`M ${X(xs[0])} ${h-pad.b}`;
-  pts.forEach((p,i)=>{const c=`${X(xs[i]).toFixed(1)} ${Y(p[1]).toFixed(1)}`;
-    line+=(i?" L ":"M ")+c;area+=` L ${c}`;});
-  area+=` L ${X(xs[xs.length-1])} ${h-pad.b} Z`;
-  const years=[...new Set(pts.map(p=>p[0].slice(0,4)))];
-  const step=Math.ceil(years.length/9);
-  const grid=[.08,.31,.54,.77,1].map(f=>y0+(y1-y0)*f);
-  FOCUS.X=xs.map(X);FOCUS.Y=ys.map(Y);FOCUS.w=w;FOCUS.h=h;
-  // A MARK IS SIZED BY THE ROOM IT HAS, NOT BY A COUNT.
-  //
-  // Dot size now comes from the actual spacing between neighbours -- the
-  // median gap, so a burst of daily filings does not shrink the marks
-  // either side of a quiet year.
-  //
-  // And there is a floor below which no size works. Zuckerberg's 671
-  // filings sit 1.3 units apart on a 940-unit chart: a mark small enough
-  // not to overlap is 0.64 wide, and the line it sits on is 1.8. It was
-  // being drawn and swallowed whole. Where that happens, marking every
-  // filing is abandoned for marking the ones worth seeing -- the largest
-  // moves -- and the hover still reaches all of them.
-  const gaps=[];
-  for(let i=1;i<FOCUS.X.length;i++)gaps.push(FOCUS.X[i]-FOCUS.X[i-1]);
-  gaps.sort((a,b)=>a-b);
-  const med=gaps.length?gaps[Math.floor(gaps.length/2)]:99;
-  const rr=Math.max(1.4,Math.min(3.2,med*0.42));
-  const crowded=med<4.4;              // no radius both fits and reads
-  const mark=(i,r,o)=>`<circle cx="${FOCUS.X[i].toFixed(1)}" cy="${FOCUS.Y[i].toFixed(1)}" r="${r}" fill="#fff" stroke="#1B34E0" stroke-width="1.5" opacity="${o}"/>`;
-  let dots,marked=pts.length;
-  if(!crowded){
-    dots=pts.map((p,i)=>mark(i,rr.toFixed(1),1)).join("");
-  }else{
-    // the biggest movers, by share count, spread across the whole line
-    const moves=[];
-    for(let i=1;i<pts.length;i++){
-      const d=Math.abs(pts[i][2]-pts[i-1][2]);
-      if(d>0)moves.push([d,i]);
-    }
-    moves.sort((a,b)=>b[0]-a[0]);
-    const keep=new Set(moves.slice(0,30).map(m=>m[1]));
-    dots=[...keep].sort((a,b)=>a-b).map(i=>mark(i,2.6,1)).join("");
-    marked=keep.size;
-  }
-  FOCUS.crowded=crowded;FOCUS.marked=marked;
-  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">
-   ${grid.map(v=>`<line x1="${pad.l}" x2="${w-pad.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#F0F0EB"/><text x="${pad.l-9}" y="${Y(v)+3.5}" text-anchor="end" font-family="IBM Plex Mono" font-size="10" fill="#7A7E84">${v.toFixed(1)}%</text>`).join("")}
-   ${years.filter((_,i)=>i%step===0).map(y=>{const t=+new Date(y+"-06-30");if(t<x0||t>x1)return"";
-     return `<text x="${X(t)}" y="${h-9}" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7A7E84">${y}</text>`}).join("")}
-   <path d="${area}" fill="#1B34E0" opacity="0.05"/>
-   <path d="${line}" fill="none" stroke="#1B34E0" stroke-width="1.8" stroke-linejoin="round"/>
-   ${dots}
-   <circle cx="${FOCUS.X[FOCUS.X.length-1]}" cy="${FOCUS.Y[FOCUS.Y.length-1]}" r="4" fill="#1B34E0"/>
-  </svg>`;
-}
-
-function fEvent(p,prev){
-  // one point, read as the filing it came from
-  const d=prev?p[2]-prev[2]:0;
-  const artifact=p[7]||Math.abs(p[6]||0)>Math.max(1000,(p[2]||0)*0.0005,Math.abs(d)*0.5);
-  if(artifact)return{t:"PARTIAL",k:"neu",line:"names only some of the person’s vehicles — lawful under Form 4 per-line rules; a later filing completes the picture"};
-  if(!d&&!p[4])return{t:"HOLDINGS",k:"neu",line:"no transactions — position restated"};
-  const c=classify(p[3],d);
-  // The share count and what it fetched -- nothing else. The implied price
-  // was arithmetic the reader can do, printed beside a value that was
-  // already on the row twice.
-  return{t:c.t,k:c.k,
-         line:(d?`${d>0?"+":"−"}${fmt(Math.abs(d))} shares`:"balance unchanged"),
-         val:p[4]?money(p[4]):""};
-}
-
-const SHARDS={};   /* tickers whose full-resolution walk has been fetched */
-async function ensureShard(tk){
-  /* the lite file carries the monthly shape; the focus view wants every
-     filing. One fetch per ticker, merged into HIST, re-rendered if the
-     reader is still looking. A 404 simply keeps the lite series. */
-  if(SHARDS[tk])return;
-  SHARDS[tk]=true;
-  await fetchFirst(state.pro
-      ?[`/pro/history/${tk}.csv`,`history/${tk}.csv`]
-      :[`history/${tk}.csv`],
-    t=>{const h=mapHistory(parseCSV(t));
-        if(!h[tk]||!h[tk].length)return false;
-        HIST[tk]=h[tk];
-        if(FOCUS&&FOCUS.tk===tk)openFocus(tk);
-        return true;});
-}
-function openFocus(tk){
-  const r=PANEL.find(p=>p.tk===tk),pts=HIST[tk];
-  if(!r||!pts||!pts.length)return openDrawer(tk);
-  ensureShard(tk);
-  FOCUS={tk,pts};
-  $("#f_tk").textContent=tk;$("#f_co").textContent=r.co;
-  $("#f_ce").textContent=r.ceo;$("#f_badge").innerHTML=fBadge(tk);
-  const first=pts.find(p=>p[2]>0)||pts[0],last=pts[pts.length-1];
-  const dd=last[1]-first[1];
-  const dcls=dd>0.05?"up":dd<-0.05?"down":"flat",arrow=dd>0.05?"▲":dd<-0.05?"▼":"→";
-  $("#f_delta").className="fdelta "+dcls;
-  $("#f_delta").innerHTML=`${first[0].slice(0,4)} ${first[1].toFixed(1)}% <span class="dir">${arrow}</span> ${last[0].slice(0,4)} <b>${last[1].toFixed(2)}%</b>`;
-  $("#f_chart").innerHTML=bigChart(pts)+edgeCaution(pts);
-  // say what the marks actually are, which differs by density
-  $("#f_hint").textContent=FOCUS.crowded
-    ? `${fmt(pts.length)} transaction-days on record — too many to mark individually, `
-      +`so the ${FOCUS.marked} largest moves are shown. Move along the line for any of the rest.`
-    : `Each mark is one transaction-day — ${fmt(pts.length)} on record. `
-      +"Move along the line for the filing behind any point.";
-  let hi=pts[0],lo=pts[0],selling=0,buying=0,soldv=0;
-  for(const p of pts){if(p[1]>hi[1])hi=p;if(p[1]<lo[1])lo=p;
-    if(p[5]<0){selling++;if(p[4])soldv+=p[4];}else if(p[5]>0)buying++;}
-  const cell=(k,v,sub)=>`<div class="c"><div class="k">${k}</div><div class="v">${v}${sub?`<small>${sub}</small>`:""}</div></div>`;
-  $("#f_stats").innerHTML=
-    cell("First on record",first[1].toFixed(2)+"%",first[0])
-   +cell("Today",last[1].toFixed(2)+"%",fmt(last[2])+" sh")
-   +cell("Peak",hi[1].toFixed(2)+"%",hi[0])
-   +cell("Trough",lo[1].toFixed(2)+"%",lo[0])
-   +cell("Transaction-days",fmt(pts.length),`${selling} selling · ${buying} adding`)
-   +cell("Sold — gross value",soldv?money(soldv):"—",soldv?"at filing prices":"");
-  const evs=[];
-  for(let i=pts.length-1;i>0&&evs.length<8;i--){
-    const p=pts[i],e=fEvent(p,pts[i-1]);
-    if(e.t==="HOLDINGS")continue;
-    evs.push(`<div class="fev"><span class="dt">${p[0]}</span>
-      <span class="tag ${e.k}">${e.t}</span><span class="sh">${e.line}</span>
-      <span class="val ${e.val?"":"dash"}">${e.val||"—"}</span></div>`);
-  }
-  $("#f_events").innerHTML=evs.join("")||`<div class="fev"><span class="sh">No transactions on record.</span></div>`;
-  $("#f_record").onclick=()=>{closeFocus();openDrawer(tk);};
-  $("#focus").classList.add("on");$("#fscrim").classList.add("on");
-  document.body.style.overflow="hidden";
-  wireFocusHover();
-}
-
-function closeFocus(){
-  $("#focus").classList.remove("on");$("#fscrim").classList.remove("on");
-  document.body.style.overflow="";FOCUS=null;
-}
-
-function wireFocusHover(){
-  const wrap=$("#f_wrap"),svg=wrap.querySelector("svg");
-  const tip=$("#f_tip"),cross=$("#f_cross"),dot=$("#f_dot");
-  svg.onmousemove=e=>{
-    if(!FOCUS)return;
-    const box=svg.getBoundingClientRect(),wb=wrap.getBoundingClientRect();
-    const vx=(e.clientX-box.left)/box.width*FOCUS.w;
-    let best=0,bd=1e18;
-    for(let i=0;i<FOCUS.X.length;i++){const d=Math.abs(FOCUS.X[i]-vx);if(d<bd){bd=d;best=i;}}
-    const p=FOCUS.pts[best],prev=best?FOCUS.pts[best-1]:null;
-    const px=FOCUS.X[best]/FOCUS.w*box.width+(box.left-wb.left);
-    const py=FOCUS.Y[best]/FOCUS.h*box.height+(box.top-wb.top);
-    cross.style.left=px+"px";cross.classList.remove("hide");
-    dot.style.left=px+"px";dot.style.top=py+"px";dot.classList.remove("hide");
-    const e2=fEvent(p,prev);
-    tip.innerHTML=`<div class="d">${p[0]}</div><div class="p">${fmt(p[2])} shares</div>
-      <div class="s">${p[1].toFixed(2)}% of the company</div>
-      <div class="ev"><span class="t ${e2.k==="up"?"up":e2.k==="down"?"down":""}">${e2.t}</span>
-      <div class="amt" style="margin-top:4px">${e2.line}${e2.val?` · ${e2.val}`:""}</div></div>`;
-    tip.classList.remove("hide");
-    const half=tip.offsetWidth/2,maxx=wrap.clientWidth-half-6;
-    tip.style.left=Math.max(half+6,Math.min(px,maxx))+"px";
-    tip.style.top=(py>170?py-tip.offsetHeight-16:py+16)+"px";
-  };
-  svg.onmouseleave=()=>{tip.classList.add("hide");cross.classList.add("hide");dot.classList.add("hide");};
-}
-
-
 /* ---------------- activity ---------------- */
 function classify(codes,d){
   codes=codes||"";
@@ -2353,7 +1995,7 @@ function evValCell(e){
 /* TWO DATES, AND WHICH ONE LEADS DEPENDS ON THE QUESTION.
    Where the subject is disclosure -- the day strip, the trade table's
    Filed column -- the filing date leads: that is the day the fact became
-   public. Where the subject is what a person did -- the drawer, the
+   public. Where the subject is what a person did -- the company page, the
    screener's last trade, the copy text -- the trade date leads: Musk's
    11,390 SpaceX shares went on 2 April, seven weeks before the S-1, and a
    Form 4 filed 17 June said so; shown as "17 June" the row read as a sale
@@ -2534,7 +2176,7 @@ function evTable(rows,sortable,emptyMsg){
    rows.map(e=>{
     const b=evBadge(e);
     const plan=e.pl==="plan"?"planned":e.pl==="discretionary"?"discretionary":"";
-    return `<tr onclick="openDrawer('${e.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
+    return `<tr onclick="openCompany('${e.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
      <td class="adate" title="filed ${e.fd}; traded ${e.td}${lagNote(e)}">${e.fd}${e.td&&e.td!==e.fd?`<span class="atd">traded ${e.td}</span>`:""}</td>
      <td><span class="atk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></span><span class="aceo">${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span></td>
      <td><span class="abadge ${b.k}" title="${b.n} — select for more like this"
@@ -2678,7 +2320,7 @@ function renderDay(){
       :`${pp.approx?`<span class="approx" title="${approxNote(e)}">≈ </span>`:""}${side==="buys"?"+":"−"}${pp.v>=100?"100%+":pp.v.toFixed(pp.v<1?2:1)+"%"} of stake`;
     const man=side==="exsell"?"":e.pl==="plan"?` · <span title="sold under a Rule 10b5-1 plan, set up long before the trade date and executed automatically">planned</span>`:e.pl==="discretionary"?` · <span title="not under a pre-set plan — their own decision, at their own timing">discretionary</span>`:"";
     const when=`<span class="dtd" title="the trade date; the filing reached EDGAR ${e.fd}${lagNote(e)}">traded ${shortDay(e.td||e.fd)}</span>`;
-    return `<div class="dayrow" onclick="openDrawer('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${e.tk}')">
+    return `<div class="dayrow" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
       <span class="abadge ${b.k}" title="${b.n} — traded ${e.td||e.fd}${lagNote(e)}">${b.t}</span>
       <span class="drwho"><span class="atk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></span>${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span>
       <span class="drv"><b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>${pc}${man} · ${when}${e.u?`<a href="${e.u}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing itself, on EDGAR">4 ↗</a>`:""}</span>
@@ -2755,7 +2397,7 @@ function evColumn(side){
     const segs=["disc","plan","unknown"].map(k=>p.seg[k]>0?`<span class="seg ${k}" style="width:${max?(100*p.seg[k]/max).toFixed(2):0}%" title="${k==="disc"?"discretionary":k==="plan"?"under a 10b5-1 plan":"before the checkbox existed"} — ${money(p.seg[k])}"></span>`:"").join("");
     const pc=p.pc===null?`<span class="q" title="${p.why}">share of stake not stated</span>`
       :`<span title="${fmt(p.sh)} shares against the position before the first of these trades${p.approx?" — ≈: a residue too small to move the figure on one of these days":""}">${p.approx?"≈ ":""}${p.pc>=100?(sell?"sold more than they held":"multiplied their stake"):(sell?"−":"+")+(p.pc>=1?p.pc.toFixed(p.pc<10?1:0):p.pc.toFixed(2))+"% of stake"}</span>`;
-    return `<div class="abar" onclick="openDrawer('${p.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openDrawer('${p.tk}')"
+    return `<div class="abar" onclick="openCompany('${p.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${p.tk}')"
       title="${p.ceo} — ${tradesAndFilings(p.evs)}, ${fmt(p.sh)} shares, latest ${p.latest}. Open the full record.">
       <div class="who"><span class="nmrow"><span class="nm">${p.ceo}</span>${fMark(p.tk)}</span><small><a class="pglink" href="/company/${p.tk}/" onclick="event.stopPropagation()" title="this company's own page">${p.tk}</a>${p.n>1?` · ${p.n} trades`:""}</small></div>
       <div class="trk">${segs||(p.sh?`<span class="seg unknown" style="width:2%" title="unpriced"></span>`:"")}</div>
@@ -2840,78 +2482,10 @@ function renderActivity(){
 }
 
 
-/* ---------------- drawer ---------------- */
-function openDrawer(tk){
-  const r=PANEL.find(p=>p.tk===tk);if(!r)return;
-  const note=r.note||(r.excl>0?`Excludes ${fmt(r.excl)} shares through the curated exclusion list: ${r.excld||"see methodology"}.`:"");
-  $("#drawer").innerHTML=`
-   <div class="dhead">
-     <button class="dclose" onclick="closeDrawer()" aria-label="Close">✕</button>
-     <div class="tk">${r.tk}${r.masked?` · ${SEAL} SEALED UNIVERSE`:" · S&P 500"}</div>
-     <h3><a class="dco" href="/company/${r.tk}/" title="this company's own page: the record, every trade, every filing">${r.co}</a></h3>
-     <div class="ce">${r.ceo} — CEO ${fBadge(r.tk)}</div>
-     <a class="dfull" href="/company/${r.tk}/" title="this company's own page: the record, every trade, every filing">Full record →</a>
-     ${fInfo(r.tk)&&fInfo(r.tk).f==="yes"&&fInfo(r.tk).ev?`<div class="dnote" style="margin:14px 0 0">“${fInfo(r.tk).ev.slice(0,280)}” <span style="color:var(--faint)">— ${fInfo(r.tk).src}</span></div>`:""}
-   </div>
-   <div class="dpct${r.units||r.masked?" wide":""}">${r.masked
-     ?`<div class="p">Measured — behind the seal ${SEAL}</div>
-      <div class="l">This company's stake is computed from its filings like every other,
-      and sits in the Pro tier. The S&amp;P 500 is open in full.</div>`
-     :r.units
-     ?`<div class="p">Ownership held as partnership units</div>
-      <div class="l">This CEO's stake is structured as exchangeable partnership
-      units rather than common stock, so a percent of common shares cannot describe it.
-      The pipeline flags below carry the filing's own words.</div>`
-     :`<div class="p">${r.pct.toFixed(r.pct<1?3:2)}%</div>
-      <div class="l">of common shares outstanding, per the newest Form 4 for each class${r.src13?` — from ${r.src13}; this issuer's insiders file no U.S. transaction reports`:""}</div>`}</div>
-   <div class="dstats">
-     <div class="dstat"><div class="k">Shares held</div><div class="v">${r.sh!==null?fmt(r.sh):"—"}</div></div>
-     <div class="dstat"><div class="k">Shares outstanding</div><div class="v">${r.out?fmt(r.out):"—"}</div></div>
-     <div class="dstat"><div class="k">Holding as of</div><div class="v s">${r.asof||"—"} · Form 4</div></div>
-     <div class="dstat"><div class="k">Confidence</div><div class="v s"><span class="conf"><span class="dot ${r.conf}"></span>${r.conf}</span></div></div>
-     <div class="dstat"><div class="k">Stake value</div><div class="v">${r.val?money(r.val):"—"}</div></div>
-     <div class="dstat"><div class="k">Close used</div><div class="v s">${r.price?("$"+r.price.toFixed(2)+" · "+PRICES_ASOF):"—"}</div></div>
-   </div>
-   ${note?`<div class="dnote">${note}</div>`:""}
-   ${r.flags?`<details class="dflags"><summary>pipeline flags — raw</summary><pre>${r.flags.replace(/</g,"&lt;")}</pre></details>`:""}
-   <div class="dsec">
-     <h4>Ownership over time</h4>
-     ${chartBlock(r.tk)}
-   </div>
-   ${(true)?(function(){
-      /* the filed trades, verbatim, when the events file covers the ticker;
-         the history-diff view survives only as the fallback beneath it */
-      const evs=EVENTS.filter(e=>e.tk===r.tk).slice(0,5);
-      if(evs.length)return `<div class="dsec"><h4>Latest trades</h4>`+evs.map(e=>{
-        const b=evBadge(e);
-        const stk=unchangedKind(e)!==null?"stake unchanged"
-          :(e.pc!==null&&e.pc!==undefined?(e.pc>=100?"≥100% of stake":e.pc.toFixed(1)+"% of stake"):"");
-        return `<div class="drow"><span class="adate" title="traded ${e.td||e.fd}; filed ${e.fd}${lagNote(e)}">${e.td||e.fd}</span>
-          <span class="abadge ${b.k}" title="${b.n}">${b.t}</span>
-          <span class="aval ${e.c==="P"?"up":"down"}">${evValCell(e)}</span>
-          <span class="adlt ${e.c==="P"?"up":"down"}">${e.c==="P"?"+":"−"}${compact(e.sh)}</span>
-          <span class="asub">${stk}</span>
-          ${e.u?`<a href="${e.u}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-family:var(--mono);font-size:11px;margin-left:auto;color:var(--faint)">4 ↗</a>`:""}
-        </div>`}).join("")+`</div>`;
-      if(!HIST[r.tk])return"";
-      const ev=buildActivity().filter(e=>e.tk===r.tk).slice(0,5);
-      if(!ev.length)return"";
-      return `<div class="dsec"><h4>Recent filings</h4>`+ev.map(e=>{
-        const c=e.artifact
-          ?{t:"PARTIAL",k:"neu",n:"names only some of the person’s vehicles; the balance change has no transaction behind it — a later filing completes the picture"}
-          :classify(e.codes,e.d);
-        const sign=e.d>0?"+":"−";
-        return `<div class="drow"><span class="adate">${e.date}</span>
-          <span class="abadge ${c.k}" title="${c.n}">${c.t}</span>
-          <span class="aval ${e.d>0?'up':'down'}" title="${valTitle(e)}">${e.val?money(e.val):'<span class="nopr">—</span>'}</span>
-          <span class="adlt ${e.d>0?'up':'down'}">${sign}${compact(Math.abs(e.d))}</span>
-          <span class="asub">→ ${e.pct.toFixed(2)}%</span></div>`}).join("")+`</div>`;
-    })():""}
-   <div class="dsrc">Source: SEC EDGAR · figures are computed, never estimated. Prices, where shown, are the ${PRICES_ASOF||"latest"} close.</div>`;
-  $("#drawer").classList.add("on");$("#scrim").classList.add("on");
-  document.body.style.overflow="hidden";
-}
-function closeDrawer(){$("#drawer").classList.remove("on");$("#scrim").classList.remove("on");document.body.style.overflow=""}
+/* EVERY ROW IS A DOOR. A bar, a screener row, a trade in the feed: one
+   click, the company's own page. The side drawer that used to open here
+   was a second, smaller version of that page; the page won. */
+function openCompany(tk){if(tk)location.href="/company/"+encodeURIComponent(tk)+"/";}
 
 /* ---------------- dev / pro toggle ---------------- */
 function toggleDev(){
@@ -2946,8 +2520,7 @@ function syncNav(){
 }
 function openPro(){$("#promodal").classList.add("on")}
 function closePro(){$("#promodal").classList.remove("on")}
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;
-  if(FOCUS){closeFocus();return;}closeDrawer();closePro();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closePro();});
 
 /* ---------------- wire controls ---------------- */
 $("#q").addEventListener("input",e=>{state.q=e.target.value;renderTable()});
@@ -3003,7 +2576,7 @@ wireSw("evf",()=>{state.ev.f=!state.ev.f;renderDay();renderCols();if(state.ev.vi
 {
   const wrap=(name,kind,label,arg)=>{const o=globalThis[name];if(typeof o!=="function")return;
     globalThis[name]=function(...a){hit(kind,label,arg?arg(...a):"");return o.apply(this,a);};};
-  wrap("openDrawer","open","drawer",tk=>tk);
+  wrap("openCompany","open","page",tk=>tk);
   wrap("signIn","click","signin");
   wrap("exportTable","click","export");
   wrap("setView","table","view",v=>v||"close");
@@ -3020,7 +2593,7 @@ wireSw("evf",()=>{state.ev.f=!state.ev.f;renderDay();renderCols();if(state.ev.vi
       const sec=(scn&&(scn.id||(scn.className||"").split(" ")[0]))||(t.closest(".top")?"nav":t.closest("#drawer")?"drawer":t.closest(".modal")?"modal":"");
       if(t.matches("a[href='/api/checkout']"))return hit("click","checkout");
       /* WHICH Go Pro: the nav button, the hero's "more companies", a sealed
-         row in the drawer, a locked cover -- the section it sits in says */
+         row in the feed, a locked cover -- the section it sits in says */
       if(t.matches(".gopro,.gatecover,[onclick*='openPro']"))return hit("click","gopro",sec||"page");
       if(t.matches("a[href*='sec.gov']"))return hit("click","filing",(t.closest("tr,.dayrow,.drow,.abar")||{}).textContent?.match(/\b[A-Z]{1,5}(?:[.-][A-Z])?\b/)?.[0]||"");
       if(t.matches("th.sortable"))return hit("sort",sec,t.dataset.key||t.textContent.trim());
