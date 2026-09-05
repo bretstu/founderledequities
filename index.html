@@ -182,7 +182,7 @@ select:disabled{opacity:.45;cursor:not-allowed}
   /* a sticky cell cannot carry a collapsed border, so it is drawn inset */
   border-bottom:none;box-shadow:inset 0 -1px 0 var(--ink)}
 table{width:100%;border-collapse:collapse}
-.sbody .tscroll{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.sbody .tscroll{background:#fff;border:1px solid var(--line);border-radius:10px}   /* the scroll box keeps its own overflow */
 /* THE SCREENER IS THE WIDTH OF THE PAGE. Fixed layout, every column with a
    width, the two text columns truncating; nothing scrolls sideways. */
 table.screen{table-layout:fixed}
