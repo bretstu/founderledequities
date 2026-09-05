@@ -4,6 +4,7 @@ The rules a company page applies -- what a cleaned series excludes, how a
 trade is badged, how money is rounded -- are extracted from index.html at
 build, not copied; these tests hold the extraction to that."""
 import csv
+import html
 import os
 import shutil
 import subprocess
@@ -107,17 +108,21 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     out.write_text(src, encoding="utf-8")
     st.main(panel, founders, prices, sp, str(out))
     page = out.read_text(encoding="utf-8")
-    assert '<h1 id="thesis" data-pro="2|2"><b>1</b> of 1 chief executives own' in page, \
-        "the hero is computed, not the placeholder, and carries the Pro sentence's numbers (the sealed row, at 41%, counts)"
+    assert '<h1 id="thesis">What every <b>CEO</b> owns of the company they run.</h1>' in page, \
+        "the headline is the purpose, the same for every reader, and needs no stamp"
+    assert '<div class="n hl">1 of 1</div><div class="k">S&amp;P 500 CEOs own more than 5%</div>' in page, \
+        "the free strip leads with the rarity against the S&P 500"
+    assert "1 of them are sealed" in page, "the free subline states the seal as one fact"
     assert 'class="brow"' in page and 'href="/company/TSLA/"' in page and "28.44% of co." in page, "the board's rows are real HTML"
     assert 'class="hstat"' in page and "Founder-led companies" in page, "and so is the stat strip"
-    assert 'id="herostats" data-pro="' in page, "and the Pro strip rides along, escaped, for the first paint"
-    assert "<b>20</b> of 500" not in page
+    assert 'id="herostats" data-pro="' in page and "CEOs own more than 5%" in html.unescape(page), \
+        "and the Pro strip rides along, escaped, for the first paint, leading with the bare count"
     # a subscriber's first byte already carries the Pro hero: the function
     # on / rewrites from the same attributes the stamp wrote, and the page
     # sets no cookie to do it
     fn = open(os.path.join(ROOT, "functions", "_tier.js"), encoding="utf-8").read()
     assert 'getAttribute("data-pro")' in fn and "HTMLRewriter" in fn and "isPro" in fn
+    assert 'span.sealnote' in fn, "a subscriber's page does not say N are sealed"
     assert "proPage" in open(os.path.join(ROOT, "functions", "index.js")).read()
     assert "proPage" in open(os.path.join(ROOT, "functions", "company", "[[path]].js")).read()
     assert "document.cookie" not in src

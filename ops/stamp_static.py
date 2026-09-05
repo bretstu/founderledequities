@@ -96,23 +96,36 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out):
     p = numbers(panel_p, sp_p, prices_p, founders_p, everyone=True)
     rows = top_rows(panel_p, sp_p, prices_p, founders_p)
     page = open(index_out, encoding="utf-8").read()
-    hero_re = re.compile(r'<h1 id="thesis"[^>]*><b>\d+</b> of [\d,]+ chief executives own more than 5% of the company they run\.</h1>')
-    hero = (f'<h1 id="thesis" data-pro="{p["above5"]}|{p["open"]:,}"><b>{n["above5"]}</b> of {n["open"]:,} chief executives own more than 5% '
-            f'of the company they run.</h1>')
-    if not hero_re.search(page):
-        raise SystemExit("stamp_static: the hero placeholder was not found in index.html")
-    page = hero_re.sub(hero, page, count=1)
-    def stats(m):
-        return (f'<div class="hstat"><div class="n hl">{m["led"]}</div><div class="k">Founder-led companies</div></div>'
+    # THE HEADLINE IS THE PURPOSE AND NEEDS NO STAMP. The numbers live in
+    # the strip beneath it: the rarity first (19 of 500 for the free
+    # reader, the bare count for a subscriber), then the founder facts.
+    # Both strips are written; the function on / picks the Pro one.
+    if '<h1 id="thesis">' not in page:
+        raise SystemExit("stamp_static: the hero was not found in index.html")
+    # sealed = every panel row outside the open set, measured or not, which
+    # is what the page counts (masked rows stay in a free reader's list)
+    rows_all = sum(1 for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")) if (r.get("ticker") or "").strip())
+    sealed = rows_all - n["open"]
+    if sealed:
+        page = page.replace(
+            '<p class="herosub" id="herosub">Computed from their SEC filings, never estimated. Every US public company worth $1B or more.</p>',
+            '<p class="herosub" id="herosub">Computed from their SEC filings, never estimated. Every US public company worth $1B or more.'
+            f' <span class="sealnote">{sealed:,} of them are sealed <button class="gopro" onclick="openPro()">Go Pro</button></span></p>', 1)
+    def stats(m, free):
+        first = (f'<div class="hstat"><div class="n hl">{m["above5"]} of {m["open"]:,}</div><div class="k">S&amp;P 500 CEOs own more than 5%</div></div>'
+                 if free else
+                 f'<div class="hstat"><div class="n hl">{m["above5"]:,}</div><div class="k">CEOs own more than 5%</div></div>')
+        return (first
+                + f'<div class="hstat"><div class="n">{m["led"]}</div><div class="k">Founder-led companies</div></div>'
                 f'<div class="hstat"><div class="n">{money(m["led_value"])}</div><div class="k">Held by those founders</div></div>'
                 f'<div class="hstat"><div class="n">{m["share"]}%</div><div class="k">Of all CEO wealth</div></div>')
     page = page.replace('<div class="herostats" id="herostats"></div>',
-                        f'<div class="herostats" id="herostats" data-pro="{html.escape(stats(p), quote=True)}">{stats(n)}</div>', 1)
+                        f'<div class="herostats" id="herostats" data-pro="{html.escape(stats(p, False), quote=True)}">{stats(n, True)}</div>', 1)
     page = page.replace('<div class="bars" id="bars"></div>',
                         f'<div class="bars" id="bars">{bars_html(rows)}</div>', 1)
     with open(index_out, "w", encoding="utf-8") as fh:
         fh.write(page)
-    print(f"  stamped: {n['above5']} of {n['open']} in the hero, {len(rows)} board rows, "
+    print(f"  stamped: {n['above5']} of {n['open']} in the strip, {len(rows)} board rows, "
           f"{n['led']} founder-led / {money(n['led_value'])}")
     return 0
 

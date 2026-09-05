@@ -113,19 +113,21 @@ def draw(n, out, fonts_dir):
     d.text((72 + wm, 60), "Equities", font=disp(30, 700), fill=BLUE)
     d.text((W - 72, 68), "founderledequities.com", font=mono(18), fill=FAINT, anchor="ra")
 
-    # the finding, the hero's sentence
-    big = disp(78, 650)
+    # the purpose, the hero's own sentence
+    big = disp(74, 650)
     y = 150
-    num = f"{n['above5']}"
-    d.text((72, y), num, font=big, fill=BLUE)
-    x = 72 + d.textlength(num + " ", font=big)
-    d.text((x, y), f"of {n['open']:,} chief executives", font=big, fill=INK)
-    d.text((72, y + 88), "own more than 5% of the", font=big, fill=INK)
-    d.text((72, y + 176), "company they run.", font=big, fill=INK)
+    d.text((72, y), "What every ", font=big, fill=INK)
+    x = 72 + d.textlength("What every ", font=big)
+    d.text((x, y), "CEO", font=big, fill=BLUE)
+    x += d.textlength("CEO ", font=big)
+    d.text((x, y), "owns", font=big, fill=INK)
+    d.text((72, y + 84), "of the company they run.", font=big, fill=INK)
+    d.text((72, y + 190), "Computed from their SEC filings, never estimated.", font=ui(24, 500), fill=MUT)
 
     # the hero's stat strip, the same three numbers in the same order
     d.line((72, 452, W - 72, 452), fill=LINE, width=2)
-    facts = [(f"{n['led']}", "Founder-led companies", BLUE),
+    facts = [(f"{n['above5']} of {n['open']:,}", "S&P 500 CEOs own more than 5%", BLUE),
+             (f"{n['led']}", "Founder-led companies", INK),
              (money(n["led_value"]), "Held by those founders", INK),
              (f"{n['share']}%", "Of all CEO wealth", INK)]
     x = 72

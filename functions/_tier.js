@@ -4,9 +4,6 @@
 // Anonymous readers get the static file untouched. No cookie is set.
 import { isPro } from "./_shared.js";
 
-const SENTENCE = (n, of) =>
-  `<b>${n}</b> of ${of} chief executives own more than 5% of the company they run.`;
-
 export async function proPage(request, env, { hero = false } = {}) {
   const page = await env.ASSETS.fetch(request);
   let s = { pro: false };
@@ -16,14 +13,14 @@ export async function proPage(request, env, { hero = false } = {}) {
     .on(".topnav button.gopro", { element(e) { e.setInnerContent("Account"); } })
     .on(".topnav a.gopro", { element(e) { e.setInnerContent("Account"); } });
   if (hero) {
-    rw = rw.on("h1#thesis", { element(e) {
-        const p = (e.getAttribute("data-pro") || "").split("|");
-        if (p.length === 2 && p[0] && p[1]) e.setInnerContent(SENTENCE(p[0], p[1]), { html: true });
-      } })
-      .on("div#herostats", { element(e) {
+    // the headline is the same sentence for everyone; the strip beneath it
+    // carries the Pro numbers, stamped beside the free ones, and the
+    // "N of them are sealed" note is not true for a subscriber
+    rw = rw.on("div#herostats", { element(e) {
         const p = e.getAttribute("data-pro");
         if (p) e.setInnerContent(p, { html: true });
-      } });
+      } })
+      .on("p#herosub span.sealnote", { element(e) { e.remove(); } });
   }
   const out = rw.transform(page);
   const h = new Headers(out.headers);
