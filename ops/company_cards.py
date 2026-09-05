@@ -146,7 +146,7 @@ def draw_card(out, fonts, tk, co, ceo, founder, sealed, pct, value, shares, seri
     d.text((64, 44), "Founder Led", font=fonts.disp(24, 700), fill=INK)
     wm = d.textlength("Founder Led ", font=fonts.disp(24, 700))
     d.text((64 + wm, 44), "Equities", font=fonts.disp(24, 700), fill=INK)
-    d.text((W - 64, 50), tk + ("  ·  S&P 500" if not sealed else "  ·  SEALED") + "  ·  founderledequities.com",
+    d.text((W - 64, 50), tk + ("  ·  S&P 500" if not sealed else "  ·  PRO") + "  ·  founderledequities.com",
            font=fonts.mono(16), fill=FAINT, anchor="ra")
 
     # ---- the company and the person
@@ -169,8 +169,8 @@ def draw_card(out, fonts, tk, co, ceo, founder, sealed, pct, value, shares, seri
 
     # ---- the stake, or the seal
     if sealed:
-        d.text((64, 208), "Stake sealed", font=fonts.disp(34, 700), fill=MUT)
-        d.text((64, 250), "The percentage, the value and the trades are for subscribers. The price is public.",
+        d.text((64, 208), "Stake computed for subscribers", font=fonts.disp(34, 700), fill=MUT)
+        d.text((64, 250), "The percentage, the value and the trades are in Pro. The price is public.",
                font=fonts.ui(17), fill=FAINT)
     elif pct is not None:
         big = fonts.disp(54, 700)

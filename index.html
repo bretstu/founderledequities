@@ -189,7 +189,7 @@ table.screen{table-layout:fixed}
 table.screen th,table.screen td{overflow:hidden}
 table.screen thead th{text-overflow:ellipsis}
 .tscroll{overflow-x:hidden}
-.w-rk{width:36px}.w-co{width:17%}.w-ceo{width:16%}.w-own{width:13%}.w-val{width:8%}.w-mc{width:8.5%}.w-d3{width:10%}.w-lt{width:12%}.w-ltd{width:9%}.w-conf{width:8.5%}
+.w-rk{width:36px}.w-co{width:18%}.w-ceo{width:17%}.w-own{width:9%}.w-val{width:8.5%}.w-mc{width:8.5%}.w-r1{width:9%}.w-lt{width:9%}.w-amt{width:8%}.w-ltd{width:9%}.w-conf{width:8.5%}
 .c-ltd .ltd{font-family:var(--mono);font-size:12px;color:var(--mut);white-space:nowrap}
 table.screen thead th{letter-spacing:.06em}
 table.screen thead th .arr{width:auto}
@@ -235,6 +235,9 @@ td.asof{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:
 .dot.low{background:#fff;border:2px solid var(--amber)}
 td.src a{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 td.src a:hover{color:var(--blue)}
+.tkey{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.c-r1 .up{color:#0b7a4b}.c-r1 .down{color:#c22a2a}
+.tkey .abadge{transform:scale(.85);min-width:0}
 .tfoot{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 4px 0;font-size:12.5px;color:var(--mut);flex-wrap:wrap}
 .more{font-weight:700;font-size:13px;border:1px solid var(--ink);border-radius:9px;padding:8px 16px}
 .more:hover{background:var(--ink);color:#fff}
@@ -710,7 +713,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="tscroll">
   <table class="screen">
     <colgroup>
-      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-d3"><col class="w-lt"><col class="w-ltd"><col class="w-conf">
+      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-r1"><col class="w-lt"><col class="w-amt"><col class="w-ltd">
     </colgroup>
     <thead><tr>
       <th class="n">№</th>
@@ -719,16 +722,17 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
       <th class="sortable" data-key="pct">Ownership<span class="arr"></span></th>
       <th class="sortable n" data-key="val" title="the stake's value: shares held at the latest close">Value<span class="arr"></span></th>
       <th class="sortable n h-mc" data-key="mcap" title="market capitalization: shares outstanding at the latest close">Mkt cap<span class="arr"></span></th>
-      <th class="sortable n h-d3" data-key="d3" title="the stake now against three years ago: the change in the share of the company held">Stake, 3 yrs<span class="arr"></span></th>
-      <th class="sortable h-lt" data-key="lt" title="the newest trade that moved the public-company stake: what, and how much">Last trade<span class="arr"></span></th>
+      <th class="sortable n h-r1" data-key="r1" title="the stock's price return over the last twelve months">1-yr return<span class="arr"></span></th>
+      <th class="sortable h-lt" data-key="ltk" title="the newest trade that moved the stake: bought or sold; solid is discretionary, pale is on a plan">Last trade<span class="arr"></span></th>
+      <th class="sortable n h-amt" data-key="lt" title="what that trade was worth">Amount<span class="arr"></span></th>
       <th class="sortable h-ltd" data-key="ltd" title="the day that trade happened">Traded<span class="arr"></span></th>
-      <th class="sortable h-conf" data-key="conf">Confidence<span class="arr"></span></th>
     </tr></thead>
     <tbody id="tbody"></tbody>
   </table>
   </div>
   <div class="tfoot">
     <span id="tcount"></span>
+    <span class="tkey"><span class="abadge down">SOLD</span> discretionary <span class="abadge dsoft">SOLD</span> on a plan</span>
   </div>
   </div>
 </div></section>
@@ -919,6 +923,17 @@ function parseCSV(text){
   return rows.filter(r=>r.length>1).map(r=>Object.fromEntries(head.map((h,i)=>[h,(r[i]||"").trim()])));
 }
 /*@shared*/
+function filingPage(u){
+  /* THE RECEIPT OPENS AS A PAGE, NOT AS RAW XML. The pipeline records the
+     Form 4's primary document, which the browser renders as an XML tree.
+     EDGAR's filing index (the same folder, <accession>-index.htm) is an
+     HTML page that lists the documents with the form rendered. Derived
+     from the document URL, so no file has to be regenerated. */
+  const m=/^(https?:\/\/www\.sec\.gov\/Archives\/edgar\/data\/\d+\/)(\d{18})\//.exec(u||"");
+  if(!m)return u||"";
+  const a=m[2];return `${m[1]}${a}/${a.slice(0,10)}-${a.slice(10,12)}-${a.slice(12)}-index.htm`;
+}
+/*@shared*/
 const num=v=>{const n=parseFloat(String(v).replace(/,/g,""));return isFinite(n)?n:null};
 
 /*@shared*/
@@ -927,7 +942,7 @@ function mapPanel(recs){
     tk:(r.ticker||"").toUpperCase(), co:r.company||"", ceo:r.ceo||"",
     pct:num(r.pct), sh:num(r.shares), out:num(r.outstanding),
     asof:r.shares_as_of||"", conf:(r.confidence||"").toLowerCase()||"medium",
-    cik:num(r.cik)||0, form4:r.form4_url||"",
+    cik:num(r.cik)||0, form4:r.form4_url||"", r1:num(r.ret_1y),
     excl:num(r.excluded_shares)||0, excld:r.excluded_detail||"",
     /* A CITED CORRECTION. When a filer states in a remark that shares
        held of record are left out of the tables (Musk's 1.30B restricted
@@ -1625,23 +1640,22 @@ function trendArrow(tk){
   return `<span class="tarr ${d}" title="${t}">${g}</span>`;
 }
 function exportTable(){
-  /* THE TABLE, AS FILTERED AND SORTED, WITH EVERY FIELD. The page shows
-     ten columns; the file carries the share counts, the close, the
-     baseline date and the filing link too, so a reader can take the whole
-     open set into a spreadsheet and screen it their own way. */
+  /* THE TABLE, AS FILTERED AND SORTED, EXACTLY AS SHOWN. The file is the
+     screen: the same columns in the same order with the same labels, so
+     what a reader exports is what they were looking at. Ticker and the
+     founder flag ride as their own columns because a spreadsheet cannot
+     read a badge. */
   const rows=state._rows||[];
-  const cols=["ticker","company","chief_executive","founder","ownership_pct","shares_held","shares_outstanding",
-              "close","stake_value","market_cap","change_3y_pts","change_3y_since","last_trade_date","last_trade",
-              "last_trade_value","never_sold","holding_as_of","confidence","form4_url"];
+  const cols=["#","Company","Ticker","CEO","Founder","Ownership %","Value","Market cap","1-yr return %","Last trade","Amount","Traded"];
   const q=v=>{v=v===null||v===undefined?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
   const lines=[cols.join(",")];
-  for(const r of rows){
+  rows.forEach((r,i)=>{
     const f=fInfo(r.tk);
-    lines.push([r.tk,r.co,r.ceo,f?f.f:"",r.pct===null?"":r.pct.toFixed(4),r.sh,r.out,r.price?r.price.toFixed(2):"",
-      r.val?Math.round(r.val):"",r.mcap?Math.round(r.mcap):"",r.d3===null||r.d3===undefined?"":r.d3.toFixed(2),r.d3base||"",
-      r.ltev?(r.ltev.td||r.ltev.fd):"",r.ltev?evBadge(r.ltev).t.replace("&amp;","&"):"",r.ltev&&r.ltev.v?Math.round(r.ltev.v):"",
-      r.ns?"yes":"",r.asof||"",r.conf||"",r.form4||""].map(q).join(","));
-  }
+    lines.push([i+1,r.co,r.tk,r.ceo,f&&f.f==="yes"?"yes":"",r.units?"units":(r.pct===null?"":r.pct.toFixed(4)),
+      r.val?Math.round(r.val):"",r.mcap?Math.round(r.mcap):"",r.r1===null||r.r1===undefined?"":r.r1.toFixed(2),
+      r.ltev?evBadge(r.ltev).t.replace("&amp;","&"):"",r.ltev&&r.ltev.v&&!r.ltev.fl?Math.round(r.ltev.v):"",
+      r.ltev?(r.ltev.td||r.ltev.fd):""].map(q).join(","));
+  });
   const csv=lines.join("\n");
   const name=`founderledequities-${new Date().toISOString().slice(0,10)}.csv`;
   if(typeof Blob==="undefined"||typeof URL==="undefined"||!URL.createObjectURL||!document.createElement)return csv;
@@ -1681,20 +1695,12 @@ function renderTable(){
   paintSw("hchip",state.tbH);
   paintSw("ichip",state.tbI);
   const {last,sold}=lastTrades();
-  /* THE RETURN COLUMN NAMES ITS OWN PERIOD. Three years by default, the
-     same window as the 3-yr change beside it, so the two columns answer
-     one question: what the stake did and what the stock did over the same
-     span. The distribution's hand-off is the one thing that changes it,
-     to the chart's window, and the header says so while the chip is on. */
-  const H3=1095;
   for(const r of PANEL){
     if(r.masked)continue;
-    const st=HIST[r.tk]?trajStats(r.tk,H3):null;
-    r.d3=st?st.d:null;                         /* change in the ownership %, over three years */
-    r.d3base=st?st.baseDate:"";r.d3from=st?st.base:null;
     const lt=last[r.tk];
     r.ltd=lt?(lt.td||lt.fd):"";r.ltev=lt||null;             /* Traded: sorts by the trade date */
-    r.lt=lt?((lt.v&&!lt.fl)?lt.v:0):null;                      /* Last trade: sorts by the amount */
+    r.lt=lt?((lt.v&&!lt.fl)?lt.v:0):null;                      /* Amount: sorts by the trade's value */
+    r.ltk=lt?(lt.c==="P"?"bought":"sold"):"";                   /* Last trade: sorts bought before sold */
     r.ns=!sold.has(r.tk)&&!!HIST[r.tk];        /* never sold, on a record that exists */
   }
   let rows=PANEL.filter(r=>{
@@ -1716,7 +1722,7 @@ function renderTable(){
     /* a company with no three-year record sorts below every real change,
        whichever way the column points */
     if(key==="ns"){va=va?1:0;vb=vb?1:0;}
-    if(key==="d3"||key==="mcap"||key==="val"||key==="lt"){const na=va===null||va===undefined,nb=vb===null||vb===undefined;
+    if(key==="r1"||key==="mcap"||key==="val"||key==="lt"){const na=va===null||va===undefined,nb=vb===null||vb===undefined;
       if(na!==nb)return na?1:-1;if(na)return 0;}
     if(typeof va==="string"||typeof vb==="string")
       return String(va||"").localeCompare(String(vb||""))*dir;
@@ -1730,23 +1736,13 @@ function renderTable(){
      <td class="rk">${String(i+1).padStart(2,"0")}</td>
      <td class="c-co"><div class="tk"><a href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></div><div class="nm" title="${r.co.replace(/"/g,"&quot;")}">${r.co}</div></td>
      <td class="ceo h-ceo"><span class="ceow"><span class="cn" title="${r.ceo.replace(/"/g,"&quot;")}">${r.ceo}</span>${fBadge(r.tk)}</span></td>
-     <td><div class="cell-own">${r.masked
-        ?`<div class="tbar" title="measured from this company's filings — in the sealed universe; the S&P 500 is open in full"><i style="width:0.75%"></i></div><div class="tpct" style="color:var(--faint)" title="measured from this company's filings — in the sealed universe; the S&P 500 is open in full">${SEAL}${trendArrow(r.tk)}</div>`
-        :r.units
-        ?`<div class="tbar" title="ownership held as exchangeable partnership units, not common stock — a percent of common cannot describe it; open the record for the filing's own words"><i style="width:0.75%"></i></div><div class="tpct" style="color:var(--faint)">units</div>`
-        :`<div class="tbar" title="${r.pct.toFixed(2)}% of the company — the bar is drawn on a 0–100% scale${r.src13?" — from "+r.src13+", not Section 16 filings":""}"><i style="width:${Math.max(0.75,r.pct)}%"></i></div><div class="tpct">${r.pct.toFixed(r.pct<1?3:2)}%${trendArrow(r.tk)}${r.src13?`<span style="color:var(--faint)" title="stake from ${r.src13}; this issuer's insiders file no U.S. transaction reports"> †</span>`:""}</div>`}</div></td>
-     <td class="n num" title="${r.val?'$'+fmt(r.val)+' — '+fmt(r.sh)+' shares at $'+(r.price||0).toFixed(2):''}">${r.val?money(r.val):"—"}</td>
-     <td class="n num c-mc" title="${r.mcap?'$'+fmt(r.mcap)+' — '+fmt(r.out)+' shares outstanding at $'+(r.price||0).toFixed(2):''}">${r.mcap?money(r.mcap):"—"}</td>
-     <td class="n c-d3">${r.d3===null||r.d3===undefined
-        ?`<span class="nopr" title="${HIST[r.tk]?"fewer than two points in the cleaned record":"no walkable filing history"}">—</span>`
-        :Math.abs(r.d3)>100
-        ?`<span class="pwarn" title="the record's three-year-ago point (${r.d3from.toFixed(1)}%) is not reconciled — a stake above 100% is a walk error, not a holding; the row's current figure stands, this comparison does not">⚠</span>`
-        :`<span class="d3 ${r.d3>0.05?"up":r.d3<-0.05?"down":"flat"}" title="ownership ${r.d3from.toFixed(2)}% on ${r.d3base} → ${r.pct.toFixed(2)}% now"><b>${r.d3>=0?"+":"−"}${Math.abs(r.d3).toFixed(Math.abs(r.d3)<1?2:1)}%</b></span>`}</td>
-     <td class="c-lt">${r.ltev
-        ?`<span class="lt" title="${r.ltev.ceo} — ${r.ltev.lb}, ${fmt(r.ltev.sh)} shares, traded ${r.ltev.td||r.ltev.fd}, filed ${r.ltev.fd}${lagNote(r.ltev)}"><span class="abadge ${evBadge(r.ltev).k}">${evBadge(r.ltev).t}</span><b class="ltv">${r.ltev.v&&!r.ltev.fl?(r.ltev.v>=1e6?money(r.ltev.v):"$"+compact(r.ltev.v)):compact(r.ltev.sh)+" sh"}</b></span>`
-        :`<span class="nopr" title="no trade that moved the public-company stake on record">—</span>`}</td>
-     <td class="c-ltd">${r.ltev?`<span class="ltd" title="traded ${r.ltev.td||r.ltev.fd}; filed ${r.ltev.fd}${lagNote(r.ltev)}">${r.ltev.td||r.ltev.fd}</span>`:`<span class="nopr">—</span>`}</td>
-     <td class="c-conf"><span class="conf"><span class="dot ${r.conf}"></span>${r.conf}</span></td>
+     <td class="n num c-own">${r.units?`<span class="nopr" title="ownership held as exchangeable partnership units, not common stock">units</span>`:r.pct.toFixed(r.pct<1?3:2)+"%"}</td>
+     <td class="n num">${r.val?money(r.val):""}</td>
+     <td class="n num c-mc">${r.mcap?money(r.mcap):""}</td>
+     <td class="n num c-r1">${r.r1===null||r.r1===undefined?`<span class="nopr"></span>`:`<span class="${r.r1>=0?"up":"down"}">${r.r1>=0?"+":""}${r.r1.toFixed(1)}%</span>`}</td>
+     <td class="c-lt">${r.ltev?`<span class="abadge ${evBadge(r.ltev).k}" title="${r.ltev.lb}">${evBadge(r.ltev).t}</span>`:`<span class="nopr" title="no trade that moved the public-company stake on record"></span>`}</td>
+     <td class="n num c-amt">${r.ltev&&r.ltev.v&&!r.ltev.fl?money(r.ltev.v):`<span class="nopr"></span>`}</td>
+     <td class="c-ltd">${r.ltev?`<span class="ltd" title="traded ${r.ltev.td||r.ltev.fd}; filed ${r.ltev.fd}${lagNote(r.ltev)}">${r.ltev.td||r.ltev.fd}</span>`:`<span class="nopr"></span>`}</td>
     </tr>`}).join("");
   const sealedN=PANEL.filter(r=>r.masked).length;
   $("#tcount").textContent=
@@ -1969,7 +1965,7 @@ function evBadge(e){
     n:`traded before the company's first ownership filing (${e.reg}) — a pre-registration transaction reported in the catch-up Form 4, not a trade in the public stock`};
   if(e.lb==="purchase, position unchanged")return{t:"UNCHANGED",k:"neu",
     n:"shares bought and the position on record left where it was — this measurement did not register them; open the filing"};
-  if(e.c==="P")return{t:"BOUGHT",k:"up",
+  if(e.c==="P")return{t:"BOUGHT",k:e.pl==="plan"?"soft":"up",
     n:e.pl==="plan"?"planned — a purchase made under a pre-set Rule 10b5-1 plan, rarer still than an open-market buy"
      :"an open-market purchase — their own money, at the market's price"};
   if(e.lb==="exercise and sell")return{t:"EX &amp; SELL",k:"neu",
@@ -2186,7 +2182,7 @@ function evTable(rows,sortable,emptyMsg){
      <td class="n aval ${e.c==="P"?"up":"down"}">${evValCell(e)}</td>
      <td class="n asub" title="${fmt(e.sh)} shares">${compact(e.sh)}${e.ap?`<span class="apx">@ $${e.ap>=1000?Math.round(e.ap).toLocaleString("en-US"):e.ap.toFixed(2)}</span>`:""}</td>
      <td class="n asub">${evPctCell(e)}</td>
-     <td class="asrc">${e.u?`<a href="${e.u}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing itself, on EDGAR">4 ↗</a>`:""}</td>
+     <td class="asrc">${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing itself, on EDGAR">4 ↗</a>`:""}</td>
     </tr>`}).join("")+`</tbody></table></div>`;
 }
 function ago(d){
@@ -2323,7 +2319,7 @@ function renderDay(){
     return `<div class="dayrow" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
       <span class="abadge ${b.k}" title="${b.n} — traded ${e.td||e.fd}${lagNote(e)}">${b.t}</span>
       <span class="drwho"><span class="atk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></span>${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span>
-      <span class="drv"><b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>${pc}${man} · ${when}${e.u?`<a href="${e.u}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing itself, on EDGAR">4 ↗</a>`:""}</span>
+      <span class="drv"><b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>${pc}${man} · ${when}${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing itself, on EDGAR">4 ↗</a>`:""}</span>
     </div>`;};
   el.innerHTML=`<div class="dayb">
     <div class="dayh">

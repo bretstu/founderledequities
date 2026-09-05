@@ -89,6 +89,42 @@ def write_perf_for_chart(perf_p: str, founders_p: str, out_dir: str) -> int:
     return n
 
 
+def one_year_returns(store: str, tickers) -> dict:
+    """TICKER -> the stock's price return over the last twelve months, from
+    the daily store: the newest close against the last close on or before
+    365 days earlier. None when the series is shorter than a year. Public
+    for every company: a price return is nobody's stake."""
+    import datetime as dt
+    out = {}
+    if not store or not os.path.isdir(store):
+        return out
+    for tk in tickers:
+        p = os.path.join(store, f"{tk}.csv")
+        try:
+            with open(p, encoding="utf-8", newline="") as fh:
+                rd = csv.reader(fh)
+                next(rd, None)
+                pts = [(d, float(c)) for d, c in rd if d]
+        except (OSError, ValueError):
+            continue
+        if len(pts) < 2:
+            continue
+        last_d, last_c = pts[-1]
+        try:
+            cut = (dt.date.fromisoformat(last_d) - dt.timedelta(days=365)).isoformat()
+        except ValueError:
+            continue
+        base = None
+        for d, c in pts:
+            if d <= cut:
+                base = c
+            else:
+                break
+        if base and base > 0 and pts[0][0] <= cut:
+            out[tk] = (last_c / base - 1.0) * 100.0
+    return out
+
+
 def write_price_shards(store: str, out_dir: str) -> int:
     """One prices/<TICKER>.csv per ticker, straight from the daily store.
 
@@ -122,10 +158,12 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
         os.makedirs(os.path.join(out_dir, d), exist_ok=True)
 
     # ---- the two list files ----
+    rets = one_year_returns(prices_dir, [r["ticker"] for r in panel])
+
     def write_list(path, mask_new):
         with open(path, "w", newline="", encoding="utf-8") as fh:
             w = csv.writer(fh)
-            w.writerow(LIST_COLS)
+            w.writerow(LIST_COLS + ["ret_1y"])
             for r in panel:
                 masked = 1 if (mask_new and r["ticker"] not in sp
                                and not GENEROUS) else 0
@@ -140,6 +178,8 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
                 # the free/Pro seam both read it instead of inferring it
                 # from what happens to be masked
                 row.append(1 if r["ticker"] in sp else 0)
+                rv = rets.get(r["ticker"])
+                row.append("" if rv is None else f"{rv:.2f}")
                 w.writerow(row)
     write_list(os.path.join(out_dir, "universe.csv"), mask_new=True)
     n_perf = write_perf_for_chart(perf_p, founders_p, out_dir)

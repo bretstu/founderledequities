@@ -139,8 +139,7 @@ def page_text(r, sp: bool, price):
     else:
         title = f"What {ceo} owns of {co} ({tk}) — Founder Led Equities"
         desc = (f"{ceo}, CEO of {co}: the stake computed from SEC filings, the record over time, "
-                f"every trade since 2016 with the filing linked. This company sits in the Pro tier; "
-                f"the S&P 500 is open to everyone.")
+                f"every trade since 2016 with the filing linked. This company is in Pro.")
     return title, desc[:300]
 
 
@@ -320,7 +319,7 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
             f"<link rel=\"stylesheet\" href=\"/site.css?v={css_v}\">\n"
             f"<style>{INDEX_CSS}</style></head><body>\n{topnav}\n"
             "<main class=\"cidx\"><div class=\"wrap\"><h1>Every company</h1>\n"
-            f"<div class=\"sub\">{n} US public companies worth $1B or more, each with a page for what its chief executive owns. The S&amp;P 500 is open to everyone; the rest is the Pro tier.</div>\n"
+            f"<div class=\"sub\">{n} US public companies worth $1B or more, each with a page for what its chief executive owns. The S&amp;P 500 is free; the rest is Pro.</div>\n"
             f"<div class=\"letters\">{nav}</div>\n{''.join(parts)}\n</div></main>\n"
             "<footer class=\"foot\"><div class=\"wrap\"><span><b>Founder Led <i>Equities</i></b> &middot; Computed from SEC EDGAR. Not investment advice. &middot; <a href=\"/about.html\">About &amp; method</a></span></div></footer>\n"
             "</body></html>")
@@ -453,7 +452,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                 .replace("{{TITLE}}", html.escape(title))
                 .replace("{{DESCRIPTION}}", html.escape(desc))
                 .replace("{{TICKER}}", html.escape(tk))
-                .replace("{{TIER}}", " · S&amp;P 500 · open to everyone" if is_sp else "")
+                .replace("{{TIER}}", " · S&amp;P 500" if is_sp else " · Pro")
                 .replace("{{COMPANY}}", html.escape(payload["co"]))
                 .replace("{{CEO}}", html.escape(payload["ceo"]))
                 .replace("{{TOPNAV}}", topnav)

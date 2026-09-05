@@ -21,9 +21,9 @@ function setRow(row){
 
 function renderSealed(){
   $("#cbody").innerHTML=`<div class="cseal">
-    <div class="p">${SEAL} This company's stake is in the Pro tier.</div>
-    <div class="l">It is computed from its filings like every other. The S&amp;P 500 is open to everyone;
-      Pro is the other 1,635 companies — no lens a free reader lacks, only more companies. $5 a month, cancel in one click.</div>
+    <div class="p">This company is in Pro.</div>
+    <div class="l">Its stake is computed from its filings like every other. Pro is the 1,635 companies beyond the
+      S&amp;P 500: the stake, the record, every trade. $5 a month, cancel in one click.</div>
     <a class="gopro" style="display:inline-block;text-decoration:none" href="/api/checkout">Go Pro — $5/month</a>
     <div class="l" style="margin-top:10px;font-size:13px">Already subscribed? <a href="/" style="color:var(--blue)">Sign in on the home page</a> and come back.</div>
   </div>`;
@@ -48,7 +48,7 @@ function band(r){
     <div class="cstat"><div class="k">3-year change</div>${chg}</div>
   </div>
   <div class="cmeta">
-    <span>holding as of ${r.asof||"—"}${r.form4?` · <a href="${r.form4}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">the filing ↗</a>`:""}</span>
+    <span>holding as of ${r.asof||"—"}${r.form4?` · <a href="${filingPage(r.form4)}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">the filing ↗</a>`:""}</span>
     <span class="conf" title="how well the newest filing reconciles with the record">confidence: ${r.conf}</span>
   </div>`;
 }
@@ -306,7 +306,7 @@ function tradesBlock(r){
       <span class="aval ${e.c==="P"?"up":"down"}">${evValCell(e)}</span>
       <span class="adlt ${e.c==="P"?"up":"down"}">${e.c==="P"?"+":"−"}${compact(e.sh)}</span>
       <span class="asub">${stk}${e.pl==="plan"?" · planned":e.pl==="discretionary"?" · discretionary":""}</span>
-      ${e.u?`<a href="${e.u}" target="_blank" rel="noopener" title="the filing itself, on EDGAR">Form 4 ↗</a>`:""}
+      ${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" title="the filing, on EDGAR">Form 4 ↗</a>`:""}
     </div>`}).join("");
   return `<div class="csec ctrades"><h2>Every trade since 2016</h2>
     <div class="tchips">${chip("all","All",all.length)}${chip("buys","Bought",all.filter(e=>e.c==="P"&&unchangedKind(e)===null).length)}${chip("sells","Sold",all.filter(e=>e.c==="S"&&unchangedKind(e)===null).length)}${chip("kept","Kept apart",kept.length)}</div>

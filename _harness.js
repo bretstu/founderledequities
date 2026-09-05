@@ -343,7 +343,7 @@ const P=runPage();
    P.state.sort={key:"pct",dir:-1};P.state.q="";P.state.min=0;P.state.tbH=false;P.renderTable();
    const cell=els["#tbody"]._html;
    assert(/c-ltd"><span class="ltd"[^>]*>2026-04-02</.test(cell)&&cell.includes("filed 2026-06-17"),"the screener's Traded column is the trade date, filing date on hover");
-   assert(/c-lt"><span class="lt"[^>]*><span class="abadge/.test(cell)&&!/<b class="ltv">[^<]*<\/b><span class="ltd"/.test(cell),"and Last trade is the badge and the amount alone, on one line");
+   assert(/c-lt"><span class="abadge/.test(cell)&&/c-amt">\$1\.2M</.test(cell),"Last trade is the badge alone; the amount is its own column");
    assert(P.dayText("2026-06-17",[lag]).includes("(traded 2026-04-02)"),"the copy text names the trade date when it is not the filing day");
    // and as the pipeline now labels it -- a pre-registration trade -- it is kept apart everywhere
    const pre={...lag,pre:true};
@@ -372,14 +372,15 @@ const P=runPage();
   P.EVENTS=[{tk:"DNX",ceo:"B Exec",c:"S",lb:"discretionary sale",pl:"discretionary",fd:day(5),td:day(6),sh:100,v:1e6,pc:1,ha:600,nc:-100,rs:0,u:"https://sec.gov/x"},
             {tk:"UPX",ceo:"A Founder",c:"P",lb:"open-market purchase",pl:"discretionary",fd:day(30),td:day(31),sh:30,v:3e5,pc:2,ha:150,nc:30,rs:0,u:"https://sec.gov/y"},
             {tk:"UPX",ceo:"A Founder",c:"S",lb:"exercise and sell",pl:"plan",fd:day(2),td:day(2),sh:5,v:1e4,pc:null,ha:150,nc:0,rs:0,u:""}];
-  state.q="";state.min=0;state.tbF=false;state.tbH=false;state.sort={key:"d3",dir:-1};
+  for(const r of P.PANEL){r.r1=r.tk==="UPX"?41.2:r.tk==="DNX"?-12.5:null;}   /* the 1-yr return rides on the row (universe.csv: ret_1y) */
+  state.q="";state.min=0;state.tbF=false;state.tbH=false;state.sort={key:"r1",dir:-1};
   P.renderTable();
   let tb=els["#tbody"]._html;
   const order=[...tb.matchAll(/onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);
-  assert(order[0]==="UPX"&&order[1]==="DNX"&&order[2]==="NOH","sorted by three-year change: the riser, the faller, then the record too short to say: "+order.join(",")+" d3="+P.PANEL.map(r=>r.d3).join(","));
-  assert(/UPX[\s\S]*?class="d3 up"[\s\S]*?<b>\+4\.1%<\/b>/.test(tb),"the riser reads +4.1% in green, from the point on or before the horizon");
-  assert(tb.includes("ownership 5.00% on")&&tb.includes("→ 5.00% now"),"and the hover spells out then and now");
-  assert(/DNX[\s\S]*?class="d3 down"[\s\S]*?<b>−4\.5%<\/b>/.test(tb),"the faller reads −4.5% in red");
+  assert(order[0]==="UPX"&&order[1]==="DNX"&&order[2]==="NOH","sorted by 1-yr return: the riser, the faller, then the one with no year of prices: "+order.join(",")+" r1="+P.PANEL.map(r=>r.r1).join(","));
+  assert(/UPX[\s\S]*?c-r1"><span class="up">\+41\.2%/.test(tb),"the riser reads +41.2% in green");
+  assert(/DNX[\s\S]*?c-r1"><span class="down">-12\.5%/.test(tb),"the faller reads -12.5% in red");
+  assert(!tb.includes('class="tbar"')&&!tb.includes("c-conf"),"no bar in the ownership cell, no confidence column: every cell is one value");
   assert(!tb.includes("pts"),"nobody is told about points");
   assert(!tb.includes('class="spark"'),"no chart preview in the screener -- the number says it, the company page draws it");
   assert(tb.includes('class="n num c-mc"'),"a market cap column");
@@ -389,7 +390,7 @@ const P=runPage();
   {P.state.tbH=true;P.renderTable();const on=els["#tbody"]._html;
    assert(on.includes("openCompany('UPX')")&&on.includes("openCompany('NOH')")&&!on.includes("openCompany('DNX')"),"the Never sold switch keeps the one who never reduced a stake and the short record, drops the seller -- options cashed don't count");
    P.state.tbH=false;P.renderTable();}
-  assert(rowOf("DNX").includes('class="ltv"')&&rowOf("DNX").includes("$1M"),"the last trade shows its value beside the badge");
+  assert(rowOf("DNX").includes('c-amt">$1M')&&rowOf("DNX").includes('class="abadge down"'),"the last trade's badge and its amount sit in their own columns");
   assert(!tb.includes('class="asof'),"as-of left the table for the company page and the export");
   assert(rowOf("DNX").includes('class="abadge down"')&&rowOf("DNX").includes("SOLD")&&rowOf("UPX").includes("BOUGHT"),"the last trade that moved the stake, badged");
   assert(rowOf("NOH").includes("no trade that moved the public-company stake"),"and an honest dash where there is none");
@@ -399,10 +400,10 @@ const P=runPage();
   // the export: the rows as shown, every field, quoted where it must be
   const csv=P.exportTable();
   const hdr=csv.split("\n")[0];
-  assert(hdr.startsWith("ticker,company,chief_executive,founder,ownership_pct,shares_held,shares_outstanding,close,stake_value,market_cap,change_3y_pts"),"the CSV carries the fields the page does not show: "+hdr.slice(0,60));
+  assert(hdr==="#,Company,Ticker,CEO,Founder,Ownership %,Value,Market cap,1-yr return %,Last trade,Amount,Traded","the CSV is the table as shown, plus ticker and the founder flag as columns: "+hdr.slice(0,60));
   assert(csv.split("\n").length===3&&csv.includes("UPX")&&csv.includes("NOH")&&!csv.includes("DNX"),"and only the rows as filtered");
   assert(csv.split("\n")[1].split(",").length===hdr.split(",").length,"every row has every column");
-  state.tbH=false;state.sort={key:"d3",dir:1};P.renderTable();
+  state.tbH=false;state.sort={key:"r1",dir:1};P.renderTable();
   const asc=[...els["#tbody"]._html.matchAll(/onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);
   assert(asc[0]==="DNX"&&asc[2]==="NOH","ascending puts the faller first and the short record still last");
   state.sort={key:"pct",dir:-1};

@@ -68,7 +68,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert "41.2" not in sealed and "1000000" not in sealed and "2400000" not in sealed
     assert '"sp": false' in sealed and '"row"' not in sealed
     assert '"price": 10.0' in sealed, "the close is public and rides on a sealed page; the shares do not"
-    assert "Sealed universe" not in sealed and "open to everyone" in tsla
+    assert "Sealed universe" not in sealed and "open to everyone" not in tsla and " · S&amp;P 500</div>" in tsla and " · Pro</div>" in sealed
     # the machinery around them
     assert os.path.exists(os.path.join(out, "company.js"))
     assert 'src="/company.js?v=' in tsla and 'href="/site.css?v=' in tsla, "a new script is a new address"
@@ -254,3 +254,18 @@ def test_each_page_unfurls_into_its_own_card_when_one_is_drawn(tmp_path):
     from PIL import Image
     im = Image.open(og / "SEALD.png")
     assert im.size == (1200, 630)
+
+
+def test_a_filing_link_opens_the_index_page_not_the_xml():
+    """EDGAR serves the Form 4 document as raw XML; the filing's index page
+    is the HTML a person can read. Derived from the document URL, so
+    nothing in the data changes."""
+    import subprocess
+    js = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
+    start = js.index("function filingPage(u){")
+    fn = js[start:js.index("/*@shared*/", start)]
+    prog = fn + ("console.log(filingPage('https://www.sec.gov/Archives/edgar/data/1318605/000110465926075213/tm2618092-2_4seq1.xml'));"
+                 "console.log(filingPage('https://example.com/x'));console.log(filingPage(''));")
+    out = subprocess.run(["node", "-e", prog], capture_output=True, text=True).stdout.split("\n")
+    assert out[0] == "https://www.sec.gov/Archives/edgar/data/1318605/000110465926075213/0001104659-26-075213-index.htm"
+    assert out[1] == "https://example.com/x" and out[2] == ""
