@@ -124,7 +124,7 @@ const P=runPage();
   assert((dayHtml.match(/class="dayrow"/g)||[]).length===rows.length&&dayHtml.includes('class="daylist"'),"one row per trade inside a fixed, scrolling frame");
   assert(dayHtml.includes("openCompany(")&&dayHtml.includes("sec.gov"),"day rows are doors and carry filing links");
   assert(/class="dtd"[^>]*>transaction (Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d+\/\d+</.test(dayHtml),"every strip row says when the transaction happened");
-  assert(dayHtml.includes('class="daykey"')&&dayHtml.includes("on a plan")&&dayHtml.includes("the strip above is the filing day"),"the day card carries its own key: the colours and which date is which");
+  assert(idxsrc.includes('id="actkey"')&&idxsrc.includes("on a plan")&&idxsrc.includes("the strip is the filing day")&&!dayHtml.includes("daykey"),"one key for the whole section, under the columns, not inside the day card");
   {const shown=dayHtml.replace(/title="[^"]*"/g,"");
    assert(!shown.includes("10b5"),"the rule's name lives in the definitions on hover, not in a label");
    assert(shown.includes("planned")||!rows.some(e=>e.pl==="plan"),"a planned trade is labelled planned");}
@@ -224,7 +224,7 @@ const P=runPage();
   const esc=x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
   if(fy)assert(new RegExp('<span class="nm">'+esc(fy.ceo)+'<\\/span><span class="fm"').test(both),"a founder gets the F pill after the name: "+fy.ceo);
   if(fn)assert(new RegExp('<span class="nm">'+esc(fn.ceo)+'<\\/span><\\/span>').test(both),"a hired chief executive does not: "+fn.ceo);
-  assert(both.includes("F</span>founder")||!state.live.founders,"and the key explains the mark");
+  assert(idxsrc.includes('<span class="fm">F</span> founder'),"and the section's key explains the mark");
   assert(!both.includes("◆"),"the diamond is gone");
   setWin(30);
 

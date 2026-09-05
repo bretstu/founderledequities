@@ -410,7 +410,7 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .actnote a{color:var(--mut);font-weight:600;text-decoration:none;cursor:pointer}
 .actnote a:hover{color:var(--blue)}
 .dayalso{padding:9px 0 4px;border-top:1px solid var(--line2);font-size:12.5px;color:var(--faint);cursor:pointer}
-.daykey{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;padding:10px 0 2px;border-top:1px solid var(--line2);font-family:var(--mono);font-size:11px;color:var(--faint)}
+.daykey{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;margin:14px 2px 0;font-family:var(--mono);font-size:11px;color:var(--faint)}
 .daykey .abadge{transform:scale(.85);min-width:0;margin-right:-2px}
 .daykey .sep{margin:0 4px}
 .dayalso:hover{color:var(--blue)}
@@ -634,6 +634,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     <button class="chip win" data-win="365">12 months</button>
   </div>
   <div class="actcols" id="actcols"></div>
+  <div class="daykey" id="actkey"><span class="abadge up">BOUGHT</span> open market <span class="abadge down">SOLD</span> discretionary <span class="abadge dsoft">SOLD</span> on a plan <span class="fm">F</span> founder <span class="sep">·</span> in the strip, each row's date is the transaction and the strip is the filing day</div>
   <div class="actnote" id="actnote"></div>
   <!-- THE TABLE IS A DRAWER, NOT A WALL. It opens from a column footer, a
        badge, or the day strip, already narrowed to what was asked for. The
@@ -2334,7 +2335,7 @@ function renderDay(){
       <span class="dn">${recent.map(chipDay).join("")}</span>
     </div>
     <div class="daylist">${rows.length?rows.map(row).join(""):`<div class="dayempty">No CEO of these companies filed a trade that moved a stake on ${day?niceDay(day):"this day"}.</div>`}</div>
-    <div class="daykey"><span class="abadge up">BOUGHT</span> open market <span class="abadge down">SOLD</span> discretionary <span class="abadge dsoft">SOLD</span> on a plan <span class="fm">F</span> founder <span class="sep">·</span> each row's date is the transaction; the strip above is the filing day</div>
+
     ${dayAlso(day)?`<div class="dayalso" onclick="setView('day')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')setView('day')" title="every trade of the day as a table, these included">${dayAlso(day)} →</div>`:""}
   </div>`;
 }
@@ -2417,7 +2418,6 @@ function evColumn(side){
     </div>
     ${top.length?top.map(bar).join(""):`<div class="aempty">${ks.length?`No CEO of these companies ${sell?"reduced a stake":"bought shares"}${ks.length===1?` ${ks[0]==="plan"?"under a plan":"at their own discretion"}`:""} in ${win}.`:"Both manners are off — select one to see the column."}</div>`}
     <div class="af">
-      <span class="key"><span><i></i>discretionary</span><span><i class="plan"></i>planned</span>${state.live.founders?`<span><span class="fm">F</span>founder</span>`:""}</span>
       ${pool.length?`<a onclick="setView('${side}')">${people.length>N?`Top ${N} of ${people.length} · `:""}all ${pool.length.toLocaleString()} trade${pool.length===1?"":"s"} →</a>`:""}
     </div>
   </div>`;
