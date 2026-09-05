@@ -143,9 +143,13 @@ python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" 
 # pro file must differ, and the root file must contain masked rows
 cmp -s public/universe.csv public/pro/universe.csv \
   && { echo "REFUSING: root universe.csv equals the pro file"; exit 2; }
-grep -q ",1$" public/universe.csv \
-  || grep -q $',1\r' public/universe.csv \
-  || { echo "REFUSING: no masked rows in the public universe.csv"; exit 2; }
+# the masked column is read by name: a positional check (",1" at the end
+# of the line) refused a good build the day a column was added after it
+python3 - << 'PYSEAL' || { echo "REFUSING: no masked rows in the public universe.csv"; exit 2; }
+import csv, sys
+rows = list(csv.DictReader(open("public/universe.csv", encoding="utf-8-sig")))
+sys.exit(0 if any((r.get("masked") or "").strip() == "1" for r in rows) else 1)
+PYSEAL
 
 # wrangler bundles the functions/ directory from the project root by itself.
 # FLE_BRANCH selects the Pages branch: "production" is aliased to the domain;
