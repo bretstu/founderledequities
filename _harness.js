@@ -343,7 +343,7 @@ const P=runPage();
    P.state.sort={key:"pct",dir:-1};P.state.q="";P.state.min=0;P.state.tbH=false;P.renderTable();
    const cell=els["#tbody"]._html;
    assert(/c-ltd"><span class="ltd"[^>]*>2026-04-02</.test(cell)&&cell.includes("filed 2026-06-17"),"the screener's Traded column is the trade date, filing date on hover");
-   assert(/c-lt"><span class="abadge/.test(cell)&&/c-amt">\$1\.2M</.test(cell),"Last trade is the badge alone; the amount is its own column");
+   assert(/c-lt"><span class="down">Sold</.test(cell)&&/c-man">Discretionary</.test(cell)&&/c-amt">\$1\.2M</.test(cell),"Last trade, Manner and Amount are three plain columns");
    assert(P.dayText("2026-06-17",[lag]).includes("(traded 2026-04-02)"),"the copy text names the trade date when it is not the filing day");
    // and as the pipeline now labels it -- a pre-registration trade -- it is kept apart everywhere
    const pre={...lag,pre:true};
@@ -367,8 +367,8 @@ const P=runPage();
   };
   const fakePanel=[["UPX","Upward Inc","A Founder"],["DNX","Downward Inc","B Exec"],["NOH","Newlisted Inc","C Exec"]]
     .map(([tk,co,ceo])=>({tk,co,ceo,pct:5,sh:1,out:1,val:1e9,conf:"high"}));
-  const savedPanel=P.PANEL,savedEvents=P.EVENTS;
-  P.PANEL=fakePanel;
+  const savedPanel=P.PANEL,savedEvents=P.EVENTS,savedF0=P.FOUNDERS;
+  P.PANEL=fakePanel;P.FOUNDERS={UPX:{f:"yes",ev:"founded it",src:"x"}};
   P.EVENTS=[{tk:"DNX",ceo:"B Exec",c:"S",lb:"discretionary sale",pl:"discretionary",fd:day(5),td:day(6),sh:100,v:1e6,pc:1,ha:600,nc:-100,rs:0,u:"https://sec.gov/x"},
             {tk:"UPX",ceo:"A Founder",c:"P",lb:"open-market purchase",pl:"discretionary",fd:day(30),td:day(31),sh:30,v:3e5,pc:2,ha:150,nc:30,rs:0,u:"https://sec.gov/y"},
             {tk:"UPX",ceo:"A Founder",c:"S",lb:"exercise and sell",pl:"plan",fd:day(2),td:day(2),sh:5,v:1e4,pc:null,ha:150,nc:0,rs:0,u:""}];
@@ -390,9 +390,9 @@ const P=runPage();
   {P.state.tbH=true;P.renderTable();const on=els["#tbody"]._html;
    assert(on.includes("openCompany('UPX')")&&on.includes("openCompany('NOH')")&&!on.includes("openCompany('DNX')"),"the Never sold switch keeps the one who never reduced a stake and the short record, drops the seller -- options cashed don't count");
    P.state.tbH=false;P.renderTable();}
-  assert(rowOf("DNX").includes('c-amt">$1M')&&rowOf("DNX").includes('class="abadge down"'),"the last trade's badge and its amount sit in their own columns");
+  assert(rowOf("DNX").includes('c-amt">$1M')&&rowOf("DNX").includes('c-lt"><span class="down">Sold</span>'),"the last trade and its amount sit in their own columns");
   assert(!tb.includes('class="asof'),"as-of left the table for the company page and the export");
-  assert(rowOf("DNX").includes('class="abadge down"')&&rowOf("DNX").includes("SOLD")&&rowOf("UPX").includes("BOUGHT"),"the last trade that moved the stake, badged");
+  assert(rowOf("DNX").includes('c-lt"><span class="down">Sold')&&rowOf("UPX").includes('c-lt"><span class="up">Bought')&&rowOf("UPX").includes('c-fd">Yes'),"the last trade that moved the stake, in words; the founder flag its own column");
   assert(rowOf("NOH").includes("no trade that moved the public-company stake"),"and an honest dash where there is none");
   state.tbH=true;P.renderTable();
   const held=[...els["#tbody"]._html.matchAll(/onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);
@@ -400,14 +400,14 @@ const P=runPage();
   // the export: the rows as shown, every field, quoted where it must be
   const csv=P.exportTable();
   const hdr=csv.split("\n")[0];
-  assert(hdr==="#,Company,Ticker,CEO,Founder,Ownership %,Value,Market cap,1-yr return %,Last trade,Amount,Traded","the CSV is the table as shown, plus ticker and the founder flag as columns: "+hdr.slice(0,60));
+  assert(hdr==="#,Company,Ticker,CEO,Founder,Ownership %,Value,Market cap,1-yr return %,Last trade,Manner,Amount,Traded","the CSV is the table as shown, plus ticker and the founder flag as columns: "+hdr.slice(0,60));
   assert(csv.split("\n").length===3&&csv.includes("UPX")&&csv.includes("NOH")&&!csv.includes("DNX"),"and only the rows as filtered");
   assert(csv.split("\n")[1].split(",").length===hdr.split(",").length,"every row has every column");
   state.tbH=false;state.sort={key:"r1",dir:1};P.renderTable();
   const asc=[...els["#tbody"]._html.matchAll(/onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);
   assert(asc[0]==="DNX"&&asc[2]==="NOH","ascending puts the faller first and the short record still last");
   state.sort={key:"pct",dir:-1};
-  P.PANEL=savedPanel;P.EVENTS=savedEvents;
+  P.PANEL=savedPanel;P.EVENTS=savedEvents;P.FOUNDERS=savedF0;
   // ---- the cleaned series: known lies out, real findings in ----
   P.HIST={
     ECHO:[["2023-12-21",59.47,49902472,"G",null,null,2687900],
@@ -556,15 +556,7 @@ const P=runPage();
      // the bins scale with the window
      assert([P.perfBins("12"),P.perfBins("36"),P.perfBins("60")].every(e=>e.length===12),"thirteen columns on every window");
      assert(P.perfBins("12").slice(-1)[0]===100&&P.perfBins("36").slice(-1)[0]===300&&P.perfBins("60").slice(-1)[0]===500,"each window's edges spaced for its moves");
-     // the Founders index chip keeps the cohort
-     const savedPanel2=P.PANEL;
-     P.PANEL=[...dist.items.filter(i=>!savedPanel2.some(p=>p.tk===i.tk)).map(i=>({tk:i.tk,co:"Co "+i.tk,ceo:"A Founder",pct:5,sh:1,out:1,val:1e9,conf:"high"})),...savedPanel2];
-     P.state.tbI=true;P.state.q="";P.state.min=0;P.state.tbF=false;P.state.tbH=false;P.state.sort={key:"pct",dir:-1};
-     P.renderTable();
-     const shown=[...els["#tbody"]._html.matchAll(/onclick="openCompany\('([A-Z0-9.-]+)'\)"/g)].map(m=>m[1]);
-     assert(shown.length>0&&shown.every(tk=>dist.items.some(i=>i.tk===tk)),"the Founders index chip keeps only constituents");
-     P.state.tbI=false;
-     P.PANEL=savedPanel2;P.state.sort={key:"pct",dir:-1};}
+     P.state.sort={key:"pct",dir:-1};}
     // ---- the cohort toggle: a choice, the same for every reader ----
     {const savedPanel3=P.PANEL;
      /* the five long-lived founders are S&P members; the late entrant is not */

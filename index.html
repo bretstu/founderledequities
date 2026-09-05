@@ -189,7 +189,7 @@ table.screen{table-layout:fixed}
 table.screen th,table.screen td{overflow:hidden}
 table.screen thead th{text-overflow:ellipsis}
 .tscroll{overflow-x:hidden}
-.w-rk{width:36px}.w-co{width:18%}.w-ceo{width:17%}.w-own{width:9%}.w-val{width:8.5%}.w-mc{width:8.5%}.w-r1{width:9%}.w-lt{width:9%}.w-amt{width:8%}.w-ltd{width:9%}.w-conf{width:8.5%}
+.w-rk{width:36px}.w-co{width:15%}.w-ceo{width:12%}.w-fd{width:6%}.w-own{width:7.5%}.w-val{width:7.5%}.w-mc{width:7.5%}.w-r1{width:8.5%}.w-lt{width:8.5%}.w-man{width:9.5%}.w-amt{width:7.5%}.w-ltd{width:8.5%}.w-conf{width:8.5%}
 .c-ltd .ltd{font-family:var(--mono);font-size:12px;color:var(--mut);white-space:nowrap}
 table.screen thead th{letter-spacing:.06em}
 table.screen thead th .arr{width:auto}
@@ -235,9 +235,9 @@ td.asof{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:
 .dot.low{background:#fff;border:2px solid var(--amber)}
 td.src a{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 td.src a:hover{color:var(--blue)}
-.tkey{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.c-lt .up{color:var(--blue);font-weight:600}.c-lt .down{color:#c22a2a;font-weight:600}
+td.c-fd,td.c-man{font-size:12.5px;color:var(--mut)}
 .c-r1 .up{color:#0b7a4b}.c-r1 .down{color:#c22a2a}
-.tkey .abadge{transform:scale(.85);min-width:0}
 .tfoot{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 4px 0;font-size:12.5px;color:var(--mut);flex-wrap:wrap}
 .more{font-weight:700;font-size:13px;border:1px solid var(--ink);border-radius:9px;padding:8px 16px}
 .more:hover{background:var(--ink);color:#fff}
@@ -696,8 +696,6 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     <button class="chip" data-min="10">&gt; 10%</button>
     <span class="fsw" id="fchip" role="switch" aria-checked="false" tabindex="0"
         title="only companies still run by a person the proxy names as a founder">Founders only<span class="tr"><i></i></span></span>
-    <span class="fsw" id="ichip" role="switch" aria-checked="false" tabindex="0"
-        title="only the companies in the Founders index — the cohort the performance chart is drawn from">Founders index<span class="tr"><i></i></span></span>
     <span class="fsw" id="hchip" role="switch" aria-checked="false" tabindex="0"
         title="not one stake-reducing sale on record since the company was public — options cashed and units converted the same day don't count against anyone">Never sold<span class="tr"><i></i></span></span>
     <button class="chip export" onclick="exportTable()" title="the rows as filtered and sorted, every field, as a CSV">Export CSV ↓</button>
@@ -713,17 +711,19 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="tscroll">
   <table class="screen">
     <colgroup>
-      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-r1"><col class="w-lt"><col class="w-amt"><col class="w-ltd">
+      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-fd"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-r1"><col class="w-lt"><col class="w-man"><col class="w-amt"><col class="w-ltd">
     </colgroup>
     <thead><tr>
       <th class="n">№</th>
       <th class="sortable" data-key="co">Company<span class="arr"></span></th>
       <th class="sortable h-ceo" data-key="ceo">CEO<span class="arr"></span></th>
-      <th class="sortable" data-key="pct">Ownership<span class="arr"></span></th>
+      <th class="sortable h-fd" data-key="fd" title="the proxy names this CEO a founder">Founder<span class="arr"></span></th>
+      <th class="sortable n" data-key="pct">Ownership<span class="arr"></span></th>
       <th class="sortable n" data-key="val" title="the stake's value: shares held at the latest close">Value<span class="arr"></span></th>
       <th class="sortable n h-mc" data-key="mcap" title="market capitalization: shares outstanding at the latest close">Mkt cap<span class="arr"></span></th>
-      <th class="sortable n h-r1" data-key="r1" title="the stock's price return over the last twelve months">1-yr return<span class="arr"></span></th>
-      <th class="sortable h-lt" data-key="ltk" title="the newest trade that moved the stake: bought or sold; solid is discretionary, pale is on a plan">Last trade<span class="arr"></span></th>
+      <th class="sortable n h-r1" data-key="r1" title="the stock's price return over the last twelve months">1Y return<span class="arr"></span></th>
+      <th class="sortable h-lt" data-key="ltk" title="the newest trade that moved the stake">Last trade<span class="arr"></span></th>
+      <th class="sortable h-man" data-key="man" title="discretionary, or under a pre-set Rule 10b5-1 plan">Manner<span class="arr"></span></th>
       <th class="sortable n h-amt" data-key="lt" title="what that trade was worth">Amount<span class="arr"></span></th>
       <th class="sortable h-ltd" data-key="ltd" title="the day that trade happened">Traded<span class="arr"></span></th>
     </tr></thead>
@@ -732,7 +732,6 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   </div>
   <div class="tfoot">
     <span id="tcount"></span>
-    <span class="tkey"><span class="abadge down">SOLD</span> discretionary <span class="abadge dsoft">SOLD</span> on a plan</span>
   </div>
   </div>
 </div></section>
@@ -815,7 +814,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"mcap",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,tbI:false,distOpen:null,pc:"sp",pro:false,meKnown:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
+const state={q:"",min:0,sort:{key:"mcap",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,distOpen:null,pc:"sp",pro:false,meKnown:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -1114,7 +1113,7 @@ function paintSw(id,on){
   const el=document.querySelector("#"+id);if(!el)return;
   /* a founders switch needs the founders file; the never-sold switch
      needs the trade feed, which is always there */
-  el.classList.toggle("hide",id==="hchip"?!state.live.events:id==="ichip"?!state.live.perf:!state.live.founders);
+  el.classList.toggle("hide",id==="hchip"?!state.live.events:!state.live.founders);
   el.classList.toggle("on",!!on);
   el.setAttribute("aria-checked",on?"true":"false");
 }
@@ -1646,14 +1645,13 @@ function exportTable(){
      founder flag ride as their own columns because a spreadsheet cannot
      read a badge. */
   const rows=state._rows||[];
-  const cols=["#","Company","Ticker","CEO","Founder","Ownership %","Value","Market cap","1-yr return %","Last trade","Amount","Traded"];
+  const cols=["#","Company","Ticker","CEO","Founder","Ownership %","Value","Market cap","1-yr return %","Last trade","Manner","Amount","Traded"];
   const q=v=>{v=v===null||v===undefined?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
   const lines=[cols.join(",")];
   rows.forEach((r,i)=>{
-    const f=fInfo(r.tk);
-    lines.push([i+1,r.co,r.tk,r.ceo,f&&f.f==="yes"?"yes":"",r.units?"units":(r.pct===null?"":r.pct.toFixed(4)),
+    lines.push([i+1,r.co,r.tk,r.ceo,r.fd?"Yes":"",r.units?"units":(r.pct===null?"":r.pct.toFixed(4)),
       r.val?Math.round(r.val):"",r.mcap?Math.round(r.mcap):"",r.r1===null||r.r1===undefined?"":r.r1.toFixed(2),
-      r.ltev?evBadge(r.ltev).t.replace("&amp;","&"):"",r.ltev&&r.ltev.v&&!r.ltev.fl?Math.round(r.ltev.v):"",
+      r.ltev?(r.ltev.c==="P"?"Bought":"Sold"):"",r.man||"",r.ltev&&r.ltev.v&&!r.ltev.fl?Math.round(r.ltev.v):"",
       r.ltev?(r.ltev.td||r.ltev.fd):""].map(q).join(","));
   });
   const csv=lines.join("\n");
@@ -1693,7 +1691,6 @@ function lastTrades(){
 function renderTable(){
   paintSw("fchip",state.tbF);
   paintSw("hchip",state.tbH);
-  paintSw("ichip",state.tbI);
   const {last,sold}=lastTrades();
   for(const r of PANEL){
     if(r.masked)continue;
@@ -1701,12 +1698,13 @@ function renderTable(){
     r.ltd=lt?(lt.td||lt.fd):"";r.ltev=lt||null;             /* Traded: sorts by the trade date */
     r.lt=lt?((lt.v&&!lt.fl)?lt.v:0):null;                      /* Amount: sorts by the trade's value */
     r.ltk=lt?(lt.c==="P"?"bought":"sold"):"";                   /* Last trade: sorts bought before sold */
+    r.man=lt?(lt.pl==="plan"?"Planned":"Discretionary"):"";      /* Manner: named, so the export says it too */
+    r.fd=!!(fInfo(r.tk)&&fInfo(r.tk).f==="yes");                 /* Founder: its own column, its own sort */
     r.ns=!sold.has(r.tk)&&!!HIST[r.tk];        /* never sold, on a record that exists */
   }
   let rows=PANEL.filter(r=>{
     const q=state.q.toLowerCase();
-    const inIdx=state._perfFull?(r.tk in (state._perfFull.byTk||{})):(fInfo(r.tk)&&fInfo(r.tk).f==="yes");
-    const fOK=fOnly(r.tk,state.tbF)&&(!state.tbH||r.ns)&&(!state.tbI||inIdx);
+    const fOK=fOnly(r.tk,state.tbF)&&(!state.tbH||r.ns);
     /* SEALED COMPANIES ARE NOT ROWS. The free table is the S&P 500,
        complete; the sealed remainder exists as a stated fact (hero and
        footer), not as 1,635 rows of dashes. A subscriber's panel has no
@@ -1721,7 +1719,7 @@ function renderTable(){
     if(key==="conf"){va=CONF[va]||0;vb=CONF[vb]||0;}
     /* a company with no three-year record sorts below every real change,
        whichever way the column points */
-    if(key==="ns"){va=va?1:0;vb=vb?1:0;}
+    if(key==="ns"||key==="fd"){va=va?1:0;vb=vb?1:0;}
     if(key==="r1"||key==="mcap"||key==="val"||key==="lt"){const na=va===null||va===undefined,nb=vb===null||vb===undefined;
       if(na!==nb)return na?1:-1;if(na)return 0;}
     if(typeof va==="string"||typeof vb==="string")
@@ -1735,12 +1733,14 @@ function renderTable(){
     return `<tr onclick="openCompany('${r.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${r.tk}')">
      <td class="rk">${String(i+1).padStart(2,"0")}</td>
      <td class="c-co"><div class="tk"><a href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></div><div class="nm" title="${r.co.replace(/"/g,"&quot;")}">${r.co}</div></td>
-     <td class="ceo h-ceo"><span class="ceow"><span class="cn" title="${r.ceo.replace(/"/g,"&quot;")}">${r.ceo}</span>${fBadge(r.tk)}</span></td>
+     <td class="ceo h-ceo"><span class="ceow"><span class="cn" title="${r.ceo.replace(/"/g,"&quot;")}">${r.ceo}</span></span></td>
+     <td class="c-fd">${r.fd?"Yes":""}</td>
      <td class="n num c-own">${r.units?`<span class="nopr" title="ownership held as exchangeable partnership units, not common stock">units</span>`:r.pct.toFixed(r.pct<1?3:2)+"%"}</td>
      <td class="n num">${r.val?money(r.val):""}</td>
      <td class="n num c-mc">${r.mcap?money(r.mcap):""}</td>
      <td class="n num c-r1">${r.r1===null||r.r1===undefined?`<span class="nopr"></span>`:`<span class="${r.r1>=0?"up":"down"}">${r.r1>=0?"+":""}${r.r1.toFixed(1)}%</span>`}</td>
-     <td class="c-lt">${r.ltev?`<span class="abadge ${evBadge(r.ltev).k}" title="${r.ltev.lb}">${evBadge(r.ltev).t}</span>`:`<span class="nopr" title="no trade that moved the public-company stake on record"></span>`}</td>
+     <td class="c-lt">${r.ltev?`<span class="${r.ltev.c==="P"?"up":"down"}">${r.ltev.c==="P"?"Bought":"Sold"}</span>`:`<span class="nopr" title="no trade that moved the public-company stake on record"></span>`}</td>
+     <td class="c-man">${r.man||""}</td>
      <td class="n num c-amt">${r.ltev&&r.ltev.v&&!r.ltev.fl?money(r.ltev.v):`<span class="nopr"></span>`}</td>
      <td class="c-ltd">${r.ltev?`<span class="ltd" title="traded ${r.ltev.td||r.ltev.fd}; filed ${r.ltev.fd}${lagNote(r.ltev)}">${r.ltev.td||r.ltev.fd}</span>`:`<span class="nopr"></span>`}</td>
     </tr>`}).join("");
@@ -2531,7 +2531,6 @@ $("#q").addEventListener("keydown",e=>{
   if(tk){hit("open","page",tk);location.href=`/company/${tk}/`;}
 });
 wireSw("hchip",()=>{state.tbH=!state.tbH;renderTable();});
-wireSw("ichip",()=>{state.tbI=!state.tbI;renderTable();});
 document.querySelectorAll(".chip.pc").forEach(c=>c.addEventListener("click",()=>{
   if(state.pc===c.dataset.pc)return;state.pc=c.dataset.pc;state.distOpen=null;
   renderPerf();hit("switch","cohort",state.pc);}));
