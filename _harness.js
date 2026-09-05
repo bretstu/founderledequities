@@ -401,7 +401,7 @@ const P=runPage();
   // the export: the rows as shown, every field, quoted where it must be
   const csv=P.exportTable();
   const hdr=csv.split("\n")[0];
-  assert(hdr==="#,Company,Ticker,CEO,Founder,Ownership %,Value,Market cap,1-yr return %,Last trade,Manner,Amount,Traded","the CSV is the table as shown, plus ticker and the founder flag as columns: "+hdr.slice(0,60));
+  assert(hdr==="#,Company,Ticker,CEO,Founder,Ownership %,Value,Market cap,1-yr return %,Last trade,Type,Amount,Traded","the CSV is the table as shown, plus ticker and the founder flag as columns: "+hdr.slice(0,60));
   assert(csv.split("\n").length===3&&csv.includes("UPX")&&csv.includes("NOH")&&!csv.includes("DNX"),"and only the rows as filtered");
   assert(csv.split("\n")[1].split(",").length===hdr.split(",").length,"every row has every column");
   state.tbH=false;state.sort={key:"r1",dir:1};P.renderTable();
