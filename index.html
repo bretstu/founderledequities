@@ -406,6 +406,9 @@ td.c-fd,td.c-man{font-size:12.5px;color:var(--mut)}
 .actnote a{color:var(--mut);font-weight:600;text-decoration:none;cursor:pointer}
 .actnote a:hover{color:var(--blue)}
 .dayalso{padding:9px 0 4px;border-top:1px solid var(--line2);font-size:12.5px;color:var(--faint);cursor:pointer}
+.daykey{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;padding:10px 0 2px;border-top:1px solid var(--line2);font-family:var(--mono);font-size:11px;color:var(--faint)}
+.daykey .abadge{transform:scale(.85);min-width:0;margin-right:-2px}
+.daykey .sep{margin:0 4px}
 .dayalso:hover{color:var(--blue)}
 .acttable{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
 .acttop{justify-content:space-between}
@@ -2182,7 +2185,7 @@ function evTable(rows,sortable,emptyMsg){
      <td class="n aval ${e.c==="P"?"up":"down"}">${evValCell(e)}</td>
      <td class="n asub" title="${fmt(e.sh)} shares">${compact(e.sh)}${e.ap?`<span class="apx">@ $${e.ap>=1000?Math.round(e.ap).toLocaleString("en-US"):e.ap.toFixed(2)}</span>`:""}</td>
      <td class="n asub">${evPctCell(e)}</td>
-     <td class="asrc">${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing itself, on EDGAR">4 ↗</a>`:""}</td>
+     <td class="asrc">${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</td>
     </tr>`}).join("")+`</tbody></table></div>`;
 }
 function ago(d){
@@ -2315,11 +2318,11 @@ function renderDay(){
       :!pp?`<span class="nopr" title="${pctWhy(e)}">share of stake not stated</span>`
       :`${pp.approx?`<span class="approx" title="${approxNote(e)}">≈ </span>`:""}${side==="buys"?"+":"−"}${pp.v>=100?"100%+":pp.v.toFixed(pp.v<1?2:1)+"%"} of stake`;
     const man=side==="exsell"?"":e.pl==="plan"?` · <span title="sold under a Rule 10b5-1 plan, set up long before the trade date and executed automatically">planned</span>`:e.pl==="discretionary"?` · <span title="not under a pre-set plan — their own decision, at their own timing">discretionary</span>`:"";
-    const when=`<span class="dtd" title="the trade date; the filing reached EDGAR ${e.fd}${lagNote(e)}">traded ${shortDay(e.td||e.fd)}</span>`;
+    const when=`<span class="dtd" title="the transaction date; the filing reached EDGAR ${e.fd}${lagNote(e)}">transaction ${shortDay(e.td||e.fd)}</span>`;
     return `<div class="dayrow" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
       <span class="abadge ${b.k}" title="${b.n} — traded ${e.td||e.fd}${lagNote(e)}">${b.t}</span>
       <span class="drwho"><span class="atk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></span>${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span>
-      <span class="drv"><b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>${pc}${man} · ${when}${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing itself, on EDGAR">4 ↗</a>`:""}</span>
+      <span class="drv"><b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>${pc}${man} · ${when}${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</span>
     </div>`;};
   el.innerHTML=`<div class="dayb">
     <div class="dayh">
@@ -2327,6 +2330,7 @@ function renderDay(){
       <span class="dn">${recent.map(chipDay).join("")}</span>
     </div>
     <div class="daylist">${rows.length?rows.map(row).join(""):`<div class="dayempty">No CEO of these companies filed a trade that moved a stake on ${day?niceDay(day):"this day"}.</div>`}</div>
+    <div class="daykey"><span class="abadge up">BOUGHT</span> open market <span class="abadge down">SOLD</span> discretionary <span class="abadge dsoft">SOLD</span> on a plan <span class="fm">F</span> founder <span class="sep">·</span> each row's date is the transaction; the strip above is the filing day</div>
     ${dayAlso(day)?`<div class="dayalso" onclick="setView('day')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')setView('day')" title="every trade of the day as a table, these included">${dayAlso(day)} →</div>`:""}
   </div>`;
 }

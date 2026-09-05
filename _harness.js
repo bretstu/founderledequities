@@ -123,7 +123,8 @@ const P=runPage();
   assert(/class="chip on"[^>]*>(Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d+\/\d+<i>/.test(dayHtml),"the newest day's chip is lit and reads like a day");
   assert((dayHtml.match(/class="dayrow"/g)||[]).length===rows.length&&dayHtml.includes('class="daylist"'),"one row per trade inside a fixed, scrolling frame");
   assert(dayHtml.includes("openCompany(")&&dayHtml.includes("sec.gov"),"day rows are doors and carry filing links");
-  assert(/class="dtd"[^>]*>traded (Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d+\/\d+</.test(dayHtml),"every strip row says when the trade happened");
+  assert(/class="dtd"[^>]*>transaction (Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d+\/\d+</.test(dayHtml),"every strip row says when the transaction happened");
+  assert(dayHtml.includes('class="daykey"')&&dayHtml.includes("on a plan")&&dayHtml.includes("the strip above is the filing day"),"the day card carries its own key: the colours and which date is which");
   {const shown=dayHtml.replace(/title="[^"]*"/g,"");
    assert(!shown.includes("10b5"),"the rule's name lives in the definitions on hover, not in a label");
    assert(shown.includes("planned")||!rows.some(e=>e.pl==="plan"),"a planned trade is labelled planned");}
