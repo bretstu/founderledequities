@@ -90,8 +90,8 @@ const P=runPage();
   // the harness maps /pro/universe.csv onto the root file, which may carry
   // sealed rows or none; the pro file never does, so it is unsealed by hand
   state.pro=true; const sealedPanel=P.PANEL; P.PANEL=sealedPanel.map(r=>({...r,masked:false})); renderActivity();
-  assert(els["#actday"]._html.includes("companies")&&!els["#actday"]._html.includes("S&P 500"),
-    "the pro day strip names the whole universe");
+  assert(!/· \d[\d,]* companies<\/span>/.test(els["#actday"]._html)&&!els["#actday"]._html.includes("S&amp;P 500</span>"),
+    "the pro day strip names no scope: the universe is stated once, in the hero");
   // a pro session over a free-shaped file (sealed rows present) is still the S&P
   P.PANEL=sealedPanel.map(r=>({...r,masked:r.masked||r.tk==="ZZZ-SEALED"}));
   P.PANEL.push({tk:"ZZZ-SEALED",co:"Sealed",ceo:"x",pct:null,sh:null,masked:true});renderActivity();
