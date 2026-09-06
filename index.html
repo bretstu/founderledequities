@@ -998,11 +998,13 @@ function mapHistory(recs){
 
 /*@shared*/
 function mapEvents(recs){
-  // one row per (filing, code, day) -- the pipeline already folded the
-  // broker fills, so nothing here re-derives anything
+  // one row per (filing, code) -- the pipeline already folded the broker
+  // fills and the filing's days, so nothing here re-derives anything.
+  // td is the filing's last trade day; tf its first (equal for one day).
+  // pc is SIGNED: the filing's net change as a share of the stake before it
   return recs.map(r=>({
     tk:(r.ticker||"").toUpperCase(),ceo:r.ceo||"",fd:(r.filed||"").slice(0,10),
-    td:(r.traded||"").slice(0,10),c:r.code||"",lb:r.label||"",
+    td:(r.traded||"").slice(0,10),tf:(r.traded_from||r.traded||"").slice(0,10),c:r.code||"",lb:r.label||"",
     sh:num(r.shares)||0,v:num(r.value),ap:num(r.avg_price),apa:num(r.avg_price_adjusted),
     pc:num(r.pct_of_holding),pa:num(r.pct_approx),nc:num(r.net_change),ha:num(r.holding_after),
     rs:num(r.residue),pl:r.plan||"unknown",u:r.url||"",fl:r.price_flag||"",acc:r.accession||"",
@@ -2023,6 +2025,23 @@ function pctOf(e){
   return null;
 }
 /*@shared*/
+function stakeChange(v,approx){
+  /* "stake -7.1%": what the filing did to the position, as a share of the
+     position before it, signed by the number itself -- a SOLD filing that
+     exercised and kept some shares reads "+12%", which is what happened */
+  const a=approx?"≈ ":"";
+  if(v<=-100)return a+"stake sold out";
+  if(v>=100)return a+"stake ×"+(1+v/100).toFixed(1);
+  const m=Math.abs(v);
+  return `${a}stake ${v>=0?"+":"−"}${m>=1?m.toFixed(m<10?1:0):m.toFixed(2)}%`;
+}
+/*@shared*/
+function spanDay(e,f){
+  /* one day, or the filing's first and last: "Sep 2" / "Sep 2 to 3" */
+  const a=e.tf||e.td||e.fd,b=e.td||e.fd;
+  return a&&a!==b?`${f(a)} to ${f(b)}`:f(b);
+}
+/*@shared*/
 function approxNote(e){
   return `≈ the walk left ${fmt(Math.abs(e.rs||0))} share${Math.abs(e.rs||0)===1?"":"s"} unexplained that day — under 1% of the trade and 0.1% of the position, so the figure cannot move`;
 }
@@ -2035,6 +2054,7 @@ function pctWhy(e){
      three distinct reasons and they are worth telling apart, so the reason
      rides on the cell. */
   if(e.rs)return "several filings moved this position on the same day and cannot be reconciled to one figure, so no percentage is asserted";
+  if(e.ha&&(e.nc===null||e.nc===undefined))return "the record has no point on this filing's day, so what it did to the stake is not stated";
   if(!e.ha)return "no common-stock position on record to measure against — Blackstone's CEO, for one, holds partnership units rather than issued stock of the company";
   return "the position before this trade computes to zero, and a percentage of nothing is not a number";
 }
@@ -2045,8 +2065,7 @@ function evPctCell(e){
   if(!p)return `<span class="nopr" title="${pctWhy(e)}">—</span>`;
   const t=p.approx?`<span class="approx" title="${approxNote(e)}">≈ `:"";
   const c=p.approx?"</span>":"";
-  if(p.v>=100)return `${t}<span title="${Math.round(p.v).toLocaleString()}% — the trade was many times the position on record before it">≥100%</span>${c}`;
-  return t+p.v.toFixed(p.v<1?2:1)+"%"+c;
+  return t+stakeChange(p.v,false)+c;
 }
 function sellKind(e){
   /* THE MANNERS OF A TRADE, IN PRECEDENCE ORDER.
@@ -2173,7 +2192,7 @@ function evTable(rows,sortable,emptyMsg){
   };
   return `<div class="escroll"><table class="actf"><thead><tr>
     ${th("fd","Filed")}${th("co","Company")}${th("act","Action")}
-    ${th("v","Value","n")}${th("sh","Shares","n")}${th("pc","Share of stake","n")}
+    ${th("v","Value","n")}${th("sh","Shares","n")}${th("pc","Stake change","n")}
     <th>Filing</th>
    </tr></thead><tbody>`+
    (rows.length?"":`<tr><td colspan="7"><div class="eempty">${emptyMsg||"Nothing here."}</div></td></tr>`)+
@@ -2202,11 +2221,9 @@ function ago(d){
   const y=Math.floor(days/365);return y+(y===1?" year ago":" years ago");
 }
 function nFilings(evs){
-  /* A ROW IS A TRADE, NOT A FILING. The feed holds one row per (filing,
-     code, day), and one Form 4 often covers two trade days -- Kurtz's
-     10b5-1 files every other day for the two days before. Twenty rows were
-     ten documents, and the page called them twenty filings. Rows are
-     "trades"; "filings" counts distinct accession numbers. */
+  /* A ROW IS A TRADE; A FILING CAN HOLD TWO. The feed holds one row per
+     (filing, code): a Form 4 that both bought and sold is two rows. Rows
+     are "trades"; "filings" counts distinct accession numbers. */
   const s=new Set();for(const e of evs)s.add(e.acc||e.u||(e.tk+e.fd));return s.size;
 }
 function tradesAndFilings(evs){
@@ -2281,8 +2298,8 @@ function dayText(day,rows){
     const what=side==="buys"?"bought":uk==="pre"?(e.c==="P"?"bought (pre-IPO)":"sold (pre-IPO)"):uk==="exercise"?"cashed options for":uk==="convert"?"converted and sold":uk==="bought"?"bought (position unchanged)":uk===""?"sold (position unchanged)":"sold";
     const man=side==="exsell"?"stake unchanged":e.pl==="plan"?"planned":e.pl==="discretionary"?"discretionary":"";
     const pp=pctOf(e);
-    const pc=(!pp||side==="exsell")?"":(side==="buys"?" +":" −")+(pp.approx?"≈":"")+(pp.v>=100?"100%+":pp.v.toFixed(pp.v<1?2:1)+"%")+" of stake";
-    L.push(`${e.ceo||coOf(e.tk)} (${e.tk}) ${what} ${e.v&&!e.fl?money(e.v):compact(e.sh)+" sh"}${pc}${man?", "+man:""}${e.td&&e.td!==e.fd?` (traded ${e.td})`:""}`);
+    const pc=(!pp||side==="exsell")?"":", "+stakeChange(pp.v,pp.approx);
+    L.push(`${e.ceo||coOf(e.tk)} (${e.tk}) ${what} ${e.v&&!e.fl?money(e.v):compact(e.sh)+" sh"}${pc}${man?", "+man:""}${e.td&&e.td!==e.fd?` (traded ${spanDay(e,d=>d)})`:""}`);
   }
   const also=dayAlso(day);if(also)L.push(also+".");
   L.push(`Every filing linked: https://founderledequities.com/?day=${day}#activity`);
@@ -2319,11 +2336,11 @@ function renderDay(){
   const row=e=>{
     const b=evBadge(e),side=evSide(e);
     const pp=pctOf(e);
-    const pc=side==="exsell"?`<span title="options exercised and the shares sold the same day — the stake did not move">stake unchanged</span>`
-      :!pp?`<span class="nopr" title="${pctWhy(e)}">share of stake not stated</span>`
-      :`${pp.approx?`<span class="approx" title="${approxNote(e)}">≈ </span>`:""}${side==="buys"?"+":"−"}${pp.v>=100?"100%+":pp.v.toFixed(pp.v<1?2:1)+"%"} of stake`;
+    const pc=side==="exsell"?`<span title="options exercised and the shares sold, in one filing; the stake did not move">stake unchanged</span>`
+      :!pp?`<span class="nopr" title="${pctWhy(e)}">stake change not stated</span>`
+      :`${pp.approx?`<span class="approx" title="${approxNote(e)}">≈ </span>`:""}${stakeChange(pp.v,false)}`;
     const man=side==="exsell"?"":e.pl==="plan"?` · <span title="sold under a Rule 10b5-1 plan, set up long before the trade date and executed automatically">planned</span>`:e.pl==="discretionary"?` · <span title="not under a pre-set plan — their own decision, at their own timing">discretionary</span>`:"";
-    const when=`<span class="dtd" title="the transaction date; the filing reached EDGAR ${e.fd}${lagNote(e)}">transaction ${shortDay(e.td||e.fd)}</span>`;
+    const when=`<span class="dtd" title="the transaction date${e.tf&&e.tf!==e.td?"s, first to last":""}; the filing reached EDGAR ${e.fd}${lagNote(e)}">${e.tf&&e.tf!==e.td?"transactions":"transaction"} ${spanDay(e,shortDay)}</span>`;
     return `<div class="dayrow" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
       <span class="abadge ${b.k}" title="${b.n} — traded ${e.td||e.fd}${lagNote(e)}">${b.t}</span>
       <span class="drwho"><span class="atk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></span>${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span>
@@ -2359,21 +2376,24 @@ function evAgg(side){
     const sh=evs.reduce((t,e)=>t+(e.sh||0),0);
     const seg={disc:0,plan:0,unknown:0};
     for(const e of evs)seg[sellKind(e)]+=((e.fl?0:e.v)||0);
-    /* SHARE OF STAKE FOR THE WHOLE WINDOW: every share traded, against the
-       position before the FIRST trade -- the pipeline's own rule (before =
-       after ± the day's shares) applied once, so a person with one filing
-       gets exactly the figure the feed prints. Any constituent the pipeline
-       declined to state a percentage for makes the aggregate unstatable
-       too, with that row's reason: the site does not assert a number one
-       of its own rows would not. */
+    /* STAKE CHANGE FOR THE WHOLE WINDOW: what these filings did to the
+       position, added up, against the position before the FIRST of them
+       -- the pipeline's own rule (before = after minus the filing's net)
+       applied once, so a person with one filing gets exactly the figure
+       the feed prints. Any constituent the pipeline declined to state a
+       percentage for makes the aggregate unstatable too, with that row's
+       reason: the site does not assert a number one of its own rows would
+       not. Signed by the sum, so a seller whose filings exercised and kept
+       shares reads as the rise it was. */
     let pc=null,why="",approx=false;
     const bad=evs.find(e=>!pctOf(e));
     if(bad)why=pctWhy(bad);
     else{
       approx=evs.some(e=>pctOf(e).approx);
       const f=evs[0];
-      const before=(f.ha||0)+(side==="sells"?f.sh:-f.sh);
-      if(before>0)pc=100*sh/before;
+      const before=(f.ha||0)-(f.nc||0);
+      const net=evs.reduce((t,e)=>t+(e.nc||0),0);
+      if(before>0)pc=100*net/before;
       else why="the position before the first trade computes to zero, and a percentage of nothing is not a number";
     }
     const priced=evs.some(e=>!e.fl&&e.v);
@@ -2400,8 +2420,8 @@ function evColumn(side){
        person's money under one manner, so a bar reads its length against
        the top of the column and its mix against itself */
     const segs=["disc","plan","unknown"].map(k=>p.seg[k]>0?`<span class="seg ${k}" style="width:${max?(100*p.seg[k]/max).toFixed(2):0}%" title="${k==="disc"?"discretionary":k==="plan"?"under a 10b5-1 plan":"before the checkbox existed"} — ${money(p.seg[k])}"></span>`:"").join("");
-    const pc=p.pc===null?`<span class="q" title="${p.why}">share of stake not stated</span>`
-      :`<span title="${fmt(p.sh)} shares against the position before the first of these trades${p.approx?" — ≈: a residue too small to move the figure on one of these days":""}">${p.approx?"≈ ":""}${p.pc>=100?(sell?"sold more than they held":"multiplied their stake"):(sell?"−":"+")+(p.pc>=1?p.pc.toFixed(p.pc<10?1:0):p.pc.toFixed(2))+"% of stake"}</span>`;
+    const pc=p.pc===null?`<span class="q" title="${p.why}">stake change not stated</span>`
+      :`<span title="what these filings did to the position, against the position before the first of them${p.approx?"; ≈: a residue too small to move the figure on one of these days":""}">${stakeChange(p.pc,p.approx)}</span>`;
     return `<div class="abar" onclick="openCompany('${p.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${p.tk}')"
       title="${p.ceo} — ${tradesAndFilings(p.evs)}, ${fmt(p.sh)} shares, latest ${p.latest}. Open the full record.">
       <div class="who"><span class="nmrow"><span class="nm">${p.ceo}</span>${fMark(p.tk)}</span><small><a class="pglink" href="/company/${p.tk}/" onclick="event.stopPropagation()" title="this company's own page">${p.tk}</a>${p.n>1?` · ${p.n} trades`:""}</small></div>

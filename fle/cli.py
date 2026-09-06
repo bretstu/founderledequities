@@ -795,11 +795,13 @@ EVENT_COLUMNS = ["ticker", "cik", "ceo", "owner_cik", "filed", "traded",
                  "pct_of_holding", "pct_approx", "net_change", "holding_after", "residue",
                  "plan", "other_codes", "rows", "unpriced_rows", "securities",
                  "direct", "form", "accession", "price_flag", "url",
-                 "registered", "pre_ipo", "avg_price_adjusted"]
+                 "registered", "pre_ipo", "avg_price_adjusted", "traded_from"]
 
 
 def cmd_events(args) -> int:
-    """What each chief executive actually bought and sold, one row per trade.
+    """What each chief executive actually bought and sold, one row per
+    filing and code (see events.py: the filing is the unit the position
+    is reported at).
 
     The trade comes from the filing and the position comes from history, so
     this runs AFTER history in the nightly and reads the file it wrote. Every
@@ -861,14 +863,18 @@ def cmd_events(args) -> int:
                 e.plan, e.other_codes, e.rows, e.unpriced_rows, e.securities,
                 e.direct, e.form, e.accession, e.price_flag, e.url,
                 e.registered, "1" if e.pre_registration else "",
-                "" if e.avg_price_adjusted is None else f"{e.avg_price_adjusted:.4f}"])
+                "" if e.avg_price_adjusted is None else f"{e.avg_price_adjusted:.4f}",
+                e.traded_from])
 
     buys = sum(1 for e in out if e.buy)
     flagged = sum(1 for e in out if e.residue)
+    unjoined = sum(1 for e in out if e.holding_after is not None and e.net_change is None)
+    spans = sum(1 for e in out if e.traded_from and e.traded_from != e.traded)
     print(f"  {len(out):,} events across {len(panel)} companies"
-          f"  ({failed} failed)")
+          f"  ({failed} failed); {spans:,} span more than one day")
     print(f"  {buys:,} purchases, {len(out) - buys:,} sales;"
-          f" {flagged:,} on days history could not fully explain")
+          f" {flagged:,} on days history could not fully explain;"
+          f" {unjoined:,} whose filing day has no point in the record")
     print(f"  wrote {args.out}")
     return 0
 

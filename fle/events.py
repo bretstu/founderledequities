@@ -15,13 +15,29 @@ at $100.55 and sold 16,468 at $163.21 the same day, and his balance went
 44,082 -> 60,550 -> 44,082. Counting the M as a purchase would invent a
 $1.66m buy that never happened.
 
-ONE TRADE IS MANY ROWS. Olivier Pomel's 10 November 2021 sale is 23 rows at
-23 weighted-average prices, because that is how a broker fills a large order.
-Pemble's is 29 rows for a single 5,000-share disposal. Emitting a row per
-line would make one sale look like twenty-nine, so rows are folded into one
-event per (accession, code, transaction date). Not per accession alone:
-CoStar's April 2018 filing reports sales on the 26th, 27th and 30th, and
-collapsing those into one event would date two of them wrongly.
+ONE TRADE IS MANY ROWS, AND ONE FILING IS ONE TRADE. Olivier Pomel's
+10 November 2021 sale is 23 rows at 23 weighted-average prices, because
+that is how a broker fills a large order. Pemble's is 29 rows for a single
+5,000-share disposal. And a 10b5-1 plan or a block sale executes over a
+few days but is one instruction, filed once: Lacerte's September 2026
+Bill.com filing is 257,243 shares over two days. So rows fold into ONE
+EVENT PER (accession, code). The event carries the first and last trade
+day (Commvault's reads 17 to 19 August), the total shares and value, and
+the weighted average price.
+
+WHY NOT PER DAY, WHICH IS WHAT THIS REPLACED. History states the position
+once per filing, on the filing's last trade day. An event per day gave
+the earlier days no position of their own, and the code handed them the
+nearest earlier snapshot's holding and net change -- a number about a
+different trade. A quarter of all trades sat on such days; 341 filings
+carried days that contradicted each other. Commvault's three-day sale
+read "position unchanged" on two days because the PREVIOUS filing netted
+to zero; ADPT's two-day exercise-and-sell read "discretionary sale,
+12.8% of stake" on day one because the previous filing had a real sale
+in it; John May was shown as having sold Deere six times, when every
+sale of his was exercised shares. The question "did the stake move" is a
+question about the filing, because the filing is the unit the balance is
+reported at. Asking it of the day was asking the wrong record.
 
 WHERE THE HOLDING COMES FROM, AND WHY NOT FROM THE ROW. The obvious thing --
 take `sharesOwnedFollowingTransaction` from the last row -- is wrong, and
@@ -38,12 +54,17 @@ across all of them. Walking oldest-first means a vehicle mentioned once keeps
 its balance until the filer mentions it again, which is the same rule the
 ledger uses for the panel.
 
-GROSS SOLD AND NET CHANGE ARE DIFFERENT NUMBERS. Deere sold $2.69m and the
-position did not move. Pomel sold $39.4m and the position genuinely fell by
-206,223, because his conversion took Class B out of Table II while the sale
-took Class A out of Table I. From Table I alone the two look identical. Both
-figures are reported, because the difference between them is the story: one
-is compensation being cashed, the other is a stake being reduced.
+GROSS SOLD AND NET CHANGE ARE DIFFERENT NUMBERS, AND THE PERCENT IS THE
+NET. Deere sold $2.69m and the position did not move. Pomel sold $39.4m and
+the position genuinely fell by 206,223, because his conversion took Class B
+out of Table II while the sale took Class A out of Table I. From Table I
+alone the two look identical. The dollars are what they sold (gross); the
+"% of stake" is what the filing did to the position: after against before,
+signed. It was gross shares over the position before, which read "-40.4%
+of stake" on a May filing that exercised 25,130, sold 19,907 and left him
+5,223 shares RICHER. Unchanged (an exercise-and-sell) and not stated (a
+partial filing, with residue) now fall out of the number instead of being
+special cases beside it.
 
 PRICES ARE AS FILED, NEVER ADJUSTED. Value is split-invariant -- Jassy's 100
 pre-split Amazon shares at $3,000 and 2,000 post-split shares at $150 are the
@@ -64,7 +85,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .ledger import (SECTION16, _doc_url, _parse, _rows,
-                     displace_amended)
+                     displace_amended, period_end)
 from .history import COVER_FORMS
 
 # A market trade, and nothing else. See the module docstring.
@@ -107,10 +128,11 @@ class Event:
     accession: str = ""
     form: str = ""
     filed: str = ""                    # when it became public
-    traded: str = ""                   # when the trade happened
+    traded: str = ""                   # the filing's LAST trade day for this code
+    traded_from: str = ""              # and its first; equal for a one-day filing
     code: str = ""
     buy: bool = False
-    shares: float = 0.0                # gross shares this code moved
+    shares: float = 0.0                # gross shares this code moved, whole filing
     value: float | None = None         # sum of shares x price, as filed
     avg_price: float | None = None
     avg_price_adjusted: float | None = None   # in today's shares, for the price chart
@@ -210,31 +232,37 @@ class Event:
         return self.net_change is not None and abs(self.net_change) < 1.0
 
     @property
-    def pct_of_holding(self) -> float | None:
-        """Gross shares against the position before the trade.
+    def _before(self) -> float | None:
+        """The position before the filing's trades, in the filed units:
+        the closing balance history states for the filing, less what the
+        filing did to it."""
+        if self.holding_after is None or self.net_change is None:
+            return None
+        before = self.holding_after - self.net_change
+        return before if before > 0 else None
 
-        The number that keeps the feed from being a list of mega-caps: a chief
-        executive selling 12% of what they own says more than one selling a
-        larger dollar amount that is a rounding error to them.
+    @property
+    def pct_of_holding(self) -> float | None:
+        """WHAT THE FILING DID TO THE STAKE, as a share of the stake before
+        it, signed: a sale that halved the position is -50.0; an exercise
+        that sold most and kept some is a small positive number beside a
+        SOLD badge, which is the truth of that filing.
+
+        None when the filing's own position is not in the record (net is
+        None), when the day carries residue the walk could not attribute,
+        or when the position before computes to zero: a chief executive
+        who buys their first shares opened at zero, and a percentage of
+        nothing is not a number. A stake that did not move gets no
+        percentage either; the label says "unchanged" instead, because
+        28.43% of a stake that did not move is arithmetically right and
+        communicatively false (John May's January 2026 exercise-and-sell).
         """
-        if self.holding_after is None or self.stake_unchanged or self.residue:
-            # 28.43% is what John May's January 2026 sale computes to, and it
-            # is arithmetically right and communicatively false: he exercised
-            # and sold the same 41,472 shares and owned exactly what he owned
-            # before. A percentage of a stake that did not move is not a
-            # number to print.
+        if self.net_change is None or self.stake_unchanged or self.residue:
             return None
-        # The position BEFORE the trade, rebuilt from the day's close: a sale
-        # had the shares, a purchase did not. It can legitimately be zero --
-        # a chief executive who sells out entirely closes at zero, and one
-        # who buys their first shares opened at zero -- and a percentage of
-        # nothing is not a number. Guarding only on `holding_after` missed
-        # both, and 500 companies found what eight samples did not.
-        before = self.holding_after + (self.shares if not self.buy
-                                       else -self.shares)
-        if before <= 0:
+        before = self._before
+        if before is None:
             return None
-        return 100.0 * self.shares / before
+        return 100.0 * self.net_change / before
 
     # A RESIDUE TOO SMALL TO CHANGE THE ANSWER. Under one percent of the
     # trade AND under a tenth of a percent of the position: whichever way
@@ -244,7 +272,7 @@ class Event:
     @property
     def pct_approx(self) -> float | None:
         """The percentage, stated with a caution, when the day's residue
-        cannot move it.
+        cannot move it: the net less the residue, over the position before.
 
         Lip-Bu Tan's $10m Intel purchase: 105,263 shares bought, 561 shares
         the walk could not attribute (a grant on the same filing). The
@@ -255,19 +283,18 @@ class Event:
         the rest (a median residue of 38% of the trade, and splits the walk
         did not absorb at the top) stay unstated until the walk is fixed.
         """
-        if not self.residue or self.holding_after is None \
+        if not self.residue or self.net_change is None \
                 or self.stake_unchanged or not self.shares:
             return None
-        before = self.holding_after + (self.shares if not self.buy
-                                       else -self.shares)
-        if before <= 0:
+        before = self._before
+        if before is None:
             return None
         res = abs(self.residue)
         if res / self.shares >= self.IMMATERIAL_RESIDUE[0]:
             return None
         if res / max(before, self.holding_after) >= self.IMMATERIAL_RESIDUE[1]:
             return None
-        return 100.0 * self.shares / before
+        return 100.0 * (self.net_change - self.residue) / before
 
 
 def load_history(path: str) -> dict:
@@ -333,18 +360,19 @@ def _split_factor(hist_rows: list, day: str) -> float | None:
 
 
 def _position(hist_rows: list, day: str):
-    """-> (holding_after_raw, net_change_adj, residue) for one trading day.
+    """-> (holding_after_raw, net_change_adj, residue) for one filing day.
 
     net_change is the difference of SPLIT-ADJUSTED totals between this day's
     snapshot and the previous one, so a split between two filings never reads
     as a trade. holding_after is the day's RAW total -- the same units the
     filed trade is in, which is what a percent-of-stake needs.
 
-    A day history has no snapshot for gets the forward-filled holding and
-    residue None -- not the residue of whatever snapshot sits nearest. 366
-    events inherited a neighbour's reconciliation that way, which suppressed
-    their percentage and asserted a problem on a day nothing was known about.
-    Absence of evidence is its own answer, and it is not zero either.
+    THE NET IS THE FILING'S OWN OR NOTHING. A day history has no snapshot
+    for gets the forward-filled holding, no net and no residue. It used to
+    get the nearest earlier snapshot's net -- a number about a different
+    filing -- and since the event's verdict is decided from the net, a
+    quarter of all trades were labelled by their neighbour. Absence of
+    evidence is its own answer, and it is not zero either.
 
     residue is history's `unexplained` for the day: the amount the total
     moved that the day's transactions do not account for. Adam Foroughi's
@@ -368,10 +396,11 @@ def _position(hist_rows: list, day: str):
     if idx is None or idx < 0:
         return None, None, None
     d, raw, adj, resid = hist_rows[idx]
-    exact = (d == day)
+    if d != day:
+        return raw, None, None
     if idx == 0:
-        return raw, None, (resid if exact else None)
-    return raw, adj - hist_rows[idx - 1][2], (resid if exact else None)
+        return raw, None, resid
+    return raw, adj - hist_rows[idx - 1][2], resid
 
 
 def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
@@ -383,6 +412,11 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
     from the filing rows, where it has been verified to the cent against
     history's independent arithmetic (traded_value for AppLovin, 10 June
     2026: 14,605,503.64 there, 14,605,504 here; the cent is rounding).
+
+    THE POSITION IS LOOKED UP ON THE FILING'S OWN DAY: the newest
+    transaction in the document (ledger.period_end), which is the day
+    history dated its snapshot for this filing by. One function decides the
+    date on both sides, so the join cannot drift.
 
     `exclude` is the curated list the panel uses, and it must be honoured
     here for the same reason: TKO's proxy reports Ari Emanuel at zero Class
@@ -415,6 +449,7 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
     if max_filings:
         mine = mine[-max_filings:]
     hist_rows = (history or {}).get(int(issuer_cik), [])
+    ends: dict = {}
 
     out: list[Event] = []
     for f in mine:
@@ -429,6 +464,8 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
             continue
         plan = plan_state(root)
         others = sorted({r.code for r in lines if r.code in COMPANY_CODES})
+        # the day history stated this filing's position on
+        period = period_end(client, issuer_cik, f, ends)
 
         groups: dict = {}
         for r in lines:
@@ -436,25 +473,28 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                 continue
             if any(e.matches(r.security, r.direct) for e in exclude):
                 continue
-            key = (r.code, (r.as_of or when)[:10])
-            g = groups.setdefault(key, {
+            day = (r.as_of or when)[:10]
+            g = groups.setdefault(r.code, {
                 "shares": 0.0, "value": 0.0, "rows": 0, "unpriced": 0,
-                "secs": set(), "dirs": set()})
+                "secs": set(), "dirs": set(), "first": day, "last": day})
             g["shares"] += abs(r.moved)
             g["rows"] += 1
             g["secs"].add(r.security.strip())
             g["dirs"].add(r.direct)
+            g["first"] = min(g["first"], day)
+            g["last"] = max(g["last"], day)
             if r.price and r.price > 0:
                 g["value"] += abs(r.moved) * r.price
             else:
                 g["unpriced"] += 1
 
-        for (code, day), g in groups.items():
+        for code, g in groups.items():
+            day = g["last"]
             if since and day < since:
                 continue
             shares, value = g["shares"], g["value"]
             priced = g["rows"] - g["unpriced"]
-            after, net, resid = _position(hist_rows, day)
+            after, net, resid = _position(hist_rows, period)
             price = (value / shares) if (priced and shares) else None
             # THE CHART NEEDS TODAY'S UNITS. A Tesla sale filed at $1,000
             # in 2021 sits at $333 against a split-adjusted price line;
@@ -464,7 +504,8 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
             out.append(Event(
                 ticker=ticker, issuer_cik=issuer_cik, ceo=ceo,
                 owner_cik=str(owner_cik), accession=acc, form=form,
-                filed=(f.get("filingDate") or "")[:10], traded=day, code=code,
+                filed=(f.get("filingDate") or "")[:10], traded=day,
+                traded_from=g["first"], code=code,
                 buy=(code == "P"), shares=shares,
                 value=value if priced else None,
                 avg_price=price,

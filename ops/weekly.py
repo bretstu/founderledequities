@@ -84,12 +84,19 @@ def moved(e):
 
 
 def pct_of_stake(e):
+    """The site's rule: the filing's net change as a share of the stake
+    before it, signed by the number (a SOLD filing that exercised and kept
+    shares reads as the rise it was)."""
     p = num(e.get("pct_of_holding"))
+    approx = ""
     if p is None:
-        return "share of stake not stated"
-    approx = "≈" if (e.get("pct_approx") or "").strip() in ("1", "true", "True") else ""
-    sign = "+" if e.get("code") == "P" else "−"
-    return f"{approx}{sign}{p:.1f}% of stake" if p >= 1 else f"{approx}{sign}{p:.2f}% of stake"
+        p = num(e.get("pct_approx"))
+        approx = "≈" if p is not None else ""
+    if p is None:
+        return "stake change not stated"
+    sign = "+" if p >= 0 else "−"
+    m = abs(p)
+    return f"{approx}stake {sign}{m:.1f}%" if m >= 1 else f"{approx}stake {sign}{m:.2f}%"
 
 
 def plan_word(e):
@@ -101,6 +108,9 @@ def line(e, extra=""):
     v = num(e.get("value"))
     what = money(v) if v and (e.get("price_flag") or "") != "unpriced" else f"{num(e.get('shares')) or 0:,.0f} sh"
     when = e.get("traded") or e.get("filed") or ""
+    first = e.get("traded_from") or ""
+    if first and first != when:
+        when = f"{first} to {when}"
     filed = e.get("filed") or ""
     lag = f", filed {filed}" if filed and filed != when else ""
     url = e.get("url") or ""
@@ -171,8 +181,8 @@ def build(root, since, until, out_md, out_json):
         if three and v > max(num(x.get("value")) or 0 for x in three):
             flags.append("largest sale in 3 years")
         p = num(e.get("pct_of_holding"))
-        if p and p >= 5:
-            flags.append(f"{p:.0f}% of the stake")
+        if p is not None and p <= -5:
+            flags.append(f"{-p:.0f}% of the stake")
         items.append(line(e, " · ".join(flags)))
     section("Founders who sold, discretionary", items, key="founder_sells_discretionary")
 

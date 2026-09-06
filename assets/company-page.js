@@ -305,8 +305,10 @@ function tradesBlock(r){
   const chip=(v,lab,n)=>`<button class="chip${VIEW===v?" on":""}" onclick="VIEW='${v}';renderOpen(PANEL[0])">${lab} <small>${n}</small></button>`;
   const rows=evs.map(e=>{
     const b=evBadge(e);const p=pctOf(e);const uk=unchangedKind(e);
-    const stk=uk==="pre"?"pre-IPO":uk!==null?"stake unchanged":p?`${p.approx?"≈ ":""}${e.c==="P"?"+":"−"}${p.v>=100?"100%+":p.v.toFixed(p.v<1?2:1)+"%"} of stake`:"";
-    return `<div class="drow"><span class="adate" title="traded ${e.td||e.fd}; filed ${e.fd}${lagNote(e)}">${e.td||e.fd}</span>
+    const stk=uk==="pre"?"pre-IPO":uk!==null?"stake unchanged":p?stakeChange(p.v,p.approx):"";
+    /* one filing is one row: its first and last trade day when they differ */
+    const span=e.tf&&e.tf!==e.td?`${e.tf} to ${e.td.slice(5)}`:(e.td||e.fd);
+    return `<div class="drow"><span class="adate" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</span>
       <span class="abadge ${b.k}" title="${esc(b.n)}">${b.t}</span>
       <span class="aval ${e.c==="P"?"up":"down"}">${evValCell(e)}</span>
       <span class="adlt ${e.c==="P"?"up":"down"}">${e.c==="P"?"+":"−"}${compact(e.sh)}</span>

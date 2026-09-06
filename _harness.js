@@ -295,8 +295,12 @@ const P=runPage();
   else console.log("  (no approximate-percentage rows in this feed; ≈ not exercised)");
   const strict=EVENTS.find(e=>e.pc!==null&&e.pc!==undefined&&e.c==="S"&&P.unchangedKind(e)===null);
   assert(!evPctCell(strict).includes("≈"),"a strict figure carries no ≈");
-  const tko=EVENTS.find(e=>e.tk==="TKO"&&e.pc>100);
-  assert(tko && evPctCell(tko).includes("≥100%"), "13,111% renders as ≥100%");
+  // beyond the whole stake, either way: a multiple, never "13,111%"
+  const mult=EVENTS.find(e=>e.pc>=100);
+  if(mult)assert(evPctCell(mult).includes("stake ×"),"a rise past 100% renders as a multiple: "+mult.tk);
+  const out=EVENTS.find(e=>e.pc<=-100);
+  if(out)assert(evPctCell(out).includes("sold out"),"a fall of the whole stake reads sold out: "+out.tk);
+  if(!mult&&!out)console.log("  (no beyond-the-stake rows in this feed)");
   const exs1=EVENTS.find(e=>e.lb==="exercise and sell");
   assert(evPctCell(exs1).includes("unchanged"), "exercise-and-sell shows stake unchanged");
 

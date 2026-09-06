@@ -334,7 +334,8 @@ def test_datadog_net_change_comes_from_history_not_a_second_walk():
     assert e.shares == 2900 + 142572 + 60751
     assert e.holding_after == 244908.0, "the day's total, from history"
     assert e.net_change == 244908.0 - 451131.0
-    assert e.pct_of_holding is not None and 0 < e.pct_of_holding < 100
+    assert e.pct_of_holding is not None and -100 < e.pct_of_holding < 0, "signed: the stake fell"
+    assert abs(e.pct_of_holding - 100 * (244908.0 - 451131.0) / 451131.0) < 1e-9
 
 
 def test_deere_exercise_and_sell_leaves_the_position_alone():
@@ -402,23 +403,101 @@ def test_without_history_the_feed_still_reports_the_trades():
     assert e.pct_of_holding is None
 
 
-def test_costar_keeps_each_trading_day_apart():
-    """One filing, three days: 26, 27 and 30 April 2018.
-
-    Grouping on the accession alone would date two of Florance's sales to a
-    day they did not happen.
-    """
+def test_costar_one_filing_three_days_is_one_event_with_a_span():
+    """One filing, three days: 26, 27 and 30 April 2018. One instruction,
+    filed once, one event: the shares and dollars of all three days, the
+    average price, dated by the last day with the first kept beside it.
+    Kept apart by day, the 26th and 27th had no position of their own and
+    borrowed the previous filing's verdict."""
     from fle.events import build_events
 
     rows = [("2018-04-26", "S", "D", 7782, 372.34, 136870, "D", "Common Stock", ""),
             ("2018-04-27", "S", "D", 11200, 371.15, 125670, "D", "Common Stock", ""),
             ("2018-04-30", "S", "D", 5839, 369.05, 119831, "D", "Common Stock", "")]
-    c = _client_for(_own_doc(rows), acc="0001-18-A", report="2018-04-30")
-    ev = sorted(build_events(c, 320193, "1494730", "CSGP", "Andrew C. Florance"),
-                key=lambda e: e.traded)
+    hist = {320193: [("2018-03-01", 144652.0, 144652.0, 0.0),
+                     ("2018-04-30", 119831.0, 119831.0, 0.0)]}
+    c = _client_for(_own_doc(rows), acc="0001-18-A", report="2018-04-30")   # filed on the last day
+    ev = build_events(c, 320193, "1494730", "CSGP", "Andrew C. Florance", history=hist)
 
-    assert [e.traded for e in ev] == ["2018-04-26", "2018-04-27", "2018-04-30"]
-    assert [e.shares for e in ev] == [7782, 11200, 5839]
+    assert len(ev) == 1
+    e = ev[0]
+    assert (e.traded_from, e.traded) == ("2018-04-26", "2018-04-30")
+    assert e.shares == 7782 + 11200 + 5839 and e.rows == 3
+    assert round(e.value, 2) == round(7782 * 372.34 + 11200 * 371.15 + 5839 * 369.05, 2)
+    assert e.holding_after == 119831.0 and e.net_change == 119831.0 - 144652.0
+    assert abs(e.pct_of_holding - 100 * (119831.0 - 144652.0) / 144652.0) < 1e-9
+    assert e.label == "sale"
+
+
+def test_commvault_every_day_of_a_filing_carries_the_filings_verdict():
+    """Mirchandani sold on 17, 18 and 19 August 2026 in one filing; the
+    stake fell 64,868 across it (with residue: a partial vehicle). By day,
+    the 17th and 18th read "position unchanged" because the previous
+    filing had netted to zero. One event, and the filing's own residue
+    says the change is not stated."""
+    from fle.events import build_events
+
+    rows = [("2026-08-17", "S", "D", 12437, 60.0, 366107, "D", "Common Stock", ""),
+            ("2026-08-18", "S", "D", 4840, 60.0, 361267, "D", "Common Stock", ""),
+            ("2026-08-19", "S", "D", 6857, 60.0, 354410, "D", "Common Stock", "")]
+    hist = {320193: [("2026-05-20", 378544.0, 378544.0, 0.0),      # nets to zero
+                     ("2026-08-19", 313676.0, 313676.0, -40734.0)]}
+    c = _client_for(_own_doc(rows), acc="0001-26-C", report="2026-08-19")
+    ev = build_events(c, 320193, "1494730", "CVLT", "Sanjay Mirchandani", history=hist)
+    assert len(ev) == 1 and ev[0].shares == 24134
+    assert ev[0].net_change == -64868.0 and ev[0].residue == -40734.0
+    assert ev[0].label == "sale" and ev[0].pct_of_holding is None, "residue: not stated, not unchanged"
+
+
+def test_adpt_an_exercise_and_sell_over_two_days_is_unchanged_on_both():
+    """Robins exercised and sold 600,000 shares over 17 and 18 August 2026.
+    By day, the 17th read "discretionary sale, 12.8% of stake" from the
+    previous filing's net. One event: exercise and sell, unchanged."""
+    from fle.events import build_events
+
+    rows = [("2026-08-17", "M", "A", 321324, 5.0, 2501842, "D", "Common Stock", ""),
+            ("2026-08-17", "S", "D", 321324, 40.0, 2180518, "D", "Common Stock", ""),
+            ("2026-08-18", "M", "A", 278676, 5.0, 2459194, "D", "Common Stock", ""),
+            ("2026-08-18", "S", "D", 278676, 40.0, 2180518, "D", "Common Stock", "")]
+    hist = {320193: [("2026-05-01", 2180518.0, 2180518.0, 0.0),
+                     ("2026-08-18", 2180518.0, 2180518.0, 0.0)]}
+    c = _client_for(_own_doc(rows, aff="false"), acc="0001-26-D", report="2026-08-18")
+    ev = build_events(c, 320193, "1494730", "ADPT", "Chad Robins", history=hist)
+    assert len(ev) == 1
+    assert ev[0].shares == 600000 and ev[0].label == "exercise and sell"
+    assert ev[0].pct_of_holding is None and ev[0].stake_unchanged
+
+
+def test_deere_2017_an_exercise_that_kept_some_shares_reads_as_a_rise():
+    """May exercised 25,130, sold 19,907 and kept 5,223. The old percent,
+    gross sold over the position before, printed -40.4% beside a filing
+    that left him richer. The net says +12%, beside a SOLD badge, with an
+    M in the codes: the truth of that filing."""
+    from fle.events import build_events
+
+    rows = [("2017-06-06", "M", "A", 25130, 80.0, 69241, "D", "Common Stock", ""),
+            ("2017-06-06", "S", "D", 19907, 125.57, 49334, "D", "Common Stock", "")]
+    hist = {320193: [("2017-01-01", 44111.0, 44111.0, 0.0),
+                     ("2017-06-06", 49334.0, 49334.0, 0.0)]}
+    c = _client_for(_own_doc(rows), acc="0001-17-A", report="2017-06-06")
+    e = build_events(c, 320193, "1494730", "DE", "John C. May", history=hist)[0]
+    assert e.code == "S" and e.net_change == 5223.0
+    assert abs(e.pct_of_holding - 100 * 5223 / 44111) < 1e-9
+    assert e.pct_of_holding > 0 and "M" in e.other_codes
+
+
+def test_a_filing_whose_day_history_never_saw_states_no_change():
+    """No snapshot on the filing's day: the holding is carried, the net is
+    not borrowed from a neighbour, and no percent or verdict is claimed."""
+    from fle.events import build_events
+
+    rows = [("2026-08-17", "S", "D", 1000, 60.0, 9000, "D", "Common Stock", "")]
+    hist = {320193: [("2026-05-20", 10000.0, 10000.0, -2000.0),
+                     ("2026-09-01", 9000.0, 9000.0, 0.0)]}
+    c = _client_for(_own_doc(rows), acc="0001-26-E", report="2026-08-17")
+    e = build_events(c, 320193, "1494730", "X", "Someone", history=hist)[0]
+    assert e.holding_after == 10000.0 and e.net_change is None and e.residue is None
+    assert e.pct_of_holding is None and not e.stake_unchanged and e.label == "sale"
 
 
 def test_the_10b5_1_box_has_four_spellings_and_a_missing_fifth():
@@ -485,7 +564,7 @@ def test_tko_the_feed_honours_the_panel_s_exclusions():
 def test_a_chief_executive_who_sells_out_has_no_percentage_left():
     """Selling the whole position closes at zero, and zero has no percentage.
 
-    `pct_of_holding` rebuilds the pre-trade position from the day's close.
+    `pct_of_holding` rebuilds the pre-filing position from the close and the net.
     For a sale that empties the account the close is zero and the rebuild is
     the sale itself; for a first purchase the position before was zero. Both
     are legitimate, both divided by zero, and neither appeared in the eight
@@ -496,7 +575,7 @@ def test_a_chief_executive_who_sells_out_has_no_percentage_left():
     sold_out = Event(shares=1_000, holding_after=0.0, net_change=-1_000.0,
                      buy=False)
     assert sold_out.pct_of_holding is not None      # sold 100% of 1,000
-    assert round(sold_out.pct_of_holding) == 100
+    assert round(sold_out.pct_of_holding) == -100
 
     first_buy = Event(shares=500, holding_after=500.0, net_change=500.0,
                       buy=True)

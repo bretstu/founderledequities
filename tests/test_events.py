@@ -25,13 +25,15 @@ def test_a_snapshot_day_reports_its_own_residue():
     assert resid == 2_500
 
 
-def test_a_day_between_snapshots_forward_fills_and_owns_no_residue():
-    """366 events once inherited a neighbour's reconciliation. A day history
-    has no snapshot for knows the carried holding and nothing else -- not the
-    nearest row's residue, and not zero, which would claim the day was clean."""
+def test_a_day_between_snapshots_forward_fills_and_owns_no_net_or_residue():
+    """366 events once inherited a neighbour's reconciliation, and a
+    quarter of all trades inherited a neighbour's NET, which decided their
+    verdict. A day history has no snapshot for knows the carried holding
+    and nothing else -- not the nearest row's net or residue, and not
+    zero, which would claim the day was clean."""
     after, net, resid = _position(HIST, "2026-03-01")
     assert after == 90_000
-    assert net == -10_000
+    assert net is None
     assert resid is None
 
 
@@ -75,10 +77,13 @@ def test_the_first_snapshot_has_no_previous_day_to_net_against():
 
 # ---------------------------------------------------------- percent of stake
 
-def test_percent_is_of_the_position_before_the_trade():
-    # sold 10,000 and closed at 90,000 -- that is 10% of the 100,000 held
+def test_percent_is_the_filings_net_over_the_position_before_it():
+    # closed at 90,000 having fallen 10,000: the stake is 10% smaller
     e = _e(holding_after=90_000, net_change=-10_000, residue=0.0)
-    assert abs(e.pct_of_holding - 10.0) < 1e-9
+    assert abs(e.pct_of_holding + 10.0) < 1e-9
+    # sold 10,000 gross but the filing also exercised 12,000: the stake ROSE
+    e = _e(holding_after=102_000, net_change=2_000, residue=0.0, other_codes="M")
+    assert abs(e.pct_of_holding - 2.0) < 1e-9, "signed, from the net, not the gross"
 
 
 def test_an_exercise_and_sell_prints_no_percentage():
@@ -122,7 +127,7 @@ def test_a_first_purchase_divides_by_no_prior_stake():
 
 def test_selling_out_entirely_is_all_of_the_stake():
     e = _e(holding_after=0, net_change=-10_000, residue=0.0)
-    assert abs(e.pct_of_holding - 100.0) < 1e-9
+    assert abs(e.pct_of_holding + 100.0) < 1e-9
 
 
 # ------------------------------------------------------------------- labels
@@ -205,7 +210,8 @@ def test_a_residue_too_small_to_change_the_answer_states_it_with_a_caution():
     tan = _e(code="P", buy=True, shares=105_263, holding_after=1_331_640,
              net_change=105_824, residue=561.0)
     assert tan.pct_of_holding is None, "the strict figure is still declined"
-    assert abs(tan.pct_approx - 100 * 105_263 / (1_331_640 - 105_263)) < 1e-9
+    # the net less the residue, over the position before the filing
+    assert abs(tan.pct_approx - 100 * (105_824 - 561) / (1_331_640 - 105_824)) < 1e-9
     # the median residue day: 38% of the trade -- stays unstated
     big = _e(shares=10_000, holding_after=100_000, net_change=-13_800, residue=3_800.0)
     assert big.pct_approx is None

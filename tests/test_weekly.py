@@ -22,7 +22,7 @@ def _fixture(tmp_path):
          "shares": 1000, "value": 100000, "avg_price": 100, "pct_of_holding": 2.0, "pct_approx": "", "plan": "discretionary",
          "url": "https://sec.gov/f1", "price_flag": "", "pre_ipo": "0", "registered": "2015-01-01"},
         {"ticker": "FND", "ceo": "A Founder", "filed": "2026-09-03", "traded": "2026-09-02", "code": "S", "label": "sale",
-         "shares": 500, "value": 60000, "avg_price": 120, "pct_of_holding": 1.0, "pct_approx": "", "plan": "discretionary",
+         "shares": 500, "value": 60000, "avg_price": 120, "pct_of_holding": -1.0, "pct_approx": "", "plan": "discretionary",
          "url": "https://sec.gov/f2", "price_flag": "", "pre_ipo": "0", "registered": "2015-01-01"},
         {"ticker": "FND", "ceo": "A Founder", "filed": "2026-09-03", "traded": "2026-09-02", "code": "S", "label": "exercise and sell",
          "shares": 5000, "value": 900000, "avg_price": 180, "pct_of_holding": "", "pct_approx": "", "plan": "plan",
@@ -52,7 +52,8 @@ def test_the_briefing_follows_the_sites_rules(tmp_path):
     md = tmp_path / "b.md"; js = tmp_path / "b.json"
     weekly.build(root, "2026-08-28", "2026-09-04", str(md), str(js))
     text = md.read_text(encoding="utf-8"); b = json.load(open(js))
-    assert "**A Founder**, FND — $100,000 · +2.0% of stake · discretionary" in text, "the founder's purchase, exact below $1M, labelled"
+    assert "**A Founder**, FND — $100,000 · stake +2.0% · discretionary" in text, "the founder's purchase, exact below $1M, labelled"
+    assert "stake −1.0%" in text, "the percent is signed by the filing's net, not by the code"
     assert "paid $100.00, now $110.00 (+10.0%)" in text, "and where the stock is now against what he paid"
     assert len(b["sections"]["founder_buys"]) == 1, "the hired CEO's purchase is not a founder purchase"
     assert "NON-FOUNDER" in text and "A Hire" in text, "but it appears in the comparison section, marked"
