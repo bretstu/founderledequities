@@ -57,7 +57,7 @@ from .ledger import (SECTION16, Group, _merge_same_day, _parse, _rows,
                      displace_amended,
                      class_letters,
                      is_share_class, issuer_of, match_class, SINGLE_CLASS,
-                     vehicle_keys)
+                     vehicle_keys, is_anonymous)
 
 
 @dataclass
@@ -539,6 +539,8 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
             # 361,603,542, and the series oscillated between the two.
             # Anonymous vehicles ("See footnote") are told apart by their
             # running balances: see ledger.vehicle_keys.
+            if is_anonymous(r.nature, r.direct):
+                g.anon.add((vehicle[0], vehicle[1].split("#", 1)[0]))
             if r.code:
                 # The balance BEFORE this document touched the vehicle: the
                 # first row's balance minus the first row's own move. It is
@@ -668,8 +670,16 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                 groups[key] = chained
             else:
                 # Holdings only: no claim to the total. The named vehicles
-                # update; the rest of the class stands.
+                # update; the rest of the class stands. An anonymous line
+                # restates every anonymous vehicle of its text, segments
+                # included (Group.covers): the trusts a transaction filing
+                # told apart are the trusts this filing lists as one text.
                 merged = copy.deepcopy(prev)
+                for u in list(merged.vehicles()):
+                    if u not in chained.hold_by_vehicle and chained.covers(u):
+                        for d in (merged.hold_by_vehicle, merged.last_txn, merged.opening):
+                            d.pop(u, None)
+                merged.holdings = sum(merged.hold_by_vehicle.values())
                 _merge_same_day(merged, chained, newest_first=False)
                 merged.filed = when
                 groups[key] = merged

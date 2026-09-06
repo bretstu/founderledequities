@@ -1116,6 +1116,26 @@ def test_bill_anonymous_vehicles_are_told_apart_by_their_running_balances():
     assert not is_anonymous("", "D") and not is_anonymous("See footnote", "D"), "the direct line is a name"
 
 
+def test_an_anonymous_restatement_supersedes_the_segments_it_cannot_name():
+    """Dorsey's shape. Five trusts, all "See Footnote". A gift filing
+    transacts two of them (told apart by their balances); the next Form 5
+    lists all five as holdings again. The restatement means all five, so
+    the segment the gift filing opened does not stand beside the sum.
+    Without this, 48,844,566 read as 84,608,558 in the record."""
+    H = lambda bal: ("Common Stock", "I", "See Footnote", "", 0, "", bal)
+    T = lambda moved, bal: ("Common Stock", "I", "See Footnote", "G", moved, "D", bal)
+    five = _h4t([H(10_000_000), H(8_000_000), H(6_000_000), H(4_000_000), H(2_000_000)], "2025-02-01")
+    gift = _h4t([T(1_000_000, 9_000_000), T(500_000, 3_500_000)], "2025-06-01")
+    again = _h4t([H(9_000_000), H(8_000_000), H(6_000_000), H(3_500_000), H(2_000_000)], "2026-02-01")
+    # (accession keys must not be substrings of the fixture URL: "a" is in "data")
+    hist = _walk_priced({"x1": five, "x2": gift, "x3": again},
+                        [("x1", "2025-02-01"), ("x2", "2025-06-01"), ("x3", "2026-02-01")])
+    got = [(s.date, s.shares) for s in hist.snapshots]
+    assert got[0] == ("2025-02-01", 30_000_000)
+    assert got[1] == ("2025-06-01", 12_500_000), "the gift filing lists two trusts; the crater stands, flagged"
+    assert got[2] == ("2026-02-01", 28_500_000), "the restatement means all five, not five plus a segment"
+
+
 def test_direct_rows_that_miss_by_a_share_are_one_line():
     """Portland General, 13 February 2026: nine direct rows of awards and
     withholding whose balances miss each other by a share (fractional

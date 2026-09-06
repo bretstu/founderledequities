@@ -761,6 +761,7 @@ class Group:
     moved_here: bool = False      # this filing reported a transaction in this class
     opening: dict = field(default_factory=dict)   # vehicle -> balance BEFORE
                                                   # this document's first row
+    anon: set = field(default_factory=set)        # base keys whose text names nothing
     rows: int = 0
     as_of: str = ""
     accession: str = ""
@@ -775,6 +776,25 @@ class Group:
         out = dict(self.hold_by_vehicle)
         out.update(self.last_txn)
         return out
+
+    def covers(self, vehicle) -> bool:
+        """Whether this document's holdings restate `vehicle`.
+
+        A NAMED vehicle is restated by a holding line with its own key. An
+        ANONYMOUS one ("See footnote") is restated by any anonymous holding
+        line of the same text, because the filing cannot say which trust
+        each line is: Dorsey's Form 5 lists his five trusts as five "See
+        Footnote" lines, and it means all five. Segments a transaction
+        filing told apart by their balances (seefootnote#2, #3) are the
+        same trusts, so the restatement covers them too. Without this, a
+        holdings-only filing overwrote the base key with the five-trust
+        sum and left #2 standing beside it, counted twice: 48,844,566
+        became 84,608,558 in the record while the panel held.
+        """
+        if vehicle in self.hold_by_vehicle:
+            return True
+        base = (vehicle[0], vehicle[1].split("#", 1)[0])
+        return base in self.anon and base in self.hold_by_vehicle
 
     @property
     def key(self):
