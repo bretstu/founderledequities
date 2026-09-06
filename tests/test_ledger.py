@@ -1073,7 +1073,58 @@ def test_the_vehicle_is_never_carried_between_documents():
     src = inspect.getsource(ledger.build_ledger)
     assert 'key = title.lower()' in src                  # the class, alone
     assert 'r.nature' not in src.split('key = title.lower()')[0][-400:]
-    assert 'vehicle = vehicle_key(r.direct, r.nature)' in src
+    assert 'keys = vehicle_keys(rows)' in src and 'for r, vehicle in zip(rows, keys):' in src
+
+
+def _bill_rows():
+    """Lacerte's 4 September 2026 filing, to the share: five vehicles
+    selling across two days, four of them labelled 'See footnote' (one
+    'See foornote'), and three holdings restated."""
+    S = lambda nat, moved, bal: ("Common Stock", "I" if nat else "D", nat, "S", moved, "D", bal)
+    return [S("", 40_357, 100_899), S("", 100_899, 0),
+            S("See footnote", 11_765, 87_828), S("See footnote", 26_974, 60_854),      # Makahakama Trust
+            S("See footnote", 10_636, 194_364), S("See footnote", 24_364, 170_000),    # the Foundation
+            S("See footnote", 10_970, 173_279), S("See footnote", 10_154, 163_125),    # trust A
+            S("See foornote", 15_372, 168_877), S("See footnote", 5_752, 163_125),     # trust B, typo on the first row
+            ("Common Stock", "I", "See footnote", "", 0, "", 1_708_749),
+            ("Common Stock", "I", "See footnote", "", 0, "", 135_000),
+            ("Common Stock", "I", "See footnote", "", 0, "", 135_000)]
+
+
+def test_bill_anonymous_vehicles_are_told_apart_by_their_running_balances():
+    """Keyed on the text, four trusts became one and the walk settled
+    2,310,751 against the filing's 2,535,853 (2.71% published, 2.97%
+    held). The balances say which rows belong together."""
+    from fle.ledger import vehicle_keys, is_anonymous
+    from fle.ledger import _rows
+    root = ET.fromstring(_h4t(_bill_rows(), "2026-09-03"))
+    rows = _rows(root, "4", "2026-09-03", "x")
+    keys = vehicle_keys(rows)
+    txn = [k[1] for k, r in zip(keys, rows) if r.code and r.direct == "I"]
+    pairs = [txn[i:i + 2] for i in range(0, 8, 2)]
+    assert all(a == b for a, b in pairs), "each trust's two rows chain: the second opens where the first closed"
+    assert len({a for a, _ in pairs}) == 4, "four trusts, not one"
+    assert pairs[3] == ["seefoornote", "seefoornote"], "the typo row's trust: its second row joined it by the balance it opens at"
+    hold = [k[1] for k, r in zip(keys, rows) if not r.code]
+    assert hold == ["seefootnote"] * 3, "holdings keep the plain key; they add"
+    # the filing's own total, on both walks
+    doc = _h4t(_bill_rows(), "2026-09-03")
+    hist = _walk_priced({"b1": doc}, [("b1", "2026-09-03")])
+    assert hist.snapshots[-1].shares == 2_535_853
+    assert is_anonymous("See footnote") and is_anonymous("see notes 3 and 4") and is_anonymous("(2)") and is_anonymous("")
+    assert not is_anonymous("By Elon Musk Revocable Trust") and not is_anonymous("By Trust")
+
+
+def test_a_named_vehicle_whose_balances_do_not_chain_is_still_one_vehicle():
+    """Musk's SpaceX catch-up Form 4: four rows for the Revocable Trust
+    whose running balances drop 25M between rows the filing never
+    explains. A name is a name; the last balance is the position."""
+    from fle.ledger import vehicle_keys, _rows
+    T = lambda code, moved, ad, bal: ("Class A Common Stock", "I", "By Elon Musk Revocable Trust", code, moved, ad, bal)
+    rows = _rows(ET.fromstring(_h4t([T("A", 511_289_725, "A", 551_349_985), T("S", 11_390, "D", 526_165_900),
+                                     T("C", 282_614_850, "A", 808_780_270), T("C", 33_311_400, "A", 842_091_670)],
+                                    "2026-06-15")), "4", "2026-06-15", "x")
+    assert len(set(vehicle_keys(rows))) == 1
 
 
 def test_one_snapshot_per_day_not_per_filing():

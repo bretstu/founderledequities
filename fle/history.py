@@ -57,7 +57,7 @@ from .ledger import (SECTION16, Group, _merge_same_day, _parse, _rows,
                      displace_amended,
                      class_letters,
                      is_share_class, issuer_of, match_class, SINGLE_CLASS,
-                     vehicle_key)
+                     vehicle_keys)
 
 
 @dataclass
@@ -493,7 +493,8 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
             elif r.moved:
                 # A grant or a gift reports no price. Counted, not guessed at.
                 day_unpriced[when] = day_unpriced.get(when, 0) + 1
-        for r in _with_supplements(root, f.get("form") or "", when, acc, exclude):
+        doc_rows = _with_supplements(root, f.get("form") or "", when, acc, exclude)
+        for r, vehicle in zip(doc_rows, vehicle_keys(doc_rows)):
             if r.shares != r.shares:
                 continue
             if r.table == "II" and not is_share_class(r.security):
@@ -536,7 +537,8 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
             # ledger.build_ledger. Zuckerberg converts out of two vehicles in
             # one filing; taking only the last left 7,504,308 of his
             # 361,603,542, and the series oscillated between the two.
-            vehicle = vehicle_key(r.direct, r.nature)
+            # Anonymous vehicles ("See footnote") are told apart by their
+            # running balances: see ledger.vehicle_keys.
             if r.code:
                 # The balance BEFORE this document touched the vehicle: the
                 # first row's balance minus the first row's own move. It is

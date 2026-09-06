@@ -275,6 +275,85 @@ def vehicle_key(direct: str | None, nature: str | None) -> tuple:
     return (direct, re.sub(r"[^a-z0-9]+", "", text.lower()))
 
 
+# A NATURE TEXT THAT NAMES NOTHING. "See footnote", "See note 3", "Per
+# footnotes", "(2)", or nothing at all: a pointer to prose, not a name. Only
+# for these does the running balance decide which rows belong together; a
+# NAMED vehicle keeps the text rule, because one named vehicle whose
+# balances do not chain (Musk's SpaceX catch-up Form 4 drops 25M between
+# rows it never explains) is still one vehicle, and the arithmetic alone
+# cannot tell that from two anonymous ones. Misclassifying a pointer as a
+# name falls back to the old behaviour; the reverse cannot happen, since a
+# name does not begin with "see".
+_ANONYMOUS = re.compile(r"^\W*(see|per|refer|footnotes?|notes?)\b|^\W*\d*\W*$", re.I)
+
+
+def is_anonymous(nature: str | None) -> bool:
+    return bool(_ANONYMOUS.match(nature or ""))
+
+
+def vehicle_keys(rows: list) -> list:
+    """One key per row of ONE document: the nature text, and where several
+    transacting vehicles share it, the running balance tells them apart.
+
+    A Form 4 gives a vehicle no identifier, only the nature text, and some
+    lawyers write "See footnote" on every line. Keyed on the text alone,
+    four of Lacerte's trusts became one vehicle and only the last balance
+    survived: his 4 September 2026 filing sold 257,243 across five lines,
+    every running balance closing where the filing says, and the walk
+    settled 2,310,751 against the filing's 2,535,853. Dorsey and Foroughi
+    file the same way.
+
+    The document already says which rows belong together, in numbers. A
+    transaction row's balance before it is its balance after less what it
+    moved. A row that opens where the previous row under the same text
+    closed is that vehicle continuing (Makahakama: 99,593 -> 87,828, then
+    a row opening at 87,828 -> 60,854); a row that opens somewhere else
+    (205,000, after a close of 60,854) is another vehicle and gets its own
+    key. A row whose text differs but opens exactly where a segment closed
+    joins that segment: the "See foornote" typo continues "See footnote".
+    The same evidence history trusts to join two documents (_chain_into),
+    applied inside one.
+
+    Holding rows keep the plain text key: they add, so anonymity never
+    hurt them. Footnoted balances (NaN) are skipped by every caller and
+    keep the plain key too. Named vehicles keep the text rule (see
+    _ANONYMOUS for why). Footnote ids are deliberately not used: two lines
+    can share one, and the numbers already decide.
+    """
+    keys = []
+    closes: dict = {}          # segment key -> (direct, last close)
+    count: dict = {}           # base key -> segments opened
+    for r in rows:
+        base = vehicle_key(r.direct, r.nature)
+        if not r.code or r.shares != r.shares or not is_anonymous(r.nature):
+            keys.append(base)
+            continue
+        signed = (r.moved if r.acquired else -r.moved) or 0.0
+        opening = r.shares - signed
+        mine = [k for k in closes if k[0] == base[0]
+                and (k[1] == base[1] or k[1].startswith(base[1] + "#"))]
+        if not signed and mine:
+            # a transaction row that states no amount gives the arithmetic
+            # nothing to test; it continues the text's newest segment, which
+            # is what the text-only rule always did
+            hit = mine[-1]
+        else:
+            hit = next((k for k in mine if abs(closes[k][1] - opening) < 0.5), None)
+        if hit is None:
+            # another pointer text, same direct, closing where this opens:
+            # the "See foornote" typo continuing "See footnote"
+            hit = next((k for k, (d, c) in closes.items()
+                        if d == r.direct and abs(c - opening) < 0.5), None)
+        if hit is None:
+            n = count.get(base, 0) + 1
+            count[base] = n
+            hit = base if n == 1 else (base[0], f"{base[1]}#{n}")
+        closes.pop(hit, None)
+        closes[hit] = (r.direct, r.shares)      # newest last
+        keys.append(hit)
+    return keys
+
+
 # (Deleted: one regex for stripping footnote markers
 # from vehicle names. They were the last remnants of v1's attempt to
 # identify vehicles ACROSS filings, were never called by this design, and
@@ -1038,7 +1117,8 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
         #
         # The transaction code tells them apart, and it is a structured field.
         here: dict = {}
-        for r in rows:
+        keys = vehicle_keys(rows)
+        for r, vehicle in zip(rows, keys):
             if r.shares != r.shares:
                 led.footnoted.append((when, r.security.lower(), r.label()))
                 continue
@@ -1116,7 +1196,8 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
             #
             # Taking the last transaction per GROUP rather than per vehicle
             # turned 361,603,542 of Zuckerberg's Class B into 7,504,308.
-            vehicle = vehicle_key(r.direct, r.nature)
+            # And where several vehicles share one text ("See footnote"),
+            # the running balance tells them apart: see vehicle_keys.
             if r.code:
                 g.last_txn[vehicle] = r.shares
                 g.as_of = r.as_of
