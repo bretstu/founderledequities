@@ -85,7 +85,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .ledger import (SECTION16, _doc_url, _parse, _rows,
-                     displace_amended, period_end)
+                     displace_amended, period_end, issuer_of)
 from .history import COVER_FORMS
 
 # A market trade, and nothing else. See the module docstring.
@@ -455,6 +455,18 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
     for f in mine:
         root = _parse(client, issuer_cik, f)
         if root is None:
+            continue
+        # A FILING IN BOTH FEEDS THAT IS ABOUT ANOTHER COMPANY. Blackstone
+        # is a 10% owner of the companies it controls and Schwarzman signs
+        # those Form 4s as the controlling person, so 587 of the 605
+        # filings in both his feed and Blackstone's are about Viper, Gates,
+        # Cheniere, Hilton, Bumble, Kodak and a hundred more; 18 are about
+        # Blackstone, the newest from 2023. The ledger and history read the
+        # filing's own <issuer> and skip the rest (ledger.issuer_of); the
+        # feed only ever had this check missing here, and $547M of other
+        # companies' stock headed the Sold column as his.
+        got = issuer_of(root)
+        if got and got != str(int(issuer_cik)):
             continue
         acc = f.get("accessionNumber") or ""
         form = f.get("form") or ""

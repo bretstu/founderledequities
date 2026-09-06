@@ -506,6 +506,22 @@ def test_two_filings_on_one_day_share_the_days_net_by_gross_shares():
     assert big.pct_of_holding < small.pct_of_holding < 0, "the small filing reads as a sliver"
 
 
+def test_blackstone_a_filing_about_another_company_is_not_a_trade_here():
+    """Schwarzman signs Form 4s about the companies Blackstone controls as
+    its controlling person, so they sit in both feeds. 587 of 605 are about
+    other issuers; the walks skip them by the filing's own <issuer>, and
+    the feed must too."""
+    from fle.events import build_events
+
+    rows = [("2026-08-25", "S", "D", 1_000_000, 100.0, 0, "I", "Class A Common Stock", "By Blackstone")]
+    theirs = _own_doc(rows).replace("<issuerCik>0000320193</issuerCik>", "<issuerCik>0001602065</issuerCik>")
+    c = _client_for(theirs, acc="0001-26-V", report="2026-08-25")
+    assert build_events(c, 320193, "1494730", "BX", "Stephen A. Schwarzman") == []
+    # the same rows about this issuer are a trade
+    c = _client_for(_own_doc(rows), acc="0001-26-V", report="2026-08-25")
+    assert len(build_events(c, 320193, "1494730", "BX", "Stephen A. Schwarzman")) == 1
+
+
 def test_a_filing_whose_day_history_never_saw_states_no_change():
     """No snapshot on the filing's day: the holding is carried, the net is
     not borrowed from a neighbour, and no percent or verdict is claimed."""
