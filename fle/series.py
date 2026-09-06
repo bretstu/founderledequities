@@ -84,7 +84,16 @@ def outstanding_series(client, cik: int, since: str = "") -> Series:
     """Every cover-page count this company has filed, oldest first."""
     out = Series()
     try:
-        data = client.get_json(CONCEPT.format(cik=int(cik)))
+        # THE CONCEPT API IS A FEED, NOT A DOCUMENT: it gains a fact every
+        # 10-Q. Cached forever (the client's default), the series ended at
+        # whatever cover page was newest the first time a company was
+        # walked, and a cover-page point after the person's last filing
+        # (history.add_cover_points) could never appear. The panel's
+        # reader (outstanding.shares_outstanding) ages it with the
+        # submissions feeds; this one does the same.
+        from .config import SUBMISSIONS_MAX_AGE
+        data = client.get_json(CONCEPT.format(cik=int(cik)),
+                               max_age=SUBMISSIONS_MAX_AGE)
     except Exception:  # noqa: BLE001
         out.note = "no un-dimensioned cover-page fact; read per filing"
         return out

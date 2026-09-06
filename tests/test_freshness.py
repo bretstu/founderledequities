@@ -182,6 +182,18 @@ def _panel(path, rows):
         w.writerows(rows)
 
 
+def test_the_history_reuse_key_moves_on_a_cover_page():
+    """A 10-Q adds a point to a company's series with no Form 4 from the
+    person (history.add_cover_points). Keyed on Section 16 alone, that
+    company would be carried, stale, until the person next filed."""
+    import inspect
+    from fle import cli
+    src = inspect.getsource(cli.cmd_history)
+    assert "key_forms = SECTION16 + COVER_FORMS" in src
+    assert 'if f.get("form") in key_forms:' in src
+    assert 'if f.get("form") in SECTION16:' not in src
+
+
 def test_the_gate_tells_a_filing_from_a_rule_change(tmp_path):
     from fle.cli import anchor_moves, ANCHORS
     tsla = ANCHORS["TSLA"]

@@ -652,6 +652,11 @@ def cmd_history(args) -> int:
     # remembered; if it has not moved, yesterday's rows are carried over
     # verbatim and the walk is skipped. One cheap request replaces the whole
     # rebuild, which is what makes a nightly refresh possible at all.
+    #
+    # AND THE NEWEST COVER PAGE. A 10-Q moves the count and so adds a point
+    # (history.add_cover_points) with no Form 4 from the person; keyed on
+    # Section 16 alone, a company whose chief executive had not filed was
+    # carried for months with a stale last point. The key carries both.
     prior_rows: dict = {}
     prior_state: dict = {}
     if args.reuse:
@@ -673,9 +678,10 @@ def cmd_history(args) -> int:
     reused = 0
     agree = disagree = 0
     walked = failed = 0
-    from .history import mark_restated_rows
+    from .history import mark_restated_rows, COVER_FORMS
     from .ledger import SECTION16
     from .walk import run_pool
+    key_forms = SECTION16 + COVER_FORMS
 
     cols = ["cik", "ticker", "ceo", "owner_cik", "date", "form", "accession",
             "shares", "shares_split_adjusted", "outstanding", "pct",
@@ -714,7 +720,7 @@ def cmd_history(args) -> int:
                 subs = client.submissions(int(m.cik))
                 latest = ""
                 for f in subs.get("_filings", []):
-                    if f.get("form") in SECTION16:
+                    if f.get("form") in key_forms:
                         acc = f.get("accessionNumber") or ""
                         when = f.get("filingDate") or ""
                         if (when, acc) > (latest[:10], latest[11:]):
@@ -965,10 +971,16 @@ def edge_confidence(panel_path: str, history_path: str,
     Runs after the history stage and before the atomic publish, so the panel
     and the history that judged it are published together or not at all.
     """
+    from .history import COVER_FORMS
     try:
         with open(history_path, encoding="utf-8-sig", newline="") as fh:
             last = {}
             for r in csv.DictReader(fh):
+                # THE PERSON'S LAST FILING. A cover-page point after it
+                # carries no residue by construction; judged on that row the
+                # cap would never fire again once a 10-Q followed the filing.
+                if (r.get("form") or "") in COVER_FORMS:
+                    continue
                 last[r["ticker"]] = r
     except OSError:
         return 0

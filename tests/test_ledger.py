@@ -863,8 +863,13 @@ def test_the_history_ends_where_the_panel_does():
     hist = build_history(_Edgar(), 1318605, "1494730", mine, series=series)
     assert hist.read == 4
     got = [(s.date, s.shares) for s in hist.snapshots]
+    # the 2024-01-01 cover page moved the count, so it is a point too:
+    # the same 250 shares over the new denominator (add_cover_points)
     assert got == [("2016-02-01", 100.0), ("2019-05-01", 250.0),
+                   ("2024-01-01", 250.0),
                    ("2024-08-01", 400.0), ("2025-01-01", 475.0)]
+    assert [s.cover for s in hist.snapshots] == [False, False, True, False, False]
+    assert hist.snapshots[2].outstanding == 2000.0 and hist.snapshots[2].pct == 12.5
 
     # the last snapshot is direct 400 + indirect 75, which is what a
     # newest-first walk over the same filings would settle on
@@ -2952,6 +2957,112 @@ def test_restated_craters_are_marked_and_the_trailing_edge_is_not():
              s(3.12e6, 0)]
     mark_restated(spike)
     assert [x.restated for x in spike] == [False, True, False, False]
+
+
+def test_a_cover_page_after_the_last_filing_is_a_point():
+    """Tesla, June-July 2026. Musk's exercise on 16 June put 286M new
+    shares in his hands; the 10-Q of 16 July put them in the count. No
+    Form 4 on 16 July, so the series ended at 29.91% (new shares over the
+    old count) while the panel said 28.44%. The cover page is a point:
+    same shares, new denominator, nothing traded."""
+    from fle.history import Snapshot, History, add_cover_points
+    from fle.series import Series, Point
+
+    hist = History(snapshots=[
+        Snapshot(date="2026-04-21", form="4", shares=836_896_013, adjusted=836_896_013,
+                 outstanding=3_755_723_871, pct=22.2832, groups=2, classes="c"),
+        Snapshot(date="2026-06-16", form="4", shares=1_123_324_786, adjusted=1_123_324_786,
+                 outstanding=3_755_723_871, pct=29.9097, traded=286_428_773, codes="M",
+                 groups=2, classes="c")])
+    series = Series(points=[Point("2026-04-21", 3_755_723_871, "10-Q", "0001-26-1"),
+                            Point("2026-07-16", 3_949_547_394, "10-Q", "0001-26-2")])
+    assert add_cover_points(hist, series) == 1
+    last = hist.snapshots[-1]
+    assert last.cover and last.date == "2026-07-16" and last.form == "10-Q"
+    assert last.accession == "0001-26-2", "the row links to the 10-Q"
+    assert last.shares == 1_123_324_786 and last.outstanding == 3_949_547_394
+    assert round(last.pct, 2) == 28.44, "the panel's figure"
+    assert last.traded == 0 and last.codes == "" and last.unexplained == 0
+    assert last.groups == 2 and last.classes == "c"
+
+
+def test_cover_pages_that_add_nothing_are_not_points():
+    from fle.history import Snapshot, History, add_cover_points
+    from fle.series import Series, Point
+    snaps = [Snapshot(date="2024-03-01", form="4", shares=100, adjusted=100, outstanding=1000, pct=10.0),
+             Snapshot(date="2024-06-01", form="4", shares=120, adjusted=120, outstanding=1000, pct=12.0)]
+    series = Series(points=[
+        Point("2023-12-31", 900.0),     # before the first snapshot: no position to divide
+        Point("2024-03-01", 1000.0),    # the first snapshot's own day
+        Point("2024-04-30", 1000.0),    # the same count restated: not a move
+        Point("2024-06-01", 1000.0),    # the second snapshot's own day
+        Point("2024-09-30", 1100.0)])   # a move: the one point added
+    hist = History(snapshots=list(snaps))
+    assert add_cover_points(hist, series) == 1
+    assert [(x.date, x.cover) for x in hist.snapshots] == [
+        ("2024-03-01", False), ("2024-06-01", False), ("2024-09-30", True)]
+    assert hist.snapshots[-1].pct == 120 / 1100 * 100
+    # the window applies to cover pages as it does to filings
+    hist = History(snapshots=list(snaps))
+    assert add_cover_points(hist, series, since="2025-01-01") == 0
+    # and a series with no points, or no snapshots, is left alone
+    assert add_cover_points(History(), series) == 0
+    assert add_cover_points(History(snapshots=list(snaps)), Series()) == 0
+
+
+def test_a_cover_page_after_a_split_carries_the_shares_in_its_own_basis():
+    """Nvidia's shape: the filing is pre-split, the next cover page is
+    post-split. The carried holding must be restated to the cover date,
+    or 100 pre-split shares would be divided by a post-split count."""
+    from fle.history import Snapshot, History, add_cover_points
+    from fle.series import Series, Point
+    from fle.splits import Splits, Split
+    sp = Splits(events=[Split("2024-06-10", 10.0)])
+    hist = History(snapshots=[
+        Snapshot(date="2024-05-01", form="4", shares=100, adjusted=1000, outstanding=2_000, pct=5.0)])
+    series = Series(points=[Point("2024-04-28", 2_000.0), Point("2024-07-28", 20_000.0)])
+    assert add_cover_points(hist, series, splits=sp) == 1
+    last = hist.snapshots[-1]
+    assert last.shares == 1000 and last.adjusted == 1000 and last.outstanding == 20_000
+    assert last.pct == 5.0, "the same stake, both sides post-split"
+
+
+def test_the_crater_scan_walks_filings_and_marks_the_covers_inside():
+    """A cover-page point carries no residue, so it cannot open or close
+    a range, and it must not eat the window: EchoStar's crater with a 10-Q
+    between the drop and the restoration is still one crater, and the 10-Q
+    row inside it is marked with it."""
+    from fle.history import Snapshot, mark_restated
+
+    def s(adj, unexplained, cover=False):
+        return Snapshot(adjusted=adj, unexplained=unexplained, cover=cover)
+    echo = [s(49.9e6, 0), s(47.4e6, -98.4e6), s(47.4e6, 0, cover=True),
+            s(146.6e6, 99.2e6), s(145e6, 0)]
+    mark_restated(echo)
+    assert [x.restated for x in echo] == [False, True, True, False, False]
+    # twelve cover pages inside the window do not push the restoration out of it
+    long = [s(2.7e6, 0), s(4.0e4, -2.66e6)] + [s(4.0e4, 0, cover=True)] * 12 + [s(2.72e6, 2.68e6), s(2.73e6, 0)]
+    mark_restated(long)
+    assert long[1].restated and all(x.restated for x in long[2:14]) and not long[14].restated
+
+
+def test_the_denominator_series_ages_like_a_feed():
+    """The concept API gains a fact every 10-Q. Read through the client's
+    forever cache, Tesla's series would never hold the 16 July 2026 cover
+    page and the cover-page point could never be added."""
+    from fle.series import outstanding_series
+    from fle.config import SUBMISSIONS_MAX_AGE
+    asked = {}
+
+    class _C:
+        def get_json(self, url, use_cache=True, max_age=None):
+            asked["max_age"] = max_age
+            return {"units": {"shares": [
+                {"end": "2026-04-21", "val": 3_755_723_871, "accn": "a", "filed": "2026-04-22", "form": "10-Q"},
+                {"end": "2026-07-16", "val": 3_949_547_394, "accn": "b", "filed": "2026-07-23", "form": "10-Q"}]}}
+    s = outstanding_series(_C(), 1318605)
+    assert asked["max_age"] == SUBMISSIONS_MAX_AGE
+    assert [p.as_of for p in s.points] == ["2026-04-21", "2026-07-16"]
 
 
 def test_reused_rows_get_marked_at_write_time():

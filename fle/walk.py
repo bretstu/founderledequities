@@ -101,7 +101,10 @@ def walk_company(job: dict) -> dict:
                              series=series, splits=sp,
                              exclude=excl.for_issuer(cik), since=job["since"])
         mark_restated(hist.snapshots)
-        last = hist.snapshots[-1].shares if hist.snapshots else None
+        # the person's last filing, not a cover page after it: a split
+        # between the two would put the cover row in a different basis
+        filed = [s_ for s_ in hist.snapshots if not s_.cover]
+        last = filed[-1].shares if filed else None
         ok = (last is not None
               and abs(last - led.total) <= max(1.0, led.total * 0.001))
         rows = []

@@ -11,8 +11,19 @@ correctness test, and `history` reports it per row rather than leaving it to
 be discovered later.
 
 The settling itself is untouched: last transaction plus every holding, keyed
-on (class, direct-or-indirect). Whatever is right for today is right for
-2019, applied to 2019's filings with 2019's class list.
+on the class. Whatever is right for today is right for 2019, applied to
+2019's filings with 2019's class list.
+
+A POINT WHEN THE DENOMINATOR MOVES, NOT ONLY WHEN THE PERSON FILES. Musk
+exercised on 16 June 2026 and Tesla's next cover page, dated 16 July,
+carried the shares that exercise issued. Nobody filed a Form 4 on 16 July,
+so the series ended on 16 June at 29.91%: his new shares over the old
+count, exactly the error the metric was built to avoid. The panel said
+28.44%, and was right. On 1,253 of 2,045 companies the last point divided
+by an older count than the panel's. So the series now carries a point for
+every cover page after its first filing: the same shares, the new count,
+no trade (see add_cover_points). The last point equals the panel's figure
+whichever side moved last, and the slope between filings is honest.
 
 WHAT BECOMES TIME-VARYING, AND WHAT THAT COSTS.
 
@@ -67,6 +78,7 @@ class Snapshot:
     groups: int = 0
     classes: str = ""
     restated: bool = False         # a later filing put this balance back
+    cover: bool = False            # a cover page moved the count; no filing by the person
 
 
 @dataclass
@@ -227,20 +239,27 @@ def mark_restated(snaps: list, window: int = 12,
     is indistinguishable from a genuine change, and honesty there means
     showing it with a caution, not hiding it on a guess.
     """
-    n = len(snaps)
+    # THE SCAN WALKS FILINGS. A cover-page point carries the same balance
+    # and no residue, so it can neither open nor close a range; counting it
+    # toward the window would shorten it by however many 10-Qs fell inside.
+    # A cover row between a marked filing and its restoration is marked
+    # with it: it carries the depressed balance too.
+    idx = [k for k, sn in enumerate(snaps) if not getattr(sn, "cover", False)]
+    f = [snaps[k] for k in idx]
+    n = len(f)
     i = 1
     while i < n:
-        u0 = snaps[i].unexplained or 0.0
-        prev_sh = snaps[i - 1].adjusted or 0.0
+        u0 = f[i].unexplained or 0.0
+        prev_sh = f[i - 1].adjusted or 0.0
         if abs(u0) < size * max(prev_sh, 1.0):
             i += 1
             continue
         cum = u0
         closed_at = None
         for j in range(i + 1, min(i + 1 + window, n)):
-            cum += snaps[j].unexplained or 0.0
+            cum += f[j].unexplained or 0.0
             if abs(cum) <= (1 - restore) * abs(u0):
-                for k in range(i, j):
+                for k in range(idx[i], idx[j]):
                     snaps[k].restated = True
                 closed_at = j
                 break
@@ -253,6 +272,58 @@ def mark_restated(snaps: list, window: int = 12,
         # in March manufactured nine false marks through December. So the
         # scan resumes past the closer, never on it.
         i = (closed_at + 1) if closed_at is not None else i + 1
+
+
+# The forms a cover-page point carries. A row with one of these is the
+# count moving, not the person filing; every reader that wants the
+# person's last word (the trailing-edge confidence cap, the panel match)
+# skips them.
+COVER_FORMS = ("10-K", "10-K/A", "10-Q", "10-Q/A", "20-F", "20-F/A", "40-F", "40-F/A")
+
+
+def add_cover_points(hist, series, splits=None, since: str = "") -> int:
+    """One snapshot per cover page that moved the count, after the first
+    filing snapshot: the same shares, the new denominator, no trade.
+
+    THE SHARES TRAVEL IN THE COVER DATE'S BASIS. A cover page after a
+    split reports post-split shares, so the carried holding is restated to
+    that date through the split table, the same way the walk restates a
+    trade. Nothing else moves: `traded` is zero, `codes` empty,
+    `unexplained` zero, and the page reads a step of that shape as
+    "share count changed".
+
+    A cover page that repeats the count is not a point; a cover page on a
+    day the person filed is already the denominator of that day's
+    snapshot; a cover page before the first emitted snapshot has no
+    position to divide. -> how many points were added."""
+    if not series or not hist.snapshots:
+        return 0
+    have = {sn.date for sn in hist.snapshots}
+    first = hist.snapshots[0].date
+    added = []
+    for p in series.points:
+        if not p.shares or p.as_of <= first or p.as_of in have:
+            continue
+        if since and p.as_of < since:
+            continue
+        prev = None
+        for sn in hist.snapshots + added:
+            if sn.date < p.as_of and (prev is None or sn.date >= prev.date):
+                prev = sn
+        if prev is None or (prev.outstanding and abs(prev.outstanding - p.shares) < 1):
+            continue
+        raw = (prev.adjusted / splits.factor_since(p.as_of)) if splits else prev.shares
+        added.append(Snapshot(
+            date=p.as_of, form=p.form or "10-Q", accession=p.accession,
+            shares=raw, adjusted=prev.adjusted, outstanding=p.shares,
+            pct=(raw / p.shares * 100) if p.shares else None,
+            groups=prev.groups, classes=prev.classes, cover=True))
+    if not added:
+        return 0
+    # filings first on a shared date can never arise (those dates are
+    # skipped above), so a plain sort by date keeps every order
+    hist.snapshots = sorted(hist.snapshots + added, key=lambda sn: sn.date)
+    return len(added)
 
 def _with_supplements(root, form, when, acc, exclude):
     """The history walk reads filings through the same door as the ledger:
@@ -279,10 +350,11 @@ def mark_restated_rows(rows: list) -> None:
         by.setdefault((r.get("cik"), r.get("owner_cik")), []).append(r)
 
     class _S:
-        __slots__ = ("adjusted", "unexplained", "restated")
+        __slots__ = ("adjusted", "unexplained", "restated", "cover")
 
-        def __init__(self, adj, unexp):
+        def __init__(self, adj, unexp, cover=False):
             self.adjusted, self.unexplained, self.restated = adj, unexp, False
+            self.cover = cover
 
     for group in by.values():
         group.sort(key=lambda r: r.get("date") or "")
@@ -296,7 +368,7 @@ def mark_restated_rows(rows: list) -> None:
                 unexp = float(r.get("unexplained") or 0)
             except ValueError:
                 unexp = 0.0
-            snaps.append(_S(adj, unexp))
+            snaps.append(_S(adj, unexp, (r.get("form") or "") in COVER_FORMS))
         mark_restated(snaps)
         for r, sn in zip(group, snaps):
             r["restated"] = "TRUE" if sn.restated else ""
@@ -687,5 +759,6 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
             codes="".join(codes),
             groups=len(groups),
             classes="|".join(sorted(members)) if members else ""))
+    add_cover_points(hist, series, splits, since)
     return hist
 

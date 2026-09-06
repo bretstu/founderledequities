@@ -35,6 +35,16 @@ def test_a_day_between_snapshots_forward_fills_and_owns_no_residue():
     assert resid is None
 
 
+def test_a_cover_page_row_between_filings_changes_no_trade():
+    """history.add_cover_points writes a row when the count moves, with the
+    holding carried unchanged. A trade on the next filing day nets against
+    it and sees the same holding, the same net and its own residue; a
+    day with no snapshot forward-fills the same holding as before."""
+    with_cover = HIST[:2] + [("2026-03-05", 90_000, 90_000, 0.0)] + HIST[2:]
+    assert _position(with_cover, "2026-03-20") == _position(HIST, "2026-03-20")
+    assert _position(with_cover, "2026-03-10") == (90_000, 0, None)
+
+
 def test_before_the_first_snapshot_nothing_is_known():
     assert _position(HIST, "2025-12-31") == (None, None, None)
     assert _position([], "2026-01-01") == (None, None, None)

@@ -50,6 +50,23 @@ def test_an_unreconciled_newest_filing_caps_confidence(tmp_path):
     assert got["BBB"]["cautions"] == ""
 
 
+def test_a_cover_page_after_the_crater_does_not_clear_the_cap(tmp_path):
+    """history.add_cover_points writes a 10-Q row after the person's last
+    filing, with no residue by construction. The cap judges the person's
+    last FILING: read the last row instead and it would never fire again
+    once a quarter had passed."""
+    panel = _panel(tmp_path, [
+        {"ticker": "AAA", "pct": "2.0", "confidence": "high", "cautions": ""}])
+    hist = str(tmp_path / "history.csv")
+    _write(hist, ["ticker", "date", "form", "shares", "unexplained"], [
+        {"ticker": "AAA", "date": "2024-01-01", "form": "4", "shares": "2700000", "unexplained": ""},
+        {"ticker": "AAA", "date": "2024-02-01", "form": "4", "shares": "40000", "unexplained": "-2660000"},
+        {"ticker": "AAA", "date": "2024-03-31", "form": "10-Q", "shares": "40000", "unexplained": ""},
+    ])
+    assert edge_confidence(panel, hist) == 1
+    assert _read(panel)["AAA"]["confidence"] == "medium"
+
+
 def test_a_crater_that_is_not_the_newest_filing_is_left_alone(tmp_path):
     """Mid-record craters are already handled -- marked, and excluded from
     every summary. Only the trailing edge lacks a successor to settle it."""
