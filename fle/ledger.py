@@ -276,18 +276,30 @@ def vehicle_key(direct: str | None, nature: str | None) -> tuple:
 
 
 # A NATURE TEXT THAT NAMES NOTHING. "See footnote", "See note 3", "Per
-# footnotes", "(2)", or nothing at all: a pointer to prose, not a name. Only
-# for these does the running balance decide which rows belong together; a
-# NAMED vehicle keeps the text rule, because one named vehicle whose
-# balances do not chain (Musk's SpaceX catch-up Form 4 drops 25M between
-# rows it never explains) is still one vehicle, and the arithmetic alone
-# cannot tell that from two anonymous ones. Misclassifying a pointer as a
-# name falls back to the old behaviour; the reverse cannot happen, since a
-# name does not begin with "see".
+# footnotes", "(2)", or nothing at all on an INDIRECT line: a pointer to
+# prose, not a name. Only for these does the running balance decide which
+# rows belong together. A NAMED vehicle keeps the text rule, because one
+# named vehicle whose balances do not chain (Musk's SpaceX catch-up Form 4
+# drops 25M between rows it never explains) is still one vehicle, and the
+# arithmetic alone cannot tell that from two anonymous ones.
+#
+# THE DIRECT LINE IS A NAME. It has no nature text by construction and
+# there is exactly one of it, so "D" with no text is not anonymous. Its
+# running balances routinely miss by a share or two (Pope's 281,359 then
+# 281,360; Westhoven's 259,070 then 259,069: fractional withholding and
+# ESPP rounded row by row), and the first version of this rule, which read
+# the empty text as a pointer, started a phantom vehicle at every rounding
+# gap -- Portland General's chief executive at 1% of the company. Direct
+# rows keep the text rule, always.
+#
+# Misclassifying a pointer as a name falls back to the old behaviour; the
+# reverse cannot happen, since a name does not begin with "see".
 _ANONYMOUS = re.compile(r"^\W*(see|per|refer|footnotes?|notes?)\b|^\W*\d*\W*$", re.I)
 
 
-def is_anonymous(nature: str | None) -> bool:
+def is_anonymous(nature: str | None, direct: str | None = "I") -> bool:
+    if (direct or "D").upper()[:1] == "D":
+        return False
     return bool(_ANONYMOUS.match(nature or ""))
 
 
@@ -321,16 +333,18 @@ def vehicle_keys(rows: list) -> list:
     can share one, and the numbers already decide.
     """
     keys = []
-    closes: dict = {}          # segment key -> (direct, last close)
+    closes: dict = {}          # segment key -> (direct, last close, security)
     count: dict = {}           # base key -> segments opened
     for r in rows:
         base = vehicle_key(r.direct, r.nature)
-        if not r.code or r.shares != r.shares or not is_anonymous(r.nature):
+        if not r.code or r.shares != r.shares or not is_anonymous(r.nature, r.direct):
             keys.append(base)
             continue
         signed = (r.moved if r.acquired else -r.moved) or 0.0
         opening = r.shares - signed
-        mine = [k for k in closes if k[0] == base[0]
+        sec = r.security.strip().lower()
+        # segments are per security: a Class B row never chains to a Class A one
+        mine = [k for k in closes if closes[k][2] == sec and k[0] == base[0]
                 and (k[1] == base[1] or k[1].startswith(base[1] + "#"))]
         if not signed and mine:
             # a transaction row that states no amount gives the arithmetic
@@ -338,18 +352,18 @@ def vehicle_keys(rows: list) -> list:
             # is what the text-only rule always did
             hit = mine[-1]
         else:
-            hit = next((k for k in mine if abs(closes[k][1] - opening) < 0.5), None)
+            hit = next((k for k in mine if abs(closes[k][1] - opening) <= 1.0), None)
         if hit is None:
-            # another pointer text, same direct, closing where this opens:
-            # the "See foornote" typo continuing "See footnote"
-            hit = next((k for k, (d, c) in closes.items()
-                        if d == r.direct and abs(c - opening) < 0.5), None)
+            # another pointer text, same security, closing where this
+            # opens: the "See foornote" typo continuing "See footnote"
+            hit = next((k for k, (d, c, sc) in closes.items()
+                        if d == r.direct and sc == sec and abs(c - opening) <= 1.0), None)
         if hit is None:
             n = count.get(base, 0) + 1
             count[base] = n
             hit = base if n == 1 else (base[0], f"{base[1]}#{n}")
         closes.pop(hit, None)
-        closes[hit] = (r.direct, r.shares)      # newest last
+        closes[hit] = (r.direct, r.shares, sec)      # newest last
         keys.append(hit)
     return keys
 

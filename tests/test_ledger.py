@@ -1113,6 +1113,24 @@ def test_bill_anonymous_vehicles_are_told_apart_by_their_running_balances():
     assert hist.snapshots[-1].shares == 2_535_853
     assert is_anonymous("See footnote") and is_anonymous("see notes 3 and 4") and is_anonymous("(2)") and is_anonymous("")
     assert not is_anonymous("By Elon Musk Revocable Trust") and not is_anonymous("By Trust")
+    assert not is_anonymous("", "D") and not is_anonymous("See footnote", "D"), "the direct line is a name"
+
+
+def test_direct_rows_that_miss_by_a_share_are_one_line():
+    """Portland General, 13 February 2026: nine direct rows of awards and
+    withholding whose balances miss each other by a share (fractional
+    withholding, rounded row by row). One line; the last balance wins.
+    Read as anonymous, each gap started a phantom and the chief executive
+    of a utility read as owning 1% of it."""
+    from fle.ledger import vehicle_keys, _rows
+    D = lambda code, moved, ad, bal: ("Common Stock", "D", "", code, moved, ad, bal)
+    doc = _h4t([D("A", 27_112, "A", 221_247), D("A", 60_112, "A", 281_359), D("F", 30_928, "D", 250_432),
+                D("A", 1_217, "A", 251_649), D("F", 5_058, "D", 246_591), D("A", 1_078, "A", 247_808),
+                D("F", 6_319, "D", 241_350), D("A", 534, "A", 241_884), D("F", 5_991, "D", 235_892)], "2026-02-13")
+    rows = _rows(ET.fromstring(doc), "4", "2026-02-13", "x")
+    assert len(set(vehicle_keys(rows))) == 1
+    hist = _walk_priced({"p1": doc}, [("p1", "2026-02-13")])
+    assert hist.snapshots[-1].shares == 235_892
 
 
 def test_a_named_vehicle_whose_balances_do_not_chain_is_still_one_vehicle():
