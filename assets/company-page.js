@@ -23,7 +23,7 @@ function setRow(row){
 const poss=n=>n+(/s$/i.test(n)?"'":"'s");
 
 function renderSealed(){
-  $("#cbody").innerHTML=`<div class="cans cseal">
+  $("#cbody").innerHTML=`<div class="cseal">
     <h2 class="p s">${esc(poss(C.ceo||"The chief executive"))} stake is in Pro</h2>
     <div class="l">Computed from the filings like every other. Pro is every company beyond the S&amp;P 500: the stake, the record, every trade. $5 a month, cancel in one click.</div>
     <a class="gopro" href="/api/checkout">Go Pro, $5/month</a>
@@ -32,35 +32,34 @@ function renderSealed(){
   $("#creport").innerHTML=reportBlock({tk:C.tk,co:C.co});
 }
 
-/* ---- the answer, and the four figures under it ----
-   THE LABELS ARE THE TABLE'S. Ownership, Value, Market cap, 1Y return: the
-   words the home page uses for the same numbers, computed the same way
-   (shares x close; outstanding x close; the store's twelve-month price
-   return). Nothing here is explained in a sentence; a figure that needed
-   one has been taken off the page. The stake's own trajectory is the
-   Stake chart's job, not a "3-year change" cell that had to say "since
-   2026-01" when the record was eight months old. */
-function stat(n,k,cls,sub,title){return `<div class="hstat"${title?` title="${esc(title)}"`:""}><div class="n ${cls||""}">${n}</div><div class="k">${k}</div>${sub?`<div class="s">${sub}</div>`:""}</div>`;}
+/* ---- the answer band: five cards ----
+   THE LABELS ARE THE TABLE'S. Value, Market cap, 1Y return: the words the
+   home page uses for the same numbers, computed the same way (shares x
+   close; outstanding x close; the store's twelve-month price return).
+   Nothing here is explained in a sentence; a figure that needed one has
+   been taken off the page. The stake's own trajectory is the Stake
+   chart's job, not a "3-year change" card that had to say "since 2026-01"
+   when the record was eight months old. */
+function stat(k,v,cls,sub,title){return `<div class="cstat"${title?` title="${esc(title)}"`:""}><div class="k">${k}</div><div class="v ${cls||""}">${v}</div>${sub?`<div class="s">${sub}</div>`:""}</div>`;}
 function band(r){
   const mcap=r.price&&r.out?r.out*r.price:null;
   const big=r.units?`<div class="p s">Held as partnership units</div><div class="pl">Exchangeable units rather than common stock, so a percent of common shares cannot describe the stake.</div>`
     :r.pct===null?`<div class="p s">Not measured</div><div class="pl">${esc(r.flags||"the record could not settle on a figure")}</div>`
     :`<h2 class="p"><span class="vh">${esc(C.ceo)} owns </span>${r.pct.toFixed(r.pct<1?3:2)}%<span class="vh"> of ${esc(C.co)}</span></h2><div class="pl">of ${esc(C.co)}</div>`;
-  const r1=r.r1===null||r.r1===undefined?stat("&mdash;","1Y return","none","",  "the stock's price return over the last twelve months; blank when it has traded for less than a year")
-    :stat(`${r.r1>=0?"+":""}${r.r1.toFixed(1)}%`,"1Y return",r.r1>=0?"up":"down","","the stock's price return over the last twelve months");
-  const tabled=r.tabled!==null&&r.sh!==null&&r.out?`<br>${fmt(r.tabled)} in the filing tables; the rest stated in a remark`:"";
-  const strip=`<div class="cband herostats">
-    ${stat(r.val?money(r.val):"&mdash;","Value","",r.price?`at $${r.price.toFixed(2)}`:"","the stake's value: shares held at the "+(PRICES_ASOF||"latest")+" close")}
-    ${stat(mcap?money(mcap):"&mdash;","Market cap","","","market capitalization: shares outstanding at the "+(PRICES_ASOF||"latest")+" close")}
-    ${stat(r.sh!==null?compact(r.sh):"&mdash;","Shares held","",r.sh!==null&&r.out?`${fmt(r.sh)} of ${fmt(r.out)}${tabled}`:"","shares held, over shares outstanding on the latest cover page")}
-    ${r1}
-  </div>`;
-  /* the receipt line: when the holding was stated, the filing it was
-     stated on, and, only when it is not clean, why the figure is marked */
+  const asof=PRICES_ASOF||"latest";
+  const r1=r.r1===null||r.r1===undefined?stat("1Y return","&mdash;","none","","the stock's price return over the last twelve months; blank when it has traded for less than a year")
+    :stat("1Y return",`${r.r1>=0?"+":""}${r.r1.toFixed(1)}%`,r.r1>=0?"up":"down","","the stock's price return over the last twelve months");
+  const tabled=r.tabled!==null&&r.sh!==null&&r.out?`${fmt(r.tabled)} in the filing tables; the rest stated in a remark`:"";
   const conf=r.conf&&r.conf!=="high"&&r.flags?`<details><summary>${esc(r.conf)} confidence</summary><span class="why">${esc(r.flags)}</span></details>`:"";
-  return `<div class="cans">${big}</div>${strip}
+  return `<div class="cband">
+    <div>${big}</div>
+    ${stat("Value",r.val?money(r.val):"&mdash;","",r.price?`at $${r.price.toFixed(2)}`:"",`the stake's value: shares held at the ${asof} close`)}
+    ${stat("Market cap",mcap?money(mcap):"&mdash;","","",`market capitalization: shares outstanding at the ${asof} close`)}
+    ${stat("Shares held",r.sh!==null?compact(r.sh):"&mdash;","",tabled,"shares held, over shares outstanding on the latest cover page")}
+    ${r1}
+  </div>
   <div class="cmeta">
-    <span>as of ${r.asof?dayLabel(r.asof):"&mdash;"}${r.form4?` · <a href="${filingPage(r.form4)}" target="_blank" rel="noopener">the filing &#8599;</a>`:""}</span>
+    <span>${r.sh!==null&&r.out?`${fmt(r.sh)} of ${fmt(r.out)} shares · `:""}as of ${r.asof?dayLabel(r.asof):"&mdash;"}${r.form4?` · <a href="${filingPage(r.form4)}" target="_blank" rel="noopener">the filing &#8599;</a>`:""}</span>
     ${conf}
   </div>`;
 }

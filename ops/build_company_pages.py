@@ -233,7 +233,7 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
         q = founder_quote(founder)
         quote = f' <span class="cq">The proxy statement says: &ldquo;{q}&rdquo;</span>' if q else ""
         onrec = f" {n_filings} filings by the chief executive are on record since 2016." if n_filings else ""
-        return (f'<div class="cans"><h2 class="p s">{html.escape(poss(payload["ceo"] or "The chief executive"))} stake is in Pro</h2></div>'
+        return (f'<div class="cseal"><h2 class="p">{html.escape(poss(payload["ceo"] or "The chief executive"))} stake is in Pro</h2></div>'
                 f'<p class="cprose">{ceo} is the chief executive of {co}.{fsent}{quote}{onrec} '
                 f'The stake, its value, and every trade are in the Pro tier; '
                 f'<a href="/api/checkout">Pro is $5 a month</a>, and the S&amp;P 500 is free.</p>')
@@ -242,23 +242,22 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
         return f'<p class="cprose">{ceo} is the chief executive of {co}.{fsent} The record could not settle on a figure; the reasons are on the row.</p>'
     val = f", worth about {money(sh * price)} at the {html.escape(price_date)} close" if price else ""
     pd = html.escape(price_date)
-    # THE SAME BAND THE SCRIPT DRAWS, in the same words: the number, "of
-    # the company", then Value / Market cap / Shares held / 1Y return in the
-    # home page's own strip. The script redraws it identically on load.
-    def stat(n, k, sub="", cls=""):
-        return (f'<div class="hstat"><div class="n {cls}">{n}</div><div class="k">{k}</div>'
+    # THE SAME BAND THE SCRIPT DRAWS, in the same words: the answer card,
+    # then Value / Market cap / Shares held / 1Y return, each in a card,
+    # and the fraction as the receipt line. The script redraws it on load.
+    def stat(k, v, cls="", sub=""):
+        return (f'<div class="cstat"><div class="k">{k}</div><div class="v {cls}">{v}</div>'
                 + (f'<div class="s">{sub}</div>' if sub else "") + '</div>')
     r1 = ret_1y.get(payload["tk"]) if ret_1y else None
-    band = ('<div class="cans">'
-            f'<h2 class="p"><span class="vh">{ceo} owns </span>{pct:.2f}%<span class="vh"> of {co}</span></h2><div class="pl">of {co}</div>'
-            '</div><div class="cband herostats">'
-            + stat(money(sh * price) if price else "&mdash;", "Value", f"at ${price:.2f}" if price else "")
-            + stat(money(out * price) if (price and out) else "&mdash;", "Market cap")
-            + stat(compact(sh), "Shares held", f"{int(sh):,} of {int(out):,}" if out else f"{int(sh):,}")
-            + (stat(f"{r1:+.1f}%", "1Y return", "", "up" if r1 >= 0 else "down") if r1 is not None
-               else stat("&mdash;", "1Y return", "", "none"))
+    band = ('<div class="cband">'
+            f'<div><h2 class="p"><span class="vh">{ceo} owns </span>{pct:.2f}%<span class="vh"> of {co}</span></h2><div class="pl">of {co}</div></div>'
+            + stat("Value", money(sh * price) if price else "&mdash;", "", f"at ${price:.2f}" if price else "")
+            + stat("Market cap", money(out * price) if (price and out) else "&mdash;")
+            + stat("Shares held", compact(sh))
+            + (stat("1Y return", f"{r1:+.1f}%", "up" if r1 >= 0 else "down") if r1 is not None
+               else stat("1Y return", "&mdash;", "none"))
             + '</div>'
-            + f'<div class="cmeta"><span>as of {html.escape(r.get("shares_as_of") or "")}</span></div>')
+            + f'<div class="cmeta"><span>{(f"{int(sh):,} of {int(out):,} shares · " if out else "")}as of {html.escape(r.get("shares_as_of") or "")}</span></div>')
     h = hist.get(payload["tk"]) or {}
     e = ev.get(payload["tk"]) or {}
     moved = ""

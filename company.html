@@ -31,20 +31,29 @@
     .chead h1{font-family:var(--disp);font-weight:650;letter-spacing:-.025em;line-height:1.02;font-size:clamp(30px,4vw,54px);margin:8px 0 6px}
     .chead .ce{font-size:16px;color:var(--mut)}
     .chead .ce b{color:var(--ink);font-weight:600}
-    /* THE ANSWER: the number, and what it is a share of. */
-    .cans{margin-top:30px}
-    .cans .p{font-family:var(--mono);font-size:clamp(48px,6vw,84px);font-weight:600;color:var(--blue);letter-spacing:-.03em;line-height:1;margin:0}
-    .cans .p.s{font-size:clamp(24px,3vw,34px);color:var(--ink);font-family:var(--disp);font-weight:650;letter-spacing:-.01em;line-height:1.15}
-    .cans .pl{color:var(--mut);font-size:15px;margin-top:10px}
+    /* THE ANSWER BAND: five cards in a row. The answer in the tinted one,
+       then the four figures that give it meaning, each in its own card,
+       in the words the home table uses. The cards hold the figures
+       together; a bare strip left them floating on the page. */
+    .cband{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
+    .cband>div{border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:#fff;min-height:118px;display:flex;flex-direction:column;justify-content:flex-end}
+    .cband>div:first-child{background:var(--panel);border-color:var(--panel)}
+    .cband .p{font-family:var(--disp);font-size:clamp(40px,4.6vw,60px);font-weight:700;color:var(--blue);letter-spacing:-.03em;line-height:1;margin:0}
+    .cband .p.s{font-size:24px;color:var(--ink);font-weight:650;letter-spacing:-.01em;line-height:1.15}
+    .cband .pl{color:var(--mut);font-size:13px;margin-top:8px;line-height:1.45}
     .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
     .cq{display:block;margin-top:8px;color:var(--ink)}
-    /* THE FIGURES: the home page's own strip (.herostats/.hstat from
-       site.css), so the two pages cannot drift apart in type or label. */
-    .cband{margin-top:26px}
-    .cband .hstat .n{font-size:clamp(22px,2.4vw,30px)}
-    .cband .hstat .n.up{color:#0b7a4b}.cband .hstat .n.down{color:#c22a2a}.cband .hstat .n.none{color:var(--faint)}
-    .cband .hstat .s{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:5px}
-    .cmeta{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:16px;display:flex;gap:18px;flex-wrap:wrap;align-items:baseline}
+    .cstat .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+    .cstat .v{font-family:var(--disp);font-size:28px;font-weight:650;letter-spacing:-.01em;margin-top:6px;line-height:1.1}
+    .cstat .v.up{color:#0b7a4b}.cstat .v.down{color:#c22a2a}.cstat .v.none{color:var(--faint)}
+    .cstat .s{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
+    .cseal{margin-top:30px}
+    .cseal .l{color:var(--mut);max-width:56ch;line-height:1.55;margin-top:10px}
+    .cseal .gopro{margin-top:18px;display:inline-block;text-decoration:none}
+    .cseal .p{font-family:var(--disp);font-size:clamp(24px,3vw,34px);font-weight:650;letter-spacing:-.01em;line-height:1.15;margin:0}
+    @media(max-width:900px){.cband{grid-template-columns:1fr 1fr}.cband>div:first-child{grid-column:1 / -1}}
+    @media(max-width:520px){.cband{grid-template-columns:1fr}}
+    .cmeta{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:12px;display:flex;gap:18px;flex-wrap:wrap;align-items:baseline}
     .cmeta a{color:var(--blue);text-decoration:none}
     .cmeta details{display:inline}
     .cmeta summary{cursor:pointer;color:var(--mut);list-style:none}
@@ -61,7 +70,7 @@
     .csec{margin-top:40px}
     .csec h2{font-family:var(--disp);font-size:22px;font-weight:650;letter-spacing:-.01em;margin:0 0 6px}
     .csec .sub{font-size:13px;color:var(--mut);margin-bottom:14px}
-    .crec{margin-top:34px;padding-top:14px;border-top:1px solid var(--line)}
+    .crec{margin-top:30px;padding-top:12px;border-top:1px solid var(--line)}
     .crec .cshead{justify-content:flex-end;margin-bottom:8px}
     .cchart svg{width:100%;height:auto;display:block;overflow:visible}
     /* the dots arrive after the line has drawn; the reduced-motion rule in
@@ -88,8 +97,6 @@
     .cwhy q{color:var(--ink)}
     .cwhy .src{display:block;margin-top:8px;font-family:var(--mono);font-size:11px}
     .cwhy .src a{color:var(--blue);text-decoration:none}
-    .cseal .l{color:var(--mut);max-width:56ch;line-height:1.55;margin-top:10px}
-    .cseal .gopro{margin-top:18px;display:inline-block;text-decoration:none}
     .cprose{font-size:15px;line-height:1.6;color:var(--mut);max-width:78ch;margin:18px 0 0}
     .cshead{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
     .cshead h2{margin:0}

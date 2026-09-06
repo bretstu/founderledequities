@@ -161,7 +161,7 @@ def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path
     bcp.main(panel, founders, prices, sp, str(out), str(events), str(hist))
     tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
     body = tsla[tsla.index('<div id="cbody">'):tsla.index('<div class="creport"')]
-    assert "28.44%" in body and "1,120,000,000 of 3,950,000,000" in body and "$370B" in body, "the answer band is in the HTML"
+    assert "28.44%" in body and "1,120,000,000 of 3,950,000,000 shares" in body and "$370B" in body, "the answer band is in the HTML"
     assert "Confidence" not in body and "3-year" not in body
     for label in ("Value", "Market cap", "Shares held", "1Y return"):
         assert f'<div class="k">{label}</div>' in body, "the band uses the table's labels"
@@ -227,12 +227,12 @@ def test_the_band_uses_the_tables_words_and_has_no_three_year_cell():
     was meant to match never had such a column. Confidence is a plain
     word that opens the reasons, shown only when the figure is not clean."""
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
-    band = js[js.index("function band("):js.index("/* ---- the record:")]
+    band = js[js.index("function stat("):js.index("/* ---- the record:")]
     for label in ('"Value"', '"Market cap"', '"Shares held"', '"1Y return"'):
         assert label in band, f"{label} is a stat"
     assert "3-year" not in band[band.index("function band("):] and "trajStats" not in js
     assert "never estimated" not in band, "the answer needs no sentence beside it"
-    assert 'class="cband herostats"' in band, "the strip is the home page's"
+    assert 'class="cband">' in band and 'class="cstat"' in band, "five cards: the answer and four figures"
     assert "<details>" in band and 'confidence</summary>' in band
     assert 'r.conf!=="high"' in band, "a clean figure says nothing about confidence"
     assert "\u2014" not in js, "no em dashes"
@@ -261,11 +261,11 @@ def test_the_one_year_return_on_a_page_is_the_lists(tmp_path):
     bcp.main(panel, founders, prices, sp, str(out), prices_dir=str(store))
     tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
     body = tsla[tsla.index('<div id="cbody">'):tsla.index('<div class="creport"')]
-    assert '<div class="n up">+50.0%</div><div class="k">1Y return</div>' in body
+    assert '<div class="k">1Y return</div><div class="v up">+50.0%</div>' in body
     assert '"ret_1y": "50.0000"' in tsla, "the script's row carries the same figure"
     bcp.main(panel, founders, prices, sp, str(out))
     tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
-    assert '<div class="n none">&mdash;</div><div class="k">1Y return</div>' in tsla
+    assert '<div class="k">1Y return</div><div class="v none">&mdash;</div>' in tsla
     assert "ret_1y" not in tsla
 
 
