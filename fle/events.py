@@ -65,6 +65,7 @@ from dataclasses import dataclass
 
 from .ledger import (SECTION16, _doc_url, _parse, _rows,
                      displace_amended)
+from .history import COVER_FORMS
 
 # A market trade, and nothing else. See the module docstring.
 TRADE_CODES = ("P", "S")
@@ -283,6 +284,16 @@ def load_history(path: str) -> dict:
     out: dict = {}
     with open(path, encoding="utf-8-sig") as fh:
         for r in csv.DictReader(fh):
+            # FILINGS ONLY. History also carries a row per cover page
+            # (history.add_cover_points): same holding, new denominator, no
+            # trade. A trade on a day with no snapshot of its own borrows
+            # the nearest earlier row's net (see _position), and a cover
+            # row's net is zero by construction -- so a sale two days into
+            # a three-day filing that followed a 10-Q would have read
+            # "position unchanged" and left the feed. A quarter of all
+            # trades sit on such days. The holding is the same either way.
+            if (r.get("form") or "") in COVER_FORMS:
+                continue
             try:
                 cik = int(r.get("cik") or 0)
                 row = ((r.get("date") or ""),

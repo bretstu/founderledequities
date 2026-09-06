@@ -35,14 +35,30 @@ def test_a_day_between_snapshots_forward_fills_and_owns_no_residue():
     assert resid is None
 
 
-def test_a_cover_page_row_between_filings_changes_no_trade():
-    """history.add_cover_points writes a row when the count moves, with the
-    holding carried unchanged. A trade on the next filing day nets against
-    it and sees the same holding, the same net and its own residue; a
-    day with no snapshot forward-fills the same holding as before."""
-    with_cover = HIST[:2] + [("2026-03-05", 90_000, 90_000, 0.0)] + HIST[2:]
-    assert _position(with_cover, "2026-03-20") == _position(HIST, "2026-03-20")
-    assert _position(with_cover, "2026-03-10") == (90_000, 0, None)
+def test_cover_page_rows_never_reach_the_position(tmp_path):
+    """history.add_cover_points writes a 10-Q row when the count moves,
+    net zero by construction. A trade on a day with no snapshot of its own
+    borrows the nearest earlier row's net; borrowing a cover row's would
+    call a real sale "position unchanged". Events read filings only."""
+    import csv
+    from fle.events import load_history
+    p = tmp_path / "history.csv"
+    with open(p, "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=["cik", "ticker", "date", "form", "shares",
+                                           "shares_split_adjusted", "unexplained"])
+        w.writeheader()
+        w.writerow({"cik": 1, "ticker": "TST", "date": "2026-02-10", "form": "4",
+                    "shares": 100_000, "shares_split_adjusted": 100_000, "unexplained": ""})
+        w.writerow({"cik": 1, "ticker": "TST", "date": "2026-03-05", "form": "10-Q",
+                    "shares": 100_000, "shares_split_adjusted": 100_000, "unexplained": ""})
+        w.writerow({"cik": 1, "ticker": "TST", "date": "2026-03-20", "form": "4",
+                    "shares": 90_000, "shares_split_adjusted": 90_000, "unexplained": ""})
+    rows = load_history(str(p))[1]
+    assert [d for d, *_ in rows] == ["2026-02-10", "2026-03-20"]
+    # the second day of a two-day filing, after the 10-Q: still nets
+    # against the previous FILING, as it did before cover rows existed
+    after, net, resid = _position(rows, "2026-03-19")
+    assert after == 100_000 and net is None and resid is None
 
 
 def test_before_the_first_snapshot_nothing_is_known():
