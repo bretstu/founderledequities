@@ -161,7 +161,10 @@ def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path
     bcp.main(panel, founders, prices, sp, str(out), str(events), str(hist))
     tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
     body = tsla[tsla.index('<div id="cbody">'):tsla.index('<div class="creport"')]
-    assert "28.44%" in body and "1,120,000,000" in body and "$370B" in body, "the answer band is in the HTML"
+    assert "28.44%" in body and "1,120,000,000 of 3,950,000,000" in body and "$370B" in body, "the answer band is in the HTML"
+    assert "Confidence" not in body and "3-year" not in body
+    for label in ("Value", "Market cap", "Shares held", "1Y return"):
+        assert f'<div class="k">{label}</div>' in body, "the band uses the table's labels"
     assert "from 21.10% in 2016 to 28.44% on 2026-07-06" in body, "the record, as a sentence"
     assert "1 sale and 1 purchase" in body, "kept-apart trades do not count"
     assert "planned sale of $24.2M on 2026-08-29" in body, "the last trade that moved it"
@@ -194,11 +197,12 @@ def test_the_seo_layer(tmp_path):
     assert "<lastmod>2026-07-06</lastmod>" in sm, "a company page is dated by its as-of"
 
 
-def test_the_record_has_two_views_and_one_story_per_chart():
+def test_the_record_has_two_views_and_no_prose():
     """The page script draws the price (default) and the stake, one point
     per month-end for the stake, dots at the filed price restated in
-    today's shares, the largest sale and purchase labelled, a crosshair
-    hover, and one draw-in on load. The shares-held view is gone."""
+    today's shares, a crosshair hover, and one draw-in on load. The chart
+    has no heading and no caption: the toggle names the line, and what each
+    line is lives on the toggle's hover. The shares-held view is gone."""
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
     assert "function monthEnds(" in js and "share count changed" in js and '"granted"' in js
     assert '["price","Price"' in js and '["pct","Stake"' in js
@@ -210,6 +214,59 @@ def test_the_record_has_two_views_and_one_story_per_chart():
     assert 'class="ann"' not in js and "linearGradient" in js
     assert 'class="dot"' in js and 'class="dot"><circle' not in js and 'rel="noopener" class="dot"' not in js, "dots are marks, not links; the list carries the filing link"
     assert "steps without a dot are grants, gifts, or the share count changing" in js.lower()
+    rec = js[js.index("function recordBlock("):js.index("/* ---- the trades ---- */")]
+    assert "<h2>" not in rec and 'class="sub"' not in rec, "the chart section carries no heading and no caption"
+    assert "daily closes" in rec[rec.index("const modes="):rec.index("const chips=")], "what a line is lives on the toggle"
+    assert "hover for the trade" not in js and "dot size follows" not in js, "the key is two words"
+
+
+def test_the_band_uses_the_tables_words_and_has_no_three_year_cell():
+    """Value, Market cap, Shares held, 1Y return: the home table's labels,
+    in the home page's own strip. The 3-year change cell is gone: it read
+    "+5.0% since 2026-01" for a company eight months old, and the table it
+    was meant to match never had such a column. Confidence is a plain
+    word that opens the reasons, shown only when the figure is not clean."""
+    js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
+    band = js[js.index("function band("):js.index("/* ---- the record:")]
+    for label in ('"Value"', '"Market cap"', '"Shares held"', '"1Y return"'):
+        assert label in band, f"{label} is a stat"
+    assert "3-year" not in band[band.index("function band("):] and "trajStats" not in js
+    assert "never estimated" not in band, "the answer needs no sentence beside it"
+    assert 'class="cband herostats"' in band, "the strip is the home page's"
+    assert "<details>" in band and 'confidence</summary>' in band
+    assert 'r.conf!=="high"' in band, "a clean figure says nothing about confidence"
+    assert "\u2014" not in js, "no em dashes"
+
+
+def test_a_sealed_page_says_whose_stake_is_in_pro(tmp_path):
+    panel, founders, prices, sp, _ = _fixture(tmp_path)
+    out = tmp_path / "pub"
+    bcp.main(panel, founders, prices, sp, str(out))
+    sealed = open(out / "company" / "SEALD" / "index.html", encoding="utf-8").read()
+    assert "Jane Doe&#x27;s stake is in Pro" in sealed
+    assert bcp.poss("Jabbok Schlacks") == "Jabbok Schlacks'"
+    js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
+    assert "stake is in Pro" in js and "const poss=" in js
+
+
+def test_the_one_year_return_on_a_page_is_the_lists(tmp_path):
+    """Passed --prices, the page builder reads the 1Y return through the
+    same function the list uses, and the open row carries it for the
+    script; without a store, the cell is a dash, never a guess."""
+    panel, founders, prices, sp, _ = _fixture(tmp_path)
+    store = tmp_path / "store"
+    store.mkdir()
+    (store / "TSLA.csv").write_text("date,close\n2025-01-02,200.0\n2025-06-02,250.0\n2026-01-05,300.0\n")
+    out = tmp_path / "pub"
+    bcp.main(panel, founders, prices, sp, str(out), prices_dir=str(store))
+    tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
+    body = tsla[tsla.index('<div id="cbody">'):tsla.index('<div class="creport"')]
+    assert '<div class="n up">+50.0%</div><div class="k">1Y return</div>' in body
+    assert '"ret_1y": "50.0000"' in tsla, "the script's row carries the same figure"
+    bcp.main(panel, founders, prices, sp, str(out))
+    tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
+    assert '<div class="n none">&mdash;</div><div class="k">1Y return</div>' in tsla
+    assert "ret_1y" not in tsla
 
 
 def test_each_page_unfurls_into_its_own_card_when_one_is_drawn(tmp_path):

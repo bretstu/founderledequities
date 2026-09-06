@@ -131,7 +131,7 @@ python3 ops/stamp_static.py panel.csv "$SP_LIST" prices.csv founders.csv public/
 $OGPY ops/company_cards.py panel.csv "$SP_LIST" prices.csv founders.csv events.csv price-history og \
   || echo "  company cards: not drawn; pages keep og.png"
 if [ -d og ] && [ -n "$(ls og 2>/dev/null)" ]; then mkdir -p public/og && cp og/*.png public/og/; fi
-python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" public/ events.csv history.csv --og og
+python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" public/ events.csv history.csv --og og --prices price-history
 [ -s prices.csv ] && cp prices.csv public/
 # perf.csv is published by build_site_data, cut to the chart's cohort; the
 # full file (every company's closes) stays on disk for the 3-year returns.

@@ -130,17 +130,22 @@ def page_text(r, sp: bool, price):
     ceo, co, tk = r["ceo"] or "The chief executive", r["company"] or r["ticker"], r["ticker"]
     pct = num(r.get("pct"))
     if sp and pct is not None:
-        title = f"{ceo} owns {pct:.2f}% of {co} ({tk}) — Founder Led Equities"
+        title = f"{ceo} owns {pct:.2f}% of {co} ({tk}) · Founder Led Equities"
         sh = num(r.get("shares")) or 0
         val = f", worth {money(sh * price)} at the latest close" if price and sh else ""
-        desc = (f"{ceo}, CEO of {co}, holds {pct:.2f}% of the company's common shares"
-                f"{val} — {sh:,.0f} shares as of {r.get('shares_as_of') or 'the latest filing'}, "
-                f"computed from SEC filings, never estimated. Every trade since 2016, every filing linked.")
+        desc = (f"{ceo}, CEO of {co}, owns {pct:.2f}% of the company{val}: "
+                f"{sh:,.0f} shares as of {r.get('shares_as_of') or 'the latest filing'}, "
+                f"computed from SEC filings, never estimated. Every trade, every filing linked.")
     else:
-        title = f"What {ceo} owns of {co} ({tk}) — Founder Led Equities"
+        title = f"What {ceo} owns of {co} ({tk}) · Founder Led Equities"
         desc = (f"{ceo}, CEO of {co}: the stake computed from SEC filings, the record over time, "
-                f"every trade since 2016 with the filing linked. This company is in Pro.")
+                f"every trade with the filing linked. This company is in Pro.")
     return title, desc[:300]
+
+
+def poss(name: str) -> str:
+    """Whose stake: "Elon Musk's", "Jabbok Schlacks'"."""
+    return name + ("'" if name.lower().endswith("s") else "'s")
 
 
 def compact(n: float) -> str:
@@ -211,7 +216,7 @@ def founder_quote(founder) -> str:
     return html.escape(ev[:400])
 
 
-def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filings=0):
+def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filings=0, ret_1y=None):
     """THE PAGE SAYS ITS NUMBERS IN HTML. A fetch without scripts (a
     crawler's first pass, an assistant, a reader in the second before the
     data arrives) read a name and a footer; the stake, the value, the
@@ -228,7 +233,8 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
         q = founder_quote(founder)
         quote = f' <span class="cq">The proxy statement says: &ldquo;{q}&rdquo;</span>' if q else ""
         onrec = f" {n_filings} filings by the chief executive are on record since 2016." if n_filings else ""
-        return (f'<p class="cprose">{ceo} is the chief executive of {co}.{fsent}{quote}{onrec} '
+        return (f'<div class="cans"><h2 class="p s">{html.escape(poss(payload["ceo"] or "The chief executive"))} stake is in Pro</h2></div>'
+                f'<p class="cprose">{ceo} is the chief executive of {co}.{fsent}{quote}{onrec} '
                 f'The stake, its value, and every trade are in the Pro tier; '
                 f'<a href="/api/checkout">Pro is $5 a month</a>, and the S&amp;P 500 is free.</p>')
     pct = num(r.get("pct")); sh = num(r.get("shares")); out = num(r.get("outstanding"))
@@ -236,13 +242,23 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
         return f'<p class="cprose">{ceo} is the chief executive of {co}.{fsent} The record could not settle on a figure; the reasons are on the row.</p>'
     val = f", worth about {money(sh * price)} at the {html.escape(price_date)} close" if price else ""
     pd = html.escape(price_date)
-    band = ('<div class="cband">'
-            f'<div><h2 class="p"><span class="vh">{ceo} owns </span>{pct:.2f}%<span class="vh"> of {co}</span></h2><div class="pl">of {co}&#39;s common shares, computed from the filings, never estimated</div></div>'
-            f'<div class="cstat"><div class="k">Stake value</div><div class="v">{money(sh * price) if price else "&mdash;"}</div><div class="s">{("at $%.2f &middot; %s" % (price, pd)) if price else ""}</div></div>'
-            f'<div class="cstat"><div class="k">Market cap</div><div class="v">{money(out * price) if (price and out) else "&mdash;"}</div><div class="s">{(f"{int(out):,} shares outstanding") if out else ""}</div></div>'
-            f'<div class="cstat"><div class="k">Shares held</div><div class="v">{compact(sh)}</div><div class="s">{int(sh):,} as of {html.escape(r.get("shares_as_of") or "")}</div></div>'
-            f'<div class="cstat"><div class="k">Confidence</div><div class="v" style="font-size:20px">{html.escape(r.get("confidence") or "")}</div><div class="s"></div></div>'
-            '</div>')
+    # THE SAME BAND THE SCRIPT DRAWS, in the same words: the number, "of
+    # the company", then Value / Market cap / Shares held / 1Y return in the
+    # home page's own strip. The script redraws it identically on load.
+    def stat(n, k, sub="", cls=""):
+        return (f'<div class="hstat"><div class="n {cls}">{n}</div><div class="k">{k}</div>'
+                + (f'<div class="s">{sub}</div>' if sub else "") + '</div>')
+    r1 = ret_1y.get(payload["tk"]) if ret_1y else None
+    band = ('<div class="cans">'
+            f'<h2 class="p"><span class="vh">{ceo} owns </span>{pct:.2f}%<span class="vh"> of {co}</span></h2><div class="pl">of {co}</div>'
+            '</div><div class="cband herostats">'
+            + stat(money(sh * price) if price else "&mdash;", "Value", f"at ${price:.2f}" if price else "")
+            + stat(money(out * price) if (price and out) else "&mdash;", "Market cap")
+            + stat(compact(sh), "Shares held", f"{int(sh):,} of {int(out):,}" if out else f"{int(sh):,}")
+            + (stat(f"{r1:+.1f}%", "1Y return", "", "up" if r1 >= 0 else "down") if r1 is not None
+               else stat("&mdash;", "1Y return", "", "none"))
+            + '</div>'
+            + f'<div class="cmeta"><span>as of {html.escape(r.get("shares_as_of") or "")}</span></div>')
     h = hist.get(payload["tk"]) or {}
     e = ev.get(payload["tk"]) or {}
     moved = ""
@@ -347,7 +363,7 @@ def card_tags(page: str, tk: str, og_dir: str | None) -> str:
 
 
 def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hist_p="history.csv",
-         og_dir=None):
+         og_dir=None, prices_dir=None):
     here = os.path.dirname(os.path.abspath(__file__))
     root = os.path.dirname(here)
     index_html = open(os.path.join(root, "index.html"), encoding="utf-8").read()
@@ -393,6 +409,13 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         pass
 
     ev, hist = load_summaries(events_p, hist_p)
+    # THE 1Y RETURN IS THE LIST'S: one function (build_site_data.one_year_returns),
+    # one store, so the figure on a company page is the figure in the table.
+    ret_1y = {}
+    if prices_dir:
+        from build_site_data import one_year_returns
+        ret_1y = one_year_returns(prices_dir, [(r.get("ticker") or "").upper()
+                                              for r in csv.DictReader(open(panel_p, encoding="utf-8-sig"))])
     # the founder-led companies ranked by stake value, for the neighbour links;
     # the names for those links; and per company, how many filings the
     # history walk saw (a count a sealed page may say)
@@ -431,6 +454,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                                              "shares_as_of", "confidence", "cik", "form4_url",
                                              "excluded_shares", "excluded_detail", "problems", "cautions",
                                              "operating_partnership", "stake_source")}
+            if ret_1y and tk in ret_1y:
+                row["ret_1y"] = f"{ret_1y[tk]:.4f}"
             payload["row"] = row
             n_open += 1
         else:
@@ -439,7 +464,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
             payload["price"] = price
             payload["price_date"] = price_date
         index_rows.append({"tk": tk, "co": payload["co"], "ceo": payload["ceo"]})
-        body = static_body(payload, r, is_sp, price, price_date, ev, hist, founders.get(tk), filings.get(tk, 0))
+        body = static_body(payload, r, is_sp, price, price_date, ev, hist, founders.get(tk), filings.get(tk, 0), ret_1y)
         lastmods[tk] = (r.get("shares_as_of") or "")[:10]
         crumbs = json.dumps({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": "Founder Led Equities", "item": f"{SITE}/"},
@@ -489,4 +514,10 @@ if __name__ == "__main__":
         i = argv.index("--og")
         og_dir = argv[i + 1]
         del argv[i:i + 2]
-    raise SystemExit(main(*argv[:7], og_dir=og_dir))
+    prices_dir = None
+    if "--prices" in argv:
+        i = argv.index("--prices")
+        prices_dir = argv[i + 1]
+        del argv[i:i + 2]
+        del argv[i:i + 2]
+    raise SystemExit(main(*argv[:7], og_dir=og_dir, prices_dir=prices_dir))

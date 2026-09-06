@@ -15,9 +15,8 @@ each purchase and sale at the price on its filing, restated in today's
 shares; grants, gifts and withholding left out.
 
 THE SEAL HOLDS ON THE CARD. A company outside the free tier shows its
-name, its chief executive, the founder badge and the public price line,
-and says the stake is sealed. No percentage, no value, no trades, since
-those are what a subscription buys.
+name, its chief executive, the founder badge and the public price line.
+No percentage, no trades, since those are what a subscription buys.
 
 Cheap enough to run every deploy: Pillow draws a card in a few tens of
 milliseconds, so the universe takes about a minute and each card is a
@@ -138,139 +137,127 @@ class Fonts:
 
 
 def draw_card(out, fonts, tk, co, ceo, founder, sealed, pct, value, shares, series, evs, price_asof):
+    """The name above, the chart below, and nothing to read in between.
+
+    A card is seen for a second in a feed. The version this replaces
+    carried a stake sentence, a value line and a caption; the picture is
+    the point, and the page it links to has the words. The percentage
+    stays, top right, for an open company: it is the one figure a reader
+    would share the card for. A sealed company's card shows the name, the
+    person, and the public price line, and no dots."""
     from PIL import Image, ImageDraw
     im = Image.new("RGB", (W, H), "white")
     d = ImageDraw.Draw(im, "RGBA")
 
-    # ---- the top: wordmark, ticker
-    d.text((64, 44), "Founder Led", font=fonts.disp(24, 700), fill=INK)
-    wm = d.textlength("Founder Led ", font=fonts.disp(24, 700))
-    d.text((64 + wm, 44), "Equities", font=fonts.disp(24, 700), fill=INK)
-    d.text((W - 64, 50), tk + ("  ·  S&P 500" if not sealed else "  ·  PRO") + "  ·  founderledequities.com",
-           font=fonts.mono(16), fill=FAINT, anchor="ra")
+    # ---- the top: wordmark, address
+    d.text((64, 46), "Founder Led Equities", font=fonts.disp(22, 700), fill=INK)
+    d.text((W - 64, 50), "founderledequities.com", font=fonts.mono(15), fill=FAINT, anchor="ra")
 
     # ---- the company and the person
-    name_f = fonts.disp(46, 700)
+    name_f = fonts.disp(52, 700)
     title = co
-    while d.textlength(title, font=name_f) > W - 128 and len(title) > 8:
-        title = title[:-2].rstrip() + "…"
-    d.text((64, 96), title, font=name_f, fill=INK)
-    y = 158
+    # leave room for the percentage on the right when there is one
+    room = W - 128 - (300 if (pct is not None and not sealed) else 0)
+    while d.textlength(title, font=name_f) > room and len(title) > 8:
+        title = title[:-2].rstrip() + "\u2026"
+    d.text((64, 100), title, font=name_f, fill=INK)
+    y = 172
     who = ceo or "chief executive not identified"
-    d.text((64, y), who, font=fonts.ui(22, 700), fill=INK)
-    x = 64 + d.textlength(who, font=fonts.ui(22, 700)) + 10
-    d.text((x, y + 1), "· CEO", font=fonts.ui(21, 500), fill=MUT)
-    x += d.textlength("· CEO", font=fonts.ui(21, 500)) + 14
+    d.text((64, y), who, font=fonts.ui(23, 700), fill=INK)
+    x = 64 + d.textlength(who, font=fonts.ui(23, 700)) + 10
+    d.text((x, y + 1), "\u00b7 CEO", font=fonts.ui(22, 500), fill=MUT)
+    x += d.textlength("\u00b7 CEO", font=fonts.ui(22, 500)) + 14
     if founder == "yes":
         bf = fonts.mono(12)
         bw = d.textlength("FOUNDER", font=bf) + 18
-        d.rounded_rectangle((x, y + 3, x + bw, y + 24), radius=5, fill=INK)
-        d.text((x + 9, y + 7), "FOUNDER", font=bf, fill="white")
+        d.rounded_rectangle((x, y + 4, x + bw, y + 25), radius=5, fill=INK)
+        d.text((x + 9, y + 8), "FOUNDER", font=bf, fill="white")
 
-    # ---- the stake, or the seal
-    if sealed:
-        d.text((64, 208), "Stake computed for subscribers", font=fonts.disp(34, 700), fill=MUT)
-        d.text((64, 250), "The percentage, the value and the trades are in Pro. The price is public.",
-               font=fonts.ui(17), fill=FAINT)
-    elif pct is not None:
-        big = fonts.disp(54, 700)
-        p = f"{pct:.2f}%"
-        d.text((64, 200), p, font=big, fill=BLUE)
-        x = 64 + d.textlength(p + " ", font=big)
-        d.text((x, 214), "of the company", font=fonts.ui(24, 500), fill=MUT)
-        sub = []
-        if value:
-            sub.append(f"{money(value)} at the {price_asof} close" if price_asof else money(value))
-        if shares:
-            sub.append(f"{compact(shares)} shares")
-        if sub:
-            d.text((64, 264), "  ·  ".join(sub), font=fonts.mono(15), fill=FAINT)
-    else:
-        d.text((64, 208), "Not measured", font=fonts.disp(34, 700), fill=MUT)
+    # ---- the answer, top right, only when it is public
+    if not sealed and pct is not None:
+        d.text((W - 64, 100), f"{pct:.2f}%", font=fonts.disp(52, 700), fill=BLUE, anchor="ra")
+        d.text((W - 64, 172), "of the company", font=fonts.ui(20, 500), fill=MUT, anchor="ra")
 
     # ---- the chart
-    top, bottom, left, right = 322, 580, 84, W - 40
+    top, bottom, left, right = 250, 572, 84, W - 40
     if len(series) < 2:
-        d.text((64, 340), "No price record for this company yet.", font=fonts.ui(18), fill=FAINT)
-    else:
-        t0 = _day(series[0][0])
-        t1 = max(_day(series[-1][0]), t0 + 1)
-        drawn = [] if sealed else [e for e in evs if series[0][0] <= e["d"] <= series[-1][0]]
-        lo = min(c for _, c in series)
-        hi = max(c for _, c in series)
-        for e in drawn:
-            if e["apa"]:
-                lo, hi = min(lo, e["apa"]), max(hi, e["apa"])
-        lo = max(lo, 1e-3)
-        L0 = math.log(lo) - (math.log(hi) - math.log(lo)) * 0.08
-        L1 = math.log(hi) + (math.log(hi) - math.log(lo)) * 0.14
+        d.text((64, 300), "No price record for this company yet.", font=fonts.ui(18), fill=FAINT)
+        im.save(out, "PNG", optimize=True)
+        return
+    t0 = _day(series[0][0])
+    t1 = max(_day(series[-1][0]), t0 + 1)
+    drawn = [] if sealed else [e for e in evs if series[0][0] <= e["d"] <= series[-1][0]]
+    lo = min(c for _, c in series)
+    hi = max(c for _, c in series)
+    for e in drawn:
+        if e["apa"]:
+            lo, hi = min(lo, e["apa"]), max(hi, e["apa"])
+    lo = max(lo, 1e-3)
+    L0 = math.log(lo) - (math.log(hi) - math.log(lo)) * 0.08
+    L1 = math.log(hi) + (math.log(hi) - math.log(lo)) * 0.14
 
-        def X(day):
-            return left + (_day(day) - t0) / (t1 - t0) * (right - left)
+    def X(day):
+        return left + (_day(day) - t0) / (t1 - t0) * (right - left)
 
-        def Y(v):
-            return bottom - (math.log(v) - L0) / ((L1 - L0) or 1) * (bottom - top)
+    def Y(v):
+        return bottom - (math.log(v) - L0) / ((L1 - L0) or 1) * (bottom - top)
 
-        # gridlines at round prices, at most five
-        ticks = []
-        for e in range(int(math.floor(math.log10(lo))) - 1, int(math.ceil(math.log10(hi))) + 1):
-            for m in (1, 1.5, 2, 3, 5, 7):
-                v = m * 10 ** e
-                if L0 < math.log(v) < L1:
-                    ticks.append(v)
-        while len(ticks) > 5:
-            del ticks[-2::-2]
-        for v in ticks:
-            yy = Y(v)
-            d.line((left, yy, right, yy), fill=LINE, width=1)
-            d.text((left - 10, yy), dollars(v), font=fonts.mono(13), fill=FAINT, anchor="rm")
-        y0, y1 = int(series[0][0][:4]), int(series[-1][0][:4])
-        for yr in range(y0 + 1, y1 + 1):
-            xx = X(f"{yr}-01-01")
-            if left <= xx <= right:
-                d.text((xx, H - 24), str(yr), font=fonts.mono(13), fill=FAINT, anchor="mm")
-        # the line, thinned to the pixel, and the shading under it
-        pts, lastx = [], -9
-        for day, c in series:
-            xx = X(day)
-            if pts and xx - lastx < 0.8:
-                continue
-            lastx = xx
-            pts.append((xx, Y(c)))
-        poly = pts + [(pts[-1][0], bottom), (pts[0][0], bottom)]
-        d.polygon(poly, fill=(27, 52, 224, 22))
-        d.line(pts, fill=INK, width=2, joint="curve")
-        # the trades, largest first so small ones sit on top
-        vmax = max([e["v"] for e in drawn] + [1.0])
+    # gridlines at round prices, at most five
+    ticks = []
+    for e in range(int(math.floor(math.log10(lo))) - 1, int(math.ceil(math.log10(hi))) + 1):
+        for m in (1, 1.5, 2, 3, 5, 7):
+            v = m * 10 ** e
+            if L0 < math.log(v) < L1:
+                ticks.append(v)
+    while len(ticks) > 5:
+        del ticks[-2::-2]
+    for v in ticks:
+        yy = Y(v)
+        d.line((left, yy, right, yy), fill=LINE, width=1)
+        d.text((left - 10, yy), dollars(v), font=fonts.mono(13), fill=FAINT, anchor="rm")
+    y0, y1 = int(series[0][0][:4]), int(series[-1][0][:4])
+    for yr in range(y0 + 1, y1 + 1):
+        xx = X(f"{yr}-01-01")
+        if left <= xx <= right:
+            d.text((xx, H - 24), str(yr), font=fonts.mono(13), fill=FAINT, anchor="mm")
+    # the line, thinned to the pixel, and the shading under it
+    pts, lastx = [], -9
+    for day, c in series:
+        xx = X(day)
+        if pts and xx - lastx < 0.8:
+            continue
+        lastx = xx
+        pts.append((xx, Y(c)))
+    poly = pts + [(pts[-1][0], bottom), (pts[0][0], bottom)]
+    d.polygon(poly, fill=(27, 52, 224, 22))
+    d.line(pts, fill=INK, width=2, joint="curve")
+    # the trades, largest first so small ones sit on top
+    vmax = max([e["v"] for e in drawn] + [1.0])
 
-        def close_at(day):
-            v = series[0][1]
-            for dd, c in series:
-                if dd <= day:
-                    v = c
-                else:
-                    break
-            return v
-        for e in sorted(drawn, key=lambda e: -e["v"]):
-            yv = e["apa"] if e["apa"] else close_at(e["d"])
-            xx, yy = X(e["d"]), Y(yv)
-            r = 4 + 7 * math.sqrt(e["v"] / vmax)
-            col = BLUE if e["c"] == "P" else SELL
-            d.ellipse((xx - r - 1.5, yy - r - 1.5, xx + r + 1.5, yy + r + 1.5), fill="white")
-            d.ellipse((xx - r, yy - r, xx + r, yy + r), fill=col)
-        # the last close
-        lx, ly = pts[-1]
-        d.text((lx - 4, ly - 12), dollars(series[-1][1]), font=fonts.mono(15), fill=INK, anchor="rs")
-        # the caption: what the dots are
-        buys = [e for e in drawn if e["c"] == "P"]
-        sells = [e for e in drawn if e["c"] == "S"]
-        cap = f"{series[0][0][:4]} to {series[-1][0]} · daily closes, split-adjusted"
-        if not sealed and (buys or sells):
-            cap += " · " + ", ".join(filter(None, [
-                f"bought {money(sum(e['v'] for e in buys))} in {len(buys)}" if buys else "",
-                f"sold {money(sum(e['v'] for e in sells))} in {len(sells)}" if sells else ""]))
-            cap += " · dots at the price on the filing"
-        d.text((left, 299), cap, font=fonts.mono(13), fill=MUT)
+    def close_at(day):
+        v = series[0][1]
+        for dd, c in series:
+            if dd <= day:
+                v = c
+            else:
+                break
+        return v
+    for e in sorted(drawn, key=lambda e: -e["v"]):
+        yv = e["apa"] if e["apa"] else close_at(e["d"])
+        xx, yy = X(e["d"]), Y(yv)
+        r = 4 + 7 * math.sqrt(e["v"] / vmax)
+        col = BLUE if e["c"] == "P" else SELL
+        d.ellipse((xx - r - 1.5, yy - r - 1.5, xx + r + 1.5, yy + r + 1.5), fill="white")
+        d.ellipse((xx - r, yy - r, xx + r, yy + r), fill=col)
+    # the last close
+    lx, ly = pts[-1]
+    d.text((lx - 4, ly - 12), dollars(series[-1][1]), font=fonts.mono(15), fill=INK, anchor="rs")
+    # the key: two words, only when there are dots
+    if drawn:
+        d.ellipse((left, H - 32, left + 10, H - 22), fill=BLUE)
+        d.text((left + 16, H - 33), "bought", font=fonts.mono(13), fill=MUT)
+        d.ellipse((left + 86, H - 32, left + 96, H - 22), fill=SELL)
+        d.text((left + 102, H - 33), "sold", font=fonts.mono(13), fill=MUT)
     im.save(out, "PNG", optimize=True)
 
 

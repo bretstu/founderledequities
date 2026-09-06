@@ -21,7 +21,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/site.css">
   <style>
-    /* THE COMPANY PAGE. One answer, one record, every trade, one receipt. */
+    /* THE COMPANY PAGE. The answer, four figures, the chart, the trades,
+       one receipt. Prose stays off the page: a figure that needs a
+       sentence beside it is a figure with the wrong label. */
     .cpage{padding:clamp(24px,3.5vw,44px) 0 60px}
     .cnav a{color:var(--blue);text-decoration:none;font-size:13px}
     .chead{margin-top:14px}
@@ -29,32 +31,38 @@
     .chead h1{font-family:var(--disp);font-weight:650;letter-spacing:-.025em;line-height:1.02;font-size:clamp(30px,4vw,54px);margin:8px 0 6px}
     .chead .ce{font-size:16px;color:var(--mut)}
     .chead .ce b{color:var(--ink);font-weight:600}
-    /* the answer band */
-    /* five boxes in a row: the answer, then the four numbers that give it meaning */
-    .cband{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;margin-top:28px}
-    .cband>div{border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:#fff;min-height:118px;display:flex;flex-direction:column;justify-content:flex-end}
-    .cband>div:first-child{background:var(--panel);border-color:var(--panel)}
-    .cband .p{font-family:var(--mono);font-size:clamp(40px,4.6vw,60px);font-weight:600;color:var(--blue);letter-spacing:-.02em;line-height:1;margin:0}
+    /* THE ANSWER: the number, and what it is a share of. */
+    .cans{margin-top:30px}
+    .cans .p{font-family:var(--mono);font-size:clamp(48px,6vw,84px);font-weight:600;color:var(--blue);letter-spacing:-.03em;line-height:1;margin:0}
+    .cans .p.s{font-size:clamp(24px,3vw,34px);color:var(--ink);font-family:var(--disp);font-weight:650;letter-spacing:-.01em;line-height:1.15}
+    .cans .pl{color:var(--mut);font-size:15px;margin-top:10px}
     .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
     .cq{display:block;margin-top:8px;color:var(--ink)}
+    /* THE FIGURES: the home page's own strip (.herostats/.hstat from
+       site.css), so the two pages cannot drift apart in type or label. */
+    .cband{margin-top:26px}
+    .cband .hstat .n{font-size:clamp(22px,2.4vw,30px)}
+    .cband .hstat .n.up{color:#0b7a4b}.cband .hstat .n.down{color:#c22a2a}.cband .hstat .n.none{color:var(--faint)}
+    .cband .hstat .s{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:5px}
+    .cmeta{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:16px;display:flex;gap:18px;flex-wrap:wrap;align-items:baseline}
+    .cmeta a{color:var(--blue);text-decoration:none}
+    .cmeta details{display:inline}
+    .cmeta summary{cursor:pointer;color:var(--mut);list-style:none}
+    .cmeta summary::-webkit-details-marker{display:none}
+    .cmeta summary::after{content:" \2193";color:var(--faint)}
+    .cmeta details[open] summary::after{content:" \2191"}
+    .cmeta .why{display:block;margin-top:8px;max-width:78ch;font-family:var(--ui);font-size:13px;color:var(--mut);line-height:1.5;white-space:pre-line}
     .cmore{margin-top:30px;padding-top:18px;border-top:1px solid var(--line)}
     .cmore .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
     .cmore ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 22px}
     .cmore li a{font-family:var(--mono);font-weight:600;color:var(--blue);text-decoration:none}
     .cmore li span{color:var(--mut);font-size:13px;margin-left:6px}
-    .cband .p.s{font-size:24px;color:var(--ink);font-family:var(--disp);font-weight:650;letter-spacing:-.01em;line-height:1.15}
-    .cband .pl{color:var(--mut);font-size:13px;margin-top:8px;line-height:1.45}
-    .cstat .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
-    .cstat .v{font-family:var(--disp);font-size:28px;font-weight:650;letter-spacing:-.01em;margin-top:6px;line-height:1.1}
-    .cstat .v.up{color:#0b7a4b}.cstat .v.down{color:#c22a2a}
-    .cstat .s{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
-    .cmeta{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:12px;display:flex;gap:18px;flex-wrap:wrap}
-    .cmeta .conf{color:var(--mut)}
-    /* the record */
+    /* THE CHART: no title, no caption. The toggle says which line it is. */
     .csec{margin-top:40px}
     .csec h2{font-family:var(--disp);font-size:22px;font-weight:650;letter-spacing:-.01em;margin:0 0 6px}
     .csec .sub{font-size:13px;color:var(--mut);margin-bottom:14px}
-    .csec .sub b{color:var(--ink);font-weight:600}
+    .crec{margin-top:34px;padding-top:14px;border-top:1px solid var(--line)}
+    .crec .cshead{justify-content:flex-end;margin-bottom:8px}
     .cchart svg{width:100%;height:auto;display:block;overflow:visible}
     /* the dots arrive after the line has drawn; the reduced-motion rule in
        site.css switches every animation off */
@@ -63,7 +71,7 @@
     .cchart svg.drawn .dot{opacity:0;animation:dotin .35s ease-out forwards;animation-delay:calc(var(--i,0) * 14ms)}
     @keyframes dotin{to{opacity:1}}
     .cchart svg .xh{pointer-events:none}
-    .ckey{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:8px;line-height:1.5}
+    .ckey{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:8px;line-height:1.5}
     .ckey i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px}
     .ckey .b i{background:var(--blue)}.ckey .s i{background:#c22a2a}
     /* the trades */
@@ -74,18 +82,14 @@
     .ctrades .drow .adlt{font-family:var(--mono);font-size:12px;min-width:60px}
     .ctrades .drow .asub{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .ctrades .drow a{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint);text-decoration:none;white-space:nowrap}
-    .ctrades .more{margin-top:10px;font-size:13px}
-    .ctrades .more a{color:var(--blue);cursor:pointer}
     /* the receipt */
     .cwhy{margin-top:40px;padding:16px 20px;background:var(--panel);border-radius:10px;font-size:14px;line-height:1.55;color:var(--mut)}
     .cwhy .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
     .cwhy q{color:var(--ink)}
     .cwhy .src{display:block;margin-top:8px;font-family:var(--mono);font-size:11px}
     .cwhy .src a{color:var(--blue);text-decoration:none}
-    .cseal{margin-top:30px;padding:26px 0 10px;border-top:1px solid var(--line)}
-    .cseal .p{font-family:var(--disp);font-size:26px;font-weight:650;letter-spacing:-.01em}
-    .cseal .l{color:var(--mut);max-width:56ch;line-height:1.55;margin-top:8px}
-    .cseal .gopro{margin-top:18px}
+    .cseal .l{color:var(--mut);max-width:56ch;line-height:1.55;margin-top:10px}
+    .cseal .gopro{margin-top:18px;display:inline-block;text-decoration:none}
     .cprose{font-size:15px;line-height:1.6;color:var(--mut);max-width:78ch;margin:18px 0 0}
     .cshead{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
     .cshead h2{margin:0}
@@ -94,8 +98,6 @@
     .cshead .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
     .creport{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--mut);line-height:1.6}
     .creport a{color:var(--blue)}
-    @media(max-width:900px){.cband{grid-template-columns:1fr 1fr}.cband>div:first-child{grid-column:1 / -1}}
-    @media(max-width:520px){.cband{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -105,7 +107,7 @@
   <div class="chead">
     <div class="tk">{{TICKER}}{{TIER}}</div>
     <h1>{{COMPANY}}</h1>
-    <div class="ce"><b>{{CEO}}</b> — CEO <span id="cbadge"></span></div>
+    <div class="ce"><b>{{CEO}}</b> · CEO <span id="cbadge"></span></div>
   </div>
   <div id="cbody"></div>
   <div id="cmore"></div>

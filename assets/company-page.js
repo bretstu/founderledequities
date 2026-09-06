@@ -19,37 +19,49 @@ function setRow(row){
   $("#cbadge").innerHTML=fBadge(row.tk);
 }
 
+/* whose stake: "Elon Musk's", "Jabbok Schlacks'" */
+const poss=n=>n+(/s$/i.test(n)?"'":"'s");
+
 function renderSealed(){
-  $("#cbody").innerHTML=`<div class="cseal">
-    <div class="p">This company is in Pro.</div>
-    <div class="l">Its stake is computed from its filings like every other. Pro is the 1,635 companies beyond the
-      S&amp;P 500: the stake, the record, every trade. $5 a month, cancel in one click.</div>
-    <a class="gopro" style="display:inline-block;text-decoration:none" href="/api/checkout">Go Pro — $5/month</a>
-    <div class="l" style="margin-top:10px;font-size:13px">Already subscribed? <a href="/" style="color:var(--blue)">Sign in on the home page</a> and come back.</div>
+  $("#cbody").innerHTML=`<div class="cans cseal">
+    <h2 class="p s">${esc(poss(C.ceo||"The chief executive"))} stake is in Pro</h2>
+    <div class="l">Computed from the filings like every other. Pro is every company beyond the S&amp;P 500: the stake, the record, every trade. $5 a month, cancel in one click.</div>
+    <a class="gopro" href="/api/checkout">Go Pro, $5/month</a>
+    <div class="l" style="font-size:13px">Already subscribed? <a href="/" style="color:var(--blue)">Sign in on the home page</a> and come back.</div>
   </div>`;
   $("#creport").innerHTML=reportBlock({tk:C.tk,co:C.co});
 }
 
-/* ---- the answer band ---- */
+/* ---- the answer, and the four figures under it ----
+   THE LABELS ARE THE TABLE'S. Ownership, Value, Market cap, 1Y return: the
+   words the home page uses for the same numbers, computed the same way
+   (shares x close; outstanding x close; the store's twelve-month price
+   return). Nothing here is explained in a sentence; a figure that needed
+   one has been taken off the page. The stake's own trajectory is the
+   Stake chart's job, not a "3-year change" cell that had to say "since
+   2026-01" when the record was eight months old. */
+function stat(n,k,cls,sub,title){return `<div class="hstat"${title?` title="${esc(title)}"`:""}><div class="n ${cls||""}">${n}</div><div class="k">${k}</div>${sub?`<div class="s">${sub}</div>`:""}</div>`;}
 function band(r){
-  const st=(HIST[r.tk]&&HIST[r.tk].length>1)?trajStats(r.tk,1095):null;
   const mcap=r.price&&r.out?r.out*r.price:null;
   const big=r.units?`<div class="p s">Held as partnership units</div><div class="pl">Exchangeable units rather than common stock, so a percent of common shares cannot describe the stake.</div>`
     :r.pct===null?`<div class="p s">Not measured</div><div class="pl">${esc(r.flags||"the record could not settle on a figure")}</div>`
-    :`<h2 class="p"><span class="vh">${esc(C.ceo)} owns </span>${r.pct.toFixed(r.pct<1?3:2)}%<span class="vh"> of ${esc(C.co)}</span></h2><div class="pl">of ${esc(C.co)}'s common shares, computed from the filings — never estimated${r.tabled!==null&&r.out?`<br><span title="${esc((r.flags||"").split("\n").find(f=>/in a remark/.test(f))||"")}">${(100*r.tabled/r.out).toFixed(2)}% of it is in the filing tables; the rest is stated in a remark and counted here</span>`:""}</div>`;
-  const chg=st===null?`<div class="v">—</div><div class="s">no three-year record</div>`
-    :Math.abs(st.d)>100?`<div class="v">⚠</div><div class="s">the record's three-year point is not reconciled</div>`
-    :`<div class="v ${st.d>0.05?"up":st.d<-0.05?"down":""}">${(st.d>=0?"+":"−")+Math.abs(st.d).toFixed(Math.abs(st.d)<1?2:1)}%</div><div class="s">${st.base.toFixed(2)}% → ${st.cur.toFixed(2)}% since ${st.baseDate.slice(0,7)}</div>`;
-  return `<div class="cband">
-    <div>${big}</div>
-    <div class="cstat"><div class="k">Stake value</div><div class="v">${r.val?money(r.val):"—"}</div><div class="s">${r.price?"at $"+r.price.toFixed(2)+" · "+(PRICES_ASOF||"latest close"):"no close on file"}</div></div>
-    <div class="cstat"><div class="k">Market cap</div><div class="v">${mcap?money(mcap):"—"}</div><div class="s">${r.out?fmt(r.out)+" shares outstanding":""}</div></div>
-    <div class="cstat"><div class="k">Shares held</div><div class="v">${r.sh!==null?compact(r.sh):"—"}</div><div class="s">${r.sh!==null?fmt(r.sh):""}${r.tabled!==null&&r.sh!==null&&r.out?`<br>${fmt(r.tabled)} in the filing tables (${(100*r.tabled/r.out).toFixed(2)}%); the rest disclosed in a remark`:""}</div></div>
-    <div class="cstat"><div class="k">3-year change</div>${chg}</div>
-  </div>
+    :`<h2 class="p"><span class="vh">${esc(C.ceo)} owns </span>${r.pct.toFixed(r.pct<1?3:2)}%<span class="vh"> of ${esc(C.co)}</span></h2><div class="pl">of ${esc(C.co)}</div>`;
+  const r1=r.r1===null||r.r1===undefined?stat("&mdash;","1Y return","none","",  "the stock's price return over the last twelve months; blank when it has traded for less than a year")
+    :stat(`${r.r1>=0?"+":""}${r.r1.toFixed(1)}%`,"1Y return",r.r1>=0?"up":"down","","the stock's price return over the last twelve months");
+  const tabled=r.tabled!==null&&r.sh!==null&&r.out?`<br>${fmt(r.tabled)} in the filing tables; the rest stated in a remark`:"";
+  const strip=`<div class="cband herostats">
+    ${stat(r.val?money(r.val):"&mdash;","Value","",r.price?`at $${r.price.toFixed(2)}`:"","the stake's value: shares held at the "+(PRICES_ASOF||"latest")+" close")}
+    ${stat(mcap?money(mcap):"&mdash;","Market cap","","","market capitalization: shares outstanding at the "+(PRICES_ASOF||"latest")+" close")}
+    ${stat(r.sh!==null?compact(r.sh):"&mdash;","Shares held","",r.sh!==null&&r.out?`${fmt(r.sh)} of ${fmt(r.out)}${tabled}`:"","shares held, over shares outstanding on the latest cover page")}
+    ${r1}
+  </div>`;
+  /* the receipt line: when the holding was stated, the filing it was
+     stated on, and, only when it is not clean, why the figure is marked */
+  const conf=r.conf&&r.conf!=="high"&&r.flags?`<details><summary>${esc(r.conf)} confidence</summary><span class="why">${esc(r.flags)}</span></details>`:"";
+  return `<div class="cans">${big}</div>${strip}
   <div class="cmeta">
-    <span>holding as of ${r.asof||"—"}${r.form4?` · <a href="${filingPage(r.form4)}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">the filing ↗</a>`:""}</span>
-    <span class="conf" title="how well the newest filing reconciles with the record">confidence: ${r.conf}</span>
+    <span>as of ${r.asof?dayLabel(r.asof):"&mdash;"}${r.form4?` · <a href="${filingPage(r.form4)}" target="_blank" rel="noopener">the filing &#8599;</a>`:""}</span>
+    ${conf}
   </div>`;
 }
 
@@ -266,27 +278,21 @@ function recordBlock(r){
   let mode=window._chartMode||"price";
   if(mode==="price"&&!havePx)mode="pct";
   if(mode!=="price"&&!haveRec&&havePx)mode="price";
-  const modes=[["price","Price","the share price, daily, split-adjusted, with every purchase and sale at the price on its filing"],
-               ["pct","Stake","the share of the company: moves when the holding changes and when the share count changes"]];
+  /* the chips carry the only words: what each line is, on hover */
+  const modes=[["price","Price","the share price: daily closes, split-adjusted. Dots sit at the price on the filing"],
+               ["pct","Stake","the share of the company, one point per month-end: it moves when the holding changes and when the share count changes. Steps without a dot are grants, gifts, or the share count changing"]];
   const chips=`<div class="chips" role="group" aria-label="chart view">${modes.filter(m=>m[0]==="price"?havePx:haveRec).map(m=>`<button class="chip${mode===m[0]?" on":""}" onclick="setChartMode('${m[0]}')" title="${m[2]}">${m[1]}</button>`).join("")}</div>`;
   const moving=EVENTS.filter(e=>e.tk===r.tk&&unchangedKind(e)===null&&(e.c==="P"||e.c==="S"));
-  const buys=moving.filter(e=>e.c==="P"),sells=moving.filter(e=>e.c==="S");
-  const sum=a=>a.reduce((t,e)=>t+((e.fl?0:e.v)||0),0);
-  const tradeLine=moving.length?` Since 2016: <b>${buys.length?`bought ${money(sum(buys))} in ${buys.length} trade${buys.length===1?"":"s"}`:"no purchases"}</b>, <b>${sells.length?`sold ${money(sum(sells))} in ${sells.length}`:"no sales"}</b>.`:"";
-  const key=`<div class="ckey">${moving.length?`<span class="b"><i></i>bought</span><span class="s"><i></i>sold</span><span>· dot size follows the trade's value · hover for the trade</span>`:""}</div>`;
+  const key=moving.length?`<div class="ckey"><span class="b"><i></i>bought</span><span class="s"><i></i>sold</span></div>`:"";
   if(mode==="price"&&havePx){
-    const first=px[0][0],lastD=px[px.length-1][0];
-    const before=moving.filter(e=>(e.td||e.fd)<first).length;
-    return `<div class="csec"><div class="cshead"><h2>The price, and when they traded</h2>${chips}</div>
-      <div class="sub">${first.slice(0,4)} to ${lastD}, daily closes, split-adjusted. Dots sit at the price on the filing.${tradeLine}${before?` ${before} earlier trade${before===1?"":"s"} predate${before===1?"s":""} the price record.`:""}</div>
+    return `<div class="csec crec"><div class="cshead">${chips}</div>
       <div class="cchart">${priceChart(px,moving)}</div>${key}
     </div>`;
   }
-  if(!haveRec)return `<div class="csec"><h2>The stake over time</h2><div class="sub">No record yet — this company has no walkable filing history.</div></div>`;
-  const pts=cleanHist(r.tk);const left=raw.length-pts.length;
+  if(!haveRec)return "";
+  const pts=cleanHist(r.tk);
   const series=pts.length>1?pts:raw;
-  return `<div class="csec"><div class="cshead"><h2>The stake over time</h2>${chips}</div>
-    <div class="sub">${series[0][0].slice(0,4)} to ${series[series.length-1][0]}, one point per month-end${left?` — ${left} point${left===1?"":"s"} left out where the record lied`:""}.${tradeLine} Steps without a dot are grants, gifts, or the share count changing.</div>
+  return `<div class="csec crec"><div class="cshead">${chips}</div>
     <div class="cchart">${stakeChart(series,moving)}</div>${key}
   </div>`;
 }
@@ -294,13 +300,13 @@ function recordBlock(r){
 /* ---- the trades ---- */
 function tradesBlock(r){
   const all=EVENTS.filter(e=>e.tk===r.tk).sort((a,b)=>(b.td||b.fd).localeCompare(a.td||a.fd)||b.fd.localeCompare(a.fd));
-  if(!all.length)return `<div class="csec"><h2>Every trade since 2016</h2><div class="sub">No purchase or sale on record.</div></div>`;
+  if(!all.length)return `<div class="csec"><h2>Trades</h2><div class="sub">No purchase or sale on record.</div></div>`;
   const kept=all.filter(e=>unchangedKind(e)!==null);
   const evs=VIEW==="all"?all:VIEW==="buys"?all.filter(e=>e.c==="P"&&unchangedKind(e)===null):VIEW==="sells"?all.filter(e=>e.c==="S"&&unchangedKind(e)===null):kept;
   const chip=(v,lab,n)=>`<button class="chip${VIEW===v?" on":""}" onclick="VIEW='${v}';renderOpen(PANEL[0])">${lab} <small>${n}</small></button>`;
   const rows=evs.map(e=>{
     const b=evBadge(e);const p=pctOf(e);const uk=unchangedKind(e);
-    const stk=uk==="pre"?"pre-IPO":uk!==null?"stake unchanged":p?`${p.approx?"≈ ":""}${e.c==="P"?"+":"−"}${p.v>=100?"100%+":p.v.toFixed(p.v<1?2:1)+"%"} of stake`:"share of stake not stated";
+    const stk=uk==="pre"?"pre-IPO":uk!==null?"stake unchanged":p?`${p.approx?"≈ ":""}${e.c==="P"?"+":"−"}${p.v>=100?"100%+":p.v.toFixed(p.v<1?2:1)+"%"} of stake`:"";
     return `<div class="drow"><span class="adate" title="traded ${e.td||e.fd}; filed ${e.fd}${lagNote(e)}">${e.td||e.fd}</span>
       <span class="abadge ${b.k}" title="${esc(b.n)}">${b.t}</span>
       <span class="aval ${e.c==="P"?"up":"down"}">${evValCell(e)}</span>
@@ -308,10 +314,10 @@ function tradesBlock(r){
       <span class="asub">${stk}${e.pl==="plan"?" · planned":e.pl==="discretionary"?" · discretionary":""}</span>
       ${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" title="the filing, on EDGAR">Form 4 ↗</a>`:""}
     </div>`}).join("");
-  return `<div class="csec ctrades"><h2>Every trade since 2016</h2>
+  return `<div class="csec ctrades"><h2>Trades</h2>
     <div class="tchips">${chip("all","All",all.length)}${chip("buys","Bought",all.filter(e=>e.c==="P"&&unchangedKind(e)===null).length)}${chip("sells","Sold",all.filter(e=>e.c==="S"&&unchangedKind(e)===null).length)}${chip("kept","Kept apart",kept.length)}</div>
     ${rows||`<div class="sub">Nothing in this view.</div>`}
-    ${VIEW==="kept"?`<div class="sub" style="margin-top:10px">Kept apart: options cashed, units converted, pre-IPO catch-ups — real trades that did not move the public-company stake, listed and badged, left out of every summary.</div>`:""}
+    ${VIEW==="kept"?`<div class="sub" style="margin-top:10px">Kept apart: options cashed, units converted, pre-IPO catch-ups. Real trades that did not move the public-company stake, listed and badged, left out of every summary.</div>`:""}
   </div>`;
 }
 
@@ -326,15 +332,15 @@ function whyBlock(r){
   const src=(fi.src||"").trim();const m=src.match(/(\d{10}-\d{2}-\d{6})/);
   const link=m&&r.cik?`https://www.sec.gov/Archives/edgar/data/${r.cik}/${m[1].replace(/-/g,"")}/`:"";
   return `<div class="cwhy"><div class="k">Why the badge</div>
-    <b style="color:var(--ink)">${verdict}</b> — the proxy statement says: <q>${esc(ev)}</q>
+    <b style="color:var(--ink)">${verdict}</b>. The proxy statement says: <q>${esc(ev)}</q>
     <span class="src">${link?`<a href="${link}" target="_blank" rel="noopener">${esc(src)} ↗</a>`:esc(src||"the proxy statement")}</span></div>`;
 }
 
 function reportBlock(r){
   const subj=encodeURIComponent(`${r.tk}: a figure looks wrong`);
   const body=encodeURIComponent(`Company: ${r.co} (${r.tk})\nWhat I see: \nWhat I think it should be: \nWhere I checked: \n\nPage: https://founderledequities.com/company/${r.tk}/`);
-  return `Source: SEC EDGAR · figures are computed, never estimated. Prices, where shown, are the ${PRICES_ASOF||"latest"} close.
-    If a number here looks wrong, <a href="mailto:hello@founderledequities.com?subject=${subj}&body=${body}">say so</a> — every figure links to the filing it came from, and corrections are made in the open.`;
+  return `Computed from SEC EDGAR, never estimated. Prices are the ${PRICES_ASOF||"latest"} close.
+    If a number looks wrong, <a href="mailto:hello@founderledequities.com?subject=${subj}&body=${body}">say so</a>; every figure links to the filing it came from.`;
 }
 
 function renderOpen(r,{animate=true}={}){
