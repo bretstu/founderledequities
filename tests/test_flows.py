@@ -486,6 +486,26 @@ def test_deere_2017_an_exercise_that_kept_some_shares_reads_as_a_rise():
     assert e.pct_of_holding > 0 and "M" in e.other_codes
 
 
+def test_two_filings_on_one_day_share_the_days_net_by_gross_shares():
+    """Musk, 9 August 2022: one filing sold 3,000,000 shares, another
+    20,000, one history point for the day. Each takes its share of the
+    day's net by gross shares, and the two add up to the day; neither
+    reads as the whole -5.6% on its own."""
+    from fle.events import Event, _share_the_day
+    big = Event(ticker="TSLA", traded="2022-08-09", accession="a", code="S", shares=3_000_000,
+                holding_after=155_000_000, net_change=-3_020_000, residue=0.0)
+    small = Event(ticker="TSLA", traded="2022-08-09", accession="b", code="S", shares=20_000,
+                  holding_after=155_000_000, net_change=-3_020_000, residue=0.0)
+    other = Event(ticker="TSLA", traded="2022-08-10", accession="c", code="S", shares=1_000,
+                  holding_after=154_999_000, net_change=-1_000, residue=0.0)
+    _share_the_day([big, small, other])
+    assert abs(big.net_change + small.net_change + 3_020_000) < 1e-6, "the parts add up to the day"
+    assert abs(big.net_change - (-3_020_000 * 3_000_000 / 3_020_000)) < 1e-6
+    assert abs(small.net_change - (-3_020_000 * 20_000 / 3_020_000)) < 1e-6
+    assert other.net_change == -1_000, "a day with one filing is untouched"
+    assert big.pct_of_holding < small.pct_of_holding < 0, "the small filing reads as a sliver"
+
+
 def test_a_filing_whose_day_history_never_saw_states_no_change():
     """No snapshot on the filing's day: the holding is carried, the net is
     not borrowed from a neighbour, and no percent or verdict is claimed."""

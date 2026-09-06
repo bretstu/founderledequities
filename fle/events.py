@@ -518,7 +518,39 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                 url=_doc_url(issuer_cik, acc, f.get("primaryDocument") or ""),
                 registered=registered,
             ))
+    _share_the_day(out)
     return out
+
+
+def _share_the_day(events: list) -> None:
+    """Several filings on one day share one history point; give each its
+    share of the day's net, by gross shares.
+
+    History states the position once per DAY, merging same-day filings
+    (Huang's "1 of 2", Zuckerberg's paired forms). Musk's 9 August 2022:
+    one Form 4 sold 3M shares for $2.6B, another 20K for $17.3M, and both
+    found the same point and both read "stake -5.6%" -- the whole day,
+    twice, and the home page's per-person bar summed them. 582 ticker-days
+    carry trades from more than one filing (Meta 80, Blackstone 54, Tesla
+    20). The day's net is split in proportion to each filing's gross
+    shares, so the small filing gets its sliver and the parts add up to
+    the day. Residue and the closing holding stay the day's: a day the
+    walk could not explain is unexplained for every filing on it.
+    """
+    by_day: dict = {}
+    for e in events:
+        if e.net_change is None or e.holding_after is None:
+            continue
+        by_day.setdefault(e.traded, []).append(e)
+    for day, evs in by_day.items():
+        if len(evs) < 2:
+            continue
+        total = sum(abs(e.shares) for e in evs)
+        if not total:
+            continue
+        net = evs[0].net_change
+        for e in evs:
+            e.net_change = net * abs(e.shares) / total
 
 
 def flag_prices(events: list[Event], factor: float = 10.0,
