@@ -431,7 +431,15 @@ def _position(hist_rows: list, day: str):
         return raw, None, None, None, None
     if idx == 0:
         return raw, None, resid, outstanding, pct
-    return raw, adj - hist_rows[idx - 1][2], resid, outstanding, pct
+    # THE DAY'S NET IN THE DAY'S UNITS. The difference is taken between
+    # split-adjusted totals so a split between two filings never reads as
+    # a trade, then converted back into the units the day was filed in,
+    # which is what holding_after and the filing's own net are in. In
+    # adjusted units it read +3,513,240 on a day Musk's position moved
+    # 1,171,080, and "before the day" came out 2.4M short.
+    day_adj = adj - hist_rows[idx - 1][2]
+    day_raw = day_adj * (raw / adj) if adj else day_adj
+    return raw, day_raw, resid, outstanding, pct
 
 
 def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",

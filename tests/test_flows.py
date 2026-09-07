@@ -671,3 +671,20 @@ def test_a_day_history_never_saw_carries_no_ones_residue():
     after, net, resid, _o, _p = _position(rows, "2026-02-20")
     assert after == 900.0, "forward-filled, as a denominator would be"
     assert resid is None, "no claim either way about an unobserved day"
+
+
+def test_the_days_net_is_in_the_days_units():
+    """Musk, 22 December 2021, before the 3-for-1 split: the position moved
+    1,171,080 in the units of the day; split-adjusted it is 3,513,240.
+    Both the filing's own net and the position are in the day's units, so
+    the day's net must be too, or 'before the day' is 2.4M short."""
+    from fle.events import _position
+    rows = [("2021-12-21", 175_861_085.0, 527_583_255.0, 0.0, 1e9, 17.5),
+            ("2021-12-22", 177_032_165.0, 531_096_495.0, 0.0, 1e9, 17.7)]
+    after, day_net, resid, out, pct = _position(rows, "2021-12-22")
+    assert after == 177_032_165.0 and abs(day_net - 1_171_080.0) < 1.0
+    # and a split between two filings is still not a trade: same adjusted total, different raw
+    rows = [("2022-08-24", 155_000_000.0, 465_000_000.0, 0.0, 1e9, 15.0),
+            ("2022-08-26", 465_000_000.0, 465_000_000.0, 0.0, 3e9, 15.0)]
+    after, day_net, resid, out, pct = _position(rows, "2022-08-26")
+    assert after == 465_000_000.0 and abs(day_net) < 1.0
