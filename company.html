@@ -105,16 +105,17 @@
     .ctrades th{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);font-weight:500;text-align:left;padding:6px 8px 8px 0;border-bottom:1px solid var(--ink);white-space:nowrap}
     .ctrades td{padding:9px 8px 9px 0;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
     .ctrades th.n,.ctrades td.n{text-align:right;padding-right:0;padding-left:8px}
-    .ctrades th.pl,.ctrades td.pl{padding-left:28px}
     .ctrades td.d{color:var(--faint)}
     .ctrades td.v{font-weight:600}
     .ctrades td.sh.up,.ctrades td.v.up{color:#0b7a4b}.ctrades td.sh.down,.ctrades td.v.down{color:#c22a2a}
     .ctrades td.stk{color:var(--mut)}.ctrades td.stk.plus{color:#0b7a4b}.ctrades td.stk.minus{color:#c22a2a}
-    .ctrades td.pl{color:var(--mut)}
+    .ctrades td.ty{font-family:var(--ui);font-size:13px;font-weight:600;padding-left:8px}
+    .ctrades td.ty i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px;background:var(--faint)}
+    .ctrades td.ty.up{color:#1b34e0}.ctrades td.ty.up i{background:#1b34e0}
+    .ctrades td.ty.down{color:#c22a2a}.ctrades td.ty.down i{background:#c22a2a}
+    .ctrades td.ty.neu{color:var(--mut)}
     .ctrades td.f a{color:var(--blue);text-decoration:none;font-size:11px}
     .ctrades th.f,.ctrades td.f{text-align:right;padding-right:0}
-    .ctrades .abadge{display:inline-block;min-width:66px;text-align:center}
-    @media(max-width:700px){.ctrades th.pl,.ctrades td.pl{display:none}}
     /* the receipt */
     .cwhy{margin-top:40px;padding:16px 20px;background:var(--panel);border-radius:10px;font-size:14px;line-height:1.55;color:var(--mut)}
     .cwhy .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}

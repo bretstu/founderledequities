@@ -312,36 +312,50 @@ function tradesBlock(r){
   const kept=all.filter(e=>unchangedKind(e)!==null);
   const evs=VIEW==="all"?all:VIEW==="buys"?all.filter(e=>e.c==="P"&&unchangedKind(e)===null):VIEW==="sells"?all.filter(e=>e.c==="S"&&unchangedKind(e)===null):kept;
   const chip=(v,lab,n)=>`<button class="chip${VIEW===v?" on":""}" onclick="VIEW='${v}';renderOpen(PANEL[0])">${lab} <small>${n}</small></button>`;
+  /* WHAT THE TRADE WAS, IN WORDS. One column for one fact: the kind of
+     trade and whether it was pre-scheduled come from the same label the
+     pipeline wrote, so "Planned sale" is one cell, not a red pill and an
+     adjective. Coloured by what it did to the stake. */
+  const kind=e=>{
+    const uk=unchangedKind(e);
+    if(uk==="pre")return {t:e.c==="P"?"Pre-IPO purchase":"Pre-IPO sale",k:"neu",n:evBadge(e).n};
+    const words={"scheduled sale":"Planned sale","discretionary sale":"Discretionary sale","sale":"Sale",
+      "exercise and sell":"Exercise and sell","vested and sold":"Vest, part sold","convert and sell":"Convert and sell",
+      "sale, position unchanged":"Sale, position unchanged","open-market purchase":"Open-market purchase",
+      "scheduled purchase":"Planned purchase","purchase, position unchanged":"Purchase, position unchanged"};
+    const t=words[e.lb]||(e.c==="P"?"Purchase":"Sale");
+    const n=e.lb==="sale"?"Form 4 had no Rule 10b5-1 box before April 2023; whether this sale was pre-scheduled is not on the form":evBadge(e).n;
+    return {t,k:uk!==null?"neu":e.c==="P"?"up":"down",n};
+  };
   const cell=e=>{
-    const b=evBadge(e);const p=pctOf(e);const uk=unchangedKind(e);
+    const p=pctOf(e);const uk=unchangedKind(e);const kd=kind(e);
     const stkTxt=uk==="pre"?"pre-IPO":uk!==null?(p?stakeChange(p.v,p.approx):"unchanged"):p?stakeChange(p.v,p.approx):"not stated";
     const stkCls=p?(p.v>=0?"plus":"minus"):"";
     const span=e.tf&&e.tf!==e.td?`${e.tf} to ${e.td.slice(5)}`:(e.td||e.fd);
-    return {b,p,uk,stkTxt,stkCls,span};
+    return {kd,p,uk,stkTxt,stkCls,span};
   };
   const rows=evs.map(e=>{
-    const {b,p,uk,stkTxt,stkCls,span}=cell(e);
+    const {kd,p,uk,stkTxt,stkCls,span}=cell(e);
     return `<tr><td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
-      <td><span class="abadge ${b.k}" title="${esc(b.n)}">${b.t}</span></td>
+      <td class="ty ${kd.k}" title="${esc(kd.n)}"><i></i>${kd.t}</td>
       <td class="n v ${e.c==="P"?"up":"down"}">${evValCell(e)}</td>
       <td class="n sh ${e.c==="P"?"up":"down"}">${e.c==="P"?"+":"−"}${fmt(e.sh)}</td>
       <td class="n stk ${stkCls}" title="${uk===null&&!p?esc(pctWhy(e)):"what this filing did to the stake, against the stake before it"}">${stkTxt.replace(/^stake /,"")}</td>
-      <td class="pl">${e.pl==="plan"?"planned":e.pl==="discretionary"?"discretionary":`<span title="Form 4 had no Rule 10b5-1 box before April 2023; this filing does not say">&mdash;</span>`}</td>
       <td class="f">${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</td></tr>`}).join("");
   /* the export is the same rows as text, in the same order */
   window.exportTrades=()=>{
-    const head=["date_from","date_to","filed","type","value_usd","shares","stake_change","plan","filing"];
+    const head=["date_from","date_to","filed","type","value_usd","shares","stake_change_pct","filing"];
     const lines=[head.join(",")].concat(evs.map(e=>{
-      const {b,p,uk,stkTxt}=cell(e);
-      return [e.tf||e.td||e.fd,e.td||e.fd,e.fd,b.t.replace(/&amp;/g,"&"),e.fl?"":(e.v||""),(e.c==="P"?"":"-")+(e.sh||""),
-              p?p.v.toFixed(4):(uk!==null?"0":""),e.pl||"",e.u||""].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",");
+      const {kd,p,uk}=cell(e);
+      return [e.tf||e.td||e.fd,e.td||e.fd,e.fd,kd.t,e.fl?"":(e.v||""),(e.c==="P"?"":"-")+(e.sh||""),
+              p?p.v.toFixed(4):(uk!==null?"0":""),e.u||""].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",");
     }));
     const blob=new Blob([lines.join("\n")],{type:"text/csv"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${r.tk}-trades.csv`;a.click();
   };
   return `<div class="csec ctrades"><div class="thead"><h2>Trades</h2><button class="export" onclick="exportTrades()">Export CSV</button></div>
     <div class="tchips">${chip("all","All",all.length)}${chip("buys","Bought",all.filter(e=>e.c==="P"&&unchangedKind(e)===null).length)}${chip("sells","Sold",all.filter(e=>e.c==="S"&&unchangedKind(e)===null).length)}${chip("kept","Kept apart",kept.length)}</div>
-    ${rows?`<table><thead><tr><th>Date</th><th>Type</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Stake</th><th class="pl">Plan</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
+    ${rows?`<table><thead><tr><th>Date</th><th>Trade</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Stake</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
     ${VIEW==="kept"?`<div class="sub" style="margin-top:10px">Kept apart: options cashed, vests part sold, units converted, pre-IPO catch-ups. Real trades that did not reduce the public-company stake, listed and badged, left out of every summary.</div>`:""}
   </div>`;
 }
