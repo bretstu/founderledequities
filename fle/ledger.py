@@ -303,9 +303,14 @@ def is_anonymous(nature: str | None, direct: str | None = "I") -> bool:
     return bool(_ANONYMOUS.match(nature or ""))
 
 
-def vehicle_keys(rows: list) -> list:
+def base_of(key: tuple) -> tuple:
+    """The text a segment key was made from: ('I', 'seefootnote#3') -> ('I', 'seefootnote')."""
+    return (key[0], key[1].split("#", 1)[0])
+
+
+def vehicle_keys(rows: list, ends: dict | None = None) -> list:
     """One key per row of ONE document: the nature text, and where several
-    transacting vehicles share it, the running balance tells them apart.
+    anonymous vehicles share it, the running balance tells them apart.
 
     A Form 4 gives a vehicle no identifier, only the nature text, and some
     lawyers write "See footnote" on every line. Keyed on the text alone,
@@ -317,54 +322,93 @@ def vehicle_keys(rows: list) -> list:
 
     The document already says which rows belong together, in numbers. A
     transaction row's balance before it is its balance after less what it
-    moved. A row that opens where the previous row under the same text
-    closed is that vehicle continuing (Makahakama: 99,593 -> 87,828, then
-    a row opening at 87,828 -> 60,854); a row that opens somewhere else
+    moved. A row that opens where a segment closed is that vehicle
+    continuing (Makahakama: 99,593 -> 87,828, then a row opening at
+    87,828 -> 60,854); a row that CLOSES where a segment opened precedes it
+    (the same trust listed in the wrong order); a row that does neither
     (205,000, after a close of 60,854) is another vehicle and gets its own
-    key. A row whose text differs but opens exactly where a segment closed
-    joins that segment: the "See foornote" typo continues "See footnote".
-    The same evidence history trusts to join two documents (_chain_into),
-    applied inside one.
+    key. A row whose text differs but chains joins that segment: the "See
+    foornote" typo continues "See footnote".
 
-    Holding rows keep the plain text key: they add, so anonymity never
-    hurt them. Footnoted balances (NaN) are skipped by every caller and
-    keep the plain key too. Named vehicles keep the text rule (see
-    _ANONYMOUS for why). Footnote ids are deliberately not used: two lines
-    can share one, and the numbers already decide.
+    HOLDING LINES ARE KEPT APART TOO. Summed under one key they were right
+    as a total and useless as a list: when the next filing was one
+    anonymous trust buying 42,248 (before 142,001, after 184,249), the walk
+    had a pile, not a list, could not find the 142,001 in it, and dropped
+    every other trust. Each anonymous holding line is its own segment, so
+    a later document can match a transaction to the holding it continues
+    by arithmetic. A holding line that restates a transaction segment of
+    this same document (same balance) joins it rather than adding; two
+    holding lines at the same balance stay apart (Lacerte's two 135,000
+    family trusts), because a holding is not evidence of a move.
+
+    Named vehicles and the direct line keep the text rule (see _ANONYMOUS
+    for why). Footnoted balances (NaN) keep the plain key too. Footnote ids
+    are deliberately not used: two lines can share one, and the numbers
+    already decide.
+
+    `ends`, if given, is filled with each anonymous segment's closing
+    balance: where its chain ends, which is not the last row listed when
+    the filer listed the days out of order.
     """
     keys = []
-    closes: dict = {}          # segment key -> (direct, last close, security)
+    segs: dict = {}            # key -> {"open", "close", "sec", "direct", "txn"}
     count: dict = {}           # base key -> segments opened
+    tol = 1.0
+
+    def fresh(base):
+        n = count.get(base, 0) + 1
+        count[base] = n
+        return base if n == 1 else (base[0], f"{base[1]}#{n}")
+
     for r in rows:
         base = vehicle_key(r.direct, r.nature)
-        if not r.code or r.shares != r.shares or not is_anonymous(r.nature, r.direct):
+        if r.shares != r.shares or not is_anonymous(r.nature, r.direct):
             keys.append(base)
             continue
-        signed = (r.moved if r.acquired else -r.moved) or 0.0
-        opening = r.shares - signed
         sec = r.security.strip().lower()
-        # segments are per security: a Class B row never chains to a Class A one
-        mine = [k for k in closes if closes[k][2] == sec and k[0] == base[0]
-                and (k[1] == base[1] or k[1].startswith(base[1] + "#"))]
-        if not signed and mine:
-            # a transaction row that states no amount gives the arithmetic
-            # nothing to test; it continues the text's newest segment, which
-            # is what the text-only rule always did
-            hit = mine[-1]
+        mine = [k for k, sg in segs.items() if sg["sec"] == sec and sg["direct"] == r.direct]
+        if r.code:
+            signed = (r.moved if r.acquired else -r.moved) or 0.0
+            opening = r.shares - signed
+            hit = None
+            if not signed:
+                # no amount stated: nothing to test; the text's newest
+                # segment, which is what the text-only rule always did
+                same = [k for k in mine if base_of(k) == base]
+                hit = same[-1] if same else None
+            else:
+                hit = next((k for k in mine if abs(segs[k]["close"] - opening) <= tol), None)
+                if hit is None:
+                    # this row PRECEDES a segment: it closes where one opened
+                    hit = next((k for k in mine if abs(segs[k]["open"] - r.shares) <= tol
+                                and segs[k]["txn"]), None)
+                    if hit is not None:
+                        segs[hit]["open"] = opening
+                        segs[hit]["txn"] = True
+                        keys.append(hit)
+                        if ends is not None:
+                            ends[hit] = segs[hit]["close"]
+                        continue
+            if hit is None:
+                hit = fresh(base)
+                segs[hit] = {"open": opening, "close": r.shares, "sec": sec, "direct": r.direct, "txn": True}
+            else:
+                segs[hit]["close"] = r.shares
+                segs[hit]["txn"] = True
+            keys.append(hit)
+            if ends is not None:
+                ends[hit] = segs[hit]["close"]
         else:
-            hit = next((k for k in mine if abs(closes[k][1] - opening) <= 1.0), None)
-        if hit is None:
-            # another pointer text, same security, closing where this
-            # opens: the "See foornote" typo continuing "See footnote"
-            hit = next((k for k, (d, c, sc) in closes.items()
-                        if d == r.direct and sc == sec and abs(c - opening) <= 1.0), None)
-        if hit is None:
-            n = count.get(base, 0) + 1
-            count[base] = n
-            hit = base if n == 1 else (base[0], f"{base[1]}#{n}")
-        closes.pop(hit, None)
-        closes[hit] = (r.direct, r.shares, sec)      # newest last
-        keys.append(hit)
+            # a holding: restates a transaction segment closing at this
+            # balance (once), else its own segment
+            hit = next((k for k in mine if segs[k]["txn"] and not segs[k].get("restated")
+                        and abs(segs[k]["close"] - r.shares) <= tol), None)
+            if hit is not None:
+                segs[hit]["restated"] = True
+            else:
+                hit = fresh(base)
+                segs[hit] = {"open": r.shares, "close": r.shares, "sec": sec, "direct": r.direct, "txn": False}
+            keys.append(hit)
     return keys
 
 
@@ -785,16 +829,19 @@ class Group:
         line of the same text, because the filing cannot say which trust
         each line is: Dorsey's Form 5 lists his five trusts as five "See
         Footnote" lines, and it means all five. Segments a transaction
-        filing told apart by their balances (seefootnote#2, #3) are the
-        same trusts, so the restatement covers them too. Without this, a
-        holdings-only filing overwrote the base key with the five-trust
-        sum and left #2 standing beside it, counted twice: 48,844,566
-        became 84,608,558 in the record while the panel held.
+        filing told apart by their balances are the same trusts, so the
+        restatement covers them too. Without this, a holdings-only filing
+        overwrote the base key with the five-trust sum and left #2 standing
+        beside it, counted twice: 48,844,566 became 84,608,558 in the
+        record while the panel held.
         """
         if vehicle in self.hold_by_vehicle:
             return True
-        base = (vehicle[0], vehicle[1].split("#", 1)[0])
-        return base in self.anon and base in self.hold_by_vehicle
+        base = base_of(vehicle)
+        return base in self.anon and any(base_of(k) == base for k in self.hold_by_vehicle)
+
+    def is_anon(self, vehicle) -> bool:
+        return base_of(vehicle) in self.anon
 
     @property
     def key(self):
@@ -1151,7 +1198,8 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
         #
         # The transaction code tells them apart, and it is a structured field.
         here: dict = {}
-        keys = vehicle_keys(rows)
+        ends: dict = {}
+        keys = vehicle_keys(rows, ends)
         for r, vehicle in zip(rows, keys):
             if r.shares != r.shares:
                 led.footnoted.append((when, r.security.lower(), r.label()))
@@ -1232,10 +1280,18 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
             # turned 361,603,542 of Zuckerberg's Class B into 7,504,308.
             # And where several vehicles share one text ("See footnote"),
             # the running balance tells them apart: see vehicle_keys.
+            if is_anonymous(r.nature, r.direct):
+                g.anon.add(base_of(vehicle))
             if r.code:
-                g.last_txn[vehicle] = r.shares
+                g.last_txn[vehicle] = ends.get(vehicle, r.shares)   # where the chain ends
                 g.as_of = r.as_of
                 g.moved_here = True      # a transaction in THIS class
+            elif vehicle in g.last_txn and is_anonymous(r.nature, r.direct):
+                # an anonymous holding line restating a transaction of this
+                # document (vehicle_keys matched it by balance): stated, not
+                # added. A NAMED key can carry two positions that add
+                # (Ergen's GRAT transacts while the rest stands under "I").
+                pass
             else:
                 g.holdings += r.shares
                 g.hold_by_vehicle[vehicle] = (

@@ -1073,7 +1073,7 @@ def test_the_vehicle_is_never_carried_between_documents():
     src = inspect.getsource(ledger.build_ledger)
     assert 'key = title.lower()' in src                  # the class, alone
     assert 'r.nature' not in src.split('key = title.lower()')[0][-400:]
-    assert 'keys = vehicle_keys(rows)' in src and 'for r, vehicle in zip(rows, keys):' in src
+    assert 'keys = vehicle_keys(rows, ends)' in src and 'for r, vehicle in zip(rows, keys):' in src
 
 
 def _bill_rows():
@@ -1106,7 +1106,7 @@ def test_bill_anonymous_vehicles_are_told_apart_by_their_running_balances():
     assert len({a for a, _ in pairs}) == 4, "four trusts, not one"
     assert pairs[3] == ["seefoornote", "seefoornote"], "the typo row's trust: its second row joined it by the balance it opens at"
     hold = [k[1] for k, r in zip(keys, rows) if not r.code]
-    assert hold == ["seefootnote"] * 3, "holdings keep the plain key; they add"
+    assert len(set(hold)) == 3 and not (set(hold) & set(txn)), "holdings are kept apart, and apart from the trusts that transacted"
     # the filing's own total, on both walks
     doc = _h4t(_bill_rows(), "2026-09-03")
     hist = _walk_priced({"b1": doc}, [("b1", "2026-09-03")])
@@ -1132,8 +1132,65 @@ def test_an_anonymous_restatement_supersedes_the_segments_it_cannot_name():
                         [("x1", "2025-02-01"), ("x2", "2025-06-01"), ("x3", "2026-02-01")])
     got = [(s.date, s.shares) for s in hist.snapshots]
     assert got[0] == ("2025-02-01", 30_000_000)
-    assert got[1] == ("2025-06-01", 12_500_000), "the gift filing lists two trusts; the crater stands, flagged"
+    # the gift filing lists two trusts; the three it passed over in silence
+    # are benched, and the Form 5 that lists them again at the balances
+    # they vanished at bridges them back onto the gift day (Huang's rule,
+    # now reachable for anonymous trusts)
+    assert got[1] == ("2025-06-01", 28_500_000) and abs(hist.snapshots[1].unexplained) < 0.5
     assert got[2] == ("2026-02-01", 28_500_000), "the restatement means all five, not five plus a segment"
+
+
+def test_bill_a_lone_anonymous_purchase_continues_the_trust_it_names_by_balance():
+    """Lacerte, 26 August 2024: one line, a "See footnote" trust buying
+    42,248 (before 142,001, after 184,249), nothing else. With holdings
+    summed under one key the walk had a pile, could not find the 142,001
+    in it, and dropped every other trust: residue -184,249, the purchase
+    "stake change not stated". Kept apart, the earlier filing's holding at
+    142,001 is the trust this row continues; the others were passed over
+    in silence, benched, and bridged back when the next filing lists them
+    at the balances they stood at."""
+    H = lambda bal: ("Common Stock", "I", "See footnote", "", 0, "", bal)
+    before = _h4t([H(1_708_749), H(135_000), H(135_000), H(142_001), H(184_249), H(205_000), H(99_593)], "2024-05-01")
+    buy = _h4t([("Common Stock", "I", "See footnote", "P", 42_248, "A", 184_249)], "2024-08-26")
+    after = _h4t([H(1_708_749), H(135_000), H(135_000), H(184_249), H(184_249), H(205_000), H(99_593)], "2024-11-01")
+    hist = _walk_priced({"x1": before, "x2": buy, "x3": after},
+                        [("x1", "2024-05-01"), ("x2", "2024-08-26"), ("x3", "2024-11-01")])
+    got = {s.date: s for s in hist.snapshots}
+    assert got["2024-05-01"].shares == 2_609_592
+    assert got["2024-08-26"].shares == 2_609_592 + 42_248, "the purchase, and everything else standing"
+    assert abs(got["2024-08-26"].unexplained) < 0.5, "nothing unexplained: the trade accounts for the whole move"
+    assert got["2024-11-01"].shares == 2_651_840
+
+
+def test_the_same_trust_listed_out_of_order_is_still_one_trust():
+    """A later day's row placed before the earlier one: the earlier row
+    opens where nothing has closed, but it CLOSES where the segment
+    opened, so it precedes it. One trust, not two."""
+    from fle.ledger import vehicle_keys, _rows
+    S = lambda moved, bal: ("Common Stock", "I", "See footnote", "S", moved, "D", bal)
+    rows = _rows(ET.fromstring(_h4t([S(26_974, 60_854), S(11_765, 87_828)], "2026-09-03")), "4", "2026-09-03", "x")
+    keys = vehicle_keys(rows)
+    assert keys[0] == keys[1]
+    hist = _walk_priced({"x1": _h4t([S(26_974, 60_854), S(11_765, 87_828)], "2026-09-03")}, [("x1", "2026-09-03")])
+    assert hist.snapshots[-1].shares == 60_854, "the position is where the chain ends, not the row that was listed last"
+
+
+def test_a_holding_that_restates_this_documents_own_transaction_is_not_added():
+    """A filing that lists a trust's sale and then, among its holdings,
+    the same trust at the balance the sale left. One position: the
+    holding is the transaction's closing balance said twice. Two holdings
+    at one balance, though, are two trusts (Lacerte's family trusts)."""
+    from fle.ledger import vehicle_keys, _rows
+    doc = _h4t([("Common Stock", "I", "See footnote", "S", 1_000, "D", 99_000),
+                ("Common Stock", "I", "See footnote", "", 0, "", 99_000),
+                ("Common Stock", "I", "See footnote", "", 0, "", 135_000),
+                ("Common Stock", "I", "See footnote", "", 0, "", 135_000)], "2026-01-10")
+    rows = _rows(ET.fromstring(doc), "4", "2026-01-10", "x")
+    keys = vehicle_keys(rows)
+    assert keys[0] == keys[1], "the restating holding joins the transaction"
+    assert keys[2] != keys[3], "two holdings at one balance stay apart"
+    hist = _walk_priced({"x1": doc}, [("x1", "2026-01-10")])
+    assert hist.snapshots[-1].shares == 99_000 + 135_000 + 135_000
 
 
 def test_direct_rows_that_miss_by_a_share_are_one_line():
@@ -2705,11 +2762,15 @@ def test_applovin_a_position_wearing_a_transacting_positions_name():
                             ("a3", "2026-06-11"), ("a4", "2026-06-12"),
                             ("a5", "2026-08-20")])
     by = {s.date: s for s in hist.snapshots}
-    # The chain rides its own gap once the August restatement proves it.
-    assert by["2026-06-11"].shares == 2_350_228 + 2_962_184
+    # The chain rides its own gap once the August restatement proves it,
+    # AND the two trusts ride theirs: omitted on the 10th and 11th, restated
+    # on the 12th at 780,519 and 1,530,519 to the share. With anonymous
+    # holdings kept apart, each is matched by its own balance and bridged
+    # individually; the pile this replaces could not tell them from the
+    # chain and left the flicker flagged.
+    assert by["2026-06-11"].shares == 2_350_228 + 2_962_184 + 780_519 + 1_530_519
     assert abs(by["2026-06-11"].unexplained) < 0.5
-    # The trusts' flicker is not decided by arithmetic and stays flagged.
-    assert abs(by["2026-06-12"].unexplained - 2_311_038) < 0.5
+    assert abs(by["2026-06-12"].unexplained) < 0.5
     assert abs(by["2026-08-20"].unexplained) < 0.5
 
 
@@ -2758,8 +2819,10 @@ def test_two_anonymous_positions_can_wait_on_the_bench_together():
                             ("c3", "2022-03-01"), ("c4", "2022-04-01"),
                             ("c5", "2022-05-01")])
     by = {s.date: s for s in hist.snapshots}
-    # c3 omitted the chain; once c5 proves it back, its gap is raised.
-    assert by["2022-03-01"].shares == 9_985 + 700_000
+    # c2 omitted the 500,000 holding and c3 the chain; c4 proves the holding
+    # back at its own balance and c5 the chain at its, and each gap is
+    # raised by exactly the vehicle that returned
+    assert by["2022-03-01"].shares == 9_985 + 700_000 + 500_000
     assert abs(by["2022-03-01"].unexplained) < 0.5
     assert by["2022-05-01"].shares == 9_975 + 700_000 + 500_000
 

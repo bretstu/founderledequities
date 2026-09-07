@@ -57,7 +57,7 @@ from .ledger import (SECTION16, Group, _merge_same_day, _parse, _rows,
                      displace_amended,
                      class_letters,
                      is_share_class, issuer_of, match_class, SINGLE_CLASS,
-                     vehicle_keys, is_anonymous)
+                     vehicle_keys, is_anonymous, base_of)
 
 
 @dataclass
@@ -88,6 +88,13 @@ class History:
     skipped_issuer: int = 0
     matches_panel: bool | None = None
     note: str = ""
+
+
+# THE BENCH'S POOLED KEY FOR ANONYMOUS VEHICLES. A benched "See footnote"
+# trust is claimed back by whichever anonymous line later meets its balance,
+# under any positional key; the pool holds every anonymous balance a class
+# has benched, and arithmetic alone matches a return to it.
+_ANON = ("*", "*anon*")
 
 
 def _bridge(hist, splits, bal, dropped_when, row_index, seen_when) -> None:
@@ -141,9 +148,22 @@ def _chain_into(acc, g) -> None:
     """
     tol = 0.5
     balances = acc.vehicles()
+    acc.anon |= g.anon
     for vehicle, end in g.vehicles().items():
         op = g.opening.get(vehicle, end)
         transacted = vehicle in g.last_txn
+        anon = g.is_anon(vehicle)
+        # AN ANONYMOUS KEY NAMES NOTHING ACROSS DOCUMENTS. "seefootnote#2"
+        # in one filing and in another are whichever trusts came second;
+        # only the balances can pair them. So an anonymous arrival never
+        # takes the same-key branch, and one that lands unlinked keeps a
+        # key of its own instead of overwriting a namesake's.
+        if anon and vehicle in balances:
+            n = 2
+            while (vehicle[0], f"{base_of(vehicle)[1]}#{n}") in balances or \
+                    (vehicle[0], f"{base_of(vehicle)[1]}#{n}") in acc.opening:
+                n += 1
+            vehicle = (vehicle[0], f"{base_of(vehicle)[1]}#{n}")
         if vehicle in balances:
             held_end = balances[vehicle]
             held_op = acc.opening.get(vehicle, held_end)
@@ -494,7 +514,8 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                 # A grant or a gift reports no price. Counted, not guessed at.
                 day_unpriced[when] = day_unpriced.get(when, 0) + 1
         doc_rows = _with_supplements(root, f.get("form") or "", when, acc, exclude)
-        for r, vehicle in zip(doc_rows, vehicle_keys(doc_rows)):
+        ends: dict = {}
+        for r, vehicle in zip(doc_rows, vehicle_keys(doc_rows, ends)):
             if r.shares != r.shares:
                 continue
             if r.table == "II" and not is_share_class(r.security):
@@ -540,7 +561,7 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
             # Anonymous vehicles ("See footnote") are told apart by their
             # running balances: see ledger.vehicle_keys.
             if is_anonymous(r.nature, r.direct):
-                g.anon.add((vehicle[0], vehicle[1].split("#", 1)[0]))
+                g.anon.add(base_of(vehicle))
             if r.code:
                 # The balance BEFORE this document touched the vehicle: the
                 # first row's balance minus the first row's own move. It is
@@ -549,8 +570,10 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                 if vehicle not in g.opening:
                     signed = (r.moved if r.acquired else -r.moved) or 0.0
                     g.opening[vehicle] = r.shares - signed
-                g.last_txn[vehicle] = r.shares
+                g.last_txn[vehicle] = ends.get(vehicle, r.shares)   # where the chain ends
                 g.moved_here = True
+            elif vehicle in g.last_txn and is_anonymous(r.nature, r.direct):
+                pass                       # restates a transaction of this document
             else:
                 g.opening.setdefault(vehicle, r.shares)
                 g.holdings += r.shares
@@ -594,7 +617,7 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
             # and nothing matches does the old rule apply -- sighted, alive
             # again, off the bench, its gap left standing in unexplained.
             for vehicle, bal in list(g.vehicles().items()):
-                waiting = bench.get(key, {}).get(vehicle)
+                waiting = bench.get(key, {}).get(_ANON if g.is_anon(vehicle) else vehicle)
                 if not waiting:
                     continue
                 op = g.opening.get(vehicle, bal)
@@ -611,7 +634,7 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                 # a waiting entry can never fire onto a day it does not
                 # explain, so patience costs nothing and guessing is gone.
                 if not waiting:
-                    bench[key].pop(vehicle, None)
+                    bench[key].pop(_ANON if g.is_anon(vehicle) else vehicle, None)
 
             if key not in period_prev:
                 period_prev[key] = groups.get(key)
@@ -637,8 +660,32 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                 # filings jointly state the whole of it.
                 if prev is not None:
                     have = chained.vehicles()
+                    # AN ANONYMOUS VEHICLE IS COVERED BY ARITHMETIC, NOT BY
+                    # KEY. A chained anonymous segment that opened where a
+                    # previous anonymous vehicle stood is that vehicle
+                    # continuing (Lacerte's trust at 142,001 buying to
+                    # 184,249); one restated at the same balance is it
+                    # standing. Anything else anonymous in the previous
+                    # state was passed over in silence, and silence benches.
+                    # a transacted arrival continues a trust by its OPENING
+                    # only (its close can coincide with another trust's
+                    # balance: Lacerte's purchase closed at 184,249 beside a
+                    # trust standing at 184,249); a holding arrival restates
+                    # by its balance
+                    arrivals = [chained.opening.get(v, b) if v in chained.last_txn else b
+                                for v, b in have.items() if chained.is_anon(v)]
                     for u, u_bal in prev.vehicles().items():
                         if not u_bal:
+                            continue
+                        if prev.is_anon(u):
+                            if any(abs(a - u_bal) < 1.0 for a in arrivals):
+                                continue
+                            slot = bench.setdefault(key, {}).setdefault(_ANON, [])
+                            # once per VEHICLE per day (Musk's five filings
+                            # benching one line), not per balance: two trusts
+                            # at 135,000 are two entries
+                            if not any(w[1] == when and len(w) > 3 and w[3] == u for w in slot):
+                                slot.append((u_bal, when, len(hist.snapshots), u))
                             continue
                         # ONLY SILENCE BENCHES. v2 also benched a standing
                         # position when a namesake chain arrived at a
