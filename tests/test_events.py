@@ -70,7 +70,7 @@ def test_a_sale_that_did_not_reduce_the_stake_is_compensation_cashed():
     the row contradicted itself. The badge names the kind of sale; the
     number keeps the rise."""
     e = _e(holding_after=10_307_265, net_change=518_950, residue=0.0, other_codes="M", plan="plan")
-    assert e.label == "exercise and sell"
+    assert e.label == "exercise, part sold", "some of the exercise was kept, and the label says so"
     assert e.unchanged_kind == "exercise"
     assert e.pct_of_holding is not None and e.pct_of_holding > 5
     v = _e(holding_after=110_000, net_change=6_000, residue=0.0, other_codes="AF", plan="discretionary")

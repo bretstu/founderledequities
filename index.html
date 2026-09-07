@@ -1979,7 +1979,7 @@ function coOf(tk){const r=PANEL.find(p=>p.tk===tk);return r?r.co:"";}
    position is zero before and after); "sale, position unchanged" is a day
    the filing does not explain. All three sit apart from the ranking. */
 /*@shared*/
-const UNCHANGED={"exercise and sell":"exercise","vested and sold":"vest","convert and sell":"convert","sale, position unchanged":"","purchase, position unchanged":"bought"};
+const UNCHANGED={"exercise and sell":"exercise","exercise, part sold":"exercise","vested and sold":"vest","convert and sell":"convert","sale, position unchanged":"","purchase, position unchanged":"bought"};
 /* A PRE-REGISTRATION TRADE IS KEPT APART THE SAME WAY. Section 16 reporting
    begins at registration and the first Form 4 catches up on everything
    since; a tender or a sale at the private price is real and on a filing
@@ -2001,7 +2001,9 @@ function evBadge(e){
     n:e.pl==="plan"?"planned — a purchase made under a pre-set Rule 10b5-1 plan, rarer still than an open-market buy"
      :"an open-market purchase — their own money, at the market's price"};
   if(e.lb==="exercise and sell")return{t:"EX &amp; SELL",k:"neu",
-    n:"options exercised and shares sold in the same filing: compensation cashed. The stake did not fall; the number says whether some were kept"};
+    n:"options exercised and the shares sold in the same filing: compensation cashed, the stake unchanged"};
+  if(e.lb==="exercise, part sold")return{t:"EX, PART SOLD",k:"neu",
+    n:"options exercised and only some of the shares sold in the same filing: the rest was kept, and the number says how much"};
   if(e.lb==="vested and sold")return{t:"VESTED &amp; SOLD",k:"neu",
     n:"shares vested and part sold in the same filing, usually to cover tax: compensation, not a reduction. The number says how much was kept"};
   if(e.lb==="convert and sell")return{t:"CONVERTED",k:"neu",

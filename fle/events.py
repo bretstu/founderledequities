@@ -219,8 +219,12 @@ class Event:
         # the badge says which kind. The number stays: "unchanged" when it
         # was, the rise when he kept some.
         if not self.residue and self.net_change is not None and self.net_change > -0.5:
+            kept = self.net_change >= 1.0     # some of what came in was kept
             if "M" in self.other_codes:
-                return "exercise and sell"
+                # Musk exercised 2,105,171 and sold 340,564: "exercise and
+                # sell" undersold it. The sale of the whole exercise leaves
+                # the stake unchanged and says so; a part kept says that.
+                return "exercise, part sold" if kept else "exercise and sell"
             if "A" in self.other_codes:
                 return "vested and sold"
             if "C" in self.other_codes:
@@ -255,7 +259,7 @@ class Event:
         filing reduced the stake (or the day carries residue)."""
         if self.code not in TRADE_CODES:
             return {"M": "exercised", "A": "award", "C": "convert", "G": "gift", "F": "withheld"}.get(self.code, "other")
-        return {"exercise and sell": "exercise", "vested and sold": "vest",
+        return {"exercise and sell": "exercise", "exercise, part sold": "exercise", "vested and sold": "vest",
                 "convert and sell": "convert", "sale, position unchanged": "",
                 "purchase, position unchanged": "bought"}.get(self.label)
 

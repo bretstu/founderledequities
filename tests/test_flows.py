@@ -514,7 +514,7 @@ def test_two_filings_on_one_day_each_state_their_own_net():
     ev = sorted(build_events(C(), 320193, "1494730", "TSLA", "Elon Musk", history=hist), key=lambda e: e.accession)
     by = {e.accession: e for e in ev}
     exs, out = by["0001-21-X"], by["0001-21-Y"]
-    assert exs.net_change == 350_480 and exs.label == "exercise and sell" and exs.pct_of_holding > 0
+    assert exs.net_change == 350_480 and exs.label == "exercise, part sold" and exs.pct_of_holding > 0
     assert out.net_change == -350_480 and out.label != "exercise and sell" and out.pct_of_holding < 0, "the outright sale is a sale, and the stake fell by it"
     assert exs.day_net == 0 and out.day_net == 0 and exs._before == 170_000_000 == out._before
 
@@ -720,4 +720,4 @@ def test_a_filing_with_no_trade_that_moved_the_stake_is_a_row_of_its_own():
             ("2024-03-01", "S", "D", 40_000, 200.0, 0, "D", "Common Stock", "")]
     c = _client_for(_own_doc(both), acc="0001-24-B", report="2024-03-01")
     ev = build_events(c, 320193, "1494730", "TST", "Someone", history=hist)
-    assert len(ev) == 1 and ev[0].code == "S" and ev[0].label == "exercise and sell" and ev[0].net_change == 60_000
+    assert len(ev) == 1 and ev[0].code == "S" and ev[0].label == "exercise, part sold" and ev[0].net_change == 60_000

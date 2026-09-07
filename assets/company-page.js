@@ -321,7 +321,7 @@ function tradesBlock(r){
     const uk=unchangedKind(e);
     if(uk==="pre")return {t:e.c==="P"?"Pre-IPO purchase":"Pre-IPO sale",k:"neu",n:evBadge(e).n};
     const words={"scheduled sale":"Planned sale","discretionary sale":"Discretionary sale","sale":"Sale",
-      "exercise and sell":"Exercise and sell","vested and sold":"Vest, part sold","convert and sell":"Convert and sell",
+      "exercise and sell":"Exercise and sell","exercise, part sold":"Exercise, part sold","vested and sold":"Vest, part sold","convert and sell":"Convert and sell",
       "sale, position unchanged":"Sale, position unchanged","open-market purchase":"Open-market purchase",
       "scheduled purchase":"Planned purchase","purchase, position unchanged":"Purchase, position unchanged",
       "options exercised":"Options exercised, held","options exercised, tax withheld":"Options exercised, tax withheld",

@@ -194,7 +194,7 @@ const P=runPage();
   assert(!S365.people.some(p=>p.v>1e11)&&!B365.people.some(p=>p.v>1e11),"a flagged price is worth nothing in a bar");
   // the exercise-and-sell rows are apart
   const exs=P.evBase().filter(e=>P.evSide(e)==="exsell");
-  assert(exs.length>0&&!S365.pool.some(e=>e.lb in {"exercise and sell":1,"convert and sell":1,"sale, position unchanged":1}),
+  assert(exs.length>0&&!S365.pool.some(e=>e.lb in {"exercise and sell":1,"exercise, part sold":1,"convert and sell":1,"sale, position unchanged":1}),
     "a sale that left the stake unchanged never enters the sell ranking, whatever its label");
   const sellHtml=evColumn("sells");
   assert(!sellHtml.includes("kept apart")&&!sellHtml.includes("Options cashed"),
@@ -315,8 +315,8 @@ const P=runPage();
   // the rise when some of the exercise was kept (Xu, 1 October 2025)
   const exs0=EVENTS.find(e=>e.lb==="exercise and sell"&&e.pc===null);
   if(exs0)assert(evPctCell(exs0).includes("unchanged"), "exercise-and-sell with no change shows stake unchanged");
-  const exs1=EVENTS.find(e=>e.lb==="exercise and sell"&&e.pc!==null&&e.pc>0);
-  if(exs1)assert(evPctCell(exs1).includes("stake +"), "exercise-and-sell that kept shares shows the rise: "+exs1.tk);
+  const exs1=EVENTS.find(e=>e.lb==="exercise, part sold"&&e.pc!==null&&e.pc>0);
+  if(exs1)assert(evPctCell(exs1).includes("stake +")&&P.unchangedKind(exs1)==="exercise", "an exercise that kept shares shows the rise and stays apart: "+exs1.tk);
 
   // search reaches by surname
   // search reaches by surname across every side of the window
