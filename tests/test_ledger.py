@@ -1266,6 +1266,24 @@ def test_trusts_restated_at_new_balances_that_sum_to_the_old_are_not_silent():
     assert got["2023-02-01"].shares == 16_600_000 + 16_120_473, "and nothing bridged back onto it"
 
 
+def test_a_holding_at_a_balance_the_chain_passed_through_is_the_chain():
+    """Zuckerberg's GRATs, July 2018: part 1 sells No. 2 to 302,066 and
+    No. 3 to 373,631; part 2 of the same batch restates every holding,
+    the GRATs among them at exactly those balances. In the merged document
+    the rows read transactions first, holdings after, so the holding meets
+    a chain that may have moved on; a holding at any balance the same
+    key's chain closed at is that chain stated there, not added. Ergen's
+    holding is at no balance his chain touched and still adds."""
+    G = "By Mark Zuckerberg, Trustee Of The 2014 GRAT No. 2"
+    doc = _h4t([("Class A Common Stock", "I", G, "S", 1_800, "D", 316_266),
+                ("Class A Common Stock", "I", G, "S", 14_200, "D", 302_066),
+                ("Class A Common Stock", "I", G, "", 0, "", 316_266),      # restates an intermediate close
+                ("Class A Common Stock", "I", "Trust I", "S", 100, "D", 6_927_672),
+                ("Class A Common Stock", "I", "Trust I", "", 0, "", 114_139_378)], "2018-07-25")
+    hist = _walk_priced({"x1": doc}, [("x1", "2018-07-25")])
+    assert hist.snapshots[-1].shares == 302_066 + 6_927_672 + 114_139_378
+
+
 def test_direct_rows_that_miss_by_a_share_are_one_line():
     """Portland General, 13 February 2026: nine direct rows of awards and
     withholding whose balances miss each other by a share (fractional
@@ -1360,12 +1378,8 @@ def test_one_snapshot_per_day_not_per_filing():
         series=Series(points=[Point("2024-01-01", 2_550_000_000.0)],
                       classes={"2024": {"us-gaap:CommonClassAMember": 1.0,
                                         "us-gaap:CommonClassBMember": 1.0}}))
-    # the second document restates the first's closing balances as
-    # holdings, which proves the seam: the pair is read as one filing in
-    # two parts (ledger.batch_continuations), one document read, one
-    # snapshot emitted, the same figure the same-day merge produced
-    assert hist.read == 1
-    assert len(hist.snapshots) == 1
+    assert hist.read == 2                    # both read
+    assert len(hist.snapshots) == 1          # one emitted
     assert hist.snapshots[0].shares == 348_093_309
 
 
@@ -3100,36 +3114,7 @@ def test_foroughi_a_filing_in_seven_parts_is_one_filing():
     batched = batch_continuations(_C(), 1318605, mine)
     assert [f["accessionNumber"] for f in batched] == ["0001-25-000001", "0001-25-000002", "0001-25-000004", "0001-25-000005"]
     assert [p["accessionNumber"] for p in batched[1]["_parts"]] == ["0001-25-000002", "0001-25-000003"]
-    assert "_parts" not in batched[2], "a next-day document is not a continuation"
-    # Zuckerberg's 28 January 2021: p1 (CZI's rows) and p2 (the Foundation's
-    # and the 2006 Trust's rows, with CZI restated as a holding at the
-    # balance p1 closed at). Split by vehicle, not by the cap; one filing.
-    z1 = _multi4([(T, "C", 30_579, 353_998_555, "I", "By CZI Holdings, LLC")], "2021-01-28")
-    z2 = _multi4([(T, "S", 1_239, 3_293_019, "I", "By CZI Foundation"),
-                  (H, "", 0, 353_998_555, "I", "By CZI Holdings, LLC")], "2021-01-28")
-    docsz = {"0004-21-000001": z1, "0004-21-000002": z2}
-    class _CZ:
-        def get(self, url, use_cache=True):
-            for k, doc in docsz.items():
-                if k.replace("-", "") in url:
-                    return doc
-            raise KeyError(url)
-    pair = [{"form": "4", "accessionNumber": k, "filingDate": "2021-02-01", "primaryDocument": "d.xml"} for k in docsz]
-    bz = batch_continuations(_CZ(), 1318605, pair)
-    assert len(bz) == 1 and len(bz[0]["_parts"]) == 2, "a restated close proves the seam"
-    hz = _hist_batched(docsz, [(k, "2021-02-01") for k in docsz])
-    assert hz.snapshots[-1].shares == 353_998_555 + 3_293_019, "CZI once: the holding restates p1's close"
-    # and the next day's p1, filed the same day, transacts CZI from the
-    # balance p2 held it at: the holding is the position before the
-    # trade, superseded, not 354M twice
-    z3 = _multi4([(T, "C", 29_000, 353_969_555, "I", "By CZI Holdings, LLC")], "2021-01-29")
-    docsz3 = {"0004-21-000001": z1, "0004-21-000002": z2, "0004-21-000003": z3}
-    hz3 = _hist_batched(docsz3, [(k, "2021-02-01") for k in docsz3])
-    assert len(hz3.snapshots) == 1
-    # the rows of a document are read transactions first, holdings after,
-    # so p2's holding at day one's close meets a chain already at day
-    # two's; it is the chain stated at a balance it passed through
-    assert hz3.snapshots[-1].shares == 353_969_555 + 3_293_019, "three parts, one day, CZI once"
+    assert "_parts" not in batched[2], "a document that is not full is not a continuation"
     # a next part that continues nothing is not joined
     lone = _multi4([(T, "S", 22, 780_978, "I", "See footnote"), (T, "S", 100, 2_619_954, "D", "")], "2025-08-21")
     docs0 = {"0009-25-000001": p1, "0009-25-000002": lone}

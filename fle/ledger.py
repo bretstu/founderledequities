@@ -628,61 +628,62 @@ def _continues(prev_root, next_root) -> bool:
 
     A continuation opens where the previous part closed: Foroughi's HDF
     2020 LLC at 8,329 then 8,329. A RESTATEMENT re-opens at the original
-    openings (Zuckerberg's paired filings) and fails; concatenated, it
-    counted every trade and holding twice, 825M of residue on a record
-    that had 667K.
+    openings (Zuckerberg's paired filings, full tables under consecutive
+    numbers on one day) and fails; concatenated, it counted every trade
+    and holding twice, 825M of residue on a record that had 667K.
 
-    Three kinds of evidence, in order. A shared named transacting key that
-    does not chain vetoes the seam. A shared named key that chains proves
-    it. So does a holding in the next part at the balance a named vehicle
-    closed at in the previous part: Zuckerberg's 0128p1 (CZI's rows,
-    Class B closing 353,998,555) and 0128p2 (the Foundation's and the
-    2006 Trust's rows, and CZI restated as a holding at 353,998,555) are
-    one filing split by vehicle, not by the row cap. Anonymous segments,
-    which cannot be paired by key, pair by balance under the same security
-    and direct. A next part that shares nothing with the previous is not
-    joined: nothing proves it.
+    Named vehicles are paired by key and every shared key must chain.
+    Anonymous ones cannot be paired by key across two documents, so they
+    are paired by balance: some anonymous segment of the next part must
+    open where some anonymous segment of the previous part closed, under
+    the same security and direct. A next part that shares nothing with
+    the previous is not joined: nothing proves it.
+
+    WHAT WAS TRIED AND WITHDRAWN. Letting a holding prove a seam (the next
+    part restating a vehicle at the previous part's close), testing seams
+    against the batch merged so far, and letting a holding be a balance
+    the next part opens at, each joined more of Zuckerberg's daily parts
+    and each raised residue elsewhere (RNG, UMBF, a panel figure at IMAX)
+    faster than it lowered it here. Parts split by vehicle rather than by
+    the cap merge the way same-day filings always have.
     """
     def segs(root):
         rows = _rows(root, "4", "", "")
         ends: dict = {}
         keys = vehicle_keys(rows, ends)
-        opens, closes, anon, holds, txn = {}, {}, set(), [], set()
+        opens, closes, anon = {}, {}, set()
         for r, k in zip(rows, keys):
-            if r.shares != r.shares:
+            if not r.code or r.shares != r.shares:
                 continue
             sec = r.security.strip().lower()
-            full = (sec, k)
-            if not r.code:
-                holds.append((full, r.shares))
-                # a holding is a balance the next part can open at: p2
-                # restates CZI at 353,998,555 and the next day's p1
-                # converts from 353,998,555
-                closes.setdefault(full, r.shares)
-                continue
             signed = (r.moved if r.acquired else -r.moved) or 0.0
+            full = (sec, k)
             opens.setdefault(full, r.shares - signed)
             closes[full] = ends.get(k, r.shares)
-            txn.add(full)
             if is_anonymous(r.nature, r.direct):
                 anon.add(full)
-        return opens, closes, anon, holds, txn
-    p_open, p_close, p_anon, _, p_txn = segs(prev_root)
-    n_open, n_close, n_anon, n_holds, _ = segs(next_root)
+        return opens, closes, anon
+    p_open, p_close, p_anon = segs(prev_root)
+    n_open, n_close, n_anon = segs(next_root)
     shared = [k for k in n_open if k in p_close and k not in n_anon and k not in p_anon]
-    chained = [k for k in shared if abs(n_open[k] - p_close[k]) <= 1.0]
-    # a shared key that does not chain vetoes only if the previous part
-    # TRANSACTED it: a chain must be continued, a mere holding need not be
-    if any(k not in chained and k in p_txn for k in shared):
+    if shared and not all(abs(n_open[k] - p_close[k]) <= 1.0 for k in shared):
         return False
-    if chained:
-        return True
-    restated = any(k in p_close and k not in p_anon and abs(bal - p_close[k]) <= 1.0 for k, bal in n_holds)
-    if restated:
-        return True
     anon_next = [(k[0], k[1][0], v) for k, v in n_open.items() if k in n_anon]
     anon_prev = [(k[0], k[1][0], v) for k, v in p_close.items() if k in p_anon]
-    return any(abs(o - c) <= 1.0 for s1, d1, o in anon_next for s2, d2, c in anon_prev if s1 == s2 and d1 == d2)
+    anon_hit = any(abs(o - c) <= 1.0 for s1, d1, o in anon_next for s2, d2, c in anon_prev if s1 == s2 and d1 == d2)
+    if anon_next and anon_prev and not anon_hit:
+        return False
+    return bool(shared or anon_hit)
+
+
+def _table_rows(root) -> int:
+    n = 0
+    for table, tags in (("nonDerivativeTable", ("nonDerivativeTransaction", "nonDerivativeHolding")),
+                        ("derivativeTable", ("derivativeTransaction", "derivativeHolding"))):
+        t = root.find(table)
+        if t is not None:
+            n = max(n, sum(len(t.findall(tag)) for tag in tags))
+    return n
 
 
 def batch_continuations(client, cik: int, filings: list) -> list:
@@ -696,17 +697,15 @@ def batch_continuations(client, cik: int, filings: list) -> list:
     record that had lost nothing. Musk's November 2021 days ran to five
     documents each, and the bench carries a special case for them.
 
-    The signal is structural: an original Form 4 followed on the same
-    filing day by the same person's next accession number about the same
-    company, whose rows provably continue it (_continues). The pair is one
-    document; the rows read in accession order and the running balances
-    chain across the seam. Fullness of the table is not required:
-    Zuckerberg's lawyers split a day's filing by vehicle, not by the cap
-    (0128p1, 0128p2), and the parts chain all the same. A restatement or
-    an unrelated second filing fails the seam test and merges the way
-    same-day filings always have. The batch reports for the day its
-    newest part speaks for, so the one-snapshot-per-day rule sees it on
-    that day and not on its first part's. Idempotent.
+    The signal is structural: an original Form 4 whose non-derivative or
+    derivative table is full, followed on the same filing day by the same
+    person's next accession number about the same company, whose rows
+    provably continue it (_continues). The pair is one document; the rows
+    read in accession order and the running balances chain across the
+    seam. A document that is not full (a restatement, a filing split by
+    vehicle rather than by the cap, an unrelated second filing) is left
+    alone and merges the way same-day filings always have. The batch
+    reports for the day its newest part speaks for. Idempotent.
     """
     def seq(acc):
         pre, _, num = (acc or "").rpartition("-")
@@ -718,7 +717,7 @@ def batch_continuations(client, cik: int, filings: list) -> list:
         parts = [f]
         if f.get("form") == "4" and "_parts" not in f:
             root = _parse(client, cik, f)
-            while root is not None and i + 1 < len(fs):
+            while root is not None and _table_rows(root) >= ROWS_PER_TABLE and i + 1 < len(fs):
                 nxt = fs[i + 1]
                 pre, n = seq(f.get("accessionNumber"))
                 pre2, n2 = seq(nxt.get("accessionNumber"))
@@ -732,11 +731,7 @@ def batch_continuations(client, cik: int, filings: list) -> list:
                 parts.append(nxt)
                 i += 1
                 f = nxt
-                # the next seam is tested against everything joined so far:
-                # a part holding CZI at 353,998,555 proves nothing on its
-                # own to a part that converts CZI from there, but the batch
-                # that also holds day one's conversion does
-                root = _parse(client, cik, {"_parts": list(parts)})
+                root = nxt_root
         if len(parts) > 1:
             head = dict(parts[0])
             head["_parts"] = parts
@@ -1488,18 +1483,6 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
             if is_anonymous(r.nature, r.direct):
                 g.anon.add(base_of(vehicle))
             if r.code:
-                # A HOLDING THIS TRANSACTION OPENS AT WAS THE POSITION BEFORE
-                # IT. Zuckerberg's 28 January p2 restates CZI as a holding at
-                # 353,998,555; the 29th's p1, the next part of the batch,
-                # transacts CZI from 353,998,555. One position: the holding
-                # is superseded, not added beside the chain (354M twice, on
-                # every day his parts joined). Ergen's holding sits at
-                # neither the open nor the close of his transaction and still
-                # adds.
-                if vehicle in g.hold_by_vehicle and vehicle not in g.last_txn:
-                    signed = (r.moved if r.acquired else -r.moved) or 0.0
-                    if abs(g.hold_by_vehicle[vehicle] - (r.shares - signed)) <= 1.0:
-                        g.holdings -= g.hold_by_vehicle.pop(vehicle)
                 g.last_txn[vehicle] = ends.get(vehicle, r.shares)   # where the chain ends
                 g.passed.setdefault(vehicle, []).append(r.shares)
                 g.as_of = r.as_of

@@ -585,11 +585,6 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                 if vehicle not in g.opening:
                     signed = (r.moved if r.acquired else -r.moved) or 0.0
                     g.opening[vehicle] = r.shares - signed
-                    # a holding this transaction opens at was the position
-                    # before it: superseded, not added (see the ledger)
-                    if vehicle in g.hold_by_vehicle and vehicle not in g.last_txn \
-                            and abs(g.hold_by_vehicle[vehicle] - g.opening[vehicle]) <= 1.0:
-                        g.holdings -= g.hold_by_vehicle.pop(vehicle)
                 g.last_txn[vehicle] = ends.get(vehicle, r.shares)   # where the chain ends
                 g.passed.setdefault(vehicle, []).append(r.shares)
                 g.moved_here = True
