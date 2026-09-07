@@ -1114,7 +1114,12 @@ async function loadData(){
   const loadEvents=fetchFirst(state.pro
       ?["/pro/events.csv","events-free.csv","events.csv"]
       :["events-free.csv","events.csv"],
-    t=>{const ev=mapEvents(parseCSV(t));
+    /* THE HOME PAGE IS ABOUT TRADES. The feed also carries a row for each
+       filing that moved a stake without a trade (an exercise held, an award
+       vested, a gift); the company page shows those beside the trades so
+       Held never steps without a row to say why, and they stay out of the
+       activity feed, the leaderboard's trade columns and the tape here. */
+    t=>{const ev=mapEvents(parseCSV(t)).filter(e=>e.c==="P"||e.c==="S");
         if(!ev.length)return false;
         EVENTS=ev;state.live.events=true;return true;});
   await Promise.all([loadHist,loadEvents]);

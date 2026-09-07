@@ -90,6 +90,15 @@ from .history import COVER_FORMS
 
 # A market trade, and nothing else. See the module docstring.
 TRADE_CODES = ("P", "S")
+# A FILING WITH NO TRADE STILL MOVES THE STAKE. Musk's Held stepped from
+# 423M to 509M between a December 2022 sale and a September 2025 purchase
+# with nothing in the table to say why: the option exercises and awards in
+# between were not rows. A filing with no purchase or sale but a
+# transaction in a counted class becomes one row of its own, named for what
+# it was, in this order of precedence when a filing carries several.
+COMP_CODES = ("M", "A", "C", "G", "F", "J", "D", "I", "W", "L", "Z", "K", "H", "O", "X", "U")
+COMP_LABELS = {"M": "options exercised", "A": "award vested", "C": "converted", "G": "gift",
+               "F": "shares withheld for tax", "J": "other transaction"}
 
 # The transaction codes that sit alongside a sale without being one. Reported
 # so a reader can tell a stake being reduced from pay being cashed.
@@ -181,6 +190,13 @@ class Event:
         from then is neither scheduled nor discretionary -- it is unknown,
         and says so.
         """
+        if self.code not in TRADE_CODES:
+            # a filing with no trade: named for its principal code (see
+            # COMP_CODES); an exercise that came with withholding says so
+            base = COMP_LABELS.get(self.code, "other transaction")
+            if self.code in ("M", "A") and "F" in self.other_codes:
+                base += ", tax withheld"
+            return base
         if self.buy:
             # THE SAME RULE, BOTH DIRECTIONS. A purchase after which the
             # position on record is exactly what it was -- Schwarzman's
@@ -237,6 +253,8 @@ class Event:
     def unchanged_kind(self) -> str:
         """"exercise", "vest", "convert", "bought", "" -- or None when the
         filing reduced the stake (or the day carries residue)."""
+        if self.code not in TRADE_CODES:
+            return {"M": "exercised", "A": "award", "C": "convert", "G": "gift", "F": "withheld"}.get(self.code, "other")
         return {"exercise and sell": "exercise", "vested and sold": "vest",
                 "convert and sell": "convert", "sale, position unchanged": "",
                 "purchase, position unchanged": "bought"}.get(self.label)
@@ -534,10 +552,17 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                       and (r.table == "I" or is_share_class(r.security))
                       and not any(e.matches(r.security, r.direct) for e in exclude))
         groups: dict = {}
+        counted = [r for r in lines if r.code and r.shares == r.shares
+                   and (r.table == "I" or is_share_class(r.security))
+                   and not any(e.matches(r.security, r.direct) for e in exclude)]
+        has_trade = any(r.code in TRADE_CODES for r in counted)
+        comp_code = next((c for c in COMP_CODES if any(r.code == c for r in counted)), None) if not has_trade else None
         for r in lines:
-            if r.code not in TRADE_CODES:
+            if r.code not in TRADE_CODES and not (comp_code and r.code == comp_code):
                 continue
             if any(e.matches(r.security, r.direct) for e in exclude):
+                continue
+            if r.code == comp_code and r.shares != r.shares:
                 continue
             day = (r.as_of or when)[:10]
             g = groups.setdefault(r.code, {
@@ -560,6 +585,10 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                 continue
             shares, value = g["shares"], g["value"]
             priced = g["rows"] - g["unpriced"]
+            if code not in TRADE_CODES:
+                # a compensation row: the shares are what the stake changed
+                # by, and a strike price or nothing is not a market value
+                shares, value, priced = abs(own_net), 0.0, 0
             after, day_net, resid, outstanding, pct_after = _position(hist_rows, period)
             # a day history never saw carries a stale position: the filing's
             # own net is known but nothing to measure it against is, so no
@@ -576,7 +605,7 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                 owner_cik=str(owner_cik), accession=acc, form=form,
                 filed=(f.get("filingDate") or "")[:10], traded=day,
                 traded_from=g["first"], code=code,
-                buy=(code == "P"), shares=shares,
+                buy=(code == "P") or (code not in TRADE_CODES and own_net > 0), shares=shares,
                 value=value if priced else None,
                 avg_price=price,
                 avg_price_adjusted=(price / factor) if (price and factor) else None,

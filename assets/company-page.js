@@ -309,7 +309,8 @@ function recordBlock(r){
 function tradesBlock(r){
   const all=EVENTS.filter(e=>e.tk===r.tk).sort((a,b)=>(b.td||b.fd).localeCompare(a.td||a.fd)||b.fd.localeCompare(a.fd));
   if(!all.length)return `<div class="csec"><h2>Trades</h2><div class="sub">No purchase or sale on record.</div></div>`;
-  const kept=all.filter(e=>unchangedKind(e)!==null);
+  const trade=e=>e.c==="P"||e.c==="S";
+  const kept=all.filter(e=>!trade(e)||unchangedKind(e)!==null);
   const evs=VIEW==="all"?all:VIEW==="buys"?all.filter(e=>e.c==="P"&&unchangedKind(e)===null):VIEW==="sells"?all.filter(e=>e.c==="S"&&unchangedKind(e)===null):kept;
   const chip=(v,lab,n)=>`<button class="chip${VIEW===v?" on":""}" onclick="VIEW='${v}';renderOpen(PANEL[0])">${lab} <small>${n}</small></button>`;
   /* WHAT THE TRADE WAS, IN WORDS. One column for one fact: the kind of
@@ -322,10 +323,15 @@ function tradesBlock(r){
     const words={"scheduled sale":"Planned sale","discretionary sale":"Discretionary sale","sale":"Sale",
       "exercise and sell":"Exercise and sell","vested and sold":"Vest, part sold","convert and sell":"Convert and sell",
       "sale, position unchanged":"Sale, position unchanged","open-market purchase":"Open-market purchase",
-      "scheduled purchase":"Planned purchase","purchase, position unchanged":"Purchase, position unchanged"};
-    const t=words[e.lb]||(e.c==="P"?"Purchase":"Sale");
-    const n=e.lb==="sale"?"Form 4 had no Rule 10b5-1 box before April 2023; whether this sale was pre-scheduled is not on the form":evBadge(e).n;
-    return {t,k:uk!==null?"neu":e.c==="P"?"up":"down",n};
+      "scheduled purchase":"Planned purchase","purchase, position unchanged":"Purchase, position unchanged",
+      "options exercised":"Options exercised, held","options exercised, tax withheld":"Options exercised, tax withheld",
+      "award vested":"Award vested","award vested, tax withheld":"Award vested, tax withheld",
+      "converted":"Converted","gift":"Gift","shares withheld for tax":"Shares withheld for tax","other transaction":"Other transaction"};
+    const t=words[e.lb]||(e.c==="P"?"Purchase":e.c==="S"?"Sale":"Other transaction");
+    const comp=e.c!=="P"&&e.c!=="S";
+    const n=comp?"a filing with no purchase or sale that moved the stake: compensation, a gift or a conversion; no market value is stated for it"
+      :e.lb==="sale"?"Form 4 had no Rule 10b5-1 box before April 2023; whether this sale was pre-scheduled is not on the form":evBadge(e).n;
+    return {t,k:comp?"neu":uk!==null?"neu":e.c==="P"?"up":"down",n};
   };
   const cell=e=>{
     const p=pctOf(e);const uk=unchangedKind(e);const kd=kind(e);
@@ -338,8 +344,8 @@ function tradesBlock(r){
     const {kd,p,uk,stkTxt,stkCls,span}=cell(e);
     return `<tr><td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
       <td class="ty ${kd.k}" title="${esc(kd.n)}"><i></i>${kd.t}</td>
-      <td class="n v ${e.c==="P"?"up":"down"}">${evValCell(e)}</td>
-      <td class="n sh ${e.c==="P"?"up":"down"}">${e.c==="P"?"+":"−"}${fmt(e.sh)}</td>
+      <td class="n v ${e.c==="P"?"up":e.c==="S"?"down":"lv"}">${e.c==="P"||e.c==="S"?evValCell(e):"&mdash;"}</td>
+      <td class="n sh ${e.c==="P"?"up":e.c==="S"?"down":(e.nc>=0?"up":"down")}">${e.c==="P"||(e.c!=="S"&&e.nc>=0)?"+":"−"}${fmt(e.sh)}</td>
       <td class="n stk ${stkCls}" title="${uk===null&&!p?esc(pctWhy(e)):"what this filing did to the stake, against the stake as the day opened"}">${stkTxt.replace(/^stake /,"")}</td>
       <td class="n lv" title="shares held at the end of this filing's day, per the record; filings on one day share it">${e.ha?fmt(e.ha):"&mdash;"}</td>
       <td class="n lv" title="shares outstanding on record that day: the company's last cover page before it">${e.os?fmt(e.os):"&mdash;"}</td>
@@ -359,7 +365,7 @@ function tradesBlock(r){
   return `<div class="csec ctrades"><div class="thead"><h2>Trades</h2><button class="export" onclick="exportTrades()">Export CSV</button></div>
     <div class="tchips">${chip("all","All",all.length)}${chip("buys","Bought",all.filter(e=>e.c==="P"&&unchangedKind(e)===null).length)}${chip("sells","Sold",all.filter(e=>e.c==="S"&&unchangedKind(e)===null).length)}${chip("kept","Kept apart",kept.length)}</div>
     ${rows?`<table><thead><tr><th>Date</th><th>Trade</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Change</th><th class="n lv">Held</th><th class="n lv">Outstanding</th><th class="n lv">Owned</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
-    ${VIEW==="kept"?`<div class="sub" style="margin-top:10px">Kept apart: options cashed, vests part sold, units converted, pre-IPO catch-ups. Real trades that did not reduce the public-company stake, listed and badged, left out of every summary.</div>`:""}
+    ${VIEW==="kept"?`<div class="sub" style="margin-top:10px">Kept apart: options cashed, vests part sold, units converted, pre-IPO catch-ups, and the filings with no trade at all (exercises held, awards, withholding, gifts). Everything that moved the stake without a purchase or a sale, listed so Held never steps without a row to say why, left out of every summary.</div>`:""}
   </div>`;
 }
 

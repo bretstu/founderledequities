@@ -688,3 +688,36 @@ def test_the_days_net_is_in_the_days_units():
             ("2022-08-26", 465_000_000.0, 465_000_000.0, 0.0, 3e9, 15.0)]
     after, day_net, resid, out, pct = _position(rows, "2022-08-26")
     assert after == 465_000_000.0 and abs(day_net) < 1.0
+
+
+def test_a_filing_with_no_trade_that_moved_the_stake_is_a_row_of_its_own():
+    """Musk's Held stepped from 423M to 509M between a 2022 sale and a
+    2025 purchase with nothing in the table to say why: the exercises and
+    awards between were not rows. A filing with no purchase or sale but a
+    transaction in a counted class is one row, named for what it was; a
+    filing with a sale stays one row with its exercise folded in."""
+    from fle.events import build_events
+    hist = {320193: [("2024-01-01", 1_000_000.0, 1_000_000.0, 0.0, 1e8, 1.0),
+                     ("2024-03-01", 1_060_000.0, 1_060_000.0, 0.0, 1e8, 1.06),
+                     ("2024-06-01", 1_050_000.0, 1_050_000.0, 0.0, 1e8, 1.05)]}
+    # an exercise held with tax withheld: one row, M, shares = the net
+    ex = [("2024-03-01", "M", "A", 100_000, 20.0, 0, "D", "Common Stock", ""),
+          ("2024-03-01", "F", "D", 40_000, 200.0, 0, "D", "Common Stock", "")]
+    c = _client_for(_own_doc(ex), acc="0001-24-M", report="2024-03-01")
+    ev = build_events(c, 320193, "1494730", "TST", "Someone", history=hist)
+    assert len(ev) == 1
+    e = ev[0]
+    assert e.code == "M" and e.label == "options exercised, tax withheld" and e.unchanged_kind == "exercised"
+    assert e.shares == 60_000 and e.net_change == 60_000 and e.buy and e.value is None
+    assert e.pct_of_holding is not None and e.pct_of_holding > 0
+    # a gift: one row, negative
+    gift = [("2024-06-01", "G", "D", 10_000, 0.0, 0, "D", "Common Stock", "")]
+    c = _client_for(_own_doc(gift), acc="0001-24-G", report="2024-06-01")
+    g = build_events(c, 320193, "1494730", "TST", "Someone", history=hist)[0]
+    assert g.code == "G" and g.label == "gift" and g.net_change == -10_000 and not g.buy and g.unchanged_kind == "gift"
+    # a filing that also sells is one row, the sale, with the exercise folded in
+    both = [("2024-03-01", "M", "A", 100_000, 20.0, 0, "D", "Common Stock", ""),
+            ("2024-03-01", "S", "D", 40_000, 200.0, 0, "D", "Common Stock", "")]
+    c = _client_for(_own_doc(both), acc="0001-24-B", report="2024-03-01")
+    ev = build_events(c, 320193, "1494730", "TST", "Someone", history=hist)
+    assert len(ev) == 1 and ev[0].code == "S" and ev[0].label == "exercise and sell" and ev[0].net_change == 60_000
