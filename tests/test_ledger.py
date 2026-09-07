@@ -1206,6 +1206,53 @@ def test_a_form_4_filed_twice_on_one_day_states_its_trust_once():
     assert hist.snapshots[-1].shares == 28_202 + 1_867_416 + 32_340
 
 
+def test_the_spellings_of_nothing():
+    from fle.ledger import is_anonymous
+    for t in ("See footnote", "See Footnotes", "Se footnote", "SEE FTN", "FN", "ftn", "Per footnote 3",
+              "Footnote 2", "note 4", "(2)", "*", "", "See foornote", "F.N."):
+        assert is_anonymous(t), t
+    for t in ("By Trust", "By Roberts Family Trust", "Self", "Foundation", "Fenwick Trust", "Notary Trust"):
+        assert not is_anonymous(t), t
+
+
+def test_a_filer_who_writes_the_final_balance_on_every_row():
+    """Harrison, 11 January 2022: four Class B rows, gifts in and out and
+    two J's, every one closing at 390,620 with openings that chain to
+    nothing. One trust; the closing balance repeated. The text rule read
+    it right by luck; the balance rule must read it right by rule."""
+    from fle.ledger import vehicle_keys, _rows
+    R = lambda code, moved, ad, bal: ("Class B Common Stock", "I", "See Footnote", code, moved, ad, bal)
+    doc = _h4t([R("G", 32_190, "D", 390_620), R("G", 32_327, "A", 390_620),
+                R("J", 3_244, "D", 390_620), R("J", 3_145, "A", 390_620),
+                ("Class B Common Stock", "I", "See Footnote", "", 0, "", 535_178),
+                ("Class B Common Stock", "I", "See Footnote", "", 0, "", 535_178)], "2022-01-11")
+    rows = _rows(ET.fromstring(doc), "4", "2022-01-11", "x")
+    keys = vehicle_keys(rows)
+    assert len({k for k, r in zip(keys, rows) if r.code}) == 1, "four rows, one trust"
+    hist = _walk_priced({"x1": doc}, [("x1", "2022-01-11")])
+    assert hist.snapshots[-1].shares == 390_620 + 535_178 + 535_178
+
+
+def test_one_anonymous_trust_whose_balance_jumped_is_still_that_trust():
+    """Watts: a "See footnote" holding at 2,242,604, then two days later a
+    sale from "See footnote" opening at 2,293,664. The arithmetic pairs
+    nothing; one arrival, one vehicle standing: the same trust, a balance
+    that moved between filings. Read as a new trust, the old one was
+    benched and bridged back beside its twin a month later."""
+    hold = _h4t([("Common Stock", "D", "", "A", 89_520, "A", 272_957),
+                 ("Common Stock", "I", "See footnote", "", 0, "", 2_242_604)], "2024-01-03")
+    sale = _h4t([("Common Stock", "I", "See footnote", "S", 17_483, "D", 2_276_181),
+                 ("Common Stock", "D", "", "", 0, "", 221_897)], "2024-01-05")
+    again = _h4t([("Common Stock", "I", "See footnote", "S", 7_818, "D", 2_268_363),
+                  ("Common Stock", "D", "", "", 0, "", 221_897)], "2024-01-09")
+    hist = _walk_priced({"x1": hold, "x2": sale, "x3": again},
+                        [("x1", "2024-01-03"), ("x2", "2024-01-05"), ("x3", "2024-01-09")])
+    got = {s.date: s.shares for s in hist.snapshots}
+    assert got["2024-01-05"] == 2_276_181 + 221_897
+    assert got["2024-01-09"] == 2_268_363 + 221_897
+    assert abs(hist.snapshots[-1].unexplained) < 0.5
+
+
 def test_direct_rows_that_miss_by_a_share_are_one_line():
     """Portland General, 13 February 2026: nine direct rows of awards and
     withholding whose balances miss each other by a share (fractional

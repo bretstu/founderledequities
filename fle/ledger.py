@@ -294,7 +294,16 @@ def vehicle_key(direct: str | None, nature: str | None) -> tuple:
 #
 # Misclassifying a pointer as a name falls back to the old behaviour; the
 # reverse cannot happen, since a name does not begin with "see".
-_ANONYMOUS = re.compile(r"^\W*(see|per|refer|footnotes?|notes?)\b|^\W*\d*\W*$", re.I)
+# The spellings filers actually use: "See footnote", "See Footnotes", "Se
+# footnote" (Prince's, one filing), "SEE FTN" and then "FN" (Krimbill's,
+# two months apart), "Per footnote 3", "(2)", nothing. A text whose first
+# word is see/se/per/refer, or that is nothing but a footnote token, names
+# nothing. Missing a spelling here makes a NAMED vehicle of a pointer, and a
+# named vehicle standing beside its anonymous twin counts twice.
+_ANONYMOUS = re.compile(
+    r"^\W*(see|se|per|refer)\b"
+    r"|^\W*(f\.?n\.?|ftn\.?|ftnt\.?|footnotes?|foot\s*notes?|notes?)(\W*\d+)?\W*$"
+    r"|^\W*\d*\W*$", re.I)
 
 
 def is_anonymous(nature: str | None, direct: str | None = "I") -> bool:
@@ -389,6 +398,17 @@ def vehicle_keys(rows: list, ends: dict | None = None) -> list:
                         if ends is not None:
                             ends[hit] = segs[hit]["close"]
                         continue
+            if hit is None and signed:
+                # THE FILER WHO WRITES THE DAY'S FINAL BALANCE ON EVERY ROW.
+                # Harrison's four rows on one day all close at 390,620 with
+                # openings that chain to nothing: one trust, four moves, the
+                # closing balance repeated. An unchained row that closes
+                # exactly where a transacted segment of the same text closed
+                # is that position restated. Tried only after chaining, so
+                # Lacerte's two trusts that both ended a day at 163,125 keep
+                # their own chains.
+                hit = next((k for k in mine if segs[k]["txn"] and base_of(k) == base
+                            and abs(segs[k]["close"] - r.shares) <= tol), None)
             if hit is None:
                 hit = fresh(base)
                 segs[hit] = {"open": opening, "close": r.shares, "sec": sec, "direct": r.direct, "txn": True}

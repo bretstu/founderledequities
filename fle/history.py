@@ -686,11 +686,26 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                     # by its balance
                     arrivals = [chained.opening.get(v, b) if v in chained.last_txn else b
                                 for v, b in have.items() if chained.is_anon(v)]
+                    standing = [(u, b) for u, b in prev.vehicles().items() if b and prev.is_anon(u)]
+                    matched = {u for u, b in standing if any(abs(a - b) < 1.0 for a in arrivals)}
+                    # THE LEFTOVERS PAIR OFF WHEN THE COUNTS AGREE. One
+                    # anonymous arrival that matches nothing beside one
+                    # anonymous vehicle standing unmatched is that vehicle
+                    # with a balance that jumped between filings (Watts's
+                    # trust, 2,242,604 held then a sale opening at 2,293,664;
+                    # Fertitta's, 675,000 higher under "See Footnotes"). Read
+                    # as a new trust arriving as the old one vanished, the
+                    # old one was benched and later bridged back beside its
+                    # twin. Counts that differ leave silence to bench.
+                    left_a = [a for a in arrivals if not any(abs(a - b) < 1.0 for u, b in standing)]
+                    left_s = [u for u, b in standing if u not in matched]
+                    if left_a and len(left_a) == len(left_s):
+                        matched |= set(left_s)
                     for u, u_bal in prev.vehicles().items():
                         if not u_bal:
                             continue
                         if prev.is_anon(u):
-                            if any(abs(a - u_bal) < 1.0 for a in arrivals):
+                            if u in matched:
                                 continue
                             slot = bench.setdefault(key, {}).setdefault(_ANON, [])
                             # once per VEHICLE per day (Musk's five filings
