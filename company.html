@@ -45,17 +45,17 @@
        above the number, "of Meta Platforms, Inc." beneath. The other four
        carry the home table's words. */
     .cband{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
-    .cband>div{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--panel);min-height:112px;display:flex;flex-direction:column;justify-content:flex-start;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+    .cband>div{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--panel);min-height:112px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.05)}
     .cband>div:first-child{background:#eef1ff;border-color:#c9d3ff}
     .cband .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
     .cband>div:first-child .k{color:var(--blue)}
     /* one size for every figure; the answer is blue, and that is enough */
-    .cband .p{font-family:var(--disp);font-size:32px;font-weight:650;color:var(--blue);letter-spacing:-.015em;line-height:1.1;margin:8px 0 0}
+    .cband .p{font-family:var(--disp);font-size:clamp(30px,2.6vw,40px);font-weight:650;color:var(--blue);letter-spacing:-.02em;line-height:1;margin:14px 0 0}
     .cband .p.s{font-size:22px;color:var(--ink);font-weight:650;letter-spacing:-.01em;line-height:1.2}
     .cband .pl{color:var(--mut);font-size:12.5px;margin-top:6px;line-height:1.45}
     .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
     .cq{display:block;margin-top:8px;color:var(--ink)}
-    .cstat .v{font-family:var(--disp);font-size:32px;font-weight:650;letter-spacing:-.015em;margin-top:8px;line-height:1.1}
+    .cstat .v{font-family:var(--disp);font-size:clamp(30px,2.6vw,40px);font-weight:650;letter-spacing:-.02em;margin-top:14px;line-height:1}
     .cstat .v.up{color:#0b7a4b}.cstat .v.down{color:#c22a2a}.cstat .v.none{color:var(--faint)}
     .cstat .s{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
     .cseal{margin-top:30px}

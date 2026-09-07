@@ -187,7 +187,7 @@ def test_the_seo_layer(tmp_path):
     out = tmp_path / "pub"
     bcp.main(panel, founders, prices, sp, str(out), str(tmp_path / "none.csv"), str(hist))
     tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
-    assert '<div class="k">Elon Musk owns</div><h2 class="p">28.44%</h2><div class="pl">of Tesla, Inc.</div>' in tsla, \
+    assert '<div class="k">Elon Musk owns</div><h2 class="p">28.44%</h2>' in tsla, \
         "the query phrase is the card, read top to bottom, with the number as the heading"
     assert '"@type": "BreadcrumbList"' in tsla and '/companies/' in tsla
     assert '<div id="cmore"><div class="cmore">' in tsla or '<div id="cmore"></div>' in tsla, "neighbour links live outside the block the script redraws"

@@ -49,7 +49,7 @@ function band(r){
   const who=`<div class="k">${esc(C.ceo||"The chief executive")} ${r.units||r.pct===null?"holds":"owns"}</div>`;
   const big=r.units?`${who}<div class="p s">partnership units</div><div class="pl">Exchangeable units rather than common stock, so a percent of common shares cannot describe the stake.</div>`
     :r.pct===null?`${who}<div class="p s">a stake not measured</div><div class="pl">${esc(r.flags||"the record could not settle on a figure")}</div>`
-    :`${who}<h2 class="p">${r.pct.toFixed(r.pct<1?3:2)}%</h2><div class="pl">of ${esc(C.co)}</div>`;
+    :`${who}<h2 class="p">${r.pct.toFixed(r.pct<1?3:2)}%</h2>`;
   const asof=PRICES_ASOF||"latest";
   const r1=r.r1===null||r.r1===undefined?stat("1Y return","&mdash;","none","","the stock's price return over the last twelve months; blank when it has traded for less than a year")
     :stat("1Y return",`${r.r1>=0?"+":""}${r.r1.toFixed(1)}%`,r.r1>=0?"up":"down","","the stock's price return over the last twelve months");
@@ -326,7 +326,7 @@ function tradesBlock(r){
       <td class="n v ${e.c==="P"?"up":"down"}">${evValCell(e)}</td>
       <td class="n sh ${e.c==="P"?"up":"down"}">${e.c==="P"?"+":"−"}${fmt(e.sh)}</td>
       <td class="n stk ${stkCls}" title="${uk===null&&!p?esc(pctWhy(e)):"what this filing did to the stake, against the stake before it"}">${stkTxt.replace(/^stake /,"")}</td>
-      <td class="pl">${e.pl==="plan"?"planned":e.pl==="discretionary"?"discretionary":""}</td>
+      <td class="pl">${e.pl==="plan"?"planned":e.pl==="discretionary"?"discretionary":`<span title="Form 4 had no Rule 10b5-1 box before April 2023; this filing does not say">&mdash;</span>`}</td>
       <td class="f">${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</td></tr>`}).join("");
   /* the export is the same rows as text, in the same order */
   window.exportTrades=()=>{
