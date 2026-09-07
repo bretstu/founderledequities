@@ -699,7 +699,17 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                     # twin. Counts that differ leave silence to bench.
                     left_a = [a for a in arrivals if not any(abs(a - b) < 1.0 for u, b in standing)]
                     left_s = [u for u, b in standing if u not in matched]
-                    if left_a and len(left_a) == len(left_s):
+                    # AND WHEN THE SUMS AGREE. Prince's August 2022 filing
+                    # lists five Class B trusts; September's lists six at
+                    # different balances, and the two lists sum to the same
+                    # 16,120,473 to the share: shares moved among his trusts
+                    # and every one restated. Read as silence, four trusts
+                    # were benched and 8,000,000 bridged back onto a record
+                    # that had never lost them. The same shares under new
+                    # labels are a restatement, not an omission.
+                    left_sum = sum(b for u, b in standing if u in left_s)
+                    if left_a and (len(left_a) == len(left_s)
+                                   or (left_s and abs(sum(left_a) - left_sum) < 1.0)):
                         matched |= set(left_s)
                     for u, u_bal in prev.vehicles().items():
                         if not u_bal:

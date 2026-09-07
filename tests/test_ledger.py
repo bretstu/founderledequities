@@ -1246,6 +1246,26 @@ def test_one_anonymous_trust_whose_balance_jumped_is_still_that_trust():
     assert abs(hist.snapshots[-1].unexplained) < 0.5
 
 
+def test_trusts_restated_at_new_balances_that_sum_to_the_old_are_not_silent():
+    """Prince, 2022: five anonymous Class B trusts, then six at different
+    balances summing to the same 16,120,473. Shares moved among trusts and
+    all were restated. Read as silence, the four unmatched were benched and
+    two later 4,000,000 sightings bridged 8,000,000 onto a record that had
+    never lost them."""
+    H = lambda bal: ("Class B Common Stock", "I", "See footnote", "", 0, "", bal)
+    C = lambda opening, bal: ("Class B Common Stock", "I", "See footnote", "C", opening - bal, "D", bal)
+    aug = _h4t([C(17_020_971, 16_863_819), H(491_031), H(4_000_000), H(4_000_000), H(6_569_442), H(1_060_000)], "2022-08-15")
+    # six trusts against five: the counts differ, only the sums agree
+    sep = _h4t([C(16_863_819, 16_706_667), H(1_741_355), H(377_772), H(6_928_408), H(1_060_000), H(3_000_000), H(3_012_938)], "2022-09-13")
+    later = _h4t([C(16_706_667, 16_600_000), H(4_000_000), H(4_000_000), H(1_741_355), H(377_772), H(6_928_408 + 3_000_000 + 3_012_938 + 1_060_000 - 8_000_000)], "2023-02-01")
+    hist = _walk_priced({"x1": aug, "x2": sep, "x3": later},
+                        [("x1", "2022-08-15"), ("x2", "2022-09-13"), ("x3", "2023-02-01")])
+    got = {s.date: s for s in hist.snapshots}
+    assert got["2022-09-13"].shares == 16_706_667 + 16_120_473
+    assert abs(got["2022-09-13"].unexplained) < 0.5, "a restatement, not an omission"
+    assert got["2023-02-01"].shares == 16_600_000 + 16_120_473, "and nothing bridged back onto it"
+
+
 def test_direct_rows_that_miss_by_a_share_are_one_line():
     """Portland General, 13 February 2026: nine direct rows of awards and
     withholding whose balances miss each other by a share (fractional
