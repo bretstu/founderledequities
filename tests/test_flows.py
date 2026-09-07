@@ -519,7 +519,22 @@ def test_two_filings_on_one_day_each_state_their_own_net():
     assert exs.day_net == 0 and out.day_net == 0 and exs._before == 170_000_000 == out._before
 
 
-def test_blackstone_a_filing_about_another_company_is_not_a_trade_here():
+def test_history_rows_in_their_published_shape_reach_every_reader():
+    """load_history hands events six fields per day (date, raw, adjusted,
+    unexplained, outstanding, pct). A reader that unpacked four crashed
+    the events stage for 1,737 companies; the fixtures had hidden it by
+    handing in four. Priced, so the split factor is read too."""
+    from fle.events import build_events
+    rows = [("2021-11-10", "S", "D", 1_000, 1_000.0, 0, "D", "Common Stock", "")]
+    hist = {320193: [("2021-11-09", 451_131.0, 451_131.0, 0.0, 1_000_000.0, 45.1131),
+                     ("2021-11-10", 450_131.0, 450_131.0, 0.0, 1_000_000.0, 45.0131)]}
+    c = _client_for(_own_doc(rows))
+    e = build_events(c, 320193, "1494730", "DDOG", "Olivier Pomel", history=hist)[0]
+    assert e.net_change == -1_000 and e.day_net == -1_000 and e.outstanding == 1_000_000.0 and e.pct_after == 45.0131
+    assert e.avg_price_adjusted == 1_000.0
+
+
+
     """Schwarzman signs Form 4s about the companies Blackstone controls as
     its controlling person, so they sit in both feeds. 587 of 605 are about
     other issuers; the walks skip them by the filing's own <issuer>, and

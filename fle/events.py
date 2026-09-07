@@ -370,7 +370,8 @@ def _split_factor(hist_rows: list, day: str) -> float | None:
     if not hist_rows:
         return None
     pick = None
-    for d, raw, adj, _u in hist_rows:
+    for row in hist_rows:
+        d, raw, adj = row[0], row[1], row[2]
         if d >= day:
             pick = (raw, adj)
             break
