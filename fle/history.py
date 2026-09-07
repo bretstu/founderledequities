@@ -155,10 +155,22 @@ def _chain_into(acc, g) -> None:
         anon = g.is_anon(vehicle)
         # AN ANONYMOUS KEY NAMES NOTHING ACROSS DOCUMENTS. "seefootnote#2"
         # in one filing and in another are whichever trusts came second;
-        # only the balances can pair them. So an anonymous arrival never
-        # takes the same-key branch, and one that lands unlinked keeps a
-        # key of its own instead of overwriting a namesake's.
-        if anon and vehicle in balances:
+        # only the balances can pair them. An anonymous HOLDING that arrives
+        # at a balance the class already holds under an anonymous key is
+        # that vehicle stated again (Roberts filed one Form 4 twice on 15
+        # May 2026; keyed apart, his 1,867,416 trust counted twice); one
+        # at a different balance takes the old same-key path, a correction
+        # or another trust, undecidable here and no worse than before. A
+        # TRANSACTED anonymous arrival links by arithmetic below, and if it
+        # links to nothing keeps a key of its own rather than overwriting a
+        # namesake's.
+        if anon and not transacted:
+            same = next((u for u, b in balances.items()
+                         if acc.is_anon(u) and abs(b - end) < tol
+                         and u not in g.vehicles()), None)
+            if same is not None:
+                continue
+        elif anon and vehicle in balances:
             n = 2
             while (vehicle[0], f"{base_of(vehicle)[1]}#{n}") in balances or \
                     (vehicle[0], f"{base_of(vehicle)[1]}#{n}") in acc.opening:

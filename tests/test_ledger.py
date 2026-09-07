@@ -1193,6 +1193,19 @@ def test_a_holding_that_restates_this_documents_own_transaction_is_not_added():
     assert hist.snapshots[-1].shares == 99_000 + 135_000 + 135_000
 
 
+def test_a_form_4_filed_twice_on_one_day_states_its_trust_once():
+    """Roberts, 15 May 2026: the same Form 4 under two accession numbers,
+    a direct exercise-and-sell and a "See footnote" trust at 1,867,416.
+    Same-day filings merge; the second copy's trust is the first copy's
+    trust stated again, not a second trust."""
+    doc = _h4t([("Common Stock", "D", "", "M", 40_000, "A", 68_202),
+                ("Common Stock", "D", "", "S", 40_000, "D", 28_202),
+                ("Common Stock", "I", "See footnote", "", 0, "", 1_867_416),
+                ("Common Stock", "I", "By Roberts Family Trust", "", 0, "", 32_340)], "2026-05-13")
+    hist = _walk_priced({"x1": doc, "x2": doc}, [("x1", "2026-05-13"), ("x2", "2026-05-13")])
+    assert hist.snapshots[-1].shares == 28_202 + 1_867_416 + 32_340
+
+
 def test_direct_rows_that_miss_by_a_share_are_one_line():
     """Portland General, 13 February 2026: nine direct rows of awards and
     withholding whose balances miss each other by a share (fractional
