@@ -2063,8 +2063,10 @@ function pctWhy(e){
 }
 function evPctCell(e){
   if(e.pre)return '<span class="nopr" title="before the company was public — not measured against the public-company stake">pre-IPO</span>';
-  if(unchangedKind(e)!==null)return '<span class="nopr" title="the shares sold did not come out of the position on record — a percentage of a stake that did not move is not a number">unchanged</span>';
   const p=pctOf(e);
+  /* a kept-apart row may still carry a number: a vest that doubled the
+     stake with part sold to cover tax reads "stake ×2.2", not "unchanged" */
+  if(unchangedKind(e)!==null&&!p)return '<span class="nopr" title="the shares sold did not come out of the position on record; a percentage of a stake that did not move is not a number">unchanged</span>';
   if(!p)return `<span class="nopr" title="${pctWhy(e)}">—</span>`;
   const t=p.approx?`<span class="approx" title="${approxNote(e)}">≈ `:"";
   const c=p.approx?"</span>":"";
