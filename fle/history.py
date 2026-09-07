@@ -432,6 +432,9 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
     # An amendment restates its whole report; the original beside it would
     # count the period twice. See displace_amended.
     mine = displace_amended(mine)
+    # continuation documents of one filing read as one (ledger.batch_continuations)
+    from .ledger import batch_continuations
+    mine = batch_continuations(client, issuer_cik, mine)
     # BY THE MOMENT EACH FILING SPEAKS FOR. A Form 4's reportDate is its
     # earliest transaction; a catch-up spanning February to June sorts by
     # June, or the Form 3 between them is taken as the newer word. See

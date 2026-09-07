@@ -84,6 +84,7 @@ too low, visibly, rather than wrong in an unknown direction.
 Direct and indirect stay apart because Musk's two lines are the same security
 and only that structured field separates them.
 """
+import copy
 import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
@@ -593,6 +594,11 @@ def period_end(client, cik: int, f: dict, memo: dict | None = None) -> str:
     base = f.get("reportDate") or f.get("filingDate") or ""
     if memo is not None and acc in memo:
         return memo[acc]
+    if f.get("_parts"):
+        end = max(period_end(client, cik, p, memo) for p in f["_parts"])
+        if memo is not None:
+            memo[acc] = end
+        return end
     filed = f.get("filingDate") or "9999-12-31"
     end = base
     try:
@@ -607,7 +613,97 @@ def period_end(client, cik: int, f: dict, memo: dict | None = None) -> str:
     return end
 
 
+# A FORM 4 HOLDS 30 ROWS PER TABLE. Foroughi's 20 to 22 August 2025 sale
+# ran to seven documents, each non-derivative table exactly 30 rows, filed
+# on one day under consecutive accession numbers, each continuing where
+# the previous stopped to the share (HDF 2020 LLC ends one at 8,329 and
+# opens the next at 8,329). One filing, in parts.
+ROWS_PER_TABLE = 30
+
+
+def _table_rows(root) -> int:
+    n = 0
+    for table, tags in (("nonDerivativeTable", ("nonDerivativeTransaction", "nonDerivativeHolding")),
+                        ("derivativeTable", ("derivativeTransaction", "derivativeHolding"))):
+        t = root.find(table)
+        if t is not None:
+            n = max(n, sum(len(t.findall(tag)) for tag in tags))
+    return n
+
+
+def batch_continuations(client, cik: int, filings: list) -> list:
+    """Fold a filing's continuation documents into one document.
+
+    A Form 4 that hits the 30-row cap spills into the next document.
+    Dated by its own newest transaction, each part landed in its own
+    period: Foroughi's seven parts fell across 20, 21 and 22 August, and a
+    trust that sat in one part was "silent" in the period of another,
+    benched, and put back a day later, minus 5.3M then plus 5.2M on a
+    record that had lost nothing. Musk's November 2021 days ran to five
+    documents each, and the bench carries a special case for them.
+
+    The signal is structural: an original Form 4 whose non-derivative or
+    derivative table is full, followed on the same filing day by the same
+    person's next accession number about the same company. The pair is
+    one document; the rows read in accession order and the running
+    balances chain across the seam. A document that is not full (a
+    restatement, a second unrelated filing) is left alone and merges the
+    way same-day filings always have. Idempotent: parts already folded
+    stay folded.
+    """
+    def seq(acc):
+        pre, _, num = (acc or "").rpartition("-")
+        return pre, (int(num) if num.isdigit() else None)
+    out, i = [], 0
+    fs = sorted(filings, key=lambda f: (f.get("filingDate") or "", f.get("accessionNumber") or ""))
+    while i < len(fs):
+        f = fs[i]
+        parts = [f]
+        if f.get("form") == "4" and "_parts" not in f:
+            root = _parse(client, cik, f)
+            while root is not None and _table_rows(root) >= ROWS_PER_TABLE and i + 1 < len(fs):
+                nxt = fs[i + 1]
+                pre, n = seq(f.get("accessionNumber"))
+                pre2, n2 = seq(nxt.get("accessionNumber"))
+                if not (nxt.get("form") == "4" and "_parts" not in nxt and pre2 == pre
+                        and n is not None and n2 == n + 1
+                        and nxt.get("filingDate") == f.get("filingDate")):
+                    break
+                parts.append(nxt)
+                i += 1
+                f = nxt
+                root = _parse(client, cik, f)
+        if len(parts) > 1:
+            head = dict(parts[0])
+            head["_parts"] = parts
+            out.append(head)
+        else:
+            out.append(parts[0])
+        i += 1
+    return out
+
+
 def _parse(client, cik: int, f: dict, unread: list | None = None):
+    """The document, or the parts of a batched filing merged into one
+    (batch_continuations): the first part's root with every later part's
+    table entries appended in accession order, so the rows read as filed."""
+    parts = f.get("_parts")
+    if parts:
+        roots = [_parse(client, cik, p, unread) for p in parts]
+        if any(r is None for r in roots):
+            return None
+        merged = copy.deepcopy(roots[0])
+        for r in roots[1:]:
+            for table in ("nonDerivativeTable", "derivativeTable"):
+                src = r.find(table)
+                if src is None:
+                    continue
+                dst = merged.find(table)
+                if dst is None:
+                    dst = ET.SubElement(merged, table)
+                for child in list(src):
+                    dst.append(copy.deepcopy(child))
+        return merged
     url = _doc_url(cik, f.get("accessionNumber", ""), f.get("primaryDocument", ""))
     try:
         raw = client.get(url)
@@ -1122,6 +1218,7 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                     f"try --max-search 0 to sweep everything")
         return led
 
+    mine = batch_continuations(client, issuer_cik, list(mine))
     led.mine = list(mine)
     led.owner_cik = (owner_cik or "").lstrip("0")
     led.owner_name = led.owner_name or (owner_name or "")

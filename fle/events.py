@@ -440,6 +440,10 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
         return []
     accs = {f.get("accessionNumber") for f in own.get("_filings", [])}
     mine = [f for f in ordered if f.get("accessionNumber") in accs]
+    # continuation documents of one filing are one filing: one event for
+    # Foroughi's three-day sale, not seven (ledger.batch_continuations)
+    from .ledger import batch_continuations
+    mine = batch_continuations(client, issuer_cik, mine)
     # when Section 16 reporting began for this issuer: the earliest such
     # filing on its feed, amendments and all -- the boundary that tells a
     # public-company trade from a pre-registration catch-up

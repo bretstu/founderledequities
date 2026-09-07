@@ -3032,6 +3032,81 @@ def test_ergen_a_complete_restatement_needs_no_bench():
     assert by["2024-07-10"].shares == 104_768_343 + 26_500_000 + 80_125
 
 
+def _hist_batched(docs_by_acc, dates):
+    """Like _hist_for, with dashed accession numbers (the fixture URL
+    carries them without dashes) so batch_continuations can read them."""
+    from fle.history import build_history
+    from fle.series import Series, Point
+
+    class _Edgar:
+        def filing_index(self, cik, acc):
+            return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+
+        def get(self, url, use_cache=True):
+            for k, doc in docs_by_acc.items():
+                if k.replace("-", "") in url:
+                    return doc
+            raise KeyError(url)
+
+    mine = [{"form": "4", "accessionNumber": k, "filingDate": d,
+             "primaryDocument": "d.xml"} for k, d in dates]
+    return build_history(_Edgar(), 1318605, "1494730", mine,
+                         series=Series(points=[Point("2015-01-01", 10_000_000.0)]))
+
+
+def test_foroughi_a_filing_in_seven_parts_is_one_filing():
+    """A Form 4 holds 30 rows per table. Foroughi's 20 to 22 August 2025
+    sale ran to seven documents, filed on one day under consecutive
+    accession numbers, each continuing where the last stopped to the
+    share. Dated by their own newest transaction, the parts fell across
+    three periods, and a trust listed in one part was silent in another's
+    period: benched, minus 5.3M, then back. Parts are one document."""
+    from fle.ledger import batch_continuations, ROWS_PER_TABLE
+    # part 1: 30 rows of an anonymous trust selling (the table is full),
+    # dated 20 August; part 2: the other trust's row, dated 21 August, and
+    # the direct line; part 3 (not full, next day): unrelated, not batched
+    lots = [(T, "S", 100, 3_000_000 - 100 * (i + 1), "I", "See footnote") for i in range(ROWS_PER_TABLE)]
+    p1 = _multi4(lots, "2025-08-20")
+    p2 = _multi4([(T, "S", 22, 780_978, "I", "See footnote"),
+                  (T, "S", 100, 2_619_954, "D", "")], "2025-08-21")
+    p3 = _multi4([(T, "S", 1_000, 2_618_954, "D", "")], "2025-08-25")
+    # then his October filing: a grant, and every trust restated (as his was)
+    p4 = _multi4([(T, "A", 20_236, 2_639_190, "D", ""),
+                  (H, "", 0, 2_997_000, "I", "See footnote"),
+                  (H, "", 0, 780_978, "I", "See footnote")], "2025-10-30")
+    before = _multi4([(H, "", 0, 3_000_000, "I", "See footnote"),
+                      (H, "", 0, 781_000, "I", "See footnote"),
+                      (T, "S", 0, 2_620_054, "D", "")], "2025-08-01")
+    docs = {"0001-25-000001": before, "0001-25-000002": p1, "0001-25-000003": p2,
+            "0001-25-000004": p3, "0001-25-000005": p4}
+    dates = [("0001-25-000001", "2025-08-01"), ("0001-25-000002", "2025-08-22"),
+             ("0001-25-000003", "2025-08-22"), ("0001-25-000004", "2025-08-26"),
+             ("0001-25-000005", "2025-10-31")]
+
+    class _C:
+        def get(self, url, use_cache=True):
+            for k, doc in docs.items():
+                if k.replace("-", "") in url:
+                    return doc
+            raise KeyError(url)
+    mine = [{"form": "4", "accessionNumber": k, "filingDate": d, "primaryDocument": "d.xml"} for k, d in dates]
+    batched = batch_continuations(_C(), 1318605, mine)
+    assert [f["accessionNumber"] for f in batched] == ["0001-25-000001", "0001-25-000002", "0001-25-000004", "0001-25-000005"]
+    assert [p["accessionNumber"] for p in batched[1]["_parts"]] == ["0001-25-000002", "0001-25-000003"]
+    assert "_parts" not in batched[2], "a document that is not full is not a continuation"
+
+    hist = _hist_batched(docs, dates)
+    got = {s.date: s for s in hist.snapshots}
+    # (_multi4 writes no transaction dates, so a filing's period is its filing day)
+    assert sorted(got) == ["2025-08-01", "2025-08-22", "2025-08-26", "2025-10-31"], "the parts are one filing, one point"
+    assert got["2025-08-22"].shares == 2_997_000 + 780_978 + 2_619_954
+    assert abs(got["2025-08-22"].unexplained) < 0.5, "nothing silent, nothing benched"
+    # the direct-only filing is silent on the trusts (benched); October
+    # lists them at the balances they left at, and the gap is bridged
+    assert got["2025-08-26"].shares == 2_997_000 + 780_978 + 2_618_954
+    assert got["2025-10-31"].shares == 2_997_000 + 780_978 + 2_639_190
+
+
 def test_stankey_a_bridge_must_show_its_loss():
     """A bench entry whose gap shows no loss is a phantom.
 
