@@ -310,8 +310,17 @@ function tradesBlock(r){
   const all=EVENTS.filter(e=>e.tk===r.tk).sort((a,b)=>(b.td||b.fd).localeCompare(a.td||a.fd)||b.fd.localeCompare(a.fd));
   if(!all.length)return `<div class="csec"><h2>Trades</h2><div class="sub">No purchase or sale on record.</div></div>`;
   const trade=e=>e.c==="P"||e.c==="S";
+  /* THE SHARE COUNT IS A ROW TOO. Tesla's July 2026 10-Q raised the
+     denominator from 3.76B to 3.95B and Musk's 29.91% became 28.44% with
+     no filing of his; the table showed nothing between its top row and
+     the card. Each cover page that moved the count is a row from the
+     record: no trade, no value, the new denominator and the new percent. */
+  const covers=((HIST[r.tk]||[]).filter(h=>/^(10-K|10-Q|20-F|40-F)/.test(h[8]||"")&&h[9])
+    .map(h=>({cover:true,tk:r.tk,fd:h[0],td:h[0],tf:h[0],c:"",lb:"shares outstanding restated",form:h[8],os:h[9],ha:h[10],po:h[1],acc:h[11],
+              u:h[11]&&r.cik?`https://www.sec.gov/Archives/edgar/data/${r.cik}/${h[11].replace(/-/g,"")}/`:""})));
   const kept=all.filter(e=>!trade(e)||unchangedKind(e)!==null);
-  const evs=VIEW==="all"?all:VIEW==="buys"?all.filter(e=>e.c==="P"&&unchangedKind(e)===null):VIEW==="sells"?all.filter(e=>e.c==="S"&&unchangedKind(e)===null):kept;
+  const pick=VIEW==="all"?all:VIEW==="buys"?all.filter(e=>e.c==="P"&&unchangedKind(e)===null):VIEW==="sells"?all.filter(e=>e.c==="S"&&unchangedKind(e)===null):kept;
+  const evs=(VIEW==="all"||VIEW==="kept")?[...pick,...covers].sort((a,b)=>(b.td||b.fd).localeCompare(a.td||a.fd)||(b.cover?1:0)-(a.cover?1:0)):pick;
   const chip=(v,lab,n)=>`<button class="chip${VIEW===v?" on":""}" onclick="VIEW='${v}';renderOpen(PANEL[0])">${lab} <small>${n}</small></button>`;
   /* WHAT THE TRADE WAS, IN WORDS. One column for one fact: the kind of
      trade and whether it was pre-scheduled come from the same label the
@@ -341,6 +350,13 @@ function tradesBlock(r){
     return {kd,p,uk,stkTxt,stkCls,span};
   };
   const rows=evs.map(e=>{
+    if(e.cover)return `<tr class="cov"><td class="d" title="the company's cover page, dated ${e.fd}">${e.fd}</td>
+      <td class="ty neu" title="the company restated its shares outstanding on this cover page; nothing of the chief executive's moved"><i></i>Shares outstanding restated (${esc(e.form)})</td>
+      <td class="n v lv">&mdash;</td><td class="n sh lv">&mdash;</td><td class="n stk">&mdash;</td>
+      <td class="n lv">${e.ha?fmt(e.ha):"&mdash;"}</td>
+      <td class="n lv">${fmt(e.os)}</td>
+      <td class="n lv po">${e.po!==null&&e.po!==undefined?e.po.toFixed(e.po<1?3:2)+"%":"&mdash;"}</td>
+      <td class="f">${e.u?`<a href="${e.u}" target="_blank" rel="noopener" title="the filing, on EDGAR">${esc(e.form)} ↗</a>`:""}</td></tr>`;
     const {kd,p,uk,stkTxt,stkCls,span}=cell(e);
     return `<tr><td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
       <td class="ty ${kd.k}" title="${esc(kd.n)}"><i></i>${kd.t}</td>
@@ -355,6 +371,7 @@ function tradesBlock(r){
   window.exportTrades=()=>{
     const head=["date_from","date_to","filed","type","value_usd","shares","stake_change_pct","held_after","shares_outstanding","owned_pct","filing"];
     const lines=[head.join(",")].concat(evs.map(e=>{
+      if(e.cover)return [e.fd,e.fd,e.fd,`Shares outstanding restated (${e.form})`,"","","",e.ha||"",e.os||"",(e.po!==null&&e.po!==undefined)?e.po.toFixed(4):"",e.u||""].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",");
       const {kd,p,uk}=cell(e);
       return [e.tf||e.td||e.fd,e.td||e.fd,e.fd,kd.t,e.fl?"":(e.v||""),(e.c==="P"?"":"-")+(e.sh||""),
               p?p.v.toFixed(4):(uk!==null?"0":""),e.ha||"",e.os||"",(e.po!==null&&e.po!==undefined)?e.po.toFixed(4):"",e.u||""].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",");
@@ -363,7 +380,7 @@ function tradesBlock(r){
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${r.tk}-trades.csv`;a.click();
   };
   return `<div class="csec ctrades"><div class="thead"><h2>Trades</h2><button class="export" onclick="exportTrades()">Export CSV</button></div>
-    <div class="tchips">${chip("all","All",all.length)}${chip("buys","Bought",all.filter(e=>e.c==="P"&&unchangedKind(e)===null).length)}${chip("sells","Sold",all.filter(e=>e.c==="S"&&unchangedKind(e)===null).length)}${chip("kept","Kept apart",kept.length)}</div>
+    <div class="tchips">${chip("all","All",all.length+covers.length)}${chip("buys","Bought",all.filter(e=>e.c==="P"&&unchangedKind(e)===null).length)}${chip("sells","Sold",all.filter(e=>e.c==="S"&&unchangedKind(e)===null).length)}${chip("kept","Kept apart",kept.length+covers.length)}</div>
     ${rows?`<table><thead><tr><th>Date</th><th>Trade</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Change</th><th class="n lv">Held</th><th class="n lv">Outstanding</th><th class="n lv">Owned</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
     ${VIEW==="kept"?`<div class="sub" style="margin-top:10px">Kept apart: options cashed, vests part sold, units converted, pre-IPO catch-ups, and the filings with no trade at all (exercises held, awards, withholding, gifts). Everything that moved the stake without a purchase or a sale, listed so Held never steps without a row to say why, left out of every summary.</div>`:""}
   </div>`;

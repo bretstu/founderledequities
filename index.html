@@ -998,9 +998,14 @@ function mapHistory(recs){
     const sAdj=num(r.shares_split_adjusted);          /* splits fake deltas */
     const s=(sAdj!==null?sAdj:num(r.shares));
     if(!tk||p===null)continue;
+    /* the record's own form, denominator, raw shares and accession ride
+       along (indexes 8 to 11): the company page draws a row for each
+       cover page that moved the share count, so the Owned column steps
+       have a row to explain them */
     (out[tk]=out[tk]||[]).push([r.date,p,s||0,(r.codes||"").toUpperCase(),
                                num(r.traded_value),num(r.traded),
-                               num(r.unexplained),r.restated==="TRUE"]);
+                               num(r.unexplained),r.restated==="TRUE",
+                               r.form||"",num(r.outstanding),num(r.shares),r.accession||""]);
   }
   for(const tk in out)out[tk].sort((a,b)=>a[0]<b[0]?-1:1);
   return out;
