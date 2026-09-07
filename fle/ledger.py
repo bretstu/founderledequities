@@ -647,7 +647,7 @@ def _continues(prev_root, next_root) -> bool:
         rows = _rows(root, "4", "", "")
         ends: dict = {}
         keys = vehicle_keys(rows, ends)
-        opens, closes, anon, holds = {}, {}, set(), []
+        opens, closes, anon, holds, txn = {}, {}, set(), [], set()
         for r, k in zip(rows, keys):
             if r.shares != r.shares:
                 continue
@@ -655,19 +655,27 @@ def _continues(prev_root, next_root) -> bool:
             full = (sec, k)
             if not r.code:
                 holds.append((full, r.shares))
+                # a holding is a balance the next part can open at: p2
+                # restates CZI at 353,998,555 and the next day's p1
+                # converts from 353,998,555
+                closes.setdefault(full, r.shares)
                 continue
             signed = (r.moved if r.acquired else -r.moved) or 0.0
             opens.setdefault(full, r.shares - signed)
             closes[full] = ends.get(k, r.shares)
+            txn.add(full)
             if is_anonymous(r.nature, r.direct):
                 anon.add(full)
-        return opens, closes, anon, holds
-    p_open, p_close, p_anon, _ = segs(prev_root)
-    n_open, n_close, n_anon, n_holds = segs(next_root)
+        return opens, closes, anon, holds, txn
+    p_open, p_close, p_anon, _, p_txn = segs(prev_root)
+    n_open, n_close, n_anon, n_holds, _ = segs(next_root)
     shared = [k for k in n_open if k in p_close and k not in n_anon and k not in p_anon]
-    if shared and not all(abs(n_open[k] - p_close[k]) <= 1.0 for k in shared):
+    chained = [k for k in shared if abs(n_open[k] - p_close[k]) <= 1.0]
+    # a shared key that does not chain vetoes only if the previous part
+    # TRANSACTED it: a chain must be continued, a mere holding need not be
+    if any(k not in chained and k in p_txn for k in shared):
         return False
-    if shared:
+    if chained:
         return True
     restated = any(k in p_close and k not in p_anon and abs(bal - p_close[k]) <= 1.0 for k, bal in n_holds)
     if restated:
@@ -724,7 +732,11 @@ def batch_continuations(client, cik: int, filings: list) -> list:
                 parts.append(nxt)
                 i += 1
                 f = nxt
-                root = nxt_root
+                # the next seam is tested against everything joined so far:
+                # a part holding CZI at 353,998,555 proves nothing on its
+                # own to a part that converts CZI from there, but the batch
+                # that also holds day one's conversion does
+                root = _parse(client, cik, {"_parts": list(parts)})
         if len(parts) > 1:
             head = dict(parts[0])
             head["_parts"] = parts
@@ -997,6 +1009,7 @@ class Group:
     opening: dict = field(default_factory=dict)   # vehicle -> balance BEFORE
                                                   # this document's first row
     anon: set = field(default_factory=set)        # base keys whose text names nothing
+    passed: dict = field(default_factory=dict)    # vehicle -> every balance its chain closed at here
     rows: int = 0
     as_of: str = ""
     accession: str = ""
@@ -1475,18 +1488,36 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
             if is_anonymous(r.nature, r.direct):
                 g.anon.add(base_of(vehicle))
             if r.code:
+                # A HOLDING THIS TRANSACTION OPENS AT WAS THE POSITION BEFORE
+                # IT. Zuckerberg's 28 January p2 restates CZI as a holding at
+                # 353,998,555; the 29th's p1, the next part of the batch,
+                # transacts CZI from 353,998,555. One position: the holding
+                # is superseded, not added beside the chain (354M twice, on
+                # every day his parts joined). Ergen's holding sits at
+                # neither the open nor the close of his transaction and still
+                # adds.
+                if vehicle in g.hold_by_vehicle and vehicle not in g.last_txn:
+                    signed = (r.moved if r.acquired else -r.moved) or 0.0
+                    if abs(g.hold_by_vehicle[vehicle] - (r.shares - signed)) <= 1.0:
+                        g.holdings -= g.hold_by_vehicle.pop(vehicle)
                 g.last_txn[vehicle] = ends.get(vehicle, r.shares)   # where the chain ends
+                g.passed.setdefault(vehicle, []).append(r.shares)
                 g.as_of = r.as_of
                 g.moved_here = True      # a transaction in THIS class
-            elif vehicle in g.last_txn and abs(g.last_txn[vehicle] - r.shares) <= 1.0:
-                # a holding line restating a transaction of this document at
-                # the balance it closed at: stated, not added. Anonymous rows
-                # were matched by vehicle_keys; named rows are matched here
-                # (Zuckerberg's GRATs, sold in part 1 of a filing and listed
-                # as holdings at the closing balances in part 2, counted
-                # twice). A NAMED key can still carry two positions that add
-                # when the balances differ (Ergen's GRAT transacts while the
-                # rest stands under "I").
+            elif vehicle in g.last_txn and any(abs(b - r.shares) <= 1.0 for b in g.passed.get(vehicle, ())):
+                # A HOLDING AT A BALANCE THE SAME KEY'S CHAIN PASSED THROUGH
+                # in this document is that chain stated at that point, not a
+                # second position. The rows of a document are read
+                # transactions first, holdings after, so a holding that
+                # restates day one's close inside a two-day batch (CZI at
+                # 355,734,225 between a conversion closing there and one
+                # opening there) meets a chain that has already moved on;
+                # matched against the close alone it was added, 355.7M twice
+                # on every such day. Anonymous rows were matched by
+                # vehicle_keys; named rows are matched here. A NAMED key can
+                # still carry two positions that add when the holding is at
+                # no balance the chain touched (Ergen's GRAT transacts while
+                # the rest stands under "I").
                 pass
             else:
                 g.holdings += r.shares

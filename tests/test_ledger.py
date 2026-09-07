@@ -3119,6 +3119,17 @@ def test_foroughi_a_filing_in_seven_parts_is_one_filing():
     assert len(bz) == 1 and len(bz[0]["_parts"]) == 2, "a restated close proves the seam"
     hz = _hist_batched(docsz, [(k, "2021-02-01") for k in docsz])
     assert hz.snapshots[-1].shares == 353_998_555 + 3_293_019, "CZI once: the holding restates p1's close"
+    # and the next day's p1, filed the same day, transacts CZI from the
+    # balance p2 held it at: the holding is the position before the
+    # trade, superseded, not 354M twice
+    z3 = _multi4([(T, "C", 29_000, 353_969_555, "I", "By CZI Holdings, LLC")], "2021-01-29")
+    docsz3 = {"0004-21-000001": z1, "0004-21-000002": z2, "0004-21-000003": z3}
+    hz3 = _hist_batched(docsz3, [(k, "2021-02-01") for k in docsz3])
+    assert len(hz3.snapshots) == 1
+    # the rows of a document are read transactions first, holdings after,
+    # so p2's holding at day one's close meets a chain already at day
+    # two's; it is the chain stated at a balance it passed through
+    assert hz3.snapshots[-1].shares == 353_969_555 + 3_293_019, "three parts, one day, CZI once"
     # a next part that continues nothing is not joined
     lone = _multi4([(T, "S", 22, 780_978, "I", "See footnote"), (T, "S", 100, 2_619_954, "D", "")], "2025-08-21")
     docs0 = {"0009-25-000001": p1, "0009-25-000002": lone}
