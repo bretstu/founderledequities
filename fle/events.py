@@ -97,8 +97,11 @@ TRADE_CODES = ("P", "S")
 # transaction in a counted class becomes one row of its own, named for what
 # it was, in this order of precedence when a filing carries several.
 COMP_CODES = ("M", "A", "C", "G", "F", "J", "D", "I", "W", "L", "Z", "K", "H", "O", "X", "U")
-COMP_LABELS = {"M": "options exercised", "A": "award vested", "C": "converted", "G": "gift",
-               "F": "shares withheld for tax", "J": "other transaction"}
+# Code A is "grant, award or other acquisition": Musk's 423,743,904 were
+# granted in November 2025 and vest on milestones over a decade. Code D is
+# a disposition to the issuer: his 96,000,000 interim award, forfeited.
+COMP_LABELS = {"M": "options exercised", "A": "award granted", "C": "converted", "G": "gift",
+               "F": "shares withheld for tax", "D": "forfeited", "J": "other transaction"}
 
 # The transaction codes that sit alongside a sale without being one. Reported
 # so a reader can tell a stake being reduced from pay being cashed.
@@ -258,7 +261,7 @@ class Event:
         """"exercise", "vest", "convert", "bought", "" -- or None when the
         filing reduced the stake (or the day carries residue)."""
         if self.code not in TRADE_CODES:
-            return {"M": "exercised", "A": "award", "C": "convert", "G": "gift", "F": "withheld"}.get(self.code, "other")
+            return {"M": "exercised", "A": "award", "C": "convert", "G": "gift", "F": "withheld", "D": "forfeited"}.get(self.code, "other")
         return {"exercise and sell": "exercise", "exercise, part sold": "exercise", "vested and sold": "vest",
                 "convert and sell": "convert", "sale, position unchanged": "",
                 "purchase, position unchanged": "bought"}.get(self.label)

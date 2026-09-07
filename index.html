@@ -958,7 +958,7 @@ function mapPanel(recs){
   return recs.map(r=>({
     tk:(r.ticker||"").toUpperCase(), co:r.company||"", ceo:r.ceo||"",
     pct:num(r.pct), sh:num(r.shares), out:num(r.outstanding),
-    asof:r.shares_as_of||"", conf:(r.confidence||"").toLowerCase()||"medium",
+    asof:r.shares_as_of||"", oasof:r.outstanding_as_of||"", cover:r.cover_url||"", conf:(r.confidence||"").toLowerCase()||"medium",
     cik:num(r.cik)||0, form4:r.form4_url||"", r1:num(r.ret_1y),
     excl:num(r.excluded_shares)||0, excld:r.excluded_detail||"",
     /* A CITED CORRECTION. When a filer states in a remark that shares

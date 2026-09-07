@@ -41,7 +41,7 @@ LIST_COLS = ["ticker", "cik", "company", "ceo", "pct", "shares",
              "outstanding", "shares_as_of", "confidence", "stake_source",
              "problems", "cautions", "excluded_shares", "excluded_detail",
              "operating_partnership", "flags", "error", "form4_url",
-             "cover_url", "shares_tabled", "masked", "sp"]
+             "cover_url", "outstanding_as_of", "shares_tabled", "masked", "sp"]
 # what a sealed row must not carry: anything that states or bounds the stake
 MASKED_COLS = ("pct", "shares", "form4_url", "cover_url",
                "excluded_shares", "excluded_detail", "shares_tabled")

@@ -63,7 +63,7 @@ function band(r){
     ${r1}
   </div>
   <div class="cmeta">
-    <span>${r.sh!==null&&r.out?`${fmt(r.sh)} of ${fmt(r.out)} shares · `:""}as of ${r.asof?dayLabel(r.asof):"&mdash;"}${r.form4?` · <a href="${filingPage(r.form4)}" target="_blank" rel="noopener">the filing &#8599;</a>`:""}</span>
+    <span>${r.sh!==null?`${fmt(r.sh)} shares as of ${r.asof?dayLabel(r.asof):"&mdash;"}${r.form4?` (<a href="${filingPage(r.form4)}" target="_blank" rel="noopener">the filing &#8599;</a>)`:""}`:`as of ${r.asof?dayLabel(r.asof):"&mdash;"}`}${r.out?` · of ${fmt(r.out)} outstanding${r.oasof?` per the ${dayLabel(r.oasof)} cover page`:""}${r.cover?` (<a href="${r.cover}" target="_blank" rel="noopener">&#8599;</a>)`:""}`:""}</span>
     ${conf}
   </div>`;
 }
@@ -325,7 +325,7 @@ function tradesBlock(r){
       "sale, position unchanged":"Sale, position unchanged","open-market purchase":"Open-market purchase",
       "scheduled purchase":"Planned purchase","purchase, position unchanged":"Purchase, position unchanged",
       "options exercised":"Options exercised, held","options exercised, tax withheld":"Options exercised, tax withheld",
-      "award vested":"Award vested","award vested, tax withheld":"Award vested, tax withheld",
+      "award granted":"Award granted","award granted, tax withheld":"Award granted, tax withheld","forfeited":"Forfeited",
       "converted":"Converted","gift":"Gift","shares withheld for tax":"Shares withheld for tax","other transaction":"Other transaction"};
     const t=words[e.lb]||(e.c==="P"?"Purchase":e.c==="S"?"Sale":"Other transaction");
     const comp=e.c!=="P"&&e.c!=="S";
