@@ -560,7 +560,12 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                    and (r.table == "I" or is_share_class(r.security))
                    and not any(e.matches(r.security, r.direct) for e in exclude)]
         has_trade = any(r.code in TRADE_CODES for r in counted)
-        comp_code = next((c for c in COMP_CODES if any(r.code == c for r in counted)), None) if not has_trade else None
+        # a filing with no trade is a row only if it moved the stake: a Class
+        # B to Class A conversion nets to zero when both classes count, and
+        # a gift from one of the person's counted vehicles to another does
+        # too; rows that explain no step in Held are not rows
+        comp_code = (next((c for c in COMP_CODES if any(r.code == c for r in counted)), None)
+                     if not has_trade and abs(own_net) >= 1.0 else None)
         for r in lines:
             if r.code not in TRADE_CODES and not (comp_code and r.code == comp_code):
                 continue

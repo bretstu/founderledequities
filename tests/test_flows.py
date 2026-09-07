@@ -715,6 +715,11 @@ def test_a_filing_with_no_trade_that_moved_the_stake_is_a_row_of_its_own():
     c = _client_for(_own_doc(gift), acc="0001-24-G", report="2024-06-01")
     g = build_events(c, 320193, "1494730", "TST", "Someone", history=hist)[0]
     assert g.code == "G" and g.label == "gift" and g.net_change == -10_000 and not g.buy and g.unchanged_kind == "gift"
+    # a conversion between two counted classes moves nothing: no row
+    conv = [("2024-06-01", "C", "A", 10_000, 0.0, 0, "I", "Class A Common Stock", "By CZI Holdings, LLC"),
+            ("2024-06-01", "C", "D", 10_000, 0.0, 0, "I", "Class B Common Stock", "By CZI Holdings, LLC")]
+    c = _client_for(_own_doc(conv), acc="0001-24-C", report="2024-06-01")
+    assert build_events(c, 320193, "1494730", "TST", "Someone", history=hist) == []
     # a filing that also sells is one row, the sale, with the exercise folded in
     both = [("2024-03-01", "M", "A", 100_000, 20.0, 0, "D", "Common Stock", ""),
             ("2024-03-01", "S", "D", 40_000, 200.0, 0, "D", "Common Stock", "")]
