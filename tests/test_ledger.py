@@ -3067,12 +3067,15 @@ def test_foroughi_a_filing_in_seven_parts_is_one_filing():
     # the direct line; part 3 (not full, next day): unrelated, not batched
     lots = [(T, "S", 100, 3_000_000 - 100 * (i + 1), "I", "See footnote") for i in range(ROWS_PER_TABLE)]
     p1 = _multi4(lots, "2025-08-20")
+    # part 2 opens with the other trust, then continues the first trust
+    # where part 1 stopped (2,997,000), which is what proves the seam
     p2 = _multi4([(T, "S", 22, 780_978, "I", "See footnote"),
+                  (T, "S", 1_000, 2_996_000, "I", "See footnote"),
                   (T, "S", 100, 2_619_954, "D", "")], "2025-08-21")
     p3 = _multi4([(T, "S", 1_000, 2_618_954, "D", "")], "2025-08-25")
     # then his October filing: a grant, and every trust restated (as his was)
     p4 = _multi4([(T, "A", 20_236, 2_639_190, "D", ""),
-                  (H, "", 0, 2_997_000, "I", "See footnote"),
+                  (H, "", 0, 2_996_000, "I", "See footnote"),
                   (H, "", 0, 780_978, "I", "See footnote")], "2025-10-30")
     before = _multi4([(H, "", 0, 3_000_000, "I", "See footnote"),
                       (H, "", 0, 781_000, "I", "See footnote"),
@@ -3094,17 +3097,57 @@ def test_foroughi_a_filing_in_seven_parts_is_one_filing():
     assert [f["accessionNumber"] for f in batched] == ["0001-25-000001", "0001-25-000002", "0001-25-000004", "0001-25-000005"]
     assert [p["accessionNumber"] for p in batched[1]["_parts"]] == ["0001-25-000002", "0001-25-000003"]
     assert "_parts" not in batched[2], "a document that is not full is not a continuation"
+    # a next part that continues nothing is not joined
+    lone = _multi4([(T, "S", 22, 780_978, "I", "See footnote"), (T, "S", 100, 2_619_954, "D", "")], "2025-08-21")
+    docs0 = {"0009-25-000001": p1, "0009-25-000002": lone}
+    class _C0:
+        def get(self, url, use_cache=True):
+            for k, doc in docs0.items():
+                if k.replace("-", "") in url:
+                    return doc
+            raise KeyError(url)
+    pair = [{"form": "4", "accessionNumber": k, "filingDate": "2025-08-22", "primaryDocument": "d.xml"} for k in docs0]
+    assert all("_parts" not in f for f in batch_continuations(_C0(), 1318605, pair)), "nothing proves the seam"
+    # Zuckerberg's shape: a full document followed by one that RESTATES it,
+    # re-opening at the original openings. Not a continuation.
+    restated = _multi4(lots[:5] + [(T, "S", 5, 2_999_495, "I", "See footnote")], "2025-08-20")
+    docs2 = {"0002-25-000001": p1, "0002-25-000002": restated}
+    class _C2:
+        def get(self, url, use_cache=True):
+            for k, doc in docs2.items():
+                if k.replace("-", "") in url:
+                    return doc
+            raise KeyError(url)
+    pair = [{"form": "4", "accessionNumber": k, "filingDate": "2025-08-22", "primaryDocument": "d.xml"} for k in docs2]
+    assert all("_parts" not in f for f in batch_continuations(_C2(), 1318605, pair)), "a restatement re-opens where the original opened"
+    # a holding repeated in a continuation part is one holding
+    lots_h = lots[:29] + [(H, "", 0, 500_000, "I", "By Trust")]
+    q1 = _multi4(lots_h, "2025-08-20")
+    q2 = _multi4([(T, "S", 100, 3_000_000 - 100 * 29 - 100, "I", "See footnote"), (H, "", 0, 500_000, "I", "By Trust")], "2025-08-21")
+    docs3 = {"0003-25-000001": q1, "0003-25-000002": q2}
+    class _C3:
+        def get(self, url, use_cache=True):
+            for k, doc in docs3.items():
+                if k.replace("-", "") in url:
+                    return doc
+            raise KeyError(url)
+    pair = [{"form": "4", "accessionNumber": k, "filingDate": "2025-08-22", "primaryDocument": "d.xml"} for k in docs3]
+    b3 = batch_continuations(_C3(), 1318605, pair)
+    assert len(b3) == 1 and len(b3[0]["_parts"]) == 2
+    from fle.ledger import _parse
+    root = _parse(_C3(), 1318605, b3[0])
+    assert len(list(root.iter("nonDerivativeHolding"))) == 1, "the restated holding is counted once"
 
     hist = _hist_batched(docs, dates)
     got = {s.date: s for s in hist.snapshots}
     # (_multi4 writes no transaction dates, so a filing's period is its filing day)
     assert sorted(got) == ["2025-08-01", "2025-08-22", "2025-08-26", "2025-10-31"], "the parts are one filing, one point"
-    assert got["2025-08-22"].shares == 2_997_000 + 780_978 + 2_619_954
+    assert got["2025-08-22"].shares == 2_996_000 + 780_978 + 2_619_954
     assert abs(got["2025-08-22"].unexplained) < 0.5, "nothing silent, nothing benched"
     # the direct-only filing is silent on the trusts (benched); October
     # lists them at the balances they left at, and the gap is bridged
-    assert got["2025-08-26"].shares == 2_997_000 + 780_978 + 2_618_954
-    assert got["2025-10-31"].shares == 2_997_000 + 780_978 + 2_639_190
+    assert got["2025-08-26"].shares == 2_996_000 + 780_978 + 2_618_954
+    assert got["2025-10-31"].shares == 2_996_000 + 780_978 + 2_639_190
 
 
 def test_stankey_a_bridge_must_show_its_loss():

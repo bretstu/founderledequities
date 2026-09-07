@@ -631,6 +631,54 @@ def _table_rows(root) -> int:
     return n
 
 
+def _continues(prev_root, next_root) -> bool:
+    """Whether `next_root` picks up where `prev_root` stopped.
+
+    A continuation's first row for a vehicle opens where the previous
+    part's last row for that vehicle closed (Foroughi's HDF 2020 LLC:
+    8,329 then 8,329). A RESTATEMENT re-opens at the original openings
+    (Zuckerberg's paired filings, full tables under consecutive numbers
+    on one day) and fails the test; concatenated, it counted every trade
+    and holding twice, 825M of residue on a record that had 667K.
+
+    Named vehicles are paired by key and every shared key must chain.
+    Anonymous ones cannot be paired by key across two documents, so they
+    are paired by balance: some anonymous segment of the next part must
+    open where some anonymous segment of the previous part closed, under
+    the same security and direct. A next part that shares nothing with
+    the previous is not joined: nothing proves it.
+    """
+    def segs(root):
+        rows = _rows(root, "4", "", "")
+        ends: dict = {}
+        keys = vehicle_keys(rows, ends)
+        opens, closes, anon = {}, {}, set()
+        for r, k in zip(rows, keys):
+            if not r.code or r.shares != r.shares:
+                continue
+            sec = r.security.strip().lower()
+            signed = (r.moved if r.acquired else -r.moved) or 0.0
+            full = (sec, k)
+            opens.setdefault(full, r.shares - signed)
+            closes[full] = ends.get(k, r.shares)
+            if is_anonymous(r.nature, r.direct):
+                anon.add(full)
+        return opens, closes, anon
+    p_open, p_close, p_anon = segs(prev_root)
+    n_open, n_close, n_anon = segs(next_root)
+    # named: pair by key, and every shared key must chain
+    shared = [k for k in n_open if k in p_close and k not in n_anon and k not in p_anon]
+    if shared and not all(abs(n_open[k] - p_close[k]) <= 1.0 for k in shared):
+        return False
+    # anonymous: pair by balance under the same security and direct
+    anon_next = [(k[0], k[1][0], v) for k, v in n_open.items() if k in n_anon]
+    anon_prev = [(k[0], k[1][0], v) for k, v in p_close.items() if k in p_anon]
+    anon_hit = any(abs(o - c) <= 1.0 for s1, d1, o in anon_next for s2, d2, c in anon_prev if s1 == s2 and d1 == d2)
+    if anon_next and anon_prev and not anon_hit:
+        return False
+    return bool(shared or anon_hit)
+
+
 def batch_continuations(client, cik: int, filings: list) -> list:
     """Fold a filing's continuation documents into one document.
 
@@ -669,10 +717,13 @@ def batch_continuations(client, cik: int, filings: list) -> list:
                         and n is not None and n2 == n + 1
                         and nxt.get("filingDate") == f.get("filingDate")):
                     break
+                nxt_root = _parse(client, cik, nxt)
+                if nxt_root is None or not _continues(root, nxt_root):
+                    break
                 parts.append(nxt)
                 i += 1
                 f = nxt
-                root = _parse(client, cik, f)
+                root = nxt_root
         if len(parts) > 1:
             head = dict(parts[0])
             head["_parts"] = parts
@@ -693,7 +744,17 @@ def _parse(client, cik: int, f: dict, unread: list | None = None):
         if any(r is None for r in roots):
             return None
         merged = copy.deepcopy(roots[0])
+
+        def hold_key(n):
+            t = lambda q: (n.findtext(q + "/value") or n.findtext(q) or "").strip()
+            return (n.tag, t("securityTitle").lower(), t("ownershipNature/directOrIndirectOwnership"),
+                    t("ownershipNature/natureOfOwnership").lower(), t("postTransactionAmounts/sharesOwnedFollowingTransaction"))
+        seen: dict = {}
+        for n in list(merged.iter("nonDerivativeHolding")) + list(merged.iter("derivativeHolding")):
+            k = hold_key(n)
+            seen[k] = seen.get(k, 0) + 1
         for r in roots[1:]:
+            here: dict = {}
             for table in ("nonDerivativeTable", "derivativeTable"):
                 src = r.find(table)
                 if src is None:
@@ -702,7 +763,18 @@ def _parse(client, cik: int, f: dict, unread: list | None = None):
                 if dst is None:
                     dst = ET.SubElement(merged, table)
                 for child in list(src):
+                    if child.tag.endswith("Holding"):
+                        # a holding a later part repeats from an earlier one
+                        # is that holding restated, not a second one; two
+                        # genuine trusts at one balance restated together
+                        # are still two (counted per part)
+                        k = hold_key(child)
+                        here[k] = here.get(k, 0) + 1
+                        if here[k] <= seen.get(k, 0):
+                            continue
                     dst.append(copy.deepcopy(child))
+            for k, c in here.items():
+                seen[k] = max(seen.get(k, 0), c)
         return merged
     url = _doc_url(cik, f.get("accessionNumber", ""), f.get("primaryDocument", ""))
     try:
