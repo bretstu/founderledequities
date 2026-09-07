@@ -1282,6 +1282,25 @@ def test_a_holding_at_a_balance_the_chain_passed_through_is_the_chain():
                 ("Class A Common Stock", "I", "Trust I", "", 0, "", 114_139_378)], "2018-07-25")
     hist = _walk_priced({"x1": doc}, [("x1", "2018-07-25")])
     assert hist.snapshots[-1].shares == 302_066 + 6_927_672 + 114_139_378
+    # Gelfond: "common shares (opening balance)" at 765,002 beside a chain
+    # that exercises, sells back to 765,002 and sells 100,000; his footnote
+    # says 665,002 follow the transactions. The walk published 1,430,004.
+    imax = _h4t([("common shares", "D", "", "C", 151_253, "A", 916_255),
+                 ("common shares", "D", "", "S", 151_253, "D", 765_002),
+                 ("common shares", "D", "", "S", 100_000, "D", 665_002),
+                 ("common shares (opening balance)", "D", "", "", 0, "", 765_002)], "2026-08-20")
+    from fle.series import Series, Point
+    one_class = Series(points=[Point("2015-01-01", 50_000_000.0)],
+                       classes={"2026": {"us-gaap:CommonStockMember": 1.0}})   # IMAX has one class: titles are not read
+    hist = _walk_priced({"x2": imax}, [("x2", "2026-08-20")], series=one_class)
+    assert hist.snapshots[-1].shares == 665_002
+    # Lipps: a withholding from 213,884 to 208,982, and a holding of 213,884
+    # "updating the corrected amount": the chain's OPENING restated
+    omcl = _h4t([("Common Stock", "D", "", "F", 4_902, "D", 208_982),
+                 ("Common Stock", "D", "", "", 0, "", 213_884),
+                 ("Common Stock", "I", "In Trust with Wife", "", 0, "", 393_228)], "2017-03-07")
+    hist = _walk_priced({"x3": omcl}, [("x3", "2017-03-07")])
+    assert hist.snapshots[-1].shares == 208_982 + 393_228
 
 
 def test_direct_rows_that_miss_by_a_share_are_one_line():

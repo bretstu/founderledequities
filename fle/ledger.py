@@ -1483,24 +1483,38 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
             if is_anonymous(r.nature, r.direct):
                 g.anon.add(base_of(vehicle))
             if r.code:
+                if vehicle not in g.passed:
+                    signed = (r.moved if r.acquired else -r.moved) or 0.0
+                    g.passed[vehicle] = [r.shares - signed]      # the chain's opening
                 g.last_txn[vehicle] = ends.get(vehicle, r.shares)   # where the chain ends
-                g.passed.setdefault(vehicle, []).append(r.shares)
+                g.passed[vehicle].append(r.shares)
                 g.as_of = r.as_of
                 g.moved_here = True      # a transaction in THIS class
             elif vehicle in g.last_txn and any(abs(b - r.shares) <= 1.0 for b in g.passed.get(vehicle, ())):
                 # A HOLDING AT A BALANCE THE SAME KEY'S CHAIN PASSED THROUGH
-                # in this document is that chain stated at that point, not a
-                # second position. The rows of a document are read
-                # transactions first, holdings after, so a holding that
-                # restates day one's close inside a two-day batch (CZI at
-                # 355,734,225 between a conversion closing there and one
-                # opening there) meets a chain that has already moved on;
-                # matched against the close alone it was added, 355.7M twice
-                # on every such day. Anonymous rows were matched by
-                # vehicle_keys; named rows are matched here. A NAMED key can
-                # still carry two positions that add when the holding is at
-                # no balance the chain touched (Ergen's GRAT transacts while
-                # the rest stands under "I").
+                # in this document, its opening included, is that chain
+                # stated at that point, not a second position. Gelfond lists
+                # "common shares (opening balance)" at 765,002 beside a chain
+                # that exercises and sells back to 765,002 and then sells
+                # 100,000 (his footnote: "common share balances following
+                # these transactions will be 665,002"); the walk published
+                # 1,430,004. Lipps lists 213,884 "updating the corrected
+                # amount" beside a withholding from 213,884 to 208,982.
+                # Zuckerberg's p2 restates CZI at day one's close inside a
+                # two-day batch. The rows of a document are read
+                # transactions first, holdings after, so the close alone is
+                # not enough: the whole path is. Anonymous rows were matched
+                # by vehicle_keys; named rows are matched here.
+                #
+                # THE CASE THIS READS WRONG. Ergen, 30 May 2019: two GRATs
+                # of 5,000,000 under the text "I", one a holding, the other
+                # established that day by a G from zero to 5,000,000. Same
+                # key, same balance; only the footnotes tell them apart, and
+                # the walk does not read footnotes. The holding is dropped
+                # and the day's residue says so. A NAMED key still carries
+                # two positions that add when the holding is at no balance
+                # the chain touched (Ergen's GRAT transacts while the rest
+                # stands under "I").
                 pass
             else:
                 g.holdings += r.shares

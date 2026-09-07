@@ -585,6 +585,7 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                 if vehicle not in g.opening:
                     signed = (r.moved if r.acquired else -r.moved) or 0.0
                     g.opening[vehicle] = r.shares - signed
+                    g.passed.setdefault(vehicle, []).append(g.opening[vehicle])   # the chain's opening
                 g.last_txn[vehicle] = ends.get(vehicle, r.shares)   # where the chain ends
                 g.passed.setdefault(vehicle, []).append(r.shares)
                 g.moved_here = True
