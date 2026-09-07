@@ -47,7 +47,17 @@ global.fetch=async(name)=>{
   // free files cut by the S&P list at its root, the full ones under pro/ --
   // so the harness reads the tiers the site actually serves when they
   // exist, and the root files (a fixture folder) otherwise.
-  const first=(...cands)=>{for(const c of cands)if(fs.existsSync(c))return c;return null;};
+  // THE NEWEST COPY, NOT THE FIRST. site-data/ is written by deploy.sh, so
+  // between a rebuild of events.csv and the next deploy it is the previous
+  // deploy's file; run in that gap, the harness judged a stale copy of the
+  // data it was meant to guard and blocked the deploy that would have
+  // refreshed it (v34's shifted columns sat in site-data/ through v35 and
+  // v36). Whichever candidate was written last is the one under test.
+  const first=(...cands)=>{
+    const have=cands.filter(c=>fs.existsSync(c));
+    if(!have.length)return null;
+    return have.sort((a,b)=>fs.statSync(b).mtimeMs-fs.statSync(a).mtimeMs)[0];
+  };
   if(n.startsWith("/pro/")){
     const f=n.replace("/pro/","");
     const p=first("./site-data/pro/"+f,"./site-data/"+f,"./"+f);
