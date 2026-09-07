@@ -589,7 +589,7 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                 g.last_txn[vehicle] = ends.get(vehicle, r.shares)   # where the chain ends
                 g.passed.setdefault(vehicle, []).append(r.shares)
                 g.moved_here = True
-            elif vehicle in g.last_txn and any(abs(b - r.shares) <= 1.0 for b in g.passed.get(vehicle, ())):
+            elif vehicle in g.last_txn and any(abs(b - r.shares) < 0.5 for b in g.passed.get(vehicle, ())):
                 pass                       # restates this document's chain at a balance it passed through
             else:
                 g.opening.setdefault(vehicle, r.shares)

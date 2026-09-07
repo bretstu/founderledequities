@@ -1301,6 +1301,13 @@ def test_a_holding_at_a_balance_the_chain_passed_through_is_the_chain():
                  ("Common Stock", "I", "In Trust with Wife", "", 0, "", 393_228)], "2017-03-07")
     hist = _walk_priced({"x3": omcl}, [("x3", "2017-03-07")])
     assert hist.snapshots[-1].shares == 208_982 + 393_228
+    # Schmitz: two GRATs, both "By GRAT", one share apart. One gifts and
+    # closes at 274,137; the other stands at 274,138. Two lines.
+    wttr = _h4t([("Class A Common Stock", "I", "By GRAT", "G", 265_250, "D", 274_137),
+                 ("Class A Common Stock", "I", "By Spouse", "G", 265_250, "A", 265_250),
+                 ("Class A Common Stock", "I", "By GRAT", "", 0, "", 274_138)], "2026-02-24")
+    hist = _walk_priced({"x4": wttr}, [("x4", "2026-02-24")])
+    assert hist.snapshots[-1].shares == 274_137 + 265_250 + 274_138
 
 
 def test_direct_rows_that_miss_by_a_share_are_one_line():

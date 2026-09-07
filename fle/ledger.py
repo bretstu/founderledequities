@@ -1490,7 +1490,7 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                 g.passed[vehicle].append(r.shares)
                 g.as_of = r.as_of
                 g.moved_here = True      # a transaction in THIS class
-            elif vehicle in g.last_txn and any(abs(b - r.shares) <= 1.0 for b in g.passed.get(vehicle, ())):
+            elif vehicle in g.last_txn and any(abs(b - r.shares) < 0.5 for b in g.passed.get(vehicle, ())):
                 # A HOLDING AT A BALANCE THE SAME KEY'S CHAIN PASSED THROUGH
                 # in this document, its opening included, is that chain
                 # stated at that point, not a second position. Gelfond lists
@@ -1505,6 +1505,12 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                 # transactions first, holdings after, so the close alone is
                 # not enough: the whole path is. Anonymous rows were matched
                 # by vehicle_keys; named rows are matched here.
+                #
+                # EXACTLY, NOT WITHIN A SHARE. Schmitz has two GRATs, both
+                # "By GRAT", at 274,137 and 274,138; one gifts and closes at
+                # 274,137, the other stands at 274,138, and a tolerance of a
+                # share read the second as the first restated. Chaining
+                # tolerates rounding; a restatement is the same number.
                 #
                 # THE CASE THIS READS WRONG. Ergen, 30 May 2019: two GRATs
                 # of 5,000,000 under the text "I", one a holding, the other
