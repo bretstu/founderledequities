@@ -1215,22 +1215,15 @@ def test_the_spellings_of_nothing():
         assert not is_anonymous(t), t
 
 
-def test_a_filer_who_writes_the_final_balance_on_every_row():
-    """Harrison, 11 January 2022: four Class B rows, gifts in and out and
-    two J's, every one closing at 390,620 with openings that chain to
-    nothing. One trust; the closing balance repeated. The text rule read
-    it right by luck; the balance rule must read it right by rule."""
+def test_a_shared_close_does_not_join_two_trusts():
+    """Two anonymous trusts that each move once and end at the same
+    balance are two trusts. A join on the shared close was tried for
+    Harrison's repeated-final-balance filings and merged Sharma's,
+    Foroughi's and Vashist's pairs; it is not a rule."""
     from fle.ledger import vehicle_keys, _rows
-    R = lambda code, moved, ad, bal: ("Class B Common Stock", "I", "See Footnote", code, moved, ad, bal)
-    doc = _h4t([R("G", 32_190, "D", 390_620), R("G", 32_327, "A", 390_620),
-                R("J", 3_244, "D", 390_620), R("J", 3_145, "A", 390_620),
-                ("Class B Common Stock", "I", "See Footnote", "", 0, "", 535_178),
-                ("Class B Common Stock", "I", "See Footnote", "", 0, "", 535_178)], "2022-01-11")
-    rows = _rows(ET.fromstring(doc), "4", "2022-01-11", "x")
-    keys = vehicle_keys(rows)
-    assert len({k for k, r in zip(keys, rows) if r.code}) == 1, "four rows, one trust"
-    hist = _walk_priced({"x1": doc}, [("x1", "2022-01-11")])
-    assert hist.snapshots[-1].shares == 390_620 + 535_178 + 535_178
+    R = lambda moved, bal: ("Common Stock", "I", "See footnote", "S", moved, "D", bal)
+    rows = _rows(ET.fromstring(_h4t([R(10_000, 500_000), R(25_000, 500_000)], "2026-03-03")), "4", "2026-03-03", "x")
+    assert len(set(vehicle_keys(rows))) == 2
 
 
 def test_one_anonymous_trust_whose_balance_jumped_is_still_that_trust():

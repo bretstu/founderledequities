@@ -398,17 +398,16 @@ def vehicle_keys(rows: list, ends: dict | None = None) -> list:
                         if ends is not None:
                             ends[hit] = segs[hit]["close"]
                         continue
-            if hit is None and signed:
-                # THE FILER WHO WRITES THE DAY'S FINAL BALANCE ON EVERY ROW.
-                # Harrison's four rows on one day all close at 390,620 with
-                # openings that chain to nothing: one trust, four moves, the
-                # closing balance repeated. An unchained row that closes
-                # exactly where a transacted segment of the same text closed
-                # is that position restated. Tried only after chaining, so
-                # Lacerte's two trusts that both ended a day at 163,125 keep
-                # their own chains.
-                hit = next((k for k in mine if segs[k]["txn"] and base_of(k) == base
-                            and abs(segs[k]["close"] - r.shares) <= tol), None)
+            # NOT JOINED BY A SHARED CLOSE. Harrison writes the day's final
+            # balance on every row (four rows on 11 January 2022, all closing
+            # at 390,620, openings chaining to nothing: one trust), and a
+            # rule that read an unchained row closing where another segment
+            # closed as that position restated fixed him. It also merged two
+            # of Sharma's trusts, two of Foroughi's and two of Vashist's,
+            # each of which moved once and happened to end at the same
+            # balance; the arithmetic cannot tell the two shapes apart, and
+            # three filers lost for one gained. Harrison's rows stay four
+            # vehicles, and his residue says so.
             if hit is None:
                 hit = fresh(base)
                 segs[hit] = {"open": opening, "close": r.shares, "sec": sec, "direct": r.direct, "txn": True}
