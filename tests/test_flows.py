@@ -649,10 +649,10 @@ def test_a_day_history_never_saw_carries_no_ones_residue():
             ("2026-02-10", 900.0, 900.0, -55_000.0),   # a messy day
             ("2026-03-01", 880.0, 880.0, 0.0)]
     # An event ON the messy day inherits its residue, as it should.
-    after, net, resid = _position(rows, "2026-02-10")
+    after, net, resid, _o, _p = _position(rows, "2026-02-10")
     assert after == 900.0 and resid == -55_000.0
     # An event BETWEEN snapshots gets the forward-filled holding and nothing
     # about a reconciliation it was not part of.
-    after, net, resid = _position(rows, "2026-02-20")
+    after, net, resid, _o, _p = _position(rows, "2026-02-20")
     assert after == 900.0, "forward-filled, as a denominator would be"
     assert resid is None, "no claim either way about an unobserved day"

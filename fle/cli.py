@@ -790,9 +790,34 @@ def cmd_history(args) -> int:
 
 PRICE_STORE = "price-history"   # one <TICKER>.csv per ticker, date,close
 
+def event_row(e) -> list:
+    """One events.csv row, in EVENT_COLUMNS order. A column added to the
+    header alone once shifted every later field one to the left, and the
+    page read the residue as the holding; the header and this list are
+    checked against each other in the tests."""
+    return [
+        e.ticker, e.issuer_cik, e.ceo, e.owner_cik, e.filed, e.traded,
+        e.code, e.label, f"{e.shares:.0f}",
+        "" if e.value is None else f"{e.value:.2f}",
+        "" if e.avg_price is None else f"{e.avg_price:.4f}",
+        "" if e.pct_of_holding is None else f"{e.pct_of_holding:.4f}",
+        "" if e.pct_approx is None else f"{e.pct_approx:.4f}",
+        "" if e.net_change is None else f"{e.net_change:.0f}",
+        "" if e.day_net is None else f"{e.day_net:.0f}",
+        "" if e.holding_after is None else f"{e.holding_after:.0f}",
+        "" if e.outstanding is None else f"{e.outstanding:.0f}",
+        "" if e.pct_after is None else f"{e.pct_after:.4f}",
+        "" if e.residue is None else f"{e.residue:.0f}",
+        e.plan, e.other_codes, e.rows, e.unpriced_rows, e.securities,
+        e.direct, e.form, e.accession, e.price_flag, e.url,
+        e.registered, "1" if e.pre_registration else "",
+        "" if e.avg_price_adjusted is None else f"{e.avg_price_adjusted:.4f}",
+        e.traded_from]
+
+
 EVENT_COLUMNS = ["ticker", "cik", "ceo", "owner_cik", "filed", "traded",
                  "code", "label", "shares", "value", "avg_price",
-                 "pct_of_holding", "pct_approx", "net_change", "day_net", "holding_after", "residue",
+                 "pct_of_holding", "pct_approx", "net_change", "day_net", "holding_after", "outstanding", "pct_after", "residue",
                  "plan", "other_codes", "rows", "unpriced_rows", "securities",
                  "direct", "form", "accession", "price_flag", "url",
                  "registered", "pre_ipo", "avg_price_adjusted", "traded_from"]
@@ -850,21 +875,7 @@ def cmd_events(args) -> int:
         w = _csv.writer(fh)
         w.writerow(EVENT_COLUMNS)
         for e in out:
-            w.writerow([
-                e.ticker, e.issuer_cik, e.ceo, e.owner_cik, e.filed, e.traded,
-                e.code, e.label, f"{e.shares:.0f}",
-                "" if e.value is None else f"{e.value:.2f}",
-                "" if e.avg_price is None else f"{e.avg_price:.4f}",
-                "" if e.pct_of_holding is None else f"{e.pct_of_holding:.4f}",
-                "" if e.pct_approx is None else f"{e.pct_approx:.4f}",
-                "" if e.net_change is None else f"{e.net_change:.0f}",
-                "" if e.holding_after is None else f"{e.holding_after:.0f}",
-                "" if e.residue is None else f"{e.residue:.0f}",
-                e.plan, e.other_codes, e.rows, e.unpriced_rows, e.securities,
-                e.direct, e.form, e.accession, e.price_flag, e.url,
-                e.registered, "1" if e.pre_registration else "",
-                "" if e.avg_price_adjusted is None else f"{e.avg_price_adjusted:.4f}",
-                e.traded_from])
+            w.writerow(event_row(e))
 
     buys = sum(1 for e in out if e.buy)
     flagged = sum(1 for e in out if e.residue)

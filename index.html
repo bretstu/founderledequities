@@ -1016,7 +1016,8 @@ function mapEvents(recs){
     tk:(r.ticker||"").toUpperCase(),ceo:r.ceo||"",fd:(r.filed||"").slice(0,10),
     td:(r.traded||"").slice(0,10),tf:(r.traded_from||r.traded||"").slice(0,10),c:r.code||"",lb:r.label||"",
     sh:num(r.shares)||0,v:num(r.value),ap:num(r.avg_price),apa:num(r.avg_price_adjusted),
-    pc:num(r.pct_of_holding),pa:num(r.pct_approx),nc:num(r.net_change),ha:num(r.holding_after),
+    pc:num(r.pct_of_holding),pa:num(r.pct_approx),nc:num(r.net_change),dn:num(r.day_net),ha:num(r.holding_after),
+    os:num(r.outstanding),po:num(r.pct_after),
     rs:num(r.residue),pl:r.plan||"unknown",u:r.url||"",fl:r.price_flag||"",acc:r.accession||"",
     pre:String(r.pre_ipo||"")==="1",reg:r.registered||""
   })).filter(e=>e.tk&&e.fd).sort((a,b)=>a.fd<b.fd?1:-1);
@@ -2412,7 +2413,9 @@ function evAgg(side){
     else{
       approx=evs.some(e=>pctOf(e).approx);
       const f=evs[0];
-      const before=(f.ha||0)-(f.nc||0);
+      /* the stake as the day opened: the day's position less what the day
+         did (every filing of the day is measured against it) */
+      const before=(f.ha||0)-((f.dn===null||f.dn===undefined)?(f.nc||0):f.dn);
       const net=evs.reduce((t,e)=>t+(e.nc||0),0);
       if(before>0)pc=100*net/before;
       else why="the position before the first trade computes to zero, and a percentage of nothing is not a number";

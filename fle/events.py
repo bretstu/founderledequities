@@ -143,6 +143,8 @@ class Event:
     plan: str = "unknown"
     holding_after: float | None = None  # the day's total, raw, from history
     net_change: float | None = None     # what THIS filing did: its own rows, acquired less disposed, counted classes
+    outstanding: float | None = None    # shares outstanding on record for the day (the last cover page), from history
+    pct_after: float | None = None      # the stake at the end of the day, as history published it
     day_net: float | None = None        # what the day did on record, all its filings and any residue, from history
     residue: float | None = None        # history's `unexplained` for the day
     other_codes: str = ""              # A/M/F/C/G in the same filing
@@ -345,7 +347,10 @@ def load_history(path: str) -> dict:
                 row = ((r.get("date") or ""),
                        float(r.get("shares") or 0),
                        float(r.get("shares_split_adjusted") or r.get("shares") or 0),
-                       float(r.get("unexplained") or 0))
+                       float(r.get("unexplained") or 0),
+                       # the day's denominator and stake, as history published them
+                       float(r["outstanding"]) if r.get("outstanding") else None,
+                       float(r["pct"]) if r.get("pct") else None)
             except ValueError:
                 continue
             out.setdefault(cik, []).append(row)
@@ -379,7 +384,9 @@ def _split_factor(hist_rows: list, day: str) -> float | None:
 
 
 def _position(hist_rows: list, day: str):
-    """-> (holding_after_raw, net_change_adj, residue) for one filing day.
+    """-> (holding_after_raw, net_change_adj, residue, outstanding, pct) for
+    one filing day. The last two are history's own for the day, None when
+    the day has no snapshot.
 
     net_change is the difference of SPLIT-ADJUSTED totals between this day's
     snapshot and the previous one, so a split between two filings never reads
@@ -401,9 +408,10 @@ def _position(hist_rows: list, day: str):
     an event on such a day inherits the flag instead of asserting a net.
     """
     if not hist_rows:
-        return None, None, None
+        return None, None, None, None, None
     idx = None
-    for i, (d, _r, _a, _u) in enumerate(hist_rows):
+    for i, row in enumerate(hist_rows):
+        d = row[0]
         if d == day:
             idx = i
             break
@@ -413,13 +421,16 @@ def _position(hist_rows: list, day: str):
     else:
         idx = len(hist_rows) - 1
     if idx is None or idx < 0:
-        return None, None, None
-    d, raw, adj, resid = hist_rows[idx]
+        return None, None, None, None, None
+    row = hist_rows[idx]
+    d, raw, adj, resid = row[:4]
+    outstanding = row[4] if len(row) > 4 else None
+    pct = row[5] if len(row) > 5 else None
     if d != day:
-        return raw, None, None
+        return raw, None, None, None, None
     if idx == 0:
-        return raw, None, resid
-    return raw, adj - hist_rows[idx - 1][2], resid
+        return raw, None, resid, outstanding, pct
+    return raw, adj - hist_rows[idx - 1][2], resid, outstanding, pct
 
 
 def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
@@ -540,7 +551,7 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                 continue
             shares, value = g["shares"], g["value"]
             priced = g["rows"] - g["unpriced"]
-            after, day_net, resid = _position(hist_rows, period)
+            after, day_net, resid, outstanding, pct_after = _position(hist_rows, period)
             # a day history never saw carries a stale position: the filing's
             # own net is known but nothing to measure it against is, so no
             # verdict, as before
@@ -564,6 +575,7 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                 securities=" | ".join(sorted(g["secs"])),
                 direct="".join(sorted(g["dirs"])), plan=plan,
                 holding_after=after, net_change=net, day_net=day_net, residue=resid,
+                outstanding=outstanding, pct_after=pct_after,
                 other_codes="".join(others),
                 url=_doc_url(issuer_cik, acc, f.get("primaryDocument") or ""),
                 registered=registered,

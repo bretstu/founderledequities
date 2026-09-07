@@ -340,22 +340,25 @@ function tradesBlock(r){
       <td class="ty ${kd.k}" title="${esc(kd.n)}"><i></i>${kd.t}</td>
       <td class="n v ${e.c==="P"?"up":"down"}">${evValCell(e)}</td>
       <td class="n sh ${e.c==="P"?"up":"down"}">${e.c==="P"?"+":"−"}${fmt(e.sh)}</td>
-      <td class="n stk ${stkCls}" title="${uk===null&&!p?esc(pctWhy(e)):"what this filing did to the stake, against the stake before it"}">${stkTxt.replace(/^stake /,"")}</td>
+      <td class="n stk ${stkCls}" title="${uk===null&&!p?esc(pctWhy(e)):"what this filing did to the stake, against the stake as the day opened"}">${stkTxt.replace(/^stake /,"")}</td>
+      <td class="n lv" title="shares held at the end of this filing's day, per the record; filings on one day share it">${e.ha?fmt(e.ha):"&mdash;"}</td>
+      <td class="n lv" title="shares outstanding on record that day: the company's last cover page before it">${e.os?fmt(e.os):"&mdash;"}</td>
+      <td class="n lv po" title="the stake at the end of the day: held over outstanding">${e.po!==null&&e.po!==undefined?e.po.toFixed(e.po<1?3:2)+"%":"&mdash;"}</td>
       <td class="f">${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</td></tr>`}).join("");
   /* the export is the same rows as text, in the same order */
   window.exportTrades=()=>{
-    const head=["date_from","date_to","filed","type","value_usd","shares","stake_change_pct","filing"];
+    const head=["date_from","date_to","filed","type","value_usd","shares","stake_change_pct","held_after","shares_outstanding","owned_pct","filing"];
     const lines=[head.join(",")].concat(evs.map(e=>{
       const {kd,p,uk}=cell(e);
       return [e.tf||e.td||e.fd,e.td||e.fd,e.fd,kd.t,e.fl?"":(e.v||""),(e.c==="P"?"":"-")+(e.sh||""),
-              p?p.v.toFixed(4):(uk!==null?"0":""),e.u||""].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",");
+              p?p.v.toFixed(4):(uk!==null?"0":""),e.ha||"",e.os||"",(e.po!==null&&e.po!==undefined)?e.po.toFixed(4):"",e.u||""].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",");
     }));
     const blob=new Blob([lines.join("\n")],{type:"text/csv"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${r.tk}-trades.csv`;a.click();
   };
   return `<div class="csec ctrades"><div class="thead"><h2>Trades</h2><button class="export" onclick="exportTrades()">Export CSV</button></div>
     <div class="tchips">${chip("all","All",all.length)}${chip("buys","Bought",all.filter(e=>e.c==="P"&&unchangedKind(e)===null).length)}${chip("sells","Sold",all.filter(e=>e.c==="S"&&unchangedKind(e)===null).length)}${chip("kept","Kept apart",kept.length)}</div>
-    ${rows?`<table><thead><tr><th>Date</th><th>Trade</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Stake</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
+    ${rows?`<table><thead><tr><th>Date</th><th>Trade</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Change</th><th class="n lv">Held</th><th class="n lv">Outstanding</th><th class="n lv">Owned</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
     ${VIEW==="kept"?`<div class="sub" style="margin-top:10px">Kept apart: options cashed, vests part sold, units converted, pre-IPO catch-ups. Real trades that did not reduce the public-company stake, listed and badged, left out of every summary.</div>`:""}
   </div>`;
 }

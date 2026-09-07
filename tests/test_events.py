@@ -1,3 +1,4 @@
+import pytest
 """One row per trade -- the feed the dashboard's tape is built from."""
 import xml.etree.ElementTree as ET
 
@@ -19,7 +20,7 @@ HIST = [("2026-01-05", 100_000, 100_000, 0.0),
 
 
 def test_a_snapshot_day_reports_its_own_residue():
-    after, net, resid = _position(HIST, "2026-03-20")
+    after, net, resid, _o, _p = _position(HIST, "2026-03-20")
     assert after == 95_000
     assert net == 5_000
     assert resid == 2_500
@@ -31,7 +32,7 @@ def test_a_day_between_snapshots_forward_fills_and_owns_no_net_or_residue():
     verdict. A day history has no snapshot for knows the carried holding
     and nothing else -- not the nearest row's net or residue, and not
     zero, which would claim the day was clean."""
-    after, net, resid = _position(HIST, "2026-03-01")
+    after, net, resid, _o, _p = _position(HIST, "2026-03-01")
     assert after == 90_000
     assert net is None
     assert resid is None
@@ -59,7 +60,7 @@ def test_cover_page_rows_never_reach_the_position(tmp_path):
     assert [d for d, *_ in rows] == ["2026-02-10", "2026-03-20"]
     # the second day of a two-day filing, after the 10-Q: still nets
     # against the previous FILING, as it did before cover rows existed
-    after, net, resid = _position(rows, "2026-03-19")
+    after, net, resid, _o, _p = _position(rows, "2026-03-19")
     assert after == 100_000 and net is None and resid is None
 
 
@@ -84,13 +85,28 @@ def test_a_sale_that_did_not_reduce_the_stake_is_compensation_cashed():
     assert s.label == "scheduled sale" and s.unchanged_kind is None
 
 
+def test_the_events_csv_header_and_rows_agree():
+    """Every column named in the header is written in the rows, in that
+    order. A column added to the header alone shifted every later field
+    one to the left, and the page read the residue as the holding."""
+    from fle.cli import EVENT_COLUMNS, event_row
+    e = _e(filed="2026-01-02", traded="2026-01-01", traded_from="2026-01-01", accession="0001-26-1",
+           holding_after=1000.0, net_change=-10.0, day_net=-10.0, outstanding=100000.0, pct_after=1.0,
+           residue=0.0, url="https://example.com")
+    row = event_row(e)
+    assert len(row) == len(EVENT_COLUMNS), f"header has {len(EVENT_COLUMNS)} columns, rows have {len(row)}"
+    got = dict(zip(EVENT_COLUMNS, row))
+    assert got["holding_after"] == "1000" and got["day_net"] == "-10" and got["outstanding"] == "100000" and got["pct_after"] == "1.0000"
+    assert got["traded_from"] == "2026-01-01" and got["url"] == "https://example.com"
+
+
 def test_before_the_first_snapshot_nothing_is_known():
-    assert _position(HIST, "2025-12-31") == (None, None, None)
-    assert _position([], "2026-01-01") == (None, None, None)
+    assert _position(HIST, "2025-12-31") == (None, None, None, None, None)
+    assert _position([], "2026-01-01") == (None, None, None, None, None)
 
 
 def test_the_first_snapshot_has_no_previous_day_to_net_against():
-    after, net, resid = _position(HIST, "2026-01-05")
+    after, net, resid, _o, _p = _position(HIST, "2026-01-05")
     assert after == 100_000
     assert net is None
     assert resid == 0.0

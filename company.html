@@ -109,6 +109,14 @@
     .ctrades td.v{font-weight:600}
     .ctrades td.sh.up,.ctrades td.v.up{color:#0b7a4b}.ctrades td.sh.down,.ctrades td.v.down{color:#c22a2a}
     .ctrades td.stk{color:var(--mut)}.ctrades td.stk.plus{color:#0b7a4b}.ctrades td.stk.minus{color:#c22a2a}
+    /* THE LEVELS BESIDE THE DELTAS. Held, outstanding and owned are the
+       record's own figures for the day, so the table reads as the stake's
+       path, not only its moves. Full numbers, never abbreviated: the file
+       is the screen. On a narrow screen the three hide rather than scroll;
+       the export always carries them. */
+    .ctrades td.lv{color:var(--mut)}
+    .ctrades td.lv.po{color:var(--ink);font-weight:600}
+    @media(max-width:860px){.ctrades th.lv,.ctrades td.lv{display:none}}
     .ctrades td.ty{font-family:var(--ui);font-size:13px;font-weight:600;padding-left:8px}
     .ctrades td.ty i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px;background:var(--faint)}
     .ctrades td.ty.up{color:#1b34e0}.ctrades td.ty.up i{background:#1b34e0}
