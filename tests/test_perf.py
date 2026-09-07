@@ -111,6 +111,56 @@ def test_the_csv_is_long_form_and_sorted(tmp_path):
     assert lines[2] == "TSLA,2024-01,200.0000"
 
 
+def test_a_series_is_the_entitys_history_across_its_symbols():
+    """Meta traded as FB until 8 June 2022 and as META from the 9th; the
+    symbol META belonged to an ETF before that. Fetched by symbol, the
+    store carried the ETF's years and a hole at the handover. The events
+    feed says which symbol the entity held when; each span is fetched
+    for its own dates and stitched. An entity whose events begin after
+    the window has no history before its first symbol. An entity with
+    no events is fetched by its symbol as before."""
+    import datetime as dt
+    from fle.dailies import symbol_spans, fetch_history
+
+    def ms(day):
+        return int(dt.datetime.fromisoformat(day + "T00:00:00+00:00").timestamp() * 1000)
+    bars = {"FB": [("2021-06-01", 330.0), ("2022-06-08", 196.0), ("2022-06-09", 9.0)],      # the 06-09 bar is the ETF that took FB later
+            "META": [("2021-06-01", 15.0), ("2022-01-28", 15.4), ("2022-06-09", 184.0), ("2022-06-10", 175.0)],
+            "CNR": [("2024-06-03", 24.0), ("2025-01-15", 98.0), ("2025-01-16", 99.0)],
+            "AAPL": [("2021-06-01", 125.0)]}
+    events = {"META": [("2012-05-18", "FB"), ("2022-06-09", "META")],
+              "CNR": [("2025-01-15", "CNR")],
+              "AAPL": [("2003-09-10", "AAPL")]}
+
+    class _C:
+        def get(self, url, use_cache=True, max_age=None):
+            import re
+            m = re.search(r"/tickers/([A-Z.]+)/events", url)
+            if m:
+                ev = events.get(m.group(1))
+                if ev is None:
+                    return json.dumps({"results": {}})
+                return json.dumps({"results": {"events": [
+                    {"type": "ticker_change", "date": d, "ticker_change": {"ticker": t}} for d, t in ev]}})
+            m = re.search(r"/ticker/([A-Z.]+)/range/1/day/(\d{4}-\d{2}-\d{2})/(\d{4}-\d{2}-\d{2})", url)
+            tk, lo, hi = m.group(1), m.group(2), m.group(3)
+            return json.dumps({"results": [{"t": ms(d), "c": c} for d, c in bars.get(tk, []) if lo <= d <= hi]})
+
+    assert symbol_spans(_C(), "META", "k") == [("FB", "2012-05-18", "2022-06-08"), ("META", "2022-06-09", None)]
+    pts, note = fetch_history(_C(), "META", "k", start="2016-01-01", end="2026-09-01")
+    assert pts == [("2021-06-01", 330.0), ("2022-06-08", 196.0), ("2022-06-09", 184.0), ("2022-06-10", 175.0)], \
+        "FB's years, then META's; never the ETF's, never the ETF that took FB"
+    assert note == ""
+    pts, note = fetch_history(_C(), "CNR", "k", start="2016-01-01", end="2026-09-01")
+    assert pts == [("2025-01-15", 98.0), ("2025-01-16", 99.0)], "no symbol is known before 2025-01-15, so no history is"
+    pts, note = fetch_history(_C(), "XXXX", "k", start="2016-01-01", end="2026-09-01")
+    assert pts == [] and note == "", "no events: fetched by symbol as before"
+    # a jump at a seam is reported, not corrected
+    bars["FB"][1] = ("2022-06-08", 1960.0)
+    pts, note = fetch_history(_C(), "META", "k", start="2016-01-01", end="2026-09-01")
+    assert "seam" in note and "0.09x" in note
+
+
 def test_no_price_before_this_security_traded_under_the_symbol():
     """Polygon answers by symbol and symbols are recycled: SPCX carried a
     SPAC's sixty months before SpaceX's three. The vendor's per-security

@@ -43,6 +43,17 @@ DAILY = ("https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/"
 
 DEFAULT_START = "2016-01-01"     # ask for ten years; the plan decides how many come back
 
+# THE ENTITY'S SYMBOL HISTORY. Polygon answers aggregates by symbol, and a
+# symbol is a name, not a company: before 9 June 2022 "META" was an ETF at
+# $15, Meta Platforms traded as FB, and a series fetched by symbol carried
+# the ETF's years, a hole at the handover, and Zuckerberg's $300 sales
+# floating above a $15 line. Gold.com was AMRK until December 2025 and
+# "GOLD" before that was Barrick. The ticker-events feed lists, per
+# entity, every symbol it has traded under and the date each began.
+EVENTS = ("https://api.polygon.io/vX/reference/tickers/{ticker}/events"
+          "?types=ticker_change&apiKey={key}")
+EVENTS_MAX_AGE = 7 * 24 * 3600   # a symbol change is rare; the list ages like a feed
+
 
 def polygon_ticker(t: str) -> str:
     # the panel writes BRK-B; polygon writes BRK.B
@@ -68,6 +79,77 @@ def fetch_daily(client, ticker: str, api_key: str,
         day = dt.datetime.fromtimestamp(ts / 1000, dt.timezone.utc).strftime("%Y-%m-%d")
         out.append((day, float(close)))
     return out
+
+
+def symbol_spans(client, ticker: str, api_key: str) -> list:
+    """[(symbol, from_date, to_date_or_None)], oldest first: the symbols this
+    ticker's entity has traded under and when. [] when the feed has no
+    events for it (the caller falls back to the symbol as given)."""
+    url = EVENTS.format(ticker=polygon_ticker(ticker), key=api_key)
+    try:
+        data = json.loads(client.get(url, max_age=EVENTS_MAX_AGE))
+    except Exception:  # noqa: BLE001
+        return []
+    events = sorted(((e.get("date") or "", (e.get("ticker_change") or {}).get("ticker") or "")
+                     for e in (data.get("results") or {}).get("events") or []
+                     if e.get("type") == "ticker_change"), key=lambda x: x[0])
+    events = [(d, t) for d, t in events if d and t]
+    spans = []
+    for i, (d, t) in enumerate(events):
+        nxt = events[i + 1][0] if i + 1 < len(events) else None
+        to = (dt.date.fromisoformat(nxt) - dt.timedelta(days=1)).isoformat() if nxt else None
+        spans.append((t, d, to))
+    return spans
+
+
+def fetch_history(client, ticker: str, api_key: str,
+                  start: str = DEFAULT_START, end: str | None = None) -> tuple:
+    """The ENTITY's adjusted daily closes, oldest first, stitched across
+    every symbol it has traded under in the window (symbol_spans), and a
+    note when the seams look wrong.
+
+    Meta: FB from 2012-05-18, META from 2022-06-09; asked for 2016 on,
+    FB is fetched to 2022-06-08 and META from 2022-06-09. Callaway: ELY,
+    MODG, CALY. An entity whose events begin after `start` (Core Natural
+    Resources lists only its 2025 change to CNR) has no history before its
+    first known symbol, and none is fetched: a stranger's prices under
+    the same symbol are worse than a shorter line. An entity with no
+    events at all is fetched by its symbol as before.
+
+    Each span comes split-adjusted by the feed for that symbol. A split
+    after a symbol change would not be applied to the older symbol's
+    span, so adjacent spans are compared where they meet and a jump is
+    reported in the note rather than corrected: nothing here computes a
+    ratio and applies it.
+    -> (points, note)
+    """
+    end = end or dt.date.today().isoformat()
+    spans = symbol_spans(client, ticker, api_key)
+    if not spans:
+        return fetch_daily(client, ticker, api_key, start, end), ""
+    out, note, prev_close = [], "", None
+    for symbol, frm, to in spans:
+        lo = max(frm, start)
+        hi = min(to or end, end)
+        if lo > hi:
+            continue
+        pts = fetch_daily(client, symbol, api_key, lo, hi)
+        if pts and prev_close is not None:
+            ratio = pts[0][1] / prev_close if prev_close else 1.0
+            if ratio > 1.5 or ratio < 0.67:
+                note = (f"{ticker}: the line jumps {ratio:.2f}x at the {symbol} seam on "
+                        f"{pts[0][0]}; a split may not be applied to the earlier symbol")
+        if pts:
+            prev_close = pts[-1][1]
+        out.extend(pts)
+    seen, dedup = set(), []
+    for day, close in out:
+        if day in seen:
+            continue
+        seen.add(day)
+        dedup.append((day, close))
+    dedup.sort()
+    return dedup, note
 
 
 def merge(stored: list, fresh: list) -> list:

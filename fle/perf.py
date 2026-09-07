@@ -44,10 +44,8 @@ class Perf:
         return bool(self.series)
 
 
-# A COMPANY OUTLIVES ITS TICKER. Block traded as SQ until January 2025 and
-# the feed keeps the old years under the old symbol only -- fetched as XYZ,
-# four of its five years vanish. Renames are rare enough to name by hand.
-FORMER_TICKER = {"XYZ": "SQ"}
+# (A hand-kept table of former tickers, XYZ was SQ, lived here. The feed's
+# ticker events say the same for every entity: dailies.symbol_spans.)
 
 BENCHMARKS = ("SPY", "RSP")   # the S&P 500 cap-weighted, and equal-weighted
 

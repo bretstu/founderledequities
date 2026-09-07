@@ -921,7 +921,7 @@ def cmd_prices(args) -> int:
     # looks exactly like that, and the feed knows which it was.
     store = getattr(args, "store", None) or PRICE_STORE
     if os.path.isdir(store):
-        from .dailies import append_day, fetch_daily, merge, read_one, write_one
+        from .dailies import append_day, fetch_history, merge, read_one, write_one
         # the benchmarks are not in the panel; the store carries them
         for_store = list(tickers) + [b for b in ("SPY", "RSP") if b not in tickers]
         appended, suspect, refetched = 0, [], []
@@ -935,7 +935,7 @@ def cmd_prices(args) -> int:
             if append_day(series, got.as_of, close):
                 suspect.append(t)
                 if SETTINGS.polygon_api_key:
-                    fresh = fetch_daily(client, t, SETTINGS.polygon_api_key)
+                    fresh, _note = fetch_history(client, t, SETTINGS.polygon_api_key)
                     if fresh:
                         series = merge(series, fresh)
                         refetched.append(t)
@@ -1035,6 +1035,11 @@ def edge_confidence(panel_path: str, history_path: str,
     return hit
 
 
+def _has_events(client, ticker: str) -> bool:
+    from .dailies import symbol_spans
+    return bool(symbol_spans(client, ticker, SETTINGS.polygon_api_key))
+
+
 def cmd_perf(args) -> int:
     """Refresh the daily price store for every ticker, then cut perf.csv.
 
@@ -1050,8 +1055,8 @@ def cmd_perf(args) -> int:
     to the same files, so between refreshes the store is one day behind
     at most.
     """
-    from .dailies import fetch_daily, merge, read_store, write_store
-    from .perf import (FORMER_TICKER, apply_floors, build_perf,
+    from .dailies import fetch_history, merge, read_store, write_store
+    from .perf import (apply_floors, build_perf,
                        listing_month, write_perf)
 
     if not SETTINGS.polygon_api_key:
@@ -1074,28 +1079,36 @@ def cmd_perf(args) -> int:
     client = _client(args)
     stored = read_store(store)
     todo = ["SPY", "RSP"] + tickers
-    fresh, missing = {}, []
+    fresh, missing, seams, by_events = {}, [], [], set()
     for i, tk in enumerate(todo, 1):
         sys.stdout.write(f"\r  prices {i}/{len(todo)} {tk}...      ")
         sys.stdout.flush()
-        pts = fetch_daily(client, tk, SETTINGS.polygon_api_key)
-        former = FORMER_TICKER.get(tk)
-        if former:
-            before = fetch_daily(client, former, SETTINGS.polygon_api_key)
-            cut = pts[0][0] if pts else "9999-99-99"
-            pts = [p for p in before if p[0] < cut] + pts
+        # THE ENTITY'S HISTORY, ACROSS ITS SYMBOLS (dailies.fetch_history).
+        # This replaced a hand-kept table of former tickers (XYZ was SQ)
+        # and, for entities the feed knows, the list_date floor below: the
+        # symbol events say both what to fetch and from when.
+        pts, note = fetch_history(client, tk, SETTINGS.polygon_api_key)
+        if note:
+            seams.append(note)
+        if pts and _has_events(client, tk):
+            by_events.add(tk)
         if pts:
-            fresh[tk] = merge(stored.get(tk, []), pts)
+            # a series rebuilt from the entity's own symbols replaces what
+            # was stored under the symbol; a stranger's years must not be
+            # preserved as "older than the fetch" (see merge)
+            fresh[tk] = merge(stored.get(tk, []), pts) if tk not in by_events else pts
         else:
             missing.append(tk)
     _clear()
-    # NO PRICE BEFORE THIS SECURITY TRADED UNDER THE SYMBOL. Symbols are
-    # recycled; the vendor's per-security list_date is the floor under
-    # every ticker's history (see perf.listing_month for why not EDGAR's
-    # registration date).
+    if seams:
+        print("  seams to look at: " + "; ".join(seams[:6]))
+    # NO PRICE BEFORE THIS SECURITY TRADED UNDER THE SYMBOL. For an entity
+    # the events feed knows, its first symbol's date is that floor. For the
+    # rest, the vendor's per-security list_date (see perf.listing_month
+    # for why not EDGAR's registration date).
     floors, cut = {}, []
     for tk in fresh:
-        if tk in ("SPY", "RSP"):
+        if tk in ("SPY", "RSP") or tk in by_events:
             continue
         fl = listing_month(client, tk, SETTINGS.polygon_api_key)
         if fl:

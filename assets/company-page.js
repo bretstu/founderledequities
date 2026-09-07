@@ -175,7 +175,11 @@ function priceChart(px,evs){
   const closeAt=dt=>{let v=px[0][1];for(const p of px){if(p[0]<=dt)v=p[1];else break;}return v;};
   out+=dots(drawn,X,Y,e=>{const dt=e.td||e.fd;return e.apa>0?[e.apa,` at ${dollars(e.apa)}${e.ap&&Math.abs(e.ap-e.apa)>0.005?` (filed at ${dollars(e.ap)}, before splits)`:""}`]:[closeAt(dt),` at the ${dollars(closeAt(dt))} close (price on the filing not restated)`];},fr);
   const last=px[px.length-1];
-  out+=`<text class="endlbl" x="${(X(last[0])-6).toFixed(1)}" y="${(Y(last[1])-9).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">${dollars(last[1])}</text>`;
+  /* the last close, labelled above its point; when the point sits in the
+     top of the range the label would cross the line's peak, so it goes
+     below instead (Schmitz's $20.1 on a chart topping at $20) */
+  const ly=Y(last[1])-9<pad.t+12?Y(last[1])+16:Y(last[1])-9;
+  out+=`<text class="endlbl" x="${(X(last[0])-6).toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">${dollars(last[1])}</text>`;
   out+=`<g class="xh" style="display:none"><line y1="${pad.t}" y2="${h-pad.b}" stroke="var(--ink)" stroke-opacity="0.35" stroke-dasharray="2 3"/><circle r="3.5" fill="var(--ink)"/><rect rx="3" fill="var(--ink)"/><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text></g></svg>`;
   return out;
 }
@@ -209,7 +213,8 @@ function stakeChart(pts,evs){
   const drawn=evs.filter(e=>{const dt=e.td||e.fd;return dt>=pts[0][0]&&dt<=ms[ms.length-1].d;});
   out+=dots(drawn,X,Y,e=>[at(e.td||e.fd),""],fr);
   const lastO=ms[ms.length-1];
-  out+=`<text class="endlbl" x="${(X(lastO.d)-6).toFixed(1)}" y="${(Y(lastO.pct)-9).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--blue)">${fmt(lastO.pct)}</text>`;
+  const lyO=Y(lastO.pct)-9<pad.t+12?Y(lastO.pct)+16:Y(lastO.pct)-9;
+  out+=`<text class="endlbl" x="${(X(lastO.d)-6).toFixed(1)}" y="${lyO.toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--blue)">${fmt(lastO.pct)}</text>`;
   out+=`<g class="xh" style="display:none"><line y1="${pad.t}" y2="${h-pad.b}" stroke="var(--ink)" stroke-opacity="0.35" stroke-dasharray="2 3"/><circle r="3.5" fill="var(--blue)"/><rect rx="3" fill="var(--ink)"/><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text></g></svg>`;
   return out;
 }
