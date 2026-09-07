@@ -25,7 +25,10 @@
        one receipt. Prose stays off the page: a figure that needs a
        sentence beside it is a figure with the wrong label. */
     .cpage{padding:clamp(24px,3.5vw,44px) 0 60px}
-    .cnav a{color:var(--blue);text-decoration:none;font-size:13px}
+    /* THE WAY BACK IS A BUTTON. A small blue link read as a footnote; a
+       pill in the header's own weight reads as the way home. */
+    .cnav a{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);text-decoration:none;font-size:13px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .cnav a:hover{border-color:var(--ink)}
     .chead{margin-top:14px}
     .chead .tk{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase}
     .chead h1{font-family:var(--disp);font-weight:650;letter-spacing:-.025em;line-height:1.02;font-size:clamp(30px,4vw,54px);margin:8px 0 6px}
@@ -35,16 +38,23 @@
        then the four figures that give it meaning, each in its own card,
        in the words the home table uses. The cards hold the figures
        together; a bare strip left them floating on the page. */
+    /* FIVE CARDS, ONE STRIP. Every card carries the page's panel tint, a
+       hairline and a light shadow so the strip lifts off the page as one
+       object; the answer card is the tinted one, blue on blue, and its
+       label is the sentence the page exists for: "MARK ZUCKERBERG OWNS"
+       above the number, "of Meta Platforms, Inc." beneath. The other four
+       carry the home table's words. */
     .cband{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
-    .cband>div{border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:#fff;min-height:118px;display:flex;flex-direction:column;justify-content:flex-end}
-    .cband>div:first-child{background:var(--panel);border-color:var(--panel)}
-    .cband .p{font-family:var(--disp);font-size:clamp(40px,4.6vw,60px);font-weight:700;color:var(--blue);letter-spacing:-.03em;line-height:1;margin:0}
-    .cband .p.s{font-size:24px;color:var(--ink);font-weight:650;letter-spacing:-.01em;line-height:1.15}
-    .cband .pl{color:var(--mut);font-size:13px;margin-top:8px;line-height:1.45}
+    .cband>div{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--panel);min-height:128px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+    .cband>div:first-child{background:#eef1ff;border-color:#c9d3ff}
+    .cband .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+    .cband>div:first-child .k{color:var(--blue)}
+    .cband .p{font-family:var(--disp);font-size:clamp(40px,4.4vw,58px);font-weight:700;color:var(--blue);letter-spacing:-.03em;line-height:1;margin:8px 0 0}
+    .cband .p.s{font-size:22px;color:var(--ink);font-weight:650;letter-spacing:-.01em;line-height:1.2}
+    .cband .pl{color:var(--mut);font-size:12.5px;margin-top:8px;line-height:1.45}
     .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
     .cq{display:block;margin-top:8px;color:var(--ink)}
-    .cstat .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
-    .cstat .v{font-family:var(--disp);font-size:28px;font-weight:650;letter-spacing:-.01em;margin-top:6px;line-height:1.1}
+    .cstat .v{font-family:var(--disp);font-size:32px;font-weight:650;letter-spacing:-.015em;margin-top:8px;line-height:1.1}
     .cstat .v.up{color:#0b7a4b}.cstat .v.down{color:#c22a2a}.cstat .v.none{color:var(--faint)}
     .cstat .s{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
     .cseal{margin-top:30px}
@@ -85,12 +95,24 @@
     .ckey .b i{background:var(--blue)}.ckey .s i{background:#c22a2a}
     /* the trades */
     .tchips{display:flex;gap:8px;margin:0 0 12px}
-    .ctrades .drow{padding:9px 0;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
-    .ctrades .drow .adate{min-width:86px;font-family:var(--mono);font-size:11.5px;color:var(--faint)}
-    .ctrades .drow .aval{font-family:var(--mono);font-weight:600;min-width:70px}
-    .ctrades .drow .adlt{font-family:var(--mono);font-size:12px;min-width:60px}
-    .ctrades .drow .asub{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .ctrades .drow a{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint);text-decoration:none;white-space:nowrap}
+    /* THE TRADES ARE A TABLE. Fixed columns, a header rule, numbers right-
+       aligned in the mono face; the rows are the data a CSV export
+       carries, in the same order. */
+    .ctrades .thead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .ctrades .export{font-family:var(--ui);font-size:12.5px;font-weight:600;color:var(--blue);text-decoration:none;cursor:pointer;background:none;border:0;padding:0}
+    .ctrades table{width:100%;border-collapse:collapse;margin-top:6px;font-family:var(--mono);font-size:11.5px}
+    .ctrades th{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);font-weight:500;text-align:left;padding:6px 8px 8px 0;border-bottom:1px solid var(--ink);white-space:nowrap}
+    .ctrades td{padding:9px 8px 9px 0;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+    .ctrades th.n,.ctrades td.n{text-align:right;padding-right:0;padding-left:8px}
+    .ctrades td.d{color:var(--faint)}
+    .ctrades td.v{font-weight:600}
+    .ctrades td.sh.up,.ctrades td.v.up{color:#0b7a4b}.ctrades td.sh.down,.ctrades td.v.down{color:#c22a2a}
+    .ctrades td.stk{color:var(--mut)}.ctrades td.stk.plus{color:#0b7a4b}.ctrades td.stk.minus{color:#c22a2a}
+    .ctrades td.pl{color:var(--mut)}
+    .ctrades td.f a{color:var(--blue);text-decoration:none;font-size:11px}
+    .ctrades th.f,.ctrades td.f{text-align:right;padding-right:0}
+    .ctrades .abadge{display:inline-block;min-width:66px;text-align:center}
+    @media(max-width:700px){.ctrades th.pl,.ctrades td.pl{display:none}}
     /* the receipt */
     .cwhy{margin-top:40px;padding:16px 20px;background:var(--panel);border-radius:10px;font-size:14px;line-height:1.55;color:var(--mut)}
     .cwhy .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
@@ -110,7 +132,7 @@
 <body>
 {{TOPNAV}}
 <main class="cpage"><div class="wrap">
-  <div class="cnav"><a href="/">← Every company</a></div>
+  <div class="cnav"><a href="/">← All companies</a></div>
   <div class="chead">
     <div class="tk">{{TICKER}}{{TIER}}</div>
     <h1>{{COMPANY}}</h1>

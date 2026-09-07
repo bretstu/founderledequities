@@ -233,7 +233,7 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
         q = founder_quote(founder)
         quote = f' <span class="cq">The proxy statement says: &ldquo;{q}&rdquo;</span>' if q else ""
         onrec = f" {n_filings} filings by the chief executive are on record since 2016." if n_filings else ""
-        return (f'<div class="cseal"><h2 class="p">{html.escape(poss(payload["ceo"] or "The chief executive"))} stake is in Pro</h2></div>'
+        return (f'<div class="cseal"><div class="k">{html.escape(poss(payload["ceo"] or "The chief executive"))} stake</div><h2 class="p">is in Pro</h2></div>'
                 f'<p class="cprose">{ceo} is the chief executive of {co}.{fsent}{quote}{onrec} '
                 f'The stake, its value, and every trade are in the Pro tier; '
                 f'<a href="/api/checkout">Pro is $5 a month</a>, and the S&amp;P 500 is free.</p>')
@@ -250,7 +250,7 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
                 + (f'<div class="s">{sub}</div>' if sub else "") + '</div>')
     r1 = ret_1y.get(payload["tk"]) if ret_1y else None
     band = ('<div class="cband">'
-            f'<div><h2 class="p"><span class="vh">{ceo} owns </span>{pct:.2f}%<span class="vh"> of {co}</span></h2><div class="pl">of {co}</div></div>'
+            f'<div><div class="k">{ceo} owns</div><h2 class="p">{pct:.2f}%</h2><div class="pl">of {co}</div></div>'
             + stat("Value", money(sh * price) if price else "&mdash;", "", f"at ${price:.2f}" if price else "")
             + stat("Market cap", money(out * price) if (price and out) else "&mdash;")
             + stat("Shares held", compact(sh))

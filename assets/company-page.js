@@ -24,7 +24,8 @@ const poss=n=>n+(/s$/i.test(n)?"'":"'s");
 
 function renderSealed(){
   $("#cbody").innerHTML=`<div class="cseal">
-    <h2 class="p s">${esc(poss(C.ceo||"The chief executive"))} stake is in Pro</h2>
+    <div class="k" style="font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--blue)">${esc(poss(C.ceo||"The chief executive"))} stake</div>
+    <h2 class="p s">is in Pro</h2>
     <div class="l">Computed from the filings like every other. Pro is every company beyond the S&amp;P 500: the stake, the record, every trade. $5 a month, cancel in one click.</div>
     <a class="gopro" href="/api/checkout">Go Pro, $5/month</a>
     <div class="l" style="font-size:13px">Already subscribed? <a href="/" style="color:var(--blue)">Sign in on the home page</a> and come back.</div>
@@ -43,9 +44,12 @@ function renderSealed(){
 function stat(k,v,cls,sub,title){return `<div class="cstat"${title?` title="${esc(title)}"`:""}><div class="k">${k}</div><div class="v ${cls||""}">${v}</div>${sub?`<div class="s">${sub}</div>`:""}</div>`;}
 function band(r){
   const mcap=r.price&&r.out?r.out*r.price:null;
-  const big=r.units?`<div class="p s">Held as partnership units</div><div class="pl">Exchangeable units rather than common stock, so a percent of common shares cannot describe the stake.</div>`
-    :r.pct===null?`<div class="p s">Not measured</div><div class="pl">${esc(r.flags||"the record could not settle on a figure")}</div>`
-    :`<h2 class="p"><span class="vh">${esc(C.ceo)} owns </span>${r.pct.toFixed(r.pct<1?3:2)}%<span class="vh"> of ${esc(C.co)}</span></h2><div class="pl">of ${esc(C.co)}</div>`;
+  /* the card reads as one sentence around the number: MARK ZUCKERBERG
+     OWNS / 13.44% / of Meta Platforms, Inc. */
+  const who=`<div class="k">${esc(C.ceo||"The chief executive")} ${r.units||r.pct===null?"holds":"owns"}</div>`;
+  const big=r.units?`${who}<div class="p s">partnership units</div><div class="pl">Exchangeable units rather than common stock, so a percent of common shares cannot describe the stake.</div>`
+    :r.pct===null?`${who}<div class="p s">a stake not measured</div><div class="pl">${esc(r.flags||"the record could not settle on a figure")}</div>`
+    :`${who}<h2 class="p">${r.pct.toFixed(r.pct<1?3:2)}%</h2><div class="pl">of ${esc(C.co)}</div>`;
   const asof=PRICES_ASOF||"latest";
   const r1=r.r1===null||r.r1===undefined?stat("1Y return","&mdash;","none","","the stock's price return over the last twelve months; blank when it has traded for less than a year")
     :stat("1Y return",`${r.r1>=0?"+":""}${r.r1.toFixed(1)}%`,r.r1>=0?"up":"down","","the stock's price return over the last twelve months");
@@ -308,21 +312,36 @@ function tradesBlock(r){
   const kept=all.filter(e=>unchangedKind(e)!==null);
   const evs=VIEW==="all"?all:VIEW==="buys"?all.filter(e=>e.c==="P"&&unchangedKind(e)===null):VIEW==="sells"?all.filter(e=>e.c==="S"&&unchangedKind(e)===null):kept;
   const chip=(v,lab,n)=>`<button class="chip${VIEW===v?" on":""}" onclick="VIEW='${v}';renderOpen(PANEL[0])">${lab} <small>${n}</small></button>`;
-  const rows=evs.map(e=>{
+  const cell=e=>{
     const b=evBadge(e);const p=pctOf(e);const uk=unchangedKind(e);
-    const stk=uk==="pre"?"pre-IPO":uk!==null?(p?stakeChange(p.v,p.approx):"stake unchanged"):p?stakeChange(p.v,p.approx):`<span title="${esc(pctWhy(e))}">stake change not stated</span>`;
-    /* one filing is one row: its first and last trade day when they differ */
+    const stkTxt=uk==="pre"?"pre-IPO":uk!==null?(p?stakeChange(p.v,p.approx):"unchanged"):p?stakeChange(p.v,p.approx):"not stated";
+    const stkCls=p?(p.v>=0?"plus":"minus"):"";
     const span=e.tf&&e.tf!==e.td?`${e.tf} to ${e.td.slice(5)}`:(e.td||e.fd);
-    return `<div class="drow"><span class="adate" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</span>
-      <span class="abadge ${b.k}" title="${esc(b.n)}">${b.t}</span>
-      <span class="aval ${e.c==="P"?"up":"down"}">${evValCell(e)}</span>
-      <span class="adlt ${e.c==="P"?"up":"down"}">${e.c==="P"?"+":"−"}${compact(e.sh)}</span>
-      <span class="asub">${stk}${e.pl==="plan"?" · planned":e.pl==="discretionary"?" · discretionary":""}</span>
-      ${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" title="the filing, on EDGAR">Form 4 ↗</a>`:""}
-    </div>`}).join("");
-  return `<div class="csec ctrades"><h2>Trades</h2>
+    return {b,p,uk,stkTxt,stkCls,span};
+  };
+  const rows=evs.map(e=>{
+    const {b,p,uk,stkTxt,stkCls,span}=cell(e);
+    return `<tr><td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
+      <td><span class="abadge ${b.k}" title="${esc(b.n)}">${b.t}</span></td>
+      <td class="n v ${e.c==="P"?"up":"down"}">${evValCell(e)}</td>
+      <td class="n sh ${e.c==="P"?"up":"down"}">${e.c==="P"?"+":"−"}${fmt(e.sh)}</td>
+      <td class="n stk ${stkCls}" title="${uk===null&&!p?esc(pctWhy(e)):"what this filing did to the stake, against the stake before it"}">${stkTxt.replace(/^stake /,"")}</td>
+      <td class="pl">${e.pl==="plan"?"planned":e.pl==="discretionary"?"discretionary":""}</td>
+      <td class="f">${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</td></tr>`}).join("");
+  /* the export is the same rows as text, in the same order */
+  window.exportTrades=()=>{
+    const head=["date_from","date_to","filed","type","value_usd","shares","stake_change","plan","filing"];
+    const lines=[head.join(",")].concat(evs.map(e=>{
+      const {b,p,uk,stkTxt}=cell(e);
+      return [e.tf||e.td||e.fd,e.td||e.fd,e.fd,b.t.replace(/&amp;/g,"&"),e.fl?"":(e.v||""),(e.c==="P"?"":"-")+(e.sh||""),
+              p?p.v.toFixed(4):(uk!==null?"0":""),e.pl||"",e.u||""].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",");
+    }));
+    const blob=new Blob([lines.join("\n")],{type:"text/csv"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${r.tk}-trades.csv`;a.click();
+  };
+  return `<div class="csec ctrades"><div class="thead"><h2>Trades</h2><button class="export" onclick="exportTrades()">Export CSV</button></div>
     <div class="tchips">${chip("all","All",all.length)}${chip("buys","Bought",all.filter(e=>e.c==="P"&&unchangedKind(e)===null).length)}${chip("sells","Sold",all.filter(e=>e.c==="S"&&unchangedKind(e)===null).length)}${chip("kept","Kept apart",kept.length)}</div>
-    ${rows||`<div class="sub">Nothing in this view.</div>`}
+    ${rows?`<table><thead><tr><th>Date</th><th>Type</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Stake</th><th class="pl">Plan</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
     ${VIEW==="kept"?`<div class="sub" style="margin-top:10px">Kept apart: options cashed, vests part sold, units converted, pre-IPO catch-ups. Real trades that did not reduce the public-company stake, listed and badged, left out of every summary.</div>`:""}
   </div>`;
 }

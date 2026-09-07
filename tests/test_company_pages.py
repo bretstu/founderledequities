@@ -187,7 +187,8 @@ def test_the_seo_layer(tmp_path):
     out = tmp_path / "pub"
     bcp.main(panel, founders, prices, sp, str(out), str(tmp_path / "none.csv"), str(hist))
     tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
-    assert '<h2 class="p"><span class="vh">Elon Musk owns </span>28.44%<span class="vh"> of Tesla, Inc.</span></h2>' in tsla, "the query phrase is the heading; the number is what shows"
+    assert '<div class="k">Elon Musk owns</div><h2 class="p">28.44%</h2><div class="pl">of Tesla, Inc.</div>' in tsla, \
+        "the query phrase is the card, read top to bottom, with the number as the heading"
     assert '"@type": "BreadcrumbList"' in tsla and '/companies/' in tsla
     assert '<div id="cmore"><div class="cmore">' in tsla or '<div id="cmore"></div>' in tsla, "neighbour links live outside the block the script redraws"
     sealed = open(out / "company" / "SEALD" / "index.html", encoding="utf-8").read()
@@ -243,10 +244,10 @@ def test_a_sealed_page_says_whose_stake_is_in_pro(tmp_path):
     out = tmp_path / "pub"
     bcp.main(panel, founders, prices, sp, str(out))
     sealed = open(out / "company" / "SEALD" / "index.html", encoding="utf-8").read()
-    assert "Jane Doe&#x27;s stake is in Pro" in sealed
+    assert "Jane Doe&#x27;s stake</div><h2 class=\"p\">is in Pro" in sealed
     assert bcp.poss("Jabbok Schlacks") == "Jabbok Schlacks'"
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
-    assert "stake is in Pro" in js and "const poss=" in js
+    assert "is in Pro" in js and "const poss=" in js
 
 
 def test_the_one_year_return_on_a_page_is_the_lists(tmp_path):

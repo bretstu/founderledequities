@@ -2035,6 +2035,7 @@ function stakeChange(v,approx){
   if(v<=-100)return a+"stake sold out";
   if(v>=100)return a+"stake ×"+(1+v/100).toFixed(1);
   const m=Math.abs(v);
+  if(m<0.005)return `${a}stake ${v>=0?"+":"−"}<0.01%`;   // a 16,000-share sale of 342M is not "-0.00%"
   return `${a}stake ${v>=0?"+":"−"}${m>=1?m.toFixed(m<10?1:0):m.toFixed(2)}%`;
 }
 /*@shared*/
