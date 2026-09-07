@@ -45,13 +45,14 @@
        above the number, "of Meta Platforms, Inc." beneath. The other four
        carry the home table's words. */
     .cband{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
-    .cband>div{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--panel);min-height:128px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+    .cband>div{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--panel);min-height:112px;display:flex;flex-direction:column;justify-content:flex-start;box-shadow:0 1px 3px rgba(0,0,0,.05)}
     .cband>div:first-child{background:#eef1ff;border-color:#c9d3ff}
     .cband .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
     .cband>div:first-child .k{color:var(--blue)}
-    .cband .p{font-family:var(--disp);font-size:clamp(40px,4.4vw,58px);font-weight:700;color:var(--blue);letter-spacing:-.03em;line-height:1;margin:8px 0 0}
+    /* one size for every figure; the answer is blue, and that is enough */
+    .cband .p{font-family:var(--disp);font-size:32px;font-weight:650;color:var(--blue);letter-spacing:-.015em;line-height:1.1;margin:8px 0 0}
     .cband .p.s{font-size:22px;color:var(--ink);font-weight:650;letter-spacing:-.01em;line-height:1.2}
-    .cband .pl{color:var(--mut);font-size:12.5px;margin-top:8px;line-height:1.45}
+    .cband .pl{color:var(--mut);font-size:12.5px;margin-top:6px;line-height:1.45}
     .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
     .cq{display:block;margin-top:8px;color:var(--ink)}
     .cstat .v{font-family:var(--disp);font-size:32px;font-weight:650;letter-spacing:-.015em;margin-top:8px;line-height:1.1}
@@ -104,6 +105,7 @@
     .ctrades th{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);font-weight:500;text-align:left;padding:6px 8px 8px 0;border-bottom:1px solid var(--ink);white-space:nowrap}
     .ctrades td{padding:9px 8px 9px 0;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
     .ctrades th.n,.ctrades td.n{text-align:right;padding-right:0;padding-left:8px}
+    .ctrades th.pl,.ctrades td.pl{padding-left:28px}
     .ctrades td.d{color:var(--faint)}
     .ctrades td.v{font-weight:600}
     .ctrades td.sh.up,.ctrades td.v.up{color:#0b7a4b}.ctrades td.sh.down,.ctrades td.v.down{color:#c22a2a}

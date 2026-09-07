@@ -251,7 +251,7 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
     r1 = ret_1y.get(payload["tk"]) if ret_1y else None
     band = ('<div class="cband">'
             f'<div><div class="k">{ceo} owns</div><h2 class="p">{pct:.2f}%</h2><div class="pl">of {co}</div></div>'
-            + stat("Value", money(sh * price) if price else "&mdash;", "", f"at ${price:.2f}" if price else "")
+            + stat("Value", money(sh * price) if price else "&mdash;")
             + stat("Market cap", money(out * price) if (price and out) else "&mdash;")
             + stat("Shares held", compact(sh))
             + (stat("1Y return", f"{r1:+.1f}%", "up" if r1 >= 0 else "down") if r1 is not None
