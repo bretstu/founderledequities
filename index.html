@@ -1957,7 +1957,7 @@ function coOf(tk){const r=PANEL.find(p=>p.tk===tk);return r?r.co:"";}
    position is zero before and after); "sale, position unchanged" is a day
    the filing does not explain. All three sit apart from the ranking. */
 /*@shared*/
-const UNCHANGED={"exercise and sell":"exercise","convert and sell":"convert","sale, position unchanged":"","purchase, position unchanged":"bought"};
+const UNCHANGED={"exercise and sell":"exercise","vested and sold":"vest","convert and sell":"convert","sale, position unchanged":"","purchase, position unchanged":"bought"};
 /* A PRE-REGISTRATION TRADE IS KEPT APART THE SAME WAY. Section 16 reporting
    begins at registration and the first Form 4 catches up on everything
    since; a tender or a sale at the private price is real and on a filing
@@ -1979,7 +1979,9 @@ function evBadge(e){
     n:e.pl==="plan"?"planned — a purchase made under a pre-set Rule 10b5-1 plan, rarer still than an open-market buy"
      :"an open-market purchase — their own money, at the market's price"};
   if(e.lb==="exercise and sell")return{t:"EX &amp; SELL",k:"neu",
-    n:"options exercised and the shares sold the same day — compensation cashed; the stake did not move"};
+    n:"options exercised and shares sold in the same filing: compensation cashed. The stake did not fall; the number says whether some were kept"};
+  if(e.lb==="vested and sold")return{t:"VESTED &amp; SOLD",k:"neu",
+    n:"shares vested and part sold in the same filing, usually to cover tax: compensation, not a reduction. The number says how much was kept"};
   if(e.lb==="convert and sell")return{t:"CONVERTED",k:"neu",
     n:"units or a convertible exchanged into shares and sold the same day — the common-stock position this site measures did not move, though the holder's economic stake did"};
   if(e.lb==="sale, position unchanged")return{t:"UNCHANGED",k:"neu",
@@ -2283,8 +2285,8 @@ function dayAlso(day){
   const ex=EVENTS.filter(e=>e.fd===day&&unchangedKind(e)!==null&&fOnly(e.tk,state.ev.f));
   if(!ex.length)return"";
   const nP=ex.filter(e=>unchangedKind(e)==="pre").length;
-  const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nB=ex.filter(e=>unchangedKind(e)==="bought").length;
-  const kinds=[nP?"before the company was public":"",nM?"options cashed":"",nC?"units converted":"",nB?"a purchase the position did not register":"",ex.length-nP-nM-nC-nB?"source not in the filing":""].filter(Boolean).join(", ");
+  const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nV=ex.filter(e=>unchangedKind(e)==="vest").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nB=ex.filter(e=>unchangedKind(e)==="bought").length;
+  const kinds=[nP?"before the company was public":"",nM?"options cashed":"",nV?"vests part sold":"",nC?"units converted":"",nB?"a purchase the position did not register":"",ex.length-nP-nM-nV-nC-nB?"source not in the filing":""].filter(Boolean).join(", ");
   const n=ex.length;
   return `Also filed: ${n} trade${n===1?"":"s"} kept apart (${kinds}), ${money(ex.reduce((t,e)=>t+((e.fl?0:e.v)||0),0))}`;
 }
@@ -2295,10 +2297,10 @@ function dayText(day,rows){
   for(const e of rows){
     const side=evSide(e);
     const uk=unchangedKind(e);
-    const what=side==="buys"?"bought":uk==="pre"?(e.c==="P"?"bought (pre-IPO)":"sold (pre-IPO)"):uk==="exercise"?"cashed options for":uk==="convert"?"converted and sold":uk==="bought"?"bought (position unchanged)":uk===""?"sold (position unchanged)":"sold";
-    const man=side==="exsell"?"stake unchanged":e.pl==="plan"?"planned":e.pl==="discretionary"?"discretionary":"";
+    const what=side==="buys"?"bought":uk==="pre"?(e.c==="P"?"bought (pre-IPO)":"sold (pre-IPO)"):uk==="exercise"?"cashed options for":uk==="vest"?"vested and sold":uk==="convert"?"converted and sold":uk==="bought"?"bought (position unchanged)":uk===""?"sold (position unchanged)":"sold";
     const pp=pctOf(e);
-    const pc=(!pp||side==="exsell")?"":", "+stakeChange(pp.v,pp.approx);
+    const man=side==="exsell"?(pp?"":"stake unchanged"):e.pl==="plan"?"planned":e.pl==="discretionary"?"discretionary":"";
+    const pc=!pp?"":", "+stakeChange(pp.v,pp.approx);
     L.push(`${e.ceo||coOf(e.tk)} (${e.tk}) ${what} ${e.v&&!e.fl?money(e.v):compact(e.sh)+" sh"}${pc}${man?", "+man:""}${e.td&&e.td!==e.fd?` (traded ${spanDay(e,d=>d)})`:""}`);
   }
   const also=dayAlso(day);if(also)L.push(also+".");
@@ -2336,7 +2338,7 @@ function renderDay(){
   const row=e=>{
     const b=evBadge(e),side=evSide(e);
     const pp=pctOf(e);
-    const pc=side==="exsell"?`<span title="options exercised and the shares sold, in one filing; the stake did not move">stake unchanged</span>`
+    const pc=side==="exsell"?(pp?stakeChange(pp.v,pp.approx):`<span title="compensation cashed in one filing; the stake did not move">stake unchanged</span>`)
       :!pp?`<span class="nopr" title="${pctWhy(e)}">stake change not stated</span>`
       :`${pp.approx?`<span class="approx" title="${approxNote(e)}">≈ </span>`:""}${stakeChange(pp.v,false)}`;
     const man=side==="exsell"?"":e.pl==="plan"?` · <span title="sold under a Rule 10b5-1 plan, set up long before the trade date and executed automatically">planned</span>`:e.pl==="discretionary"?` · <span title="not under a pre-set plan — their own decision, at their own timing">discretionary</span>`:"";
@@ -2447,8 +2449,8 @@ function actNote(){
   const ex=evBase().filter(e=>evSide(e)==="exsell");
   if(!ex.length)return"";
   const nP=ex.filter(e=>unchangedKind(e)==="pre").length;
-  const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nB=ex.filter(e=>unchangedKind(e)==="bought").length;
-  const kinds=[nM?"options cashed":"",nC?"units converted":"",nB?"purchases the position did not register":"",nP?`${nP} before the company was public`:""].filter(Boolean).join(", ")||"shares from outside the filing";
+  const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nV=ex.filter(e=>unchangedKind(e)==="vest").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nB=ex.filter(e=>unchangedKind(e)==="bought").length;
+  const kinds=[nM?"options cashed":"",nV?"vests part sold":"",nC?"units converted":"",nB?"purchases the position did not register":"",nP?`${nP} before the company was public`:""].filter(Boolean).join(", ")||"shares from outside the filing";
   const win={30:"the last 30 days",90:"the last 90 days",365:"the last 12 months"}[state.ev.win]||"this window";
   const n=ex.length;
   return `Kept out of everything above: ${n.toLocaleString()} trade${n===1?"":"s"} in ${win} did not move a stake (${kinds}). <a onclick="setView('exsell')">They are in the table →</a>`;

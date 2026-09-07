@@ -305,7 +305,7 @@ function tradesBlock(r){
   const chip=(v,lab,n)=>`<button class="chip${VIEW===v?" on":""}" onclick="VIEW='${v}';renderOpen(PANEL[0])">${lab} <small>${n}</small></button>`;
   const rows=evs.map(e=>{
     const b=evBadge(e);const p=pctOf(e);const uk=unchangedKind(e);
-    const stk=uk==="pre"?"pre-IPO":uk!==null?"stake unchanged":p?stakeChange(p.v,p.approx):`<span title="${esc(pctWhy(e))}">stake change not stated</span>`;
+    const stk=uk==="pre"?"pre-IPO":uk!==null?(p?stakeChange(p.v,p.approx):"stake unchanged"):p?stakeChange(p.v,p.approx):`<span title="${esc(pctWhy(e))}">stake change not stated</span>`;
     /* one filing is one row: its first and last trade day when they differ */
     const span=e.tf&&e.tf!==e.td?`${e.tf} to ${e.td.slice(5)}`:(e.td||e.fd);
     return `<div class="drow"><span class="adate" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</span>
@@ -318,7 +318,7 @@ function tradesBlock(r){
   return `<div class="csec ctrades"><h2>Trades</h2>
     <div class="tchips">${chip("all","All",all.length)}${chip("buys","Bought",all.filter(e=>e.c==="P"&&unchangedKind(e)===null).length)}${chip("sells","Sold",all.filter(e=>e.c==="S"&&unchangedKind(e)===null).length)}${chip("kept","Kept apart",kept.length)}</div>
     ${rows||`<div class="sub">Nothing in this view.</div>`}
-    ${VIEW==="kept"?`<div class="sub" style="margin-top:10px">Kept apart: options cashed, units converted, pre-IPO catch-ups. Real trades that did not move the public-company stake, listed and badged, left out of every summary.</div>`:""}
+    ${VIEW==="kept"?`<div class="sub" style="margin-top:10px">Kept apart: options cashed, vests part sold, units converted, pre-IPO catch-ups. Real trades that did not reduce the public-company stake, listed and badged, left out of every summary.</div>`:""}
   </div>`;
 }
 

@@ -63,6 +63,27 @@ def test_cover_page_rows_never_reach_the_position(tmp_path):
     assert after == 100_000 and net is None and resid is None
 
 
+def test_a_sale_that_did_not_reduce_the_stake_is_compensation_cashed():
+    """Xu, 1 October 2025: two M rows bring in 553,116, six sales dispose
+    of 34,166, the stake rises 518,950. Badged SOLD beside "stake +5.3%"
+    the row contradicted itself. The badge names the kind of sale; the
+    number keeps the rise."""
+    e = _e(holding_after=10_307_265, net_change=518_950, residue=0.0, other_codes="M", plan="plan")
+    assert e.label == "exercise and sell"
+    assert e.unchanged_kind == "exercise"
+    assert e.pct_of_holding is not None and e.pct_of_holding > 5
+    v = _e(holding_after=110_000, net_change=6_000, residue=0.0, other_codes="AF", plan="discretionary")
+    assert v.label == "vested and sold" and v.unchanged_kind == "vest"
+    # the same shape with the stake unchanged, and with residue
+    assert _e(holding_after=44_082, net_change=0, residue=0.0, other_codes="M").label == "exercise and sell"
+    assert _e(holding_after=44_082, net_change=0, residue=0.0, other_codes="A").label == "vested and sold"
+    r = _e(holding_after=44_082, net_change=0, residue=-40_734, other_codes="M")
+    assert r.label == "sale" and r.unchanged_kind is None, "residue: no verdict, not kept apart"
+    # a sale that reduced the stake is a sale, whatever else the filing carried
+    s = _e(holding_after=90_000, net_change=-10_000, residue=0.0, other_codes="M", plan="plan")
+    assert s.label == "scheduled sale" and s.unchanged_kind is None
+
+
 def test_before_the_first_snapshot_nothing_is_known():
     assert _position(HIST, "2025-12-31") == (None, None, None)
     assert _position([], "2026-01-01") == (None, None, None)

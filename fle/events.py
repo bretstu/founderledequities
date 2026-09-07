@@ -190,6 +190,22 @@ class Event:
                 return "purchase, position unchanged"
             return ("scheduled purchase" if self.plan == "plan"
                     else "open-market purchase")
+        # A SALE THAT DID NOT REDUCE THE STAKE IS NOT "SOLD". Xu, 1 October
+        # 2025: two M rows bring in 553,116 shares and six sales dispose of
+        # 34,166; nothing he held before was sold and the stake rose by
+        # 518,950. Badged SOLD beside "stake +5.3%" the row read as
+        # nonsense. The badge answers what he did on the market, the number
+        # what the filing did to the stake; when the filing brought shares
+        # in and the stake did not fall, the sale is compensation cashed and
+        # the badge says which kind. The number stays: "unchanged" when it
+        # was, the rise when he kept some.
+        if not self.residue and self.net_change is not None and self.net_change > -0.5:
+            if "M" in self.other_codes:
+                return "exercise and sell"
+            if "A" in self.other_codes:
+                return "vested and sold"
+            if "C" in self.other_codes:
+                return "convert and sell"
         if self.stake_unchanged and not self.residue:
             # The claim "position unchanged" is only made when history could
             # account for the whole day. A day carrying unexplained residue
@@ -216,11 +232,11 @@ class Event:
 
     @property
     def unchanged_kind(self) -> str:
-        """"exercise", "convert", "" -- or None when the stake moved."""
-        if not (self.stake_unchanged and not self.residue):
-            return None
-        return "exercise" if "M" in self.other_codes else \
-               "convert" if "C" in self.other_codes else ""
+        """"exercise", "vest", "convert", "bought", "" -- or None when the
+        filing reduced the stake (or the day carries residue)."""
+        return {"exercise and sell": "exercise", "vested and sold": "vest",
+                "convert and sell": "convert", "sale, position unchanged": "",
+                "purchase, position unchanged": "bought"}.get(self.label)
 
     @property
     def stake_unchanged(self) -> bool:
