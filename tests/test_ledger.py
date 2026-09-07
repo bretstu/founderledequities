@@ -1310,6 +1310,47 @@ def test_a_holding_at_a_balance_the_chain_passed_through_is_the_chain():
     assert hist.snapshots[-1].shares == 274_137 + 265_250 + 274_138
 
 
+def test_a_document_spanning_two_days_does_not_swallow_the_first_days_point():
+    """Musk, 26 to 28 April 2022, in three documents here: one for the
+    26th, one spanning the 26th and 27th, one for the 27th; every seam
+    chains. Each document's "period of report" says the 26th. Grouped by
+    period end but emitted by the next document's report date, the 26th's
+    point vanished and the 27th's was emitted twice. One point per day,
+    each with its own trades, all reconciling."""
+    from fle.history import build_history
+    from fle.series import Series, Point
+    T = "nonDerivativeTransaction"
+    def doc(rows):
+        body = ""
+        for day, moved, bal in rows:
+            body += (f"<{T}><securityTitle><value>Common Stock</value></securityTitle>"
+                     f"<transactionDate><value>{day}</value></transactionDate>"
+                     f"<transactionCoding><transactionCode>S</transactionCode></transactionCoding>"
+                     f"<transactionAmounts><transactionShares><value>{moved}</value></transactionShares>"
+                     f"<transactionAcquiredDisposedCode><value>D</value></transactionAcquiredDisposedCode></transactionAmounts>"
+                     f"<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{bal}</value></sharesOwnedFollowingTransaction></postTransactionAmounts>"
+                     f"<ownershipNature><directOrIndirectOwnership><value>I</value></directOrIndirectOwnership>"
+                     f"<natureOfOwnership><value>by Trust</value></natureOfOwnership></ownershipNature></{T}>")
+        return ("<ownershipDocument><issuer><issuerCik>0001318605</issuerCik></issuer><reportingOwner><reportingOwnerId>"
+                "<rptOwnerCik>1494730</rptOwnerCik></reportingOwnerId></reportingOwner>" + body + "</ownershipDocument>")
+    docs = {"m1": doc([("2022-04-26", 1_000_000, 171_608_251)]),
+            "m2": doc([("2022-04-26", 200_000, 171_408_251), ("2022-04-27", 400_000, 171_008_251)]),
+            "m3": doc([("2022-04-27", 300_000, 170_708_251)])}
+
+    class _E:
+        def get(self, url, use_cache=True):
+            for k, d in docs.items():
+                if k in url: return d
+            raise KeyError(url)
+    mine = [{"form": "4", "accessionNumber": k, "filingDate": "2022-04-28", "reportDate": "2022-04-26", "primaryDocument": "d.xml"} for k in docs]
+    hist = build_history(_E(), 1318605, "1494730", mine, series=Series(points=[Point("2015-01-01", 1e9)]))
+    got = [(sn.date, sn.shares, sn.traded, sn.unexplained) for sn in hist.snapshots]
+    assert [g[0] for g in got] == ["2022-04-26", "2022-04-27"], "one point per day, the 26th included"
+    assert got[0][1] == 171_608_251 and got[0][2] == -1_000_000
+    assert got[1][1] == 170_708_251 and got[1][2] == -900_000, "the 27th carries both documents' trades"
+    assert abs(got[1][3]) < 0.5, "and reconciles"
+
+
 def test_direct_rows_that_miss_by_a_share_are_one_line():
     """Portland General, 13 February 2026: nine direct rows of awards and
     withholding whose balances miss each other by a share (fractional

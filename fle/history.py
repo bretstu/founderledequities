@@ -791,7 +791,18 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
         #
         # The day's LAST filing settles the day, which is the same rule the
         # panel uses for the newest filing overall.
-        if i < len(ordered) and _period(ordered[i]) == when:
+        #
+        # THE DAY IS THE PERIOD END, ON BOTH SIDES. Documents are grouped
+        # into a day by period_end, the newest transaction each reports;
+        # this check once asked the NEXT document's reportDate instead, the
+        # feed's "period of report", which Musk's lawyers set to the first
+        # day of the batch on every document of it. His 26 to 28 April 2022
+        # sales, eight documents in one unbroken chain: the 26th's snapshot
+        # was swallowed (the next document "reported on" the 26th), the
+        # 27th was emitted twice, the 26th's 3.46M of trades were credited
+        # to no point, and the events of both days read "not stated" on a
+        # week that reconciles to the share.
+        if i < len(ordered) and period_end(client, issuer_cik, ordered[i], ends) == when:
             continue
 
         total = sum(g.shares for g in groups.values())
