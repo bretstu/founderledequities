@@ -445,7 +445,8 @@ def test_commvault_every_day_of_a_filing_carries_the_filings_verdict():
     c = _client_for(_own_doc(rows), acc="0001-26-C", report="2026-08-19")
     ev = build_events(c, 320193, "1494730", "CVLT", "Sanjay Mirchandani", history=hist)
     assert len(ev) == 1 and ev[0].shares == 24134
-    assert ev[0].net_change == -64868.0 and ev[0].residue == -40734.0
+    # the filing's own net (its rows), the day's net beside it, the residue flagged
+    assert ev[0].net_change == -24134.0 and ev[0].day_net == -64868.0 and ev[0].residue == -40734.0
     assert ev[0].label == "sale" and ev[0].pct_of_holding is None, "residue: not stated, not unchanged"
 
 
@@ -486,24 +487,36 @@ def test_deere_2017_an_exercise_that_kept_some_shares_reads_as_a_rise():
     assert e.pct_of_holding > 0 and "M" in e.other_codes
 
 
-def test_two_filings_on_one_day_share_the_days_net_by_gross_shares():
-    """Musk, 9 August 2022: one filing sold 3,000,000 shares, another
-    20,000, one history point for the day. Each takes its share of the
-    day's net by gross shares, and the two add up to the day; neither
-    reads as the whole -5.6% on its own."""
-    from fle.events import Event, _share_the_day
-    big = Event(ticker="TSLA", traded="2022-08-09", accession="a", code="S", shares=3_000_000,
-                holding_after=155_000_000, net_change=-3_020_000, residue=0.0)
-    small = Event(ticker="TSLA", traded="2022-08-09", accession="b", code="S", shares=20_000,
-                  holding_after=155_000_000, net_change=-3_020_000, residue=0.0)
-    other = Event(ticker="TSLA", traded="2022-08-10", accession="c", code="S", shares=1_000,
-                  holding_after=154_999_000, net_change=-1_000, residue=0.0)
-    _share_the_day([big, small, other])
-    assert abs(big.net_change + small.net_change + 3_020_000) < 1e-6, "the parts add up to the day"
-    assert abs(big.net_change - (-3_020_000 * 3_000_000 / 3_020_000)) < 1e-6
-    assert abs(small.net_change - (-3_020_000 * 20_000 / 3_020_000)) < 1e-6
-    assert other.net_change == -1_000, "a day with one filing is untouched"
-    assert big.pct_of_holding < small.pct_of_holding < 0, "the small filing reads as a sliver"
+def test_two_filings_on_one_day_each_state_their_own_net():
+    """Musk, 21 December 2021: one filing exercises 934,091 options and
+    sells 583,611 (net +350,480); the other sells 350,480 outright. One
+    history point for the day, net zero. Handed a share of the day's net
+    by gross shares, the outright sale read "stake +0.74%". Each filing's
+    net is its own rows; the day's opening position is what both are
+    measured against; the two add up to the day."""
+    from fle.events import build_events
+    ex = [("2021-12-21", "M", "A", 934_091, 0.0, 0, "D", "Common Stock", ""),
+          ("2021-12-21", "S", "D", 583_611, 1_000.0, 0, "D", "Common Stock", "")]
+    sale = [("2021-12-21", "S", "D", 350_480, 1_000.0, 0, "D", "Common Stock", "")]
+    hist = {320193: [("2021-12-20", 170_000_000.0, 170_000_000.0, 0.0),
+                     ("2021-12-21", 170_000_000.0, 170_000_000.0, 0.0)]}
+    docs = {"0001-21-X": _own_doc(ex), "0001-21-Y": _own_doc(sale)}
+    F = [{"form": "4", "accessionNumber": k, "reportDate": "2021-12-21", "filingDate": "2021-12-22", "primaryDocument": "d.xml"} for k in docs]
+
+    class C:
+        def submissions(self, cik):
+            return {"_filings": F}
+        def get(self, url, use_cache=True):
+            for k, d in docs.items():
+                if k.replace("-", "") in url:
+                    return d
+            raise KeyError(url)
+    ev = sorted(build_events(C(), 320193, "1494730", "TSLA", "Elon Musk", history=hist), key=lambda e: e.accession)
+    by = {e.accession: e for e in ev}
+    exs, out = by["0001-21-X"], by["0001-21-Y"]
+    assert exs.net_change == 350_480 and exs.label == "exercise and sell" and exs.pct_of_holding > 0
+    assert out.net_change == -350_480 and out.label != "exercise and sell" and out.pct_of_holding < 0, "the outright sale is a sale, and the stake fell by it"
+    assert exs.day_net == 0 and out.day_net == 0 and exs._before == 170_000_000 == out._before
 
 
 def test_blackstone_a_filing_about_another_company_is_not_a_trade_here():

@@ -228,11 +228,12 @@ def test_a_purchase_the_position_did_not_register_says_so():
 def test_a_residue_too_small_to_change_the_answer_states_it_with_a_caution():
     """Tan: 105,263 bought, 561 unexplained, 1,331,640 after. Half a percent
     of the trade, four hundredths of a percent of the position."""
+    # the filing's own net is 105,263 (its rows); the day moved 105,824
     tan = _e(code="P", buy=True, shares=105_263, holding_after=1_331_640,
-             net_change=105_824, residue=561.0)
+             net_change=105_263, day_net=105_824, residue=561.0)
     assert tan.pct_of_holding is None, "the strict figure is still declined"
-    # the net less the residue, over the position before the filing
-    assert abs(tan.pct_approx - 100 * (105_824 - 561) / (1_331_640 - 105_824)) < 1e-9
+    # the filing's net over the position as the day opened
+    assert abs(tan.pct_approx - 100 * 105_263 / (1_331_640 - 105_824)) < 1e-9
     # the median residue day: 38% of the trade -- stays unstated
     big = _e(shares=10_000, holding_after=100_000, net_change=-13_800, residue=3_800.0)
     assert big.pct_approx is None

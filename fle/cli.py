@@ -792,7 +792,7 @@ PRICE_STORE = "price-history"   # one <TICKER>.csv per ticker, date,close
 
 EVENT_COLUMNS = ["ticker", "cik", "ceo", "owner_cik", "filed", "traded",
                  "code", "label", "shares", "value", "avg_price",
-                 "pct_of_holding", "pct_approx", "net_change", "holding_after", "residue",
+                 "pct_of_holding", "pct_approx", "net_change", "day_net", "holding_after", "residue",
                  "plan", "other_codes", "rows", "unpriced_rows", "securities",
                  "direct", "form", "accession", "price_flag", "url",
                  "registered", "pre_ipo", "avg_price_adjusted", "traded_from"]

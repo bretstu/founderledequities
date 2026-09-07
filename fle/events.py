@@ -85,7 +85,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .ledger import (SECTION16, _doc_url, _parse, _rows,
-                     displace_amended, period_end, issuer_of)
+                     displace_amended, period_end, issuer_of, is_share_class)
 from .history import COVER_FORMS
 
 # A market trade, and nothing else. See the module docstring.
@@ -142,7 +142,8 @@ class Event:
     direct: str = ""
     plan: str = "unknown"
     holding_after: float | None = None  # the day's total, raw, from history
-    net_change: float | None = None     # split-adjusted day-over-day, from history
+    net_change: float | None = None     # what THIS filing did: its own rows, acquired less disposed, counted classes
+    day_net: float | None = None        # what the day did on record, all its filings and any residue, from history
     residue: float | None = None        # history's `unexplained` for the day
     other_codes: str = ""              # A/M/F/C/G in the same filing
     price_flag: str = ""
@@ -249,12 +250,14 @@ class Event:
 
     @property
     def _before(self) -> float | None:
-        """The position before the filing's trades, in the filed units:
-        the closing balance history states for the filing, less what the
-        filing did to it."""
+        """The position before the day's trades, in the filed units: the
+        closing balance history states for the day, less what the day did.
+        Several filings on one day share it; each is measured against the
+        stake as the day opened."""
         if self.holding_after is None or self.net_change is None:
             return None
-        before = self.holding_after - self.net_change
+        day = self.day_net if self.day_net is not None else self.net_change
+        before = self.holding_after - day
         return before if before > 0 else None
 
     @property
@@ -310,7 +313,7 @@ class Event:
             return None
         if res / max(before, self.holding_after) >= self.IMMATERIAL_RESIDUE[1]:
             return None
-        return 100.0 * (self.net_change - self.residue) / before
+        return 100.0 * self.net_change / before
 
 
 def load_history(path: str) -> dict:
@@ -499,6 +502,17 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
         # the day history stated this filing's position on
         period = period_end(client, issuer_cik, f, ends)
 
+        # WHAT THE FILING DID TO THE STAKE, FROM ITS OWN ROWS. Acquired less
+        # disposed across every counted row, all codes. History states the
+        # position once per DAY, and Musk's 21 December 2021 has two
+        # filings: one exercises and sells (net positive), one sells
+        # outright. Handed a share of the day's net by gross shares, the
+        # outright sale read "stake +0.74%". The filing says what it did;
+        # history supplies only the day's position and the residue flag.
+        own_net = sum((r.moved if r.acquired else -r.moved) for r in lines
+                      if r.code and r.shares == r.shares
+                      and (r.table == "I" or is_share_class(r.security))
+                      and not any(e.matches(r.security, r.direct) for e in exclude))
         groups: dict = {}
         for r in lines:
             if r.code not in TRADE_CODES:
@@ -526,7 +540,11 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                 continue
             shares, value = g["shares"], g["value"]
             priced = g["rows"] - g["unpriced"]
-            after, net, resid = _position(hist_rows, period)
+            after, day_net, resid = _position(hist_rows, period)
+            # a day history never saw carries a stale position: the filing's
+            # own net is known but nothing to measure it against is, so no
+            # verdict, as before
+            net = own_net if day_net is not None else None
             price = (value / shares) if (priced and shares) else None
             # THE CHART NEEDS TODAY'S UNITS. A Tesla sale filed at $1,000
             # in 2021 sits at $333 against a split-adjusted price line;
@@ -545,44 +563,12 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                 rows=g["rows"], unpriced_rows=g["unpriced"],
                 securities=" | ".join(sorted(g["secs"])),
                 direct="".join(sorted(g["dirs"])), plan=plan,
-                holding_after=after, net_change=net, residue=resid,
+                holding_after=after, net_change=net, day_net=day_net, residue=resid,
                 other_codes="".join(others),
                 url=_doc_url(issuer_cik, acc, f.get("primaryDocument") or ""),
                 registered=registered,
             ))
-    _share_the_day(out)
     return out
-
-
-def _share_the_day(events: list) -> None:
-    """Several filings on one day share one history point; give each its
-    share of the day's net, by gross shares.
-
-    History states the position once per DAY, merging same-day filings
-    (Huang's "1 of 2", Zuckerberg's paired forms). Musk's 9 August 2022:
-    one Form 4 sold 3M shares for $2.6B, another 20K for $17.3M, and both
-    found the same point and both read "stake -5.6%" -- the whole day,
-    twice, and the home page's per-person bar summed them. 582 ticker-days
-    carry trades from more than one filing (Meta 80, Blackstone 54, Tesla
-    20). The day's net is split in proportion to each filing's gross
-    shares, so the small filing gets its sliver and the parts add up to
-    the day. Residue and the closing holding stay the day's: a day the
-    walk could not explain is unexplained for every filing on it.
-    """
-    by_day: dict = {}
-    for e in events:
-        if e.net_change is None or e.holding_after is None:
-            continue
-        by_day.setdefault(e.traded, []).append(e)
-    for day, evs in by_day.items():
-        if len(evs) < 2:
-            continue
-        total = sum(abs(e.shares) for e in evs)
-        if not total:
-            continue
-        net = evs[0].net_change
-        for e in evs:
-            e.net_change = net * abs(e.shares) / total
 
 
 def flag_prices(events: list[Event], factor: float = 10.0,
