@@ -301,8 +301,12 @@ const P=runPage();
   const out=EVENTS.find(e=>e.pc<=-100);
   if(out)assert(evPctCell(out).includes("sold out"),"a fall of the whole stake reads sold out: "+out.tk);
   if(!mult&&!out)console.log("  (no beyond-the-stake rows in this feed)");
-  const exs1=EVENTS.find(e=>e.lb==="exercise and sell");
-  assert(evPctCell(exs1).includes("unchanged"), "exercise-and-sell shows stake unchanged");
+  // an exercise-and-sell reads "unchanged" when the stake did not move, and
+  // the rise when some of the exercise was kept (Xu, 1 October 2025)
+  const exs0=EVENTS.find(e=>e.lb==="exercise and sell"&&e.pc===null);
+  if(exs0)assert(evPctCell(exs0).includes("unchanged"), "exercise-and-sell with no change shows stake unchanged");
+  const exs1=EVENTS.find(e=>e.lb==="exercise and sell"&&e.pc!==null&&e.pc>0);
+  if(exs1)assert(evPctCell(exs1).includes("stake +"), "exercise-and-sell that kept shares shows the rise: "+exs1.tk);
 
   // search reaches by surname
   // search reaches by surname across every side of the window
