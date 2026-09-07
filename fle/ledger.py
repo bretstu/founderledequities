@@ -617,66 +617,64 @@ def period_end(client, cik: int, f: dict, memo: dict | None = None) -> str:
 # ran to seven documents, each non-derivative table exactly 30 rows, filed
 # on one day under consecutive accession numbers, each continuing where
 # the previous stopped to the share (HDF 2020 LLC ends one at 8,329 and
-# opens the next at 8,329). One filing, in parts.
+# opens the next at 8,329). One filing, in parts. The cap is why parts
+# exist; it is not the test for them (see _continues): Zuckerberg's lawyers
+# split a day's filing by vehicle, and those parts are not full.
 ROWS_PER_TABLE = 30
-
-
-def _table_rows(root) -> int:
-    n = 0
-    for table, tags in (("nonDerivativeTable", ("nonDerivativeTransaction", "nonDerivativeHolding")),
-                        ("derivativeTable", ("derivativeTransaction", "derivativeHolding"))):
-        t = root.find(table)
-        if t is not None:
-            n = max(n, sum(len(t.findall(tag)) for tag in tags))
-    return n
 
 
 def _continues(prev_root, next_root) -> bool:
     """Whether `next_root` picks up where `prev_root` stopped.
 
-    A continuation's first row for a vehicle opens where the previous
-    part's last row for that vehicle closed (Foroughi's HDF 2020 LLC:
-    8,329 then 8,329). A RESTATEMENT re-opens at the original openings
-    (Zuckerberg's paired filings, full tables under consecutive numbers
-    on one day) and fails the test; concatenated, it counted every trade
-    and holding twice, 825M of residue on a record that had 667K.
+    A continuation opens where the previous part closed: Foroughi's HDF
+    2020 LLC at 8,329 then 8,329. A RESTATEMENT re-opens at the original
+    openings (Zuckerberg's paired filings) and fails; concatenated, it
+    counted every trade and holding twice, 825M of residue on a record
+    that had 667K.
 
-    Named vehicles are paired by key and every shared key must chain.
-    Anonymous ones cannot be paired by key across two documents, so they
-    are paired by balance: some anonymous segment of the next part must
-    open where some anonymous segment of the previous part closed, under
-    the same security and direct. A next part that shares nothing with
-    the previous is not joined: nothing proves it.
+    Three kinds of evidence, in order. A shared named transacting key that
+    does not chain vetoes the seam. A shared named key that chains proves
+    it. So does a holding in the next part at the balance a named vehicle
+    closed at in the previous part: Zuckerberg's 0128p1 (CZI's rows,
+    Class B closing 353,998,555) and 0128p2 (the Foundation's and the
+    2006 Trust's rows, and CZI restated as a holding at 353,998,555) are
+    one filing split by vehicle, not by the row cap. Anonymous segments,
+    which cannot be paired by key, pair by balance under the same security
+    and direct. A next part that shares nothing with the previous is not
+    joined: nothing proves it.
     """
     def segs(root):
         rows = _rows(root, "4", "", "")
         ends: dict = {}
         keys = vehicle_keys(rows, ends)
-        opens, closes, anon = {}, {}, set()
+        opens, closes, anon, holds = {}, {}, set(), []
         for r, k in zip(rows, keys):
-            if not r.code or r.shares != r.shares:
+            if r.shares != r.shares:
                 continue
             sec = r.security.strip().lower()
-            signed = (r.moved if r.acquired else -r.moved) or 0.0
             full = (sec, k)
+            if not r.code:
+                holds.append((full, r.shares))
+                continue
+            signed = (r.moved if r.acquired else -r.moved) or 0.0
             opens.setdefault(full, r.shares - signed)
             closes[full] = ends.get(k, r.shares)
             if is_anonymous(r.nature, r.direct):
                 anon.add(full)
-        return opens, closes, anon
-    p_open, p_close, p_anon = segs(prev_root)
-    n_open, n_close, n_anon = segs(next_root)
-    # named: pair by key, and every shared key must chain
+        return opens, closes, anon, holds
+    p_open, p_close, p_anon, _ = segs(prev_root)
+    n_open, n_close, n_anon, n_holds = segs(next_root)
     shared = [k for k in n_open if k in p_close and k not in n_anon and k not in p_anon]
     if shared and not all(abs(n_open[k] - p_close[k]) <= 1.0 for k in shared):
         return False
-    # anonymous: pair by balance under the same security and direct
+    if shared:
+        return True
+    restated = any(k in p_close and k not in p_anon and abs(bal - p_close[k]) <= 1.0 for k, bal in n_holds)
+    if restated:
+        return True
     anon_next = [(k[0], k[1][0], v) for k, v in n_open.items() if k in n_anon]
     anon_prev = [(k[0], k[1][0], v) for k, v in p_close.items() if k in p_anon]
-    anon_hit = any(abs(o - c) <= 1.0 for s1, d1, o in anon_next for s2, d2, c in anon_prev if s1 == s2 and d1 == d2)
-    if anon_next and anon_prev and not anon_hit:
-        return False
-    return bool(shared or anon_hit)
+    return any(abs(o - c) <= 1.0 for s1, d1, o in anon_next for s2, d2, c in anon_prev if s1 == s2 and d1 == d2)
 
 
 def batch_continuations(client, cik: int, filings: list) -> list:
@@ -690,14 +688,17 @@ def batch_continuations(client, cik: int, filings: list) -> list:
     record that had lost nothing. Musk's November 2021 days ran to five
     documents each, and the bench carries a special case for them.
 
-    The signal is structural: an original Form 4 whose non-derivative or
-    derivative table is full, followed on the same filing day by the same
-    person's next accession number about the same company. The pair is
-    one document; the rows read in accession order and the running
-    balances chain across the seam. A document that is not full (a
-    restatement, a second unrelated filing) is left alone and merges the
-    way same-day filings always have. Idempotent: parts already folded
-    stay folded.
+    The signal is structural: an original Form 4 followed on the same
+    filing day by the same person's next accession number about the same
+    company, whose rows provably continue it (_continues). The pair is one
+    document; the rows read in accession order and the running balances
+    chain across the seam. Fullness of the table is not required:
+    Zuckerberg's lawyers split a day's filing by vehicle, not by the cap
+    (0128p1, 0128p2), and the parts chain all the same. A restatement or
+    an unrelated second filing fails the seam test and merges the way
+    same-day filings always have. The batch reports for the day its
+    newest part speaks for, so the one-snapshot-per-day rule sees it on
+    that day and not on its first part's. Idempotent.
     """
     def seq(acc):
         pre, _, num = (acc or "").rpartition("-")
@@ -709,7 +710,7 @@ def batch_continuations(client, cik: int, filings: list) -> list:
         parts = [f]
         if f.get("form") == "4" and "_parts" not in f:
             root = _parse(client, cik, f)
-            while root is not None and _table_rows(root) >= ROWS_PER_TABLE and i + 1 < len(fs):
+            while root is not None and i + 1 < len(fs):
                 nxt = fs[i + 1]
                 pre, n = seq(f.get("accessionNumber"))
                 pre2, n2 = seq(nxt.get("accessionNumber"))
@@ -727,6 +728,7 @@ def batch_continuations(client, cik: int, filings: list) -> list:
         if len(parts) > 1:
             head = dict(parts[0])
             head["_parts"] = parts
+            head["reportDate"] = max((p.get("reportDate") or "") for p in parts) or head.get("reportDate")
             out.append(head)
         else:
             out.append(parts[0])
@@ -753,26 +755,28 @@ def _parse(client, cik: int, f: dict, unread: list | None = None):
         for n in list(merged.iter("nonDerivativeHolding")) + list(merged.iter("derivativeHolding")):
             k = hold_key(n)
             seen[k] = seen.get(k, 0) + 1
+        tables = {"nonDerivativeTransaction": "nonDerivativeTable", "nonDerivativeHolding": "nonDerivativeTable",
+                  "derivativeTransaction": "derivativeTable", "derivativeHolding": "derivativeTable"}
         for r in roots[1:]:
             here: dict = {}
-            for table in ("nonDerivativeTable", "derivativeTable"):
-                src = r.find(table)
-                if src is None:
+            # rows are read wherever they sit (as _rows reads them) and
+            # appended under the matching table of the merged document
+            for child in list(r.iter()):
+                if child.tag not in tables:
                     continue
-                dst = merged.find(table)
+                if child.tag.endswith("Holding"):
+                    # a holding a later part repeats from an earlier one is
+                    # that holding restated, not a second one; two genuine
+                    # trusts at one balance restated together are still two
+                    # (counted per part)
+                    k = hold_key(child)
+                    here[k] = here.get(k, 0) + 1
+                    if here[k] <= seen.get(k, 0):
+                        continue
+                dst = merged.find(tables[child.tag])
                 if dst is None:
-                    dst = ET.SubElement(merged, table)
-                for child in list(src):
-                    if child.tag.endswith("Holding"):
-                        # a holding a later part repeats from an earlier one
-                        # is that holding restated, not a second one; two
-                        # genuine trusts at one balance restated together
-                        # are still two (counted per part)
-                        k = hold_key(child)
-                        here[k] = here.get(k, 0) + 1
-                        if here[k] <= seen.get(k, 0):
-                            continue
-                    dst.append(copy.deepcopy(child))
+                    dst = ET.SubElement(merged, tables[child.tag])
+                dst.append(copy.deepcopy(child))
             for k, c in here.items():
                 seen[k] = max(seen.get(k, 0), c)
         return merged
@@ -1474,11 +1478,15 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                 g.last_txn[vehicle] = ends.get(vehicle, r.shares)   # where the chain ends
                 g.as_of = r.as_of
                 g.moved_here = True      # a transaction in THIS class
-            elif vehicle in g.last_txn and is_anonymous(r.nature, r.direct):
-                # an anonymous holding line restating a transaction of this
-                # document (vehicle_keys matched it by balance): stated, not
-                # added. A NAMED key can carry two positions that add
-                # (Ergen's GRAT transacts while the rest stands under "I").
+            elif vehicle in g.last_txn and abs(g.last_txn[vehicle] - r.shares) <= 1.0:
+                # a holding line restating a transaction of this document at
+                # the balance it closed at: stated, not added. Anonymous rows
+                # were matched by vehicle_keys; named rows are matched here
+                # (Zuckerberg's GRATs, sold in part 1 of a filing and listed
+                # as holdings at the closing balances in part 2, counted
+                # twice). A NAMED key can still carry two positions that add
+                # when the balances differ (Ergen's GRAT transacts while the
+                # rest stands under "I").
                 pass
             else:
                 g.holdings += r.shares

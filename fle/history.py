@@ -587,8 +587,8 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                     g.opening[vehicle] = r.shares - signed
                 g.last_txn[vehicle] = ends.get(vehicle, r.shares)   # where the chain ends
                 g.moved_here = True
-            elif vehicle in g.last_txn and is_anonymous(r.nature, r.direct):
-                pass                       # restates a transaction of this document
+            elif vehicle in g.last_txn and abs(g.last_txn[vehicle] - r.shares) <= 1.0:
+                pass                       # restates a transaction of this document at its close
             else:
                 g.opening.setdefault(vehicle, r.shares)
                 g.holdings += r.shares

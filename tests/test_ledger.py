@@ -1360,8 +1360,12 @@ def test_one_snapshot_per_day_not_per_filing():
         series=Series(points=[Point("2024-01-01", 2_550_000_000.0)],
                       classes={"2024": {"us-gaap:CommonClassAMember": 1.0,
                                         "us-gaap:CommonClassBMember": 1.0}}))
-    assert hist.read == 2                    # both read
-    assert len(hist.snapshots) == 1          # one emitted
+    # the second document restates the first's closing balances as
+    # holdings, which proves the seam: the pair is read as one filing in
+    # two parts (ledger.batch_continuations), one document read, one
+    # snapshot emitted, the same figure the same-day merge produced
+    assert hist.read == 1
+    assert len(hist.snapshots) == 1
     assert hist.snapshots[0].shares == 348_093_309
 
 
@@ -3096,7 +3100,25 @@ def test_foroughi_a_filing_in_seven_parts_is_one_filing():
     batched = batch_continuations(_C(), 1318605, mine)
     assert [f["accessionNumber"] for f in batched] == ["0001-25-000001", "0001-25-000002", "0001-25-000004", "0001-25-000005"]
     assert [p["accessionNumber"] for p in batched[1]["_parts"]] == ["0001-25-000002", "0001-25-000003"]
-    assert "_parts" not in batched[2], "a document that is not full is not a continuation"
+    assert "_parts" not in batched[2], "a next-day document is not a continuation"
+    # Zuckerberg's 28 January 2021: p1 (CZI's rows) and p2 (the Foundation's
+    # and the 2006 Trust's rows, with CZI restated as a holding at the
+    # balance p1 closed at). Split by vehicle, not by the cap; one filing.
+    z1 = _multi4([(T, "C", 30_579, 353_998_555, "I", "By CZI Holdings, LLC")], "2021-01-28")
+    z2 = _multi4([(T, "S", 1_239, 3_293_019, "I", "By CZI Foundation"),
+                  (H, "", 0, 353_998_555, "I", "By CZI Holdings, LLC")], "2021-01-28")
+    docsz = {"0004-21-000001": z1, "0004-21-000002": z2}
+    class _CZ:
+        def get(self, url, use_cache=True):
+            for k, doc in docsz.items():
+                if k.replace("-", "") in url:
+                    return doc
+            raise KeyError(url)
+    pair = [{"form": "4", "accessionNumber": k, "filingDate": "2021-02-01", "primaryDocument": "d.xml"} for k in docsz]
+    bz = batch_continuations(_CZ(), 1318605, pair)
+    assert len(bz) == 1 and len(bz[0]["_parts"]) == 2, "a restated close proves the seam"
+    hz = _hist_batched(docsz, [(k, "2021-02-01") for k in docsz])
+    assert hz.snapshots[-1].shares == 353_998_555 + 3_293_019, "CZI once: the holding restates p1's close"
     # a next part that continues nothing is not joined
     lone = _multi4([(T, "S", 22, 780_978, "I", "See footnote"), (T, "S", 100, 2_619_954, "D", "")], "2025-08-21")
     docs0 = {"0009-25-000001": p1, "0009-25-000002": lone}
