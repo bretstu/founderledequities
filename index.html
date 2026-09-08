@@ -22,11 +22,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#FFFFFF;
-  --panel:#F6F6F2;
-  --line:#E6E6E0;
-  --rule:#D5D5CD;      /* the section divider: one step darker than a hairline */
-  --line2:#F0F0EB;
+  /* PAPER, NOT WHITE. The page is a warm off-white; a card is a shade
+     lighter, so white is what lifts a card off the page rather than the
+     page itself. Hairlines warm to match. */
+  --bg:#F3F0E8;
+  --panel:#FBFAF6;
+  --line:#E0DBCF;
+  --rule:#D2CCBE;      /* the section divider: one step darker than a hairline */
+  --line2:#EBE7DD;
   --ink:#0C0D0E;
   --mut:#5D6167;
   /* THE GREYS HAD DRIFTED TOO PALE.
@@ -97,7 +100,8 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 /* ---------- hero ---------- */
 .hero h1{font-family:var(--disp);font-weight:600;letter-spacing:-.028em;line-height:1.02;font-size:clamp(34px,4.6vw,74px);max-width:22ch}
 .hero h1 b{font-weight:700}   /* a coloured word made the sentence look like a template */
-.herosub{margin:18px 0 0;max-width:52ch;font-size:clamp(15px,1.25vw,18px);line-height:1.5;color:var(--mut)}
+.herosub{margin:18px 0 0;font-size:clamp(15px,1.25vw,18px);line-height:1.5;color:var(--mut);white-space:nowrap}
+@media(max-width:900px){.herosub{white-space:normal;max-width:52ch}}
 .herosub .sealnote{display:block;margin-top:8px;color:var(--faint)}
 .herosub .sealnote .gopro{font-size:12.5px;padding:7px 14px;margin-left:10px;vertical-align:middle}
 /* THE HEADLINE MAKES THE CLAIM; THE STRIP CARRIES THE EVIDENCE.
@@ -120,6 +124,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .hstat .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
   text-transform:uppercase;color:var(--faint);margin-top:9px}
 .hstat.end{margin-left:auto;text-align:right}
+.hstat.end+.hstat.end{margin-left:28px}   /* the two dates sit together at the right */
 .hstat.end .n{font-family:var(--mono);font-size:12.5px;font-weight:500;color:var(--mut);letter-spacing:0}
 @media(max-width:640px){.hstat.end{margin-left:0;text-align:left}}
 .valstat{margin-top:14px;font-size:16px;color:var(--mut)}
@@ -148,19 +153,20 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .brow{display:grid;grid-template-columns:24px minmax(0,1fr) 104px;gap:14px;align-items:center;cursor:pointer}
 .brank{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:right}
 .btrack{position:relative;height:44px;background:#fff;border-radius:7px;overflow:hidden}
-/* ONE COLOUR, FINISHED. Every bar the site's blue, so a screenshot is
-   done without a cursor on it; founders carry the same F badge Recent
-   activity uses, per row, which says it where a colour could not once the
-   whole top ten are founders. Hover lifts the row. */
-.bfill{position:absolute;inset:0 auto 0 0;background:var(--blue);border-radius:7px;display:flex;align-items:center;min-width:0;transition:filter .12s}
-.brow:hover .bfill{filter:brightness(1.12)}
+/* ONE COLOUR, FINISHED, AND LIGHT ENOUGH TO WRITE ON. Every bar the same
+   sage, a tone the ink label and the ink founder mark sit on exactly as
+   they sit on the track beside it, so a name that fits inside the bar and
+   one that spills past its edge are set the same way. A screenshot is
+   done without a cursor on it. Hover deepens the tone. */
+.bfill{position:absolute;inset:0 auto 0 0;background:#C9DCCF;border-radius:7px;display:flex;align-items:center;min-width:0;transition:background .12s}
+.brow:hover .bfill{background:#B7CFBF}
 .brow:hover .btrack{box-shadow:inset 0 0 0 1px var(--ink)}
-.blab{display:flex;align-items:baseline;gap:10px;padding:0 12px;white-space:nowrap;overflow:hidden;color:#fff}
+.blab{display:flex;align-items:baseline;gap:10px;padding:0 12px;white-space:nowrap;overflow:hidden;color:var(--ink)}
 .blab .tk{font-family:var(--mono);font-weight:600;font-size:13px}
-.blab .nm{font-size:13.5px;font-weight:600;opacity:.95;overflow:hidden;text-overflow:ellipsis}
+.blab .nm{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis}
 .blab .fb{vertical-align:1px}
 .blab.out{color:var(--ink);position:absolute;left:var(--w);top:0;bottom:0;padding-left:12px;align-items:center;display:flex;gap:10px;overflow:visible}
-.blab.out .tk{color:var(--ink)}.blab.out .nm{color:var(--mut)}
+.blab.out .tk{color:var(--ink)}.blab.out .nm{color:var(--ink)}
 .bpct{font-family:var(--disp);font-weight:650;font-size:20px;letter-spacing:-.01em;text-align:right;line-height:1}
 .bpct .b2{display:block;font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--faint);margin-top:5px;letter-spacing:0}
 .bfoot{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:16px}
@@ -1582,11 +1588,14 @@ function renderHero(){
      "how current is this?", so it is the one shown. */
   const panelOn=asofs[asofs.length-1]||"";
   const filedOn=EVENTS.reduce((m,e)=>e.fd>m?e.fd:m,panelOn);
+  /* two dates, each with its own label: the newest Form 4 read, and the
+     close the prices are as of. One line with both under one label read as
+     one date qualifying the other. */
   out+=`<div class="hstat end"><div class="n" id="asofline"
         title="the most recent Form 4 read into the site${
-          panelOn&&panelOn!==filedOn?` — the newest filing that changed a headline stake was ${panelOn}`:""}">${filedOn}</div>`
-      +`<div class="k">Latest filing${state.live.prices
-        ?` · prices to ${PRICES_ASOF}`:""}</div></div>`;
+          panelOn&&panelOn!==filedOn?`; the newest filing that changed a headline stake was ${panelOn}`:""}">${filedOn}</div>`
+      +`<div class="k">Latest filing read</div></div>`;
+  if(state.live.prices)out+=`<div class="hstat end"><div class="n" title="the close every value and market cap on this page is priced at">${PRICES_ASOF}</div><div class="k">Prices as of</div></div>`;
   if(state.live.panel)$("#herostats").innerHTML=out;   /* the stamped strip outranks the sample */
 }
 /* INSIDE WHEN IT FITS, MEASURED BY THE BROWSER. A fixed fifth of the track
