@@ -256,16 +256,12 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
         return (f'<div class="cstat"><div class="k">{k}</div><div class="v {cls}">{v}</div>'
                 + (f'<div class="s">{sub}</div>' if sub else "") + '</div>')
     r1 = ret_1y.get(payload["tk"]) if ret_1y else None
-    # five cards of one width, all about the stake
-    h0 = (hist.get(payload["tk"]) or {}).get("first")
-    since = (stat(f"Since {h0[0][:4]}", f"{h0[1]:.1f}% → {pct:.1f}%", "since") if h0
-             else stat("Since 2016", "&mdash;", "none"))
-    band = ('<div class="cband five">'
+    # four cards of one width: the numbers the percent is made of
+    band = ('<div class="cband four">'
             f'<div><div class="k">{ceo} owns</div><h2 class="p">{pct:.2f}%</h2></div>'
             + stat("Shares held", f"{int(sh):,}")
             + stat("Outstanding", f"{int(out):,}" if out else "&mdash;")
             + stat("Worth", money(sh * price) if price else "&mdash;")
-            + since
             + '</div>'
             )
     h = hist.get(payload["tk"]) or {}

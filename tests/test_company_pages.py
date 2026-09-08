@@ -166,8 +166,8 @@ def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path
     assert "28.44%" in body and "1,120,000,000 of 3,950,000,000 shares" in body and "$370B" in body, "the answer band is in the HTML"
     assert "Confidence" not in body and "3-year" not in body
     # three cards about the stake; the stock's facts are in the kicker, not cards
-    for label in ("Shares held", "Outstanding", "Worth", "Since 2016"):
-        assert f'<div class="k">{label}</div>' in body, "the band is the stake: share, shares, outstanding, worth, since"
+    for label in ("Shares held", "Outstanding", "Worth"):
+        assert f'<div class="k">{label}</div>' in body, "the band is the stake: share, shares, outstanding, worth"
     for label in ("Market cap", "1Y return"):
         assert f'<div class="k">{label}</div>' not in body, "the stock's facts are not cards"
     assert "from 21.10% in 2016 to 28.44% on 2026-07-06" in body, "the record, as a sentence"
@@ -233,14 +233,14 @@ def test_the_band_uses_the_tables_words_and_has_no_three_year_cell():
     it read "+5.0% since 2026-01" for a company eight months old."""
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
     band = js[js.index("function stat("):js.index("/* ---- the record:")]
-    for label in ('"Shares held"', '"Outstanding"', '"Worth"', '"Since "'):
+    for label in ('"Shares held"', '"Outstanding"', '"Worth"'):
         assert label in band, f"{label} is a stat"
     for label in ('"Market cap"', '"1Y return"', '"Value"'):
         assert f"stat({label}" not in band, f"{label} is not a card"
     assert "kick.innerHTML" in band and "1Y" not in band, "beside the name: the ticker and the market cap, nothing else of the stock's"
     assert "3-year" not in band[band.index("function band("):] and "trajStats" not in js
     assert "never estimated" not in band, "the answer needs no sentence beside it"
-    assert 'class="cband five">' in band and 'class="cstat"' in band, "five cards of one width"
+    assert 'class="cband four">' in band and 'class="cstat"' in band, "four cards of one width"
     assert "confidence</summary>" not in band, "confidence is not on the card; the reasons block below the chart carries it"
     assert 'r.conf' not in band, "the band carries no confidence word; the reasons block below the chart does"
     assert "\u2014" not in js, "no em dashes"

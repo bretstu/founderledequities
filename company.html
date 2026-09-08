@@ -49,11 +49,16 @@
     /* FIVE CARDS OF ONE WIDTH, ALL ABOUT THE STAKE, in the order the number
        is built: the share, the shares, the shares outstanding they are over,
        what they are worth, and where the stake stood when the record began. */
-    .cband.five{grid-template-columns:repeat(5,minmax(0,1fr))}
-    @media(max-width:900px){.cband.five{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    .cband .p{font-size:clamp(26px,2.2vw,34px)}
-    .cstat .v{font-size:clamp(26px,2.2vw,34px)}
-    .cstat .v.since{font-size:clamp(18px,1.5vw,22px);font-weight:600}
+    /* FOUR CARDS, ONE WIDTH, ONE SIZE, CENTRED. The four numbers the
+       percent is made of: the share, the shares, the shares outstanding
+       they are over, and what they are worth. Every figure at one size,
+       chosen so a thirteen-digit share count sits inside its card with room,
+       so no card reads fuller than another. */
+    .cband.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+    @media(max-width:900px){.cband.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .cband.four>div{align-items:center;text-align:center;justify-content:center;min-height:112px;padding:18px 12px}
+    .cband.four .k{text-align:center}
+    .cband.four .p,.cband.four .cstat .v{font-size:clamp(22px,1.9vw,28px);font-variant-numeric:tabular-nums;letter-spacing:-.01em;margin-top:10px}
     .cband>div{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--panel);min-height:112px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.05)}
     .cband>div:first-child{background:var(--bg);border-color:var(--ink)}
     .cband .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}

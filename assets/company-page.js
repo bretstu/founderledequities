@@ -60,17 +60,11 @@ function band(r){
   /* the ticker and the market cap beside the name */
   const kick=$("#ctk");
   if(kick)kick.innerHTML=`${esc(r.tk)}${mcap?` · ${money(mcap)}`:""}`;
-  /* where the stake stood when the record began, against today */
-  const rec=cleanHist(r.tk);
-  const first=rec.length?rec[0]:null;
-  const since=first&&r.pct!==null?stat("Since "+first[0].slice(0,4),`${first[1].toFixed(first[1]<1?2:1)}% → ${r.pct.toFixed(r.pct<1?2:1)}%`,"since","",`the stake at the record's first point, ${first[0]}, and today`)
-    :stat("Since 2016","&mdash;","none","","the record has no earlier point");
-  return `<div class="cband five">
+  return `<div class="cband four">
     <div>${big}</div>
     ${stat("Shares held",r.sh!==null?fmt(r.sh):"&mdash;","",tabled,"shares held, per the latest filing")}
     ${stat("Outstanding",r.out?fmt(r.out):"&mdash;","","",`shares outstanding${r.oasof?`, per the ${dayLabel(r.oasof)} cover page`:""}: the denominator of the percent`)}
     ${stat("Worth",r.val?money(r.val):"&mdash;","","",`the stake's value: shares held at the ${asof} close${r.price?` of $${r.price.toFixed(2)}`:""}`)}
-    ${since}
   </div>`;
 }
 
