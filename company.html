@@ -45,6 +45,9 @@
        above the number, "of Meta Platforms, Inc." beneath. The other four
        carry the home table's words. */
     .cband{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
+    .cband.three{grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(0,1fr))}
+    .chead .tk .stock{color:var(--mut);text-transform:none;letter-spacing:.06em}
+    .chead .tk .stock .up{color:var(--buy)}.chead .tk .stock .down{color:#c22a2a}
     .cband>div{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--panel);min-height:112px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.05)}
     .cband>div:first-child{background:var(--bg);border-color:var(--ink)}
     .cband .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}

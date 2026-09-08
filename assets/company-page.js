@@ -51,18 +51,25 @@ function band(r){
     :r.pct===null?`${who}<div class="p s">a stake not measured</div><div class="pl">${esc(r.flags||"the record could not settle on a figure")}</div>`
     :`${who}<h2 class="p">${r.pct.toFixed(r.pct<1?3:2)}%</h2>`;
   const asof=PRICES_ASOF||"latest";
-  const r1=r.r1===null||r.r1===undefined?stat("1Y return","&mdash;","none","","the stock's price return over the last twelve months; blank when it has traded for less than a year")
-    :stat("1Y return",`${r.r1>=0?"+":""}${r.r1.toFixed(1)}%`,r.r1>=0?"up":"down","","the stock's price return over the last twelve months");
   const tabled=r.tabled!==null&&r.sh!==null&&r.out?`${fmt(r.tabled)} in the filing tables; the rest stated in a remark`:"";
-  /* confidence lives on the answer card, only when it is not high: a word
-     that opens the reasons. The line of sources that sat under the band is
-     gone; every row of the table links its own filing, cover pages included. */
-  return `<div class="cband">
+  /* THREE CARDS, ONE SUBJECT. The page is about what this person owns of
+     this company: the share, the shares, and what they are worth. Market
+     cap, price and the year's return are facts about the stock, context
+     for the stake and not the answer, so they sit in the kicker line with
+     the ticker and the tier, in that line's small mono register. */
+  const kick=$(".chead .tk");
+  if(kick){
+    const parts=[];
+    if(mcap)parts.push(`${money(mcap)} market cap`);
+    if(r.price)parts.push(`$${r.price.toFixed(2)}`);
+    if(r.r1!==null&&r.r1!==undefined)parts.push(`<span class="${r.r1>=0?"up":"down"}">1Y ${r.r1>=0?"+":""}${r.r1.toFixed(1)}%</span>`);
+    const base=kick.dataset.base||kick.innerHTML;kick.dataset.base=base;
+    kick.innerHTML=base+(parts.length?` · <span class="stock" title="the stock: market capitalization, the ${asof} close, and the price return over the last twelve months">${parts.join(" · ")}</span>`:"");
+  }
+  return `<div class="cband three">
     <div>${big}</div>
-    ${stat("Value",r.val?money(r.val):"&mdash;","","",`the stake's value: shares held at the ${asof} close${r.price?` of $${r.price.toFixed(2)}`:""}`)}
-    ${stat("Market cap",mcap?money(mcap):"&mdash;","","",`market capitalization: shares outstanding at the ${asof} close`)}
-    ${stat("Shares held",r.sh!==null?compact(r.sh):"&mdash;","",tabled,"shares held, over shares outstanding on the latest cover page")}
-    ${r1}
+    ${stat("Shares held",r.sh!==null?fmt(r.sh):"&mdash;","",tabled,"shares held, per the latest filing, over shares outstanding on the latest cover page")}
+    ${stat("Worth",r.val?money(r.val):"&mdash;","","",`the stake's value: shares held at the ${asof} close${r.price?` of $${r.price.toFixed(2)}`:""}`)}
   </div>`;
 }
 
