@@ -95,7 +95,14 @@
     .ckey i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px}
     .ckey .b i{background:var(--blue)}.ckey .s i{background:#c22a2a}
     /* the trades */
-    .tchips{display:flex;gap:8px;margin:0 0 12px}
+    .tchips{display:flex;gap:8px;margin:0 0 12px;flex-wrap:wrap;align-items:center}
+    .tchips .tsep{flex:1}
+    .tchips .chip.big{border-style:dashed}
+    .tchips .chip.big.on{border-style:solid}
+    .cband .cconf{margin-top:8px;font-family:var(--mono);font-size:10.5px;color:var(--mut)}
+    .cband .cconf summary{cursor:pointer;list-style:none}
+    .cband .cconf summary::-webkit-details-marker{display:none}
+    .cband .cconf .why{display:block;margin-top:6px;font-family:var(--ui);font-size:12px;line-height:1.4}
     /* THE TRADES ARE A TABLE. Fixed columns, a header rule, numbers right-
        aligned in the mono face; the rows are the data a CSV export
        carries, in the same order. */

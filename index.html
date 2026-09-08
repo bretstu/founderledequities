@@ -2320,7 +2320,7 @@ function dayAlso(day){
   const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nV=ex.filter(e=>unchangedKind(e)==="vest").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nB=ex.filter(e=>unchangedKind(e)==="bought").length;
   const kinds=[nP?"before the company was public":"",nM?"options cashed":"",nV?"vests part sold":"",nC?"units converted":"",nB?"a purchase the position did not register":"",ex.length-nP-nM-nV-nC-nB?"source not in the filing":""].filter(Boolean).join(", ");
   const n=ex.length;
-  return `Also filed: ${n} trade${n===1?"":"s"} kept apart (${kinds}), ${money(ex.reduce((t,e)=>t+((e.fl?0:e.v)||0),0))}`;
+  return `Also filed: ${n} compensation trade${n===1?"":"s"} (${kinds}), ${money(ex.reduce((t,e)=>t+((e.fl?0:e.v)||0),0))}`;
 }
 function dayText(day,rows){
   /* the day as plain text, one line per trade in the strip's own words.
@@ -2500,7 +2500,7 @@ function renderFeed(){
   const el=$("#actwrap");if(!el)return;
   const v=state.ev.view;
   const tv=$("#tview");
-  if(tv)tv.innerHTML={buys:"Bought",sells:"Sold",exsell:"Kept apart",day:"Filed "+niceDay(dayShown())}[v]
+  if(tv)tv.innerHTML={buys:"Bought",sells:"Sold",exsell:"Compensation",day:"Filed "+niceDay(dayShown())}[v]
     +`<em>${v==="day"?"every filing that day":({30:"last 30 days",90:"last 90 days",365:"last 12 months"}[state.ev.win]||"")+(v!=="exsell"&&v!=="day"&&state.ev.kinds[v].length===1?" · "+(state.ev.kinds[v][0]==="plan"?"planned only":"discretionary only"):"")}</em>`;
   const evs=evFiltered();
   const CAP=200;
@@ -2516,7 +2516,7 @@ function renderFeed(){
   const part=(n,one,many,v)=>n?`${n.toLocaleString()} ${n===1?one:many}${v?" "+money(v):""}`:"";
   const parts=[part(buys.length,"purchase","purchases",sum(buys)),
                part(cut.length,"stake reduction","stake reductions",sum(cut)),
-               part(cashed.length,"trade kept apart","trades kept apart",sum(cashed))].filter(Boolean);
+               part(cashed.length,"compensation trade","compensation trades",sum(cashed))].filter(Boolean);
   /* AN EMPTY RESULT KEEPS THE TABLE'S FRAME.
      Collapsing to one line of text made the whole section jump and read
      as broken. The headers stay, the frame stays its height, and the

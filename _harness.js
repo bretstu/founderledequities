@@ -121,7 +121,7 @@ const P=runPage();
   const kinds=allDay.map(e=>P.unchangedKind(e)===null?0:1);
   assert(kinds.every((k,i)=>i===0||k>=kinds[i-1]),"and the kept-apart trades stay beneath the line");
   if(allDay.length>rows.length){
-    assert(els["#actday"]._html.includes("Also filed:")&&els["#actday"]._html.includes("kept apart"),
+    assert(els["#actday"]._html.includes("Also filed:")&&els["#actday"]._html.includes("compensation trade"),
       "a day with unchanged-stake sales says so in one line beneath the strip");
     assert(P.dayText(newest,rows).includes("Also filed:"),"and the copy text carries the same line");
   }else assert(!els["#actday"]._html.includes("Also filed:"),"and a day without them has no such line");
@@ -197,7 +197,7 @@ const P=runPage();
   assert(exs.length>0&&!S365.pool.some(e=>e.lb in {"exercise and sell":1,"exercise, part sold":1,"convert and sell":1,"sale, position unchanged":1}),
     "a sale that left the stake unchanged never enters the sell ranking, whatever its label");
   const sellHtml=evColumn("sells");
-  assert(!sellHtml.includes("kept apart")&&!sellHtml.includes("Options cashed"),
+  assert(!sellHtml.includes("kept apart")&&!sellHtml.includes("compensation trade")&&!sellHtml.includes("Options cashed"),
     "the sell column carries no paragraph about unchanged-stake sales");
   renderCols();
   const note=els["#actnote"]._html;
@@ -205,7 +205,7 @@ const P=runPage();
     "one sentence for the section says what was kept out and opens the table");
   assert(!note.includes("compensation"),"and never calls units compensation");
   const aboutTxt=require("fs").readFileSync("about.html","utf8");
-  assert(aboutTxt.includes("Kept apart")&&aboutTxt.includes("did not move the stake")&&aboutTxt.includes("Partnership units"),
+  assert(aboutTxt.includes("Compensation")&&aboutTxt.includes("did not move the stake the way")&&aboutTxt.includes("Partnership units"),
     "the About page discloses the rule and its known limit");
   // a converted-and-sold row (Schwarzman-shaped) is apart, badged, and never called options
   const conv={tk:"BX",ceo:"S",c:"S",lb:"convert and sell",pl:"discretionary",sh:1,v:1,fd:"2026-01-01",td:"2026-01-01",pc:null,ha:0,nc:0,rs:null};
@@ -667,7 +667,7 @@ const P=runPage();
                   "beneficial ownership",                          // why other numbers differ
                   "Voting power",
                   "The one exception",                             // remarks, read by a person
-                  "Kept apart",                                    // trades that did not move the stake
+                  "Compensation",                                  // what the company gave and what was sold of it
                   "10b5-1",
                   "proxy statement decides",                       // who is a founder
                   "A portrait, not a strategy",                    // the index's caveat

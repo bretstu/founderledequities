@@ -4,7 +4,7 @@
 const C=window.COMPANY||{};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
-let VIEW="all";
+let VIEW="all",BIG=false;   /* BIG: only rows that moved the stake by 1% or more */
 
 function nav(me){
   /* one button, two lives, on this page too */
@@ -54,17 +54,16 @@ function band(r){
   const r1=r.r1===null||r.r1===undefined?stat("1Y return","&mdash;","none","","the stock's price return over the last twelve months; blank when it has traded for less than a year")
     :stat("1Y return",`${r.r1>=0?"+":""}${r.r1.toFixed(1)}%`,r.r1>=0?"up":"down","","the stock's price return over the last twelve months");
   const tabled=r.tabled!==null&&r.sh!==null&&r.out?`${fmt(r.tabled)} in the filing tables; the rest stated in a remark`:"";
-  const conf=r.conf&&r.conf!=="high"&&r.flags?`<details><summary>${esc(r.conf)} confidence</summary><span class="why">${esc(r.flags)}</span></details>`:"";
+  /* confidence lives on the answer card, only when it is not high: a word
+     that opens the reasons. The line of sources that sat under the band is
+     gone; every row of the table links its own filing, cover pages included. */
+  const conf=r.conf&&r.conf!=="high"&&r.flags?`<details class="cconf"><summary>${esc(r.conf)} confidence</summary><span class="why">${esc(r.flags)}</span></details>`:"";
   return `<div class="cband">
-    <div>${big}</div>
+    <div>${big}${conf}</div>
     ${stat("Value",r.val?money(r.val):"&mdash;","","",`the stake's value: shares held at the ${asof} close${r.price?` of $${r.price.toFixed(2)}`:""}`)}
     ${stat("Market cap",mcap?money(mcap):"&mdash;","","",`market capitalization: shares outstanding at the ${asof} close`)}
     ${stat("Shares held",r.sh!==null?compact(r.sh):"&mdash;","",tabled,"shares held, over shares outstanding on the latest cover page")}
     ${r1}
-  </div>
-  <div class="cmeta">
-    <span>${r.sh!==null?`${fmt(r.sh)} shares as of ${r.asof?dayLabel(r.asof):"&mdash;"}${r.form4?` (<a href="${filingPage(r.form4)}" target="_blank" rel="noopener">the filing &#8599;</a>)`:""}`:`as of ${r.asof?dayLabel(r.asof):"&mdash;"}`}${r.out?` · of ${fmt(r.out)} outstanding${r.oasof?` per the ${dayLabel(r.oasof)} cover page`:""}${r.cover?` (<a href="${r.cover}" target="_blank" rel="noopener">&#8599;</a>)`:""}`:""}</span>
-    ${conf}
   </div>`;
 }
 
@@ -310,6 +309,22 @@ function tradesBlock(r){
   const all=EVENTS.filter(e=>e.tk===r.tk).sort((a,b)=>(b.td||b.fd).localeCompare(a.td||a.fd)||b.fd.localeCompare(a.fd));
   if(!all.length)return `<div class="csec"><h2>Trades</h2><div class="sub">No purchase or sale on record.</div></div>`;
   const trade=e=>e.c==="P"||e.c==="S";
+  /* FIVE KINDS, NAMED FOR WHAT THE ROW IS. "Kept apart" named a rule of
+     the home page's summaries; here a reader wants to know what happened.
+     Bought and Sold are the market. Compensation is everything the company
+     gave and what was sold of it: awards, exercises held or cashed, vests,
+     withholding, forfeitures. Transfers are gifts, conversions and the
+     rest. Share count is the company's own cover pages. */
+  const kindOf=e=>{
+    if(e.cover)return "covers";
+    const uk=unchangedKind(e);
+    if(e.c==="P"&&uk===null)return "buys";
+    if(e.c==="S"&&uk===null)return "sells";
+    if(e.c==="M"||e.c==="A"||e.c==="F"||e.c==="D")return "comp";
+    if(e.c==="S"&&(uk==="exercise"||uk==="vest"||uk==="convert"||uk===""))return "comp";
+    return "transfers";
+  };
+  const moved=e=>e.cover?false:(pctOf(e)?Math.abs(pctOf(e).v)>=1:false);
   /* THE SHARE COUNT IS A ROW TOO. Tesla's July 2026 10-Q raised the
      denominator from 3.76B to 3.95B and Musk's 29.91% became 28.44% with
      no filing of his; the table showed nothing between its top row and
@@ -318,9 +333,9 @@ function tradesBlock(r){
   const covers=((HIST[r.tk]||[]).filter(h=>/^(10-K|10-Q|20-F|40-F)/.test(h[8]||"")&&h[9])
     .map(h=>({cover:true,tk:r.tk,fd:h[0],td:h[0],tf:h[0],c:"",lb:"shares outstanding restated",form:h[8],os:h[9],ha:h[10],po:h[1],acc:h[11],
               u:h[11]&&r.cik?`https://www.sec.gov/Archives/edgar/data/${r.cik}/${h[11].replace(/-/g,"")}/`:""})));
-  const kept=all.filter(e=>!trade(e)||unchangedKind(e)!==null);
-  const pick=VIEW==="all"?all:VIEW==="buys"?all.filter(e=>e.c==="P"&&unchangedKind(e)===null):VIEW==="sells"?all.filter(e=>e.c==="S"&&unchangedKind(e)===null):kept;
-  const evs=(VIEW==="all"||VIEW==="kept")?[...pick,...covers].sort((a,b)=>(b.td||b.fd).localeCompare(a.td||a.fd)||(b.cover?1:0)-(a.cover?1:0)):pick;
+  const every=[...all,...covers].sort((a,b)=>(b.td||b.fd).localeCompare(a.td||a.fd)||(b.cover?1:0)-(a.cover?1:0));
+  const count=k=>every.filter(e=>(k==="all"||kindOf(e)===k)&&(!BIG||moved(e))).length;
+  const evs=every.filter(e=>(VIEW==="all"||kindOf(e)===VIEW)&&(!BIG||moved(e)));
   const chip=(v,lab,n)=>`<button class="chip${VIEW===v?" on":""}" onclick="VIEW='${v}';renderOpen(PANEL[0])">${lab} <small>${n}</small></button>`;
   /* WHAT THE TRADE WAS, IN WORDS. One column for one fact: the kind of
      trade and whether it was pre-scheduled come from the same label the
@@ -379,10 +394,13 @@ function tradesBlock(r){
     const blob=new Blob([lines.join("\n")],{type:"text/csv"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${r.tk}-trades.csv`;a.click();
   };
+  const bigChip=`<button class="chip big${BIG?" on":""}" onclick="BIG=!BIG;renderOpen(PANEL[0])" title="only the rows that moved the stake by at least 1% of what it was">Moved the stake &ge; 1%</button>`;
   return `<div class="csec ctrades"><div class="thead"><h2>Trades</h2><button class="export" onclick="exportTrades()">Export CSV</button></div>
-    <div class="tchips">${chip("all","All",all.length+covers.length)}${chip("buys","Bought",all.filter(e=>e.c==="P"&&unchangedKind(e)===null).length)}${chip("sells","Sold",all.filter(e=>e.c==="S"&&unchangedKind(e)===null).length)}${chip("kept","Kept apart",kept.length+covers.length)}</div>
+    <div class="tchips">${chip("all","All",count("all"))}${chip("buys","Bought",count("buys"))}${chip("sells","Sold",count("sells"))}${chip("comp","Compensation",count("comp"))}${chip("transfers","Transfers",count("transfers"))}${chip("covers","Share count",count("covers"))}<span class="tsep"></span>${bigChip}</div>
     ${rows?`<table><thead><tr><th>Date</th><th>Trade</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Change</th><th class="n lv">Held</th><th class="n lv">Outstanding</th><th class="n lv">Owned</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
-    ${VIEW==="kept"?`<div class="sub" style="margin-top:10px">Kept apart: options cashed, vests part sold, units converted, pre-IPO catch-ups, and the filings with no trade at all (exercises held, awards, withholding, gifts). Everything that moved the stake without a purchase or a sale, listed so Held never steps without a row to say why, left out of every summary.</div>`:""}
+    ${VIEW==="comp"?`<div class="sub" style="margin-top:10px">Compensation: what the company gave and what was sold of it. Awards granted, options exercised and held or cashed, vests, tax withholding, forfeitures. None of it is counted as buying or selling in the site's summaries.</div>`:""}
+    ${VIEW==="transfers"?`<div class="sub" style="margin-top:10px">Transfers: gifts, conversions between classes, pre-IPO catch-ups and other non-market transactions the filing reports.</div>`:""}
+    ${VIEW==="covers"?`<div class="sub" style="margin-top:10px">Share count: the company's cover pages that changed the number of shares outstanding. The stake moves with them though nothing of the chief executive's did.</div>`:""}
   </div>`;
 }
 

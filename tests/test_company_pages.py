@@ -234,7 +234,7 @@ def test_the_band_uses_the_tables_words_and_has_no_three_year_cell():
     assert "3-year" not in band[band.index("function band("):] and "trajStats" not in js
     assert "never estimated" not in band, "the answer needs no sentence beside it"
     assert 'class="cband">' in band and 'class="cstat"' in band, "five cards: the answer and four figures"
-    assert "<details>" in band and 'confidence</summary>' in band
+    assert '<details class="cconf">' in band and 'confidence</summary>' in band
     assert 'r.conf!=="high"' in band, "a clean figure says nothing about confidence"
     assert "\u2014" not in js, "no em dashes"
 

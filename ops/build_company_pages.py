@@ -257,9 +257,7 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
             + (stat("1Y return", f"{r1:+.1f}%", "up" if r1 >= 0 else "down") if r1 is not None
                else stat("1Y return", "&mdash;", "none"))
             + '</div>'
-            + f'<div class="cmeta"><span>{int(sh):,} shares as of {html.escape(r.get("shares_as_of") or "")}'
-            + (f' · of {int(out):,} outstanding' + (f' per the {html.escape(r["outstanding_as_of"])} cover page' if r.get("outstanding_as_of") else "") if out else "")
-            + '</span></div>')
+            )
     h = hist.get(payload["tk"]) or {}
     e = ev.get(payload["tk"]) or {}
     moved = ""
