@@ -33,7 +33,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from og_image import money  # noqa: E402  (one formatter, shared)
 
 W, H = 1200, 630
-INK, BLUE, MUT, FAINT, LINE, PANEL = "#0C0D0E", "#1B34E0", "#5D6167", "#8A8E94", "#E6E6E0", "#F6F6F2"
+# the site's tokens: paper, ink as the accent, green for bought
+INK, BLUE, MUT, FAINT, LINE, PANEL = "#0C0D0E", "#0C0D0E", "#5D6167", "#8A8E94", "#E0DBCF", "#FBFAF6"
+PAPER, BUY = "#F3F0E8", "#1F6B3A"
 SELL = "#C22A2A"
 MOVING = {"P", "S"}
 
@@ -146,7 +148,7 @@ def draw_card(out, fonts, tk, co, ceo, founder, sealed, pct, value, shares, seri
     would share the card for. A sealed company's card shows the name, the
     person, and the public price line, and no dots."""
     from PIL import Image, ImageDraw
-    im = Image.new("RGB", (W, H), "white")
+    im = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(im, "RGBA")
 
     # ---- the top: wordmark, address
@@ -246,15 +248,15 @@ def draw_card(out, fonts, tk, co, ceo, founder, sealed, pct, value, shares, seri
         yv = e["apa"] if e["apa"] else close_at(e["d"])
         xx, yy = X(e["d"]), Y(yv)
         r = 4 + 7 * math.sqrt(e["v"] / vmax)
-        col = BLUE if e["c"] == "P" else SELL
-        d.ellipse((xx - r - 1.5, yy - r - 1.5, xx + r + 1.5, yy + r + 1.5), fill="white")
+        col = BUY if e["c"] == "P" else SELL
+        d.ellipse((xx - r - 1.5, yy - r - 1.5, xx + r + 1.5, yy + r + 1.5), fill=PAPER)
         d.ellipse((xx - r, yy - r, xx + r, yy + r), fill=col)
     # the last close
     lx, ly = pts[-1]
     d.text((lx - 4, ly - 12), dollars(series[-1][1]), font=fonts.mono(15), fill=INK, anchor="rs")
     # the key: two words, only when there are dots
     if drawn:
-        d.ellipse((left, H - 32, left + 10, H - 22), fill=BLUE)
+        d.ellipse((left, H - 32, left + 10, H - 22), fill=BUY)
         d.text((left + 16, H - 33), "bought", font=fonts.mono(13), fill=MUT)
         d.ellipse((left + 86, H - 32, left + 96, H - 22), fill=SELL)
         d.text((left + 102, H - 33), "sold", font=fonts.mono(13), fill=MUT)

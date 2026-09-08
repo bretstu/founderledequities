@@ -46,9 +46,9 @@
        carry the home table's words. */
     .cband{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
     .cband>div{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--panel);min-height:112px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-    .cband>div:first-child{background:#eef1ff;border-color:#c9d3ff}
+    .cband>div:first-child{background:var(--bg);border-color:var(--ink)}
     .cband .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
-    .cband>div:first-child .k{color:var(--blue)}
+    .cband>div:first-child .k{color:var(--ink)}
     /* one size for every figure; the answer is blue, and that is enough */
     .cband .p{font-family:var(--disp);font-size:clamp(30px,2.6vw,40px);font-weight:650;color:var(--blue);letter-spacing:-.02em;line-height:1;margin:14px 0 0}
     .cband .p.s{font-size:22px;color:var(--ink);font-weight:650;letter-spacing:-.01em;line-height:1.2}
@@ -93,7 +93,7 @@
     .cchart svg .xh{pointer-events:none}
     .ckey{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:8px;line-height:1.5}
     .ckey i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px}
-    .ckey .b i{background:var(--blue)}.ckey .s i{background:#c22a2a}
+    .ckey .b i{background:var(--buy)}.ckey .s i{background:#c22a2a}
     /* the trades */
     .tchips{display:flex;gap:8px;margin:0 0 12px;flex-wrap:wrap;align-items:center}
     .tchips .tsep{flex:1}
@@ -114,8 +114,8 @@
     .ctrades th.n,.ctrades td.n{text-align:right;padding-right:0;padding-left:8px}
     .ctrades td.d{color:var(--faint)}
     .ctrades td.v{font-weight:600}
-    .ctrades td.sh.up,.ctrades td.v.up{color:#0b7a4b}.ctrades td.sh.down,.ctrades td.v.down{color:#c22a2a}
-    .ctrades td.stk{color:var(--mut)}.ctrades td.stk.plus{color:#0b7a4b}.ctrades td.stk.minus{color:#c22a2a}
+    .ctrades td.sh.up,.ctrades td.v.up{color:var(--buy)}.ctrades td.sh.down,.ctrades td.v.down{color:#c22a2a}
+    .ctrades td.stk{color:var(--mut)}.ctrades td.stk.plus{color:var(--buy)}.ctrades td.stk.minus{color:#c22a2a}
     /* THE LEVELS BESIDE THE DELTAS. Held, outstanding and owned are the
        record's own figures for the day, so the table reads as the stake's
        path, not only its moves. Full numbers, never abbreviated: the file
@@ -127,7 +127,7 @@
     @media(max-width:860px){.ctrades th.lv,.ctrades td.lv{display:none}}
     .ctrades td.ty{font-family:var(--ui);font-size:13px;font-weight:600;padding-left:8px}
     .ctrades td.ty i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px;background:var(--faint)}
-    .ctrades td.ty.up{color:#1b34e0}.ctrades td.ty.up i{background:#1b34e0}
+    .ctrades td.ty.up{color:var(--buy)}.ctrades td.ty.up i{background:var(--buy)}
     .ctrades td.ty.down{color:#c22a2a}.ctrades td.ty.down i{background:#c22a2a}
     .ctrades td.ty.neu{color:var(--mut)}
     .ctrades td.f a{color:var(--blue);text-decoration:none;font-size:11px}

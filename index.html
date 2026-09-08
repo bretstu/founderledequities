@@ -38,10 +38,18 @@
      note that were being set in it. It is now the darkest grey that still
      reads as secondary, and clears 4.5:1. */
   --faint:#6F7379;
-  --blue:#1B34E0;
+  /* BLUE IS RETIRED. The site's own colour is ink: buttons, active chips,
+     links, the founders line. Green means one thing, bought; red means
+     one thing, sold; stone is a bar that only measures. --blue is kept as
+     a name so nothing breaks, and it now means ink. */
+  --blue:#0C0D0E;
+  --buy:#1F6B3A;       /* bought: badge, bars, dots, the up figures */
+  --buy-l:#DCEBE1;     /* a planned purchase: the light of the same green */
+  --stone:#D9D2C0;     /* the leaderboard's bars */
+  --stone-d:#CDC5B0;
   --bar:#C9C9BF;       /* the leaderboard's bars: a warm grey a full step below the panel, so it is neither the card nor the planned-trade blue */
-  --blue-d:#1226A6;
-  --wash:#EEF1FF;
+  --blue-d:#000000;
+  --wash:#DCEBE1;
   --amber:#B06A00;
   --amber-w:#FBF3E2;
   --disp:"Bricolage Grotesque",system-ui,sans-serif;
@@ -53,7 +61,8 @@
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
 body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
-a{color:var(--blue);text-decoration:none}
+a{color:var(--ink);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
 a:hover{text-decoration:underline}
 button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
@@ -68,20 +77,26 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 /* ONE SURFACE. The nav was a black band on a paper page: the heaviest
    thing on the screen, and it read as a different product bolted on top.
    Same paper, a hairline, dark text; the Account button is the one accent. */
-.top{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--line)}
+/* THE MASTHEAD IS INK. An edge-to-edge band in the site's own colour
+   separates navigation from the page without a rule, and states the
+   scheme in the first row of pixels. */
+.top{position:sticky;top:0;z-index:30;background:var(--ink);border-bottom:1px solid var(--ink)}
 /* the sticky bar would otherwise sit on top of whatever we jump to */
 [id]{scroll-margin-top:80px}
 .topin{display:flex;align-items:center;justify-content:space-between;gap:18px;padding-top:16px;padding-bottom:16px;flex-wrap:wrap}
-.logo{font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:-.01em;color:var(--ink)}
-.logo i{font-style:normal;color:var(--ink)}   /* one colour: the type is the mark, not a split */
+.logo{font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:-.01em;color:var(--bg)}
+.logo i{font-style:normal;color:var(--bg)}   /* one colour: the type is the mark, not a split */
 .topnav{display:flex;align-items:center;gap:22px;font-size:13.5px;font-weight:600;flex-wrap:wrap}
-.topnav a{color:var(--mut)}
-.topnav a:hover{color:var(--ink);text-decoration:none}
-.topnav a.gopro,.topnav a.gopro:hover{color:#fff}   /* the company pages' nav button is a link */
+.topnav a{color:#B9B6AE}
+.topnav a:hover{color:var(--bg);text-decoration:none}
+.topnav a.gopro,.topnav a.gopro:hover{color:var(--bg)}   /* the company pages' nav button is a link */
+.top .devtog{color:#B9B6AE;border-color:#555}
 .devtog{font-family:var(--mono);font-size:11.5px;font-weight:500;padding:7px 12px;border:1px dashed var(--rule);border-radius:8px;color:var(--mut)}
 .devtog.on{border-style:solid;border-color:var(--ink);color:var(--ink);background:var(--panel)}
 .gopro{font-size:13.5px;font-weight:700;color:#fff;background:var(--blue);border-radius:9px;padding:9px 18px}
 .gopro:hover{background:var(--blue-d)}
+.top .gopro{background:transparent;border:1px solid var(--bg);color:var(--bg);padding:8px 17px}   /* on the ink band: outlined in paper */
+.top .gopro:hover{background:var(--bg);color:var(--ink)}
 
 /* ---------- sections ----------
    THE DIVIDER AND THE TITLE, AND NOTHING ELSE.
@@ -120,7 +135,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .herostats{margin-top:30px;padding:22px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:row;flex-wrap:wrap;gap:20px 44px;align-items:flex-start}
 .hstat .n{font-family:var(--disp);font-size:clamp(26px,2.6vw,34px);font-weight:650;
   letter-spacing:-.022em;line-height:1;white-space:nowrap}
-.hstat .n.hl{color:var(--blue)}
+.hstat .n.hl{color:var(--ink)}
 .hstat .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
   text-transform:uppercase;color:var(--faint);margin-top:9px}
 .hstat.end{margin-left:auto;text-align:right}
@@ -153,13 +168,15 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .brow{display:grid;grid-template-columns:24px minmax(0,1fr) 104px;gap:14px;align-items:center;cursor:pointer}
 .brank{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:right}
 .btrack{position:relative;height:44px;background:#fff;border-radius:7px;overflow:hidden}
-/* ONE COLOUR, FINISHED, AND LIGHT ENOUGH TO WRITE ON. Every bar the same
-   sage, a tone the ink label and the ink founder mark sit on exactly as
-   they sit on the track beside it, so a name that fits inside the bar and
-   one that spills past its edge are set the same way. A screenshot is
-   done without a cursor on it. Hover deepens the tone. */
-.bfill{position:absolute;inset:0 auto 0 0;background:#C9DCCF;border-radius:7px;display:flex;align-items:center;min-width:0;transition:background .12s}
-.brow:hover .bfill{background:#B7CFBF}
+/* STONE: A BAR THAT ONLY MEASURES. Green would say "bought" and red
+   "sold"; a leaderboard bar says neither, so it takes the one colour on
+   the site that means nothing, a warm stone a step below the paper. Light
+   enough that the ink label and the ink founder mark sit on it exactly as
+   they sit on the track beside it, so a name inside the bar and one past
+   its edge are set the same way; a screenshot is done without a cursor on
+   it. Hover deepens the tone. */
+.bfill{position:absolute;inset:0 auto 0 0;background:var(--stone);border-radius:7px;display:flex;align-items:center;min-width:0;transition:background .12s}
+.brow:hover .bfill{background:var(--stone-d)}
 .brow:hover .btrack{box-shadow:inset 0 0 0 1px var(--ink)}
 .blab{display:flex;align-items:baseline;gap:10px;padding:0 12px;white-space:nowrap;overflow:hidden;color:var(--ink)}
 .blab .tk{font-family:var(--mono);font-weight:600;font-size:13px}
@@ -236,19 +253,19 @@ td.ceo .cn{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
 td.ceo .fb{flex:none;margin-left:0}
 .cell-own{display:flex;align-items:center;gap:10px}
 .tbar{flex:1;height:4px;background:var(--line2);border-radius:2px;overflow:hidden;min-width:40px}
-.tbar i{display:block;height:100%;background:var(--blue)}
+.tbar i{display:block;height:100%;background:var(--stone-d)}
 .tpct{font-family:var(--mono);font-weight:600;font-size:13.5px;min-width:64px;text-align:right}
 .tarr{font-size:10px;margin-left:6px;vertical-align:1px}.tarr.up{color:#0B8A3E}.tarr.down{color:#C23B3B}.tarr.flat{color:var(--faint)}
 td.num{font-family:var(--mono);font-size:12.5px;color:var(--mut)}
 td.asof{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap}
 .conf{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)}
 .dot{width:8px;height:8px;border-radius:50%;flex:none}
-.dot.high{background:var(--blue)}
-.dot.medium{background:#fff;border:2px solid var(--blue)}
+.dot.high{background:var(--ink)}
+.dot.medium{background:#fff;border:2px solid var(--ink)}
 .dot.low{background:#fff;border:2px solid var(--amber)}
 td.src a{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 td.src a:hover{color:var(--blue)}
-.c-lt .up{color:var(--blue);font-weight:600}.c-lt .down{color:#c22a2a;font-weight:600}
+.c-lt .up{color:var(--buy);font-weight:600}.c-lt .down{color:#c22a2a;font-weight:600}
 td.c-fd,td.c-man{font-size:12.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* a right-aligned number beside a left-aligned word reads as one token; the
    word column gets a gutter so the two groups (numbers, then the trade)
@@ -359,12 +376,12 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .abar{display:grid;grid-template-columns:minmax(120px,42%) minmax(0,1fr) 138px;gap:8px 10px;align-items:center;padding:6px 0;cursor:pointer;border-radius:6px}
 .abar:hover{background:var(--wash);margin:0 -8px;padding-left:8px;padding-right:8px}
 .abar .who{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--disp);font-weight:650;font-size:13px;letter-spacing:-.012em;line-height:1.15}
-.abar .who small{display:block;font-family:var(--mono);font-weight:600;font-size:10.5px;color:var(--blue);letter-spacing:.02em;margin-top:2px}
+.abar .who small{display:block;font-family:var(--mono);font-weight:600;font-size:10.5px;color:var(--mut);letter-spacing:.02em;margin-top:2px}
 .abar .who{display:block}
 .abar .who .nmrow{display:flex;align-items:center;min-width:0}
 .acol.sell .abar .who small{color:#C13A2E}
 .abar .trk{height:18px;background:var(--panel);border-radius:3px;display:flex;overflow:hidden}
-.abar .seg{height:100%;background:var(--blue);flex:none}
+.abar .seg{height:100%;background:var(--buy);flex:none}
 /* ONE COLOUR FOR ONE FACT. The badges already say 10b5-1 with a light
    tint of the same colour; the bars said it with stripes, a second
    vocabulary for the same thing. Now the light tint everywhere. */
@@ -478,7 +495,7 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
   transition:background .15s;flex:none}
 .fsw .tr i{position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;
   background:#fff;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
-.fsw.on .tr{background:#1B34E0}
+.fsw.on .tr{background:var(--ink)}
 .fsw.on .tr i{left:17px}
 .fsw.on{color:var(--ink)}
 .fsw:hover{color:var(--ink)}
@@ -516,17 +533,17 @@ td.asrc a:hover{color:var(--blue)}
    column of them raggedly staggered the figures beside them; every badge
    is now the same width, its word centred, wherever it appears. */
 .abadge{display:inline-block;box-sizing:border-box;min-width:62px;text-align:center;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.07em;padding:4px 8px;border-radius:5px}
-.abadge.up{background:var(--blue);color:#fff}
-.abadge.soft{background:var(--wash);color:var(--blue)}
+.abadge.up{background:var(--buy);color:#fff}
+.abadge.soft{background:var(--buy-l);color:var(--buy)}
 .abadge.down{background:#C13A2E;color:#fff}
 .abadge.dsoft{background:#F7E9E6;color:#C13A2E}
 .abadge.neu{border:1px solid var(--line);color:var(--mut)}
 .adlt{font-family:var(--mono);font-weight:600;font-size:13px}
-.adlt.up{color:var(--blue)}
+.adlt.up{color:var(--buy)}
 .adlt.down{color:#C13A2E}
 .asub{font-family:var(--mono);font-size:12px;color:var(--mut)}
 .aval{font-family:var(--mono);font-weight:600;font-size:13px}
-.aval.up{color:var(--blue)}
+.aval.up{color:var(--buy)}
 .aval.down{color:#C13A2E}
 .nopr{color:var(--faint);font-weight:400}
 .actlock{margin-top:16px}
@@ -1291,9 +1308,9 @@ function perfChart(d,{w=940,h=300}={}){
      if(i<0)return"";return `<text x="${X(i)}" y="${h-8}" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7A7E84">${y}</text>`}).join("")}
    ${d.rsp?`<path d="${line(d.rsp)}" fill="none" stroke="#A9ADB3" stroke-width="1.5" stroke-dasharray="4 3" stroke-linejoin="round"/>`:""}
    <path d="${line(d.spy)}" fill="none" stroke="#7A7E84" stroke-width="1.7" stroke-linejoin="round"/>
-   <path d="${line(d.founders)}" fill="none" stroke="#1B34E0" stroke-width="2.1" stroke-linejoin="round"/>
-   <text x="${w-pad.r+8}" y="${yF-2}" font-family="IBM Plex Mono" font-size="11.5" font-weight="600" fill="#1B34E0">Founders index</text>
-   <text x="${w-pad.r+8}" y="${yF+11}" font-family="IBM Plex Mono" font-size="10.5" fill="#1B34E0">${money(endF)}</text>
+   <path d="${line(d.founders)}" fill="none" stroke="var(--ink)" stroke-width="2.1" stroke-linejoin="round"/>
+   <text x="${w-pad.r+8}" y="${yF-2}" font-family="IBM Plex Mono" font-size="11.5" font-weight="600" fill="var(--ink)">Founders index</text>
+   <text x="${w-pad.r+8}" y="${yF+11}" font-family="IBM Plex Mono" font-size="10.5" fill="var(--ink)">${money(endF)}</text>
    <text x="${w-pad.r+8}" y="${yS-2}" font-family="IBM Plex Mono" font-size="11.5" fill="#55585E">S&amp;P 500 (SPY)</text>
    <text x="${w-pad.r+8}" y="${yS+11}" font-family="IBM Plex Mono" font-size="10.5" fill="#7A7E84">${money(endS)}</text>
    ${d.rsp?`<text x="${w-pad.r+8}" y="${yR-2}" font-family="IBM Plex Mono" font-size="11.5" fill="#8B8F95">S&amp;P equal weight (RSP)</text>

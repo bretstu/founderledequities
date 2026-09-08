@@ -30,14 +30,14 @@ def fonts(fonts_dir):
             lambda s: font("IBMPlexMono-Medium.ttf", s))
 
 
-INK, BLUE, MUT, FAINT, LINE = "#0C0D0E", "#1B34E0", "#5D6167", "#8A8E94", "#E6E6E0"
+INK, BLUE, MUT, FAINT, LINE = "#0C0D0E", "#0C0D0E", "#5D6167", "#8A8E94", "#E0DBCF"
 
 
 def banner(n, out, fonts_dir):
     from PIL import Image, ImageDraw
     disp, mono = fonts(fonts_dir)
     W, H = 1500, 500
-    im = Image.new("RGB", (W, H), "white")
+    im = Image.new("RGB", (W, H), "#F3F0E8")
     d = ImageDraw.Draw(im)
     # the thesis, top left, clear of the avatar (which sits bottom-left)
     big = disp(64, 650)

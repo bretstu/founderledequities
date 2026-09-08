@@ -87,7 +87,7 @@ def money(v):
 def draw(n, out, fonts_dir):
     from PIL import Image, ImageDraw, ImageFont
     W, H = 1200, 630
-    INK, BLUE, MUT, FAINT, LINE = "#0C0D0E", "#1B34E0", "#5D6167", "#8A8E94", "#E6E6E0"
+    INK, BLUE, MUT, FAINT, LINE = "#0C0D0E", "#0C0D0E", "#5D6167", "#8A8E94", "#E0DBCF"
 
     def font(name, size, weight=None):
         f = ImageFont.truetype(os.path.join(fonts_dir, name), size)
@@ -105,7 +105,7 @@ def draw(n, out, fonts_dir):
     ui = lambda s, w=500: font("HankenGrotesk[wght].ttf", s, w)
     mono = lambda s: font("IBMPlexMono-Medium.ttf", s)
 
-    im = Image.new("RGB", (W, H), "white")
+    im = Image.new("RGB", (W, H), "#F3F0E8")
     d = ImageDraw.Draw(im)
     # wordmark
     d.text((72, 60), "Founder Led", font=disp(30, 700), fill=INK)

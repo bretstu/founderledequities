@@ -122,7 +122,7 @@ function dots(evs,X,Y,at,fr){
   let out="";
   drawn.forEach((e,i)=>{
     const dt=e.td||e.fd;const [y,note]=at(e);const x=X(dt),yy=Y(y);
-    const rr=3+5*Math.sqrt((e.v||0)/vmax);const buy=e.c==="P";const col=buy?"var(--blue)":SELL;
+    const rr=3+5*Math.sqrt((e.v||0)/vmax);const buy=e.c==="P";const col=buy?"var(--buy)":SELL;
     out+=`<circle class="dot" style="--i:${Math.min(i,40)}" cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="${rr.toFixed(1)}" fill="${col}" fill-opacity="0.85" stroke="#fff" stroke-width="1.2"><title>${buy?"Bought":"Sold"} ${e.v?money(e.v):compact(e.sh)+" sh"} · ${compact(e.sh)} sh${note} · ${dt}${e.pl==="plan"?" · planned":e.pl==="discretionary"?" · discretionary":""}</title></circle>`;
   });
   return out;

@@ -24,14 +24,15 @@
 :root{
   --bg:#F3F0E8; --panel:#FBFAF6; --line:#E0DBCF; --rule:#D2CCBE;
   --ink:#0C0D0E; --mut:#5D6167; --faint:#6F7379;
-  --blue:#1B34E0; --blue-d:#1226A6; --wash:#EEF1FF;
+  --blue:#0C0D0E; --blue-d:#000000; --wash:#DCEBE1; --buy:#1F6B3A;
   --disp:"Bricolage Grotesque",system-ui,sans-serif;
   --ui:"Hanken Grotesk",-apple-system,sans-serif;
   --mono:"IBM Plex Mono","SF Mono",monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:16.5px;line-height:1.7;-webkit-font-smoothing:antialiased}
-a{color:var(--blue);text-decoration:none}
+a{color:var(--ink);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
 a:hover{text-decoration:underline}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .top{position:sticky;top:0;z-index:30;background:var(--ink)}
