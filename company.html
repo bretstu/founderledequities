@@ -30,7 +30,8 @@
     .cnav a{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);text-decoration:none;font-size:13px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.04)}
     .cnav a:hover{border-color:var(--ink)}
     .chead{margin-top:14px}
-    .chead .tk{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase}
+    /* the ticker and the market cap, set small beside the name */
+    .chead .tk{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--faint);text-transform:uppercase;font-weight:500;margin-left:14px;white-space:nowrap}
     .chead h1{font-family:var(--disp);font-weight:650;letter-spacing:-.025em;line-height:1.02;font-size:clamp(30px,4vw,54px);margin:8px 0 6px}
     .chead .ce{font-size:16px;color:var(--mut)}
     .chead .ce b{color:var(--ink);font-weight:600}
@@ -45,9 +46,14 @@
        above the number, "of Meta Platforms, Inc." beneath. The other four
        carry the home table's words. */
     .cband{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
-    .cband.three{grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(0,1fr))}
-    .chead .tk .stock{color:var(--mut);text-transform:none;letter-spacing:.06em}
-    .chead .tk .stock .up{color:var(--buy)}.chead .tk .stock .down{color:#c22a2a}
+    /* FIVE CARDS OF ONE WIDTH, ALL ABOUT THE STAKE, in the order the number
+       is built: the share, the shares, the shares outstanding they are over,
+       what they are worth, and where the stake stood when the record began. */
+    .cband.five{grid-template-columns:repeat(5,minmax(0,1fr))}
+    @media(max-width:900px){.cband.five{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .cband .p{font-size:clamp(26px,2.2vw,34px)}
+    .cstat .v{font-size:clamp(26px,2.2vw,34px)}
+    .cstat .v.since{font-size:clamp(18px,1.5vw,22px);font-weight:600}
     .cband>div{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--panel);min-height:112px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.05)}
     .cband>div:first-child{background:var(--bg);border-color:var(--ink)}
     .cband .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
@@ -156,8 +162,7 @@
 <main class="cpage"><div class="wrap">
   <div class="cnav"><a href="/">← All companies</a></div>
   <div class="chead">
-    <div class="tk">{{TICKER}}{{TIER}}</div>
-    <h1>{{COMPANY}}</h1>
+    <h1>{{COMPANY}} <span class="tk" id="ctk">{{TICKER}}{{MCAP}}</span></h1>
     <div class="ce"><b>{{CEO}}</b> · CEO <span id="cbadge"></span></div>
   </div>
   <div id="cbody"></div>

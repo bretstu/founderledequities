@@ -216,21 +216,11 @@ def founder_quote(founder) -> str:
     return html.escape(ev[:400])
 
 
-def kicker_stock(r, price, r1) -> str:
-    """The stock's facts, for the kicker line beside the ticker and the
-    tier: market cap, the close, the year's return. Context for the stake,
-    not the answer, so they sit in that line's small mono register rather
-    than in cards of the stake's weight. Public data, so sealed pages
-    carry it too."""
+def kicker_mcap(r, price) -> str:
+    """The market cap beside the ticker, beside the name. Public data, so
+    sealed pages carry it too."""
     out = num(r.get("outstanding"))
-    stock = []
-    if price and out:
-        stock.append(f"{money(out * price)} market cap")
-    if price:
-        stock.append(f"${price:,.2f}")
-    if r1 is not None:
-        stock.append(f'<span class="{"up" if r1 >= 0 else "down"}">1Y {r1:+.1f}%</span>')
-    return (' · <span class="stock">' + " · ".join(stock) + '</span>') if stock else ""
+    return f" · {money(out * price)}" if (price and out) else ""
 
 
 def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filings=0, ret_1y=None):
@@ -266,11 +256,16 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
         return (f'<div class="cstat"><div class="k">{k}</div><div class="v {cls}">{v}</div>'
                 + (f'<div class="s">{sub}</div>' if sub else "") + '</div>')
     r1 = ret_1y.get(payload["tk"]) if ret_1y else None
-    # three cards about the stake; the stock's facts ride the kicker line
-    band = ('<div class="cband three">'
+    # five cards of one width, all about the stake
+    h0 = (hist.get(payload["tk"]) or {}).get("first")
+    since = (stat(f"Since {h0[0][:4]}", f"{h0[1]:.1f}% → {pct:.1f}%", "since") if h0
+             else stat("Since 2016", "&mdash;", "none"))
+    band = ('<div class="cband five">'
             f'<div><div class="k">{ceo} owns</div><h2 class="p">{pct:.2f}%</h2></div>'
             + stat("Shares held", f"{int(sh):,}")
+            + stat("Outstanding", f"{int(out):,}" if out else "&mdash;")
             + stat("Worth", money(sh * price) if price else "&mdash;")
+            + since
             + '</div>'
             )
     h = hist.get(payload["tk"]) or {}
@@ -491,7 +486,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                 .replace("{{TITLE}}", html.escape(title))
                 .replace("{{DESCRIPTION}}", html.escape(desc))
                 .replace("{{TICKER}}", html.escape(tk))
-                .replace("{{TIER}}", (" · S&amp;P 500" if is_sp else " · Pro") + kicker_stock(r, price, ret_1y.get(tk) if ret_1y else None))
+                .replace("{{MCAP}}", kicker_mcap(r, price))
                 .replace("{{COMPANY}}", html.escape(payload["co"]))
                 .replace("{{CEO}}", html.escape(payload["ceo"]))
                 .replace("{{TOPNAV}}", topnav)

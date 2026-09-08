@@ -68,9 +68,9 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert "41.2" not in sealed and "1000000" not in sealed and "2400000" not in sealed
     assert '"sp": false' in sealed and '"row"' not in sealed
     assert '"price": 10.0' in sealed, "the close is public and rides on a sealed page; the shares do not"
-    assert "Sealed universe" not in sealed and "open to everyone" not in tsla and " · S&amp;P 500" in tsla and " · Pro" in sealed
-    # the stock's facts ride the kicker line, on both tiers (public data)
-    assert '<span class="stock">' in tsla and "market cap" in tsla
+    assert "Sealed universe" not in sealed and "open to everyone" not in tsla
+    # the ticker and the market cap sit beside the name, on both tiers (public data)
+    assert 'id="ctk">TSLA · $' in tsla and 'id="ctk">' in sealed
     # the machinery around them
     assert os.path.exists(os.path.join(out, "company.js"))
     assert 'src="/company.js?v=' in tsla and 'href="/site.css?v=' in tsla, "a new script is a new address"
@@ -166,8 +166,8 @@ def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path
     assert "28.44%" in body and "1,120,000,000 of 3,950,000,000 shares" in body and "$370B" in body, "the answer band is in the HTML"
     assert "Confidence" not in body and "3-year" not in body
     # three cards about the stake; the stock's facts are in the kicker, not cards
-    for label in ("Shares held", "Worth"):
-        assert f'<div class="k">{label}</div>' in body, "the band is the stake: share, shares, worth"
+    for label in ("Shares held", "Outstanding", "Worth", "Since 2016"):
+        assert f'<div class="k">{label}</div>' in body, "the band is the stake: share, shares, outstanding, worth, since"
     for label in ("Market cap", "1Y return"):
         assert f'<div class="k">{label}</div>' not in body, "the stock's facts are not cards"
     assert "from 21.10% in 2016 to 28.44% on 2026-07-06" in body, "the record, as a sentence"
@@ -233,14 +233,14 @@ def test_the_band_uses_the_tables_words_and_has_no_three_year_cell():
     it read "+5.0% since 2026-01" for a company eight months old."""
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
     band = js[js.index("function stat("):js.index("/* ---- the record:")]
-    for label in ('"Shares held"', '"Worth"'):
+    for label in ('"Shares held"', '"Outstanding"', '"Worth"', '"Since "'):
         assert label in band, f"{label} is a stat"
     for label in ('"Market cap"', '"1Y return"', '"Value"'):
         assert f"stat({label}" not in band, f"{label} is not a card"
-    assert "market cap" in band and "kick.innerHTML" in band, "the stock's facts go to the kicker line"
+    assert "kick.innerHTML" in band and "1Y" not in band, "beside the name: the ticker and the market cap, nothing else of the stock's"
     assert "3-year" not in band[band.index("function band("):] and "trajStats" not in js
     assert "never estimated" not in band, "the answer needs no sentence beside it"
-    assert 'class="cband three">' in band and 'class="cstat"' in band, "three cards: the answer and two figures"
+    assert 'class="cband five">' in band and 'class="cstat"' in band, "five cards of one width"
     assert "confidence</summary>" not in band, "confidence is not on the card; the reasons block below the chart carries it"
     assert 'r.conf' not in band, "the band carries no confidence word; the reasons block below the chart does"
     assert "\u2014" not in js, "no em dashes"
@@ -269,12 +269,10 @@ def test_the_one_year_return_on_a_page_is_the_lists(tmp_path):
     bcp.main(panel, founders, prices, sp, str(out), prices_dir=str(store))
     tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
     body = tsla[tsla.index('<div id="cbody">'):tsla.index('<div class="creport"')]
-    assert '<span class="up">1Y +50.0%</span>' in tsla, "the year's return is in the kicker line"
-    assert '"ret_1y": "50.0000"' in tsla, "the script's row carries the same figure"
+    assert '"ret_1y": "50.0000"' in tsla, "the script's row carries the figure (the list uses it)"
     bcp.main(panel, founders, prices, sp, str(out))
     tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
-    assert "1Y " not in tsla[tsla.index('class="tk"'):tsla.index('class="tk"') + 400], "no store, no return: nothing is guessed"
-    assert "ret_1y" not in tsla
+    assert "ret_1y" not in tsla, "no store, no return: nothing is guessed"
 
 
 def test_each_page_unfurls_into_its_own_card_when_one_is_drawn(tmp_path):

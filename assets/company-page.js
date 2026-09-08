@@ -57,19 +57,20 @@ function band(r){
      cap, price and the year's return are facts about the stock, context
      for the stake and not the answer, so they sit in the kicker line with
      the ticker and the tier, in that line's small mono register. */
-  const kick=$(".chead .tk");
-  if(kick){
-    const parts=[];
-    if(mcap)parts.push(`${money(mcap)} market cap`);
-    if(r.price)parts.push(`$${r.price.toFixed(2)}`);
-    if(r.r1!==null&&r.r1!==undefined)parts.push(`<span class="${r.r1>=0?"up":"down"}">1Y ${r.r1>=0?"+":""}${r.r1.toFixed(1)}%</span>`);
-    const base=kick.dataset.base||kick.innerHTML;kick.dataset.base=base;
-    kick.innerHTML=base+(parts.length?` · <span class="stock" title="the stock: market capitalization, the ${asof} close, and the price return over the last twelve months">${parts.join(" · ")}</span>`:"");
-  }
-  return `<div class="cband three">
+  /* the ticker and the market cap beside the name */
+  const kick=$("#ctk");
+  if(kick)kick.innerHTML=`${esc(r.tk)}${mcap?` · ${money(mcap)}`:""}`;
+  /* where the stake stood when the record began, against today */
+  const rec=cleanHist(r.tk);
+  const first=rec.length?rec[0]:null;
+  const since=first&&r.pct!==null?stat("Since "+first[0].slice(0,4),`${first[1].toFixed(first[1]<1?2:1)}% → ${r.pct.toFixed(r.pct<1?2:1)}%`,"since","",`the stake at the record's first point, ${first[0]}, and today`)
+    :stat("Since 2016","&mdash;","none","","the record has no earlier point");
+  return `<div class="cband five">
     <div>${big}</div>
-    ${stat("Shares held",r.sh!==null?fmt(r.sh):"&mdash;","",tabled,"shares held, per the latest filing, over shares outstanding on the latest cover page")}
+    ${stat("Shares held",r.sh!==null?fmt(r.sh):"&mdash;","",tabled,"shares held, per the latest filing")}
+    ${stat("Outstanding",r.out?fmt(r.out):"&mdash;","","",`shares outstanding${r.oasof?`, per the ${dayLabel(r.oasof)} cover page`:""}: the denominator of the percent`)}
     ${stat("Worth",r.val?money(r.val):"&mdash;","","",`the stake's value: shares held at the ${asof} close${r.price?` of $${r.price.toFixed(2)}`:""}`)}
+    ${since}
   </div>`;
 }
 
@@ -295,7 +296,10 @@ function recordBlock(r){
   const modes=[["price","Price","the share price: daily closes, split-adjusted. Dots sit at the price on the filing"],
                ["pct","Stake","the share of the company, one point per month-end: it moves when the holding changes and when the share count changes. Steps without a dot are grants, gifts, or the share count changing"]];
   const chips=`<div class="chips" role="group" aria-label="chart view">${modes.filter(m=>m[0]==="price"?havePx:haveRec).map(m=>`<button class="chip${mode===m[0]?" on":""}" onclick="setChartMode('${m[0]}')" title="${m[2]}">${m[1]}</button>`).join("")}</div>`;
-  const moving=EVENTS.filter(e=>e.tk===r.tk&&unchangedKind(e)===null&&(e.c==="P"||e.c==="S"));
+  /* the dots follow the table's filter: Bought draws purchases, Sold sales,
+     All both; the other kinds have no dots to draw */
+  const moving=EVENTS.filter(e=>e.tk===r.tk&&unchangedKind(e)===null&&(e.c==="P"||e.c==="S")
+    &&(VIEW==="all"||(VIEW==="buys"&&e.c==="P")||(VIEW==="sells"&&e.c==="S")));
   const key=moving.length?`<div class="ckey"><span class="b"><i></i>bought</span><span class="s"><i></i>sold</span></div>`:"";
   if(mode==="price"&&havePx){
     return `<div class="csec crec"><div class="cshead">${chips}</div>
