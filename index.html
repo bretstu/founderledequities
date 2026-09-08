@@ -164,7 +164,10 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .sbody{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px 18px;margin-top:14px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .sbody .bsub{margin-top:0}
 .bcap2{font-size:13px;color:var(--mut);margin:0 0 16px}
-.bars{display:flex;flex-direction:column;gap:8px}
+/* THE LIST SCROLLS INSIDE THE CARD. Ten rows show; the rest are a scroll
+   away, in the same card, with no button that unrolls two thousand rows
+   onto the page. */
+.bars{display:flex;flex-direction:column;gap:8px;max-height:512px;overflow-y:auto;overscroll-behavior:contain;padding-right:10px}
 .brow{display:grid;grid-template-columns:24px minmax(0,1fr) 104px;gap:14px;align-items:center;cursor:pointer}
 .brank{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:right}
 .btrack{position:relative;height:44px;background:#fff;border-radius:7px;overflow:hidden}
@@ -1667,8 +1670,8 @@ function renderBars(){
   const max=metric(top[0])||1;
   const cap2=$("#bcap2");if(cap2)cap2.textContent=(useVal?`Stake value at the ${PRICES_ASOF||"latest"} close`:"Share of the company's common stock")+" · every US public company worth $1B or more";
   const src=$("#bsrc");if(src)src.textContent="founderledequities.com · computed from SEC filings, never estimated";
-  const shown=state.lbAll?top:top.slice(0,10);
-  const more=$("#bmore");if(more){more.textContent=top.length>10?(state.lbAll?"Show top 10 ↑":`Show all ${top.length.toLocaleString()} ↓`):"";}
+  const shown=top;
+  const more=$("#bmore");if(more){more.textContent=top.length>10?`${top.length.toLocaleString()} companies · scroll for the rest`:"";more.disabled=true;more.style.cursor="default";more.style.color="var(--faint)";}
   $("#bars").innerHTML=shown.map((r,i)=>{
     const w=Math.max(2,metric(r)/max*100);
     const fi=fInfo(r.tk);const isF=!!(fi&&fi.f==="yes");

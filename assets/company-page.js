@@ -57,9 +57,8 @@ function band(r){
   /* confidence lives on the answer card, only when it is not high: a word
      that opens the reasons. The line of sources that sat under the band is
      gone; every row of the table links its own filing, cover pages included. */
-  const conf=r.conf&&r.conf!=="high"&&r.flags?`<details class="cconf"><summary>${esc(r.conf)} confidence</summary><span class="why">${esc(r.flags)}</span></details>`:"";
   return `<div class="cband">
-    <div>${big}${conf}</div>
+    <div>${big}</div>
     ${stat("Value",r.val?money(r.val):"&mdash;","","",`the stake's value: shares held at the ${asof} close${r.price?` of $${r.price.toFixed(2)}`:""}`)}
     ${stat("Market cap",mcap?money(mcap):"&mdash;","","",`market capitalization: shares outstanding at the ${asof} close`)}
     ${stat("Shares held",r.sh!==null?compact(r.sh):"&mdash;","",tabled,"shares held, over shares outstanding on the latest cover page")}
