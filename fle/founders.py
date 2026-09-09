@@ -256,8 +256,15 @@ def founder_windows(text: str, names: list[str]) -> list[str]:
 
 # BUMP WHEN THE PROMPT CHANGES. It is part of the cache key: an old answer
 # to a different question is not an answer.
-PROMPT_VERSION = "3"
+PROMPT_VERSION = "4"
 
+# VERSION 4: A FORMER PARENT IS WHERE THE COMPANY CAME FROM. Inhibrx
+# Biosciences' proxy says its chief executive "co-founded the Former Parent
+# in 2010" and ran it "from its inception"; the reader took the unfamiliar
+# label for a different company and answered no. The rule named
+# predecessors and same-name businesses but not a separation's former
+# parent; now it does.
+#
 # WHOSE FILING IT IS comes first, because the reader will otherwise infer
 # it from the excerpts. SpaceX's S-1 describes xAI's business for pages;
 # handed nine excerpts about Grok and "our founder Elon Musk" with no
@@ -273,6 +280,7 @@ Question: do these excerpts describe {ceo}, the chief executive of {company}, as
 How to read them:
 - A founder title belongs to the person it is attached to. "Jane Roe, our Founder" is about Jane Roe and nobody else, even when other names sit in the same sentence or list. A shared surname is not a shared title: "Ms. DeWitte, our co-founder" says nothing about Mr. DeWitte.
 - {company} includes its predecessors, subsidiaries and earlier corporate forms. A business the filing calls "our predecessor", "our immediate predecessor" or "our operating company", or one that carries the company's own name (Dell Inc. for Dell Technologies Inc.), is this company; founding it is founding {company}.
+- So is a business {company} was spun off or separated from, when {company} carries its name and business: a filing that calls it "our former parent", "the Former Parent" or "the parent company" is describing where this company came from, not a different company. Inhibrx Biosciences was separated from Inhibrx, Inc. in 2024; its chief executive co-founded Inhibrx, Inc. in 2010 and has run both from their first day. That is a founder of {company}.
 - A different business is different: a company that {company} later acquired or merged with, a former employer, an investment firm that manages or sponsors {company}, a foundation. Founding one of those is NO here; record it under other_company.
 - "Founding organizer", "founding partner", "founding officer", "member of the founding team" and "founded {company} in <year>" all count as co-founder language.
 - "Founders Awards", "Founder Grants" and similar are names of pay programs, not statements about founding. A skills-matrix column headed "Founder" attaches to nobody.
