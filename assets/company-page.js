@@ -27,13 +27,17 @@ function setRow(row){
 const poss=n=>n+(/s$/i.test(n)?"'":"'s");
 
 function renderSealed(){
-  $("#cbody").innerHTML=`<div class="cseal">
+  /* the static teaser stays (the question, the public facts, the price
+     line); the Pro box replaces its last card */
+  const seal=$("#cbody .cseal");
+  const box=`<div class="cseal">
     <div class="k" style="font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--blue)">${esc(poss(C.ceo||"The chief executive"))} stake</div>
     <h2 class="p s">is in Pro</h2>
     <div class="l">Computed from the filings like every other. Pro is every company beyond the S&amp;P 500: the stake, the record, every trade. $5 a month, cancel in one click.</div>
     <a class="gopro" href="/api/checkout">Go Pro, $5/month</a>
     <div class="l" style="font-size:13px">Already subscribed? <a href="/" style="color:var(--blue)">Sign in on the home page</a> and come back.</div>
   </div>`;
+  if(seal)seal.outerHTML=box;else $("#cbody").insertAdjacentHTML("beforeend",box);
   $("#creport").innerHTML=reportBlock({tk:C.tk,co:C.co});
 }
 

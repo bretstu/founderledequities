@@ -51,6 +51,16 @@ def test_the_shared_code_is_extracted_whole_and_parses():
         assert r.returncode == 0, r.stderr[-400:]
 
 
+def test_site_css_carries_the_whole_stylesheet(tmp_path):
+    """index.html has two <style> blocks since the fonts came home; site.css
+    is all of them. With only the first, every company page rendered
+    unstyled."""
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    css = open(os.path.join(out, "site.css"), encoding="utf-8").read()
+    assert ":root{" in css and "@font-face" in css and ".hstat" in css, "tokens, fonts and the shared rules, in one file"
+
+
 def test_one_page_per_company_with_the_seal_respected(tmp_path):
     panel, founders, prices, sp, out = _fixture(tmp_path)
     bcp.main(panel, founders, prices, sp, out)
@@ -64,7 +74,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert 'href="https://founderledequities.com/company/TSLA/"' in tsla
     assert "co-founded the Company" in tsla, "the founder evidence rides in the shell (as data for the receipt)"
     # the sealed page carries the person and the verdict, and no figure
-    assert "<title>What Jane Doe owns of Sealed Co (SEALD)" in sealed
+    assert "<title>How much of Sealed Co does Jane Doe own? (SEALD)" in sealed
     assert "41.2" not in sealed and "1000000" not in sealed and "2400000" not in sealed
     assert '"sp": false' in sealed and '"row"' not in sealed
     assert '"price": 10.0' in sealed, "the close is public and rides on a sealed page; the shares do not"
@@ -72,17 +82,18 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     # the ticker and the market cap sit beside the name, on both tiers (public data)
     assert 'id="ctk">TSLA · $' in tsla and 'id="ctk">' in sealed
     assert "<h1>Tesla, Inc.</h1>" in tsla, "the heading is the company's name and nothing else"
-    # a sealed page is not offered for the index and is not in the sitemap; an open one is both
-    assert '<meta name="robots" content="noindex, follow">' in sealed and '<meta name="robots"' not in tsla
+    # a sealed page is a teaser: the question as its heading, no robots directive, in the sitemap
+    assert '<meta name="robots"' not in sealed and "<h2 class=\"cq2\">How much of" in sealed and "does " in sealed
+    assert "<title>How much of" in sealed and "is in Pro" in sealed
     sitemap = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
-    assert "/company/TSLA/" in sitemap and "/company/SEALD/" not in sitemap
+    assert "/company/TSLA/" in sitemap and "/company/SEALD/" in sitemap
     # the machinery around them
     assert os.path.exists(os.path.join(out, "company.js"))
     assert 'src="/company.js?v=' in tsla and 'href="/site.css?v=' in tsla, "a new script is a new address"
     assert os.path.exists(os.path.join(out, "site.css"))
     sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
-    assert sm.count("<loc>") == 4 and "/company/SEALD/" not in sm and "/companies/" in sm, \
-        "the sitemap is the pages built for search: home, About, the open companies, the index; sealed pages are not offered"
+    assert sm.count("<loc>") == 5 and "/company/SEALD/" in sm and "/companies/" in sm, \
+        "every company is in the sitemap: the open ones with the answer, the sealed ones with the question"
     robots = open(os.path.join(out, "robots.txt"), encoding="utf-8").read()
     assert "Disallow: /pro/" in robots and "Sitemap:" in robots
     js = open(os.path.join(out, "company.js"), encoding="utf-8").read()
@@ -182,7 +193,7 @@ def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path
     assert "names Elon Musk a founder" in body
     sealed = open(out / "company" / "SEALD" / "index.html", encoding="utf-8").read()
     sbody = sealed[sealed.index('<div id="cbody">'):sealed.index('<div class="creport"')]
-    assert "chief executive of" in sbody and "Pro tier" in sbody and "41.2" not in sbody, "a sealed page: the person and the offer, no numbers"
+    assert "chief executive of" in sbody and "are in Pro" in sbody and "41.2" not in sbody, "a sealed page: the question, the person, the offer, no stake"
     idx = open(out / "companies" / "index.html", encoding="utf-8").read()
     assert 'href="/company/TSLA/"' in idx and 'href="/company/SEALD/"' in idx, "every page has a plain link"
     assert "FOUNDER" in idx and "Pro</span>" in idx
@@ -203,7 +214,7 @@ def test_the_seo_layer(tmp_path):
     assert '"@type": "BreadcrumbList"' in tsla and '/companies/' in tsla
     assert '<div id="cmore"><div class="cmore">' in tsla or '<div id="cmore"></div>' in tsla, "neighbour links live outside the block the script redraws"
     sealed = open(out / "company" / "SEALD" / "index.html", encoding="utf-8").read()
-    assert "2 filings by the chief executive are on record" in sealed, "a count, never a number behind the seal"
+    assert "2 Form 4 filings by the chief executive are on record since 2016, the most recent filed 2021-01-01" in sealed, "a count and a date, never a number behind the seal"
     assert "41.2" not in sealed
     sm = open(out / "sitemap.xml", encoding="utf-8").read()
     assert "<lastmod>2026-07-06</lastmod>" in sm, "a company page is dated by its as-of"
