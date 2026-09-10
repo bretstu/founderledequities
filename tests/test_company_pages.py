@@ -72,12 +72,17 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     # the ticker and the market cap sit beside the name, on both tiers (public data)
     assert 'id="ctk">TSLA · $' in tsla and 'id="ctk">' in sealed
     assert "<h1>Tesla, Inc.</h1>" in tsla, "the heading is the company's name and nothing else"
+    # a sealed page is not offered for the index and is not in the sitemap; an open one is both
+    assert '<meta name="robots" content="noindex, follow">' in sealed and '<meta name="robots"' not in tsla
+    sitemap = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
+    assert "/company/TSLA/" in sitemap and "/company/SEALD/" not in sitemap
     # the machinery around them
     assert os.path.exists(os.path.join(out, "company.js"))
     assert 'src="/company.js?v=' in tsla and 'href="/site.css?v=' in tsla, "a new script is a new address"
     assert os.path.exists(os.path.join(out, "site.css"))
     sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
-    assert sm.count("<loc>") == 5 and "/company/SEALD/" in sm and "/companies/" in sm, "every company is in the sitemap, sealed ones too, and the index page"
+    assert sm.count("<loc>") == 4 and "/company/SEALD/" not in sm and "/companies/" in sm, \
+        "the sitemap is the pages built for search: home, About, the open companies, the index; sealed pages are not offered"
     robots = open(os.path.join(out, "robots.txt"), encoding="utf-8").read()
     assert "Disallow: /pro/" in robots and "Sitemap:" in robots
     js = open(os.path.join(out, "company.js"), encoding="utf-8").read()

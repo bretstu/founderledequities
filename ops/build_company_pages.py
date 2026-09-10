@@ -490,11 +490,20 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                 .replace('src="/company.js"', f'src="/company.js?v={js_v}"')
                 .replace("{{COMPANY_JSON}}", json.dumps(payload).replace("</", "<\\/")))
         page = card_tags(page, tk, og_dir)
+        # A SEALED PAGE IS NOT A SEARCH RESULT. It says the stake is in Pro
+        # and little else; 1,635 of them in the sitemap had Google spending
+        # its crawl on them and judging the site by them (272 "crawled,
+        # not indexed" in the first week). They stay reachable and their
+        # links still count (follow), but they are not offered for the
+        # index and not listed in the sitemap. The open pages are.
+        if not is_sp:
+            page = page.replace('<meta name="description"', '<meta name="robots" content="noindex, follow">\n  <meta name="description"', 1)
         d = os.path.join(out_dir, "company", tk)
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
             fh.write(page)
-        urls.append(f"{SITE}/company/{tk}/")
+        if is_sp:
+            urls.append(f"{SITE}/company/{tk}/")
 
     companies_index(index_rows, founders, sp, out_dir, topnav, css_v)
     urls.append("https://founderledequities.com/companies/")
