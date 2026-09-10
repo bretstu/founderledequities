@@ -597,8 +597,8 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="topnav">
     <a href="#board">Leaderboard</a>
     <a href="#activity">Recent activity</a>
-    <a href="#perfsec">Performance</a>
     <a href="#table">Every company</a>
+    <a href="#perfsec">Performance</a>
     <a href="about.html">About</a>
     <button class="devtog" id="devtog" onclick="toggleDev()" title="Developer preview — see the site as a Pro subscriber">Preview: Free</button>
     <button class="gopro" onclick="openPro()">Go Pro</button>
@@ -701,28 +701,6 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
      the founder cohort, one for the market, the honest caveat in plain
      sight. Free, deliberately: it is the thesis. A first visit still meets
      it before the table; a return visit meets the strip first. -->
-<section id="perfsec" class="perfs hide"><div class="wrap">
-  <div class="shead">
-    <h2>Founders against the index</h2>
-    <div class="perfctl">
-      <span class="cohort">
-        <button class="chip pc on" data-pc="sp" title="the founder-led companies in the S&amp;P 500">S&amp;P 500 founders</button>
-        <button class="chip pc" data-pc="all" title="every founder-led US company worth $1B or more">All founder-led</button>
-      </span>
-      <button class="chip pw on" data-pw="" id="pwmax">Since 2016</button>
-      <button class="chip pw" data-pw="60">5 years</button>
-      <button class="chip pw" data-pw="36">3 years</button>
-      <button class="chip pw" data-pw="12">1 year</button>
-    </div>
-  </div>
-  <div class="sbody">
-  <div class="r bsub" id="perfsub"></div>
-  <div class="chartbox" id="perfchart"></div>
-  <div class="distbox" id="perfdist"></div>
-  <div class="tnote" id="perfnote"></div>
-  </div>
-</div></section>
-
 <section class="tablesec" id="table"><div class="wrap">
   <!-- THE SCREENER. Trajectories used to be a section of nine charts,
        chosen by a lens the reader had not asked for. Its question -- where
@@ -783,6 +761,27 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="tfoot">
     <span id="tcount"></span>
   </div>
+  </div>
+</div></section>
+<section id="perfsec" class="perfs hide"><div class="wrap">
+  <div class="shead">
+    <h2>Founders against the index</h2>
+    <div class="perfctl">
+      <span class="cohort">
+        <button class="chip pc on" data-pc="sp" title="the founder-led companies in the S&amp;P 500">S&amp;P 500 founders</button>
+        <button class="chip pc" data-pc="all" title="every founder-led US company worth $1B or more">All founder-led</button>
+      </span>
+      <button class="chip pw on" data-pw="" id="pwmax">Since 2016</button>
+      <button class="chip pw" data-pw="60">5 years</button>
+      <button class="chip pw" data-pw="36">3 years</button>
+      <button class="chip pw" data-pw="12">1 year</button>
+    </div>
+  </div>
+  <div class="sbody">
+  <div class="r bsub" id="perfsub"></div>
+  <div class="chartbox" id="perfchart"></div>
+  <div class="distbox" id="perfdist"></div>
+  <div class="tnote" id="perfnote"></div>
   </div>
 </div></section>
 
@@ -1532,7 +1531,11 @@ function renderPerf(){
   const cagr=a=>((Math.pow(a[a.length-1]/PERF_BASE,1/Math.max(yrsSpan,1/12))-1)*100);
   document.querySelectorAll(".chip.pc").forEach(c=>c.classList.toggle("on",c.dataset.pc===state.pc));
   const who=state.pc==="sp"?`the ${d.count} founder-led companies in the S&P 500`:`all ${d.count} founder-led US companies worth $1B or more`;
-  $("#perfsub").textContent=`Growth of $10,000 since ${d.from}, equal-weighted: ${who}, against the S&P 500`;
+  /* the caveat lives in the caption: this is today's founder cohort
+     applied backward, so a founder who lost the job is not in it and one
+     who took it last year is counted from the start. It is the thesis
+     drawn, and it says what it is. */
+  $("#perfsub").textContent=`Growth of $10,000 since ${d.from}, equal-weighted: ${who}, against the S&P 500. Today's founder cohort applied backward, so survivors only.`;
   $("#perfchart").innerHTML=perfChart(d);
   renderDist(d);
   /* THE SCREENER'S RETURN COLUMN FOLLOWS THE WINDOW, NOT THE COHORT CHIP.
@@ -1546,7 +1549,7 @@ function renderPerf(){
      adjusted closes, no dividends) is on About, once */
   $("#perfnote").innerHTML=`Founders ${cagr(d.founders).toFixed(1)}%/yr · S&amp;P 500 ${cagr(d.spy).toFixed(1)}%/yr`
     +(d.rsp?` · S&amp;P 500 equal weight ${cagr(d.rsp).toFixed(1)}%/yr`:"")
-    +`. Today's founder cohort applied backward, so survivors only. <a href="about.html">Method</a>.`;
+    +`. <a href="about.html">Method</a>.`;
 }
 function renderStatus(){
   // WHICH FILES ARE LIVE IS NOT THE READER'S PROBLEM.

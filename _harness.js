@@ -90,8 +90,9 @@ const P=runPage();
     "no section gates its controls by tier");
   assert(!idxsrc.includes('id="tjgate"')&&!idxsrc.includes('id="trends"'),
     "the Trajectories section is gone");
-  assert(idxsrc.indexOf('id="activity"')<idxsrc.indexOf('id="perfsec"')&&idxsrc.indexOf('id="perfsec"')<idxsrc.indexOf('id="table"'),
-    "sections run leaderboard, activity, performance, table");
+  // the product first (leaderboard, activity, screener); the argument last
+  assert(idxsrc.indexOf('id="activity"')<idxsrc.indexOf('id="table"')&&idxsrc.indexOf('id="table"')<idxsrc.indexOf('id="perfsec"'),
+    "sections run leaderboard, activity, table, performance");
   assert(idxsrc.indexOf('href="#activity"')<idxsrc.indexOf('href="#perfsec"'),"and the nav follows the page");
   const freeCols=els["#actcols"]._html;
   assert(freeCols.includes("Bought")&&freeCols.includes("Sold"),"both columns render for a free reader");
@@ -596,8 +597,8 @@ const P=runPage();
      assert((els["#perfsub"].textContent||els["#perfsub"]._html).includes("in the S&P 500"),"and says S&P 500 when that is the cohort");
      assert(P.state._perfFull&&P.state._perfFull.count===al.count,"but the screener's return column still covers the whole cohort: "+P.state._perfFull.count);
      P.state.pc="all";P.PANEL=savedPanel3;P.renderPerf();}
-    assert(els["#perfnote"]._html.includes("survivors only"),
-      "the caveat ships with the chart");
+    assert(String(els["#perfsub"]._text||els["#perfsub"]._html||"").includes("survivors only"),
+      "the caveat ships with the chart, in its caption");
     P.FOUNDERS=savedF;
   }
 
