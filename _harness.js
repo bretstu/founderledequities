@@ -316,7 +316,8 @@ const P=runPage();
   const exs0=EVENTS.find(e=>e.lb==="exercise and sell"&&e.pc===null);
   if(exs0)assert(evPctCell(exs0).includes("unchanged"), "exercise-and-sell with no change shows stake unchanged");
   const exs1=EVENTS.find(e=>e.lb==="exercise, part sold"&&e.pc!==null&&e.pc>0);
-  if(exs1)assert(evPctCell(exs1).includes("stake +")&&P.unchangedKind(exs1)==="exercise", "an exercise that kept shares shows the rise and stays apart: "+exs1.tk);
+  // a rise prints as "stake +12%", as a multiple ("stake ×2.3") past 100%, and as "stake <0.01%" when it rounds to nothing
+  if(exs1)assert(/stake (\+|×|<)/.test(evPctCell(exs1))&&P.unchangedKind(exs1)==="exercise", "an exercise that kept shares shows the rise and stays apart: "+exs1.tk+" "+evPctCell(exs1));
 
   // search reaches by surname
   // search reaches by surname across every side of the window
