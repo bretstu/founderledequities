@@ -362,14 +362,15 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
    sealed row keeps the shape: value and stake blurred, the rest shown. */
 .actstats{font-size:13.5px;color:var(--mut);margin:2px 0 14px}
 .actstats b{color:var(--ink);font-weight:700}
-.acards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
-@media(max-width:760px){.acards{grid-template-columns:1fr}}
+.acards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+@media(max-width:900px){.acards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.acards{grid-template-columns:1fr}}
 .acard{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 16px 14px;cursor:pointer;min-height:96px}
 .acard:hover{background:var(--wash)}
 .acard .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
 .acard .who{font-size:13px;font-weight:600;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .acard .who .atk{font-family:var(--mono);font-weight:500;color:var(--mut)}
-.acard .big{font-family:var(--disp);font-size:26px;font-weight:700;letter-spacing:-.01em;margin-top:6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.acard .big{font-family:var(--disp);font-size:24px;font-weight:700;letter-spacing:-.01em;margin-top:6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .acard .big.up{color:var(--buy)}.acard .big.down{color:#c22a2a}
 .acard .big small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--mut);letter-spacing:0}
 .actctl{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
@@ -2213,8 +2214,10 @@ function actStats(){
   if(first)parts.push(`<b>${first}</b> bought for the first time ever`);
   return parts.join(" · ");
 }
-/* the three cards: the largest buy and the largest sale by dollars, and the
-   biggest cut by share of the stake, which the dollar cards miss */
+/* the four cards: the largest buy and the largest sale by dollars, and the
+   biggest add and the biggest cut by share of the person's own stake,
+   which the dollar cards miss (a $1M purchase that is +11% of a stake
+   says more than a $2.6M one that is +2.7%) */
 function actCards(){
   const w=actWindow().filter(e=>!e.mk&&evSide(e)!=="exsell");
   const buys=w.filter(e=>e.c==="P"&&!e.fl&&e.v),sells=w.filter(e=>e.c==="S"&&!e.fl&&e.v);
@@ -2222,13 +2225,16 @@ function actCards(){
   const bigSale=sells.length?sells.reduce((a,b)=>(b.v||0)>(a.v||0)?b:a):null;
   const cuts=w.filter(e=>e.c==="S").map(e=>[e,pctOf(e)]).filter(x=>x[1]&&x[1].v<0);
   const bigCut=cuts.length?cuts.reduce((a,b)=>b[1].v<a[1].v?b:a)[0]:null;
+  const adds=w.filter(e=>e.c==="P").map(e=>[e,pctOf(e)]).filter(x=>x[1]&&x[1].v>0);
+  const bigAdd=adds.length?adds.reduce((a,b)=>b[1].v>a[1].v?b:a)[0]:null;
   const card=(k,e,big,sub,cls)=>`<div class="acard" ${e?`onclick="openCompany('${e.tk}')" role="button" tabindex="0"`:""}>
       <div class="k">${k}</div>
       ${e?`<div class="who">${e.ceo||coOf(e.tk)} · <span class="atk">${e.tk}</span>${fMark(e.tk)}</div><div class="big ${cls}">${big}<small>${sub}</small></div>`:`<div class="who">none in this window</div>`}
     </div>`;
   const pcOf=e=>{const p=pctOf(e);return p?stakeChange(p.v,p.approx):"stake change not stated";};
-  return `<div class="acards">
+  return `<div class="acards four">
     ${card("Largest buy",bigBuy,bigBuy?money(bigBuy.v):"",bigBuy?pcOf(bigBuy):"","up")}
+    ${card("Biggest add",bigAdd,bigAdd?pcOf(bigAdd).replace(/^stake /,""):"",bigAdd?`of the stake${bigAdd.fl||!bigAdd.v?"":" · "+money(bigAdd.v)}`:"","up")}
     ${card("Largest sale",bigSale,bigSale?money(bigSale.v):"",bigSale?pcOf(bigSale):"","down")}
     ${card("Biggest cut",bigCut,bigCut?pcOf(bigCut).replace(/^stake /,""):"",bigCut?`of the stake${bigCut.fl||!bigCut.v?"":" · "+money(bigCut.v)}`:"","down")}
   </div>`;

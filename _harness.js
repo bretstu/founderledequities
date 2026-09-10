@@ -120,7 +120,9 @@ const P=runPage();
     const stats=els["#actstats"]._html;
     assert(/<b>\d+<\/b> CEOs? bought · <b>\d+<\/b> cut a stake/.test(stats),"the counts line says who bought and who cut: "+stats.replace(/<[^>]+>/g,""));
     const cards=els["#actcards"]._html;
-    assert((cards.match(/class="acard"/g)||[]).length===3&&cards.includes("Largest buy")&&cards.includes("Largest sale")&&cards.includes("Biggest cut"),"three cards: the largest buy, the largest sale, the biggest cut");
+    assert((cards.match(/class="acard"/g)||[]).length===4&&cards.includes("Largest buy")&&cards.includes("Biggest add")&&cards.includes("Largest sale")&&cards.includes("Biggest cut"),"four cards: largest buy, biggest add, largest sale, biggest cut");
+    const adds=rows.filter(e=>e.c==="P"&&!e.mk).map(e=>[e,P.pctOf(e)]).filter(x=>x[1]&&x[1].v>0);
+    if(adds.length){const top=adds.reduce((a,b)=>b[1].v>a[1].v?b:a)[0];assert(cards.includes(`openCompany('${top.tk}')`),"the biggest add card is the purchase that added most to a stake: "+top.tk);}
     const buys=rows.filter(e=>e.c==="P"&&!e.mk&&!e.fl&&e.v);
     if(buys.length){const top=buys.reduce((a,b)=>(b.v||0)>(a.v||0)?b:a);assert(cards.includes(`openCompany('${top.tk}')`),"the largest buy card is the largest purchase by value: "+top.tk);}
     const sales=rows.filter(e=>e.c==="S"&&!e.mk&&!e.fl&&e.v);
