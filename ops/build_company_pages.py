@@ -289,7 +289,7 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
         # cards; a blurred placeholder where the stake, the shares and the
         # worth would be (the numbers are not on the page), the cover page's
         # count shown. One line of prose. No box: the nav's button is the one.
-        blur = lambda shape: f'<span class="sealed" onclick="openPro()" title="in Pro">{shape}</span>'
+        blur = lambda shape: f'<span class="sealed" data-shape="{shape}" aria-label="in Pro" onclick="openPro()" title="in Pro"></span>'
         cards = ('<div class="cband four">'
                  f'<div><h2 class="p"><span class="k">{ceo} owns</span>{blur("0.00%")}</h2></div>'
                  + stat("Shares held", blur("00,000,000"))

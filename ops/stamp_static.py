@@ -91,7 +91,7 @@ def bars_html(rows):
             out.append(
                 f'<div class="brow sealed" onclick="openDrawer(\'{r["tk"]}\')" role="button" tabindex="0">'
                 f'<div class="btrack"><div class="blab out" style="--w:0%">{link0}</div></div>'
-                f'<div class="bpct"><span class="sealed" onclick="event.stopPropagation();openPro()" title="in Pro">$0.0B</span></div></div>')
+                f'<div class="bpct"><span class="sealed" data-shape="$0.0B" aria-label="in Pro" onclick="event.stopPropagation();openPro()" title="in Pro"></span></div></div>')
             continue
         w = max(2.0, r["val"] / mx * 100)
         inside = w > 20

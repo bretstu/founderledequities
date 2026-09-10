@@ -40,7 +40,7 @@ function stat(k,v,cls,sub,title){return `<div class="cstat"${title?` title="${es
    blurred placeholder wherever a figure would be: the number is not on the
    page or in any file the page loads, so there is nothing behind the blur.
    Hovering says where it is; clicking opens the box. */
-const BLUR=(shape)=>`<span class="sealed" onclick="event.stopPropagation();openPro()" title="in Pro">${shape}</span>`;
+const BLUR=(shape)=>`<span class="sealed" data-shape="${shape}" aria-label="in Pro" onclick="event.stopPropagation();openPro()" title="in Pro"></span>`;
 function band(r){
   const mcap=r.price&&r.out?r.out*r.price:null;
   /* the card reads as one sentence around the number: MARK ZUCKERBERG

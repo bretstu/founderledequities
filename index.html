@@ -199,7 +199,11 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    box. The number is not in the file, so there is nothing to un-blur.
    (Not named .lock: that is the old gate overlay, position:absolute and
    inset:0, and the pill inherited it for the length of a first paint.) */
+/* the placeholder's digits are drawn by CSS from data-shape, so the page's
+   text says nothing where a sealed figure would be: a crawler does not see
+   a blur, and "owns 0.00%" as text would be a false sentence */
 .sealed{filter:blur(4px);opacity:.55;user-select:none;cursor:pointer;color:var(--mut)}
+.sealed::before{content:attr(data-shape)}
 .sealed:hover{opacity:.8}
 .brow.sealed .btrack{background:transparent}
 .bpct .b2{display:block;font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--faint);margin-top:5px;letter-spacing:0}
@@ -1750,7 +1754,7 @@ function renderBars(){
    number, blurred: it reads as a number not yet visible, which is what it
    is. The real number is not in the file, so there is nothing behind the
    blur; hovering says where it is and clicking opens the box. */
-const LOCK=(what,shape)=>`<span class="sealed" onclick="event.stopPropagation();openPro()" title="${what||"in Pro"}">${shape||"$0.0B"}</span>`;
+const LOCK=(what,shape)=>`<span class="sealed" data-shape="${shape||"$0.0B"}" aria-label="in Pro" onclick="event.stopPropagation();openPro()" title="${what||"in Pro"}"></span>`;
 function trendArrow(tk){
   /* the year-over-year direction, from trends.csv. Deliberately present
      on SEALED rows too: "this founder is accumulating" without the

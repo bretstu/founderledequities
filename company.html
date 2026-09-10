@@ -88,6 +88,7 @@
     .cstat .v.up{color:#0b7a4b}.cstat .v.down{color:#c22a2a}.cstat .v.none{color:var(--faint)}
     .cstat .s{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
     .sealed{filter:blur(4px);opacity:.55;user-select:none;cursor:pointer;color:var(--mut)}
+    .sealed::before{content:attr(data-shape)}
     .sealed:hover{opacity:.8}
     @media(max-width:520px){.cband{grid-template-columns:1fr}}
     .cmeta{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:12px;display:flex;gap:18px;flex-wrap:wrap;align-items:baseline}
