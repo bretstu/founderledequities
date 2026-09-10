@@ -4,6 +4,9 @@
 // Anonymous readers get the static file untouched. No cookie is set.
 import { isPro } from "./_shared.js";
 
+const unescapeHtml = (t) => t.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"')
+  .replace(/&#x27;/g, "'").replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+
 export async function proPage(request, env, { hero = false } = {}) {
   const page = await env.ASSETS.fetch(request);
   let s = { pro: false };
@@ -17,8 +20,12 @@ export async function proPage(request, env, { hero = false } = {}) {
     // carries the Pro numbers, stamped beside the free ones, and the
     // "N of them are sealed" note is not true for a subscriber
     rw = rw.on("div#herostats", { element(e) {
+        // the attribute holds the strip HTML-escaped (it has to, inside a
+        // quoted attribute), and getAttribute hands it back that way;
+        // written as-is it showed a subscriber the markup as text until the
+        // script redrew the strip
         const p = e.getAttribute("data-pro");
-        if (p) e.setInnerContent(p, { html: true });
+        if (p) e.setInnerContent(unescapeHtml(p), { html: true });
       } })
       .on("p#herosub span.sealnote", { element(e) { e.remove(); } });
   }
