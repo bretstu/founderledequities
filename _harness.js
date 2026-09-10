@@ -686,7 +686,7 @@ const P=runPage();
     "the method comes before the fine print");
 
   // ---- payments wiring on the page ----
-  assert(idx.includes('href="/api/checkout"')&&idx.includes("$5/month"),
+  assert(idx.includes('href="/api/checkout"')&&idx.includes("$5 a month"),
     "the Pro modal sells the real thing at the real price");
   assert(!idx.includes("Notify%20me%20when%20Pro%20opens"),"the waitlist CTA is gone");
   assert(!idx.includes("pro=1/.test"),"?pro=1 no longer grants anything");

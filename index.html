@@ -822,25 +822,21 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="mcard">
     <button class="mclose" onclick="closePro()" aria-label="Close">✕</button>
     <div class="seal">◆</div>
-    <h3>Founder Led Equities — Pro</h3>
-    <p>The S&amp;P 500 is free. Pro is everything else.</p>
-    <!-- THE BOX SELLS COMPANIES, NOT FEATURES. The seal is the only gate:
-         a subscriber gets no lens a free reader lacks, they get the other
-         1,635 companies -- and that number is filled in from the data, so
-         the box never undercounts what it sells. -->
+    <h3>Founder Led Equities Pro</h3>
+    <p>Every US public company worth $1 billion or more, in full.</p>
+    <!-- THE BOX SAYS WHAT PRO IS IN THREE LINES. The S&P 500 is free and
+         every company's name, rank and dates are on the page for everyone;
+         Pro is the figures behind the blur for the other 1,635, their
+         records, and the exports. The count is filled in from the data. -->
     <ul>
-      <li><span id="mcount">1,635</span> more companies — every US company worth $1 billion or more beyond the S&amp;P 500, the same computed stake, filing by filing</li>
-      <li>Their CEOs in the day's trades, the buy and sell rankings, and the screener — filtered, sorted, exportable</li>
-      <li>Every one of their full records: the stake over time, every trade since 2016, every filing linked the day it hits EDGAR</li>
-      <li>The S&amp;P 500 stays open to everyone, in full</li>
+      <li>The stake, the shares and their worth for <span id="mcount">1,635</span> more companies</li>
+      <li>Every trade's size and filing, and each stake's record since 2016</li>
+      <li>CSV export of the screener and of any company's trades</li>
     </ul>
     <a class="mwide" style="display:block;text-align:center;text-decoration:none" href="/api/checkout">
-       Go Pro — $5/month</a>
-    <div class="mfine">Cancel anytime in one click. Full refund within 7 days of any charge —
-      just email <a href="mailto:hello@founderledequities.com?subject=Refund%20request">hello@founderledequities.com</a>.
-      <a href="terms.html">Terms&nbsp;&amp;&nbsp;refunds</a></div>
-    <div class="mfine">No password, no account to create - your email is your sign-in.
-      <a href="#" onclick="signIn();return false">Already subscribed? Sign in</a>
+       Go Pro, $5 a month</a>
+    <div class="mfine">Cancel in one click · <a href="mailto:hello@founderledequities.com?subject=Refund%20request" title="email hello@founderledequities.com within 7 days of any charge">full refund within 7 days</a> · your email is the sign-in ·
+      <a href="terms.html">Terms</a> · <a href="#" onclick="signIn();return false">Already subscribed? Sign in</a>
       · <a class="mlater" href="#" onclick="closePro();return false" style="display:inline;margin:0">Maybe later</a></div>
   </div>
 </div>
