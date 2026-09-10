@@ -96,8 +96,8 @@ const P=runPage();
   assert(idxsrc.indexOf('href="#activity"')<idxsrc.indexOf('href="#perfsec"'),"and the nav follows the page");
   const freeCols=els["#actcols"]._html;
   assert(freeCols.includes("Bought")&&freeCols.includes("Sold"),"both columns render for a free reader");
-  assert(!freeCols.includes("locked")&&!/class="blurred"/.test(freeCols),"no lock, no blur in the free view");
-  assert(els["#actday"]._html.includes("S&P 500"),"the free day strip names its scope: the S&P 500");
+  assert(!/class="blurred"/.test(freeCols),"no blur anywhere: a sealed number is not in the file, a lock stands where it would be");
+  assert(els["#actday"]._html.includes("sealed companies"),"the free day strip says where the sealed sizes are");
   // the harness maps /pro/universe.csv onto the root file, which may carry
   // sealed rows or none; the pro file never does, so it is unsealed by hand
   state.pro=true; const sealedPanel=P.PANEL; P.PANEL=sealedPanel.map(r=>({...r,masked:false})); renderActivity();
@@ -106,7 +106,7 @@ const P=runPage();
   // a pro session over a free-shaped file (sealed rows present) is still the S&P
   P.PANEL=sealedPanel.map(r=>({...r,masked:r.masked||r.tk==="ZZZ-SEALED"}));
   P.PANEL.push({tk:"ZZZ-SEALED",co:"Sealed",ceo:"x",pct:null,sh:null,masked:true});renderActivity();
-  assert(els["#actday"]._html.includes("S&P 500"),"a pro reader over a sealed file is told the S&P, not a false universe");
+  assert(els["#actday"]._html.includes("sealed companies"),"a pro reader over a sealed file is told the sealed sizes are in Pro, not a false universe");
   P.PANEL=sealedPanel; renderActivity();
 
   // ---- the day strip ----

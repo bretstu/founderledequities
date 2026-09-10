@@ -129,19 +129,19 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     page = out.read_text(encoding="utf-8")
     assert '<h1 id="thesis">What every <b>CEO</b> owns of the company they run.</h1>' in page, \
         "the headline is the purpose, the same for every reader, and needs no stamp"
-    assert '<div class="n hl">1 of 1</div><div class="k">S&amp;P 500 CEOs own more than 5%</div>' in page, \
-        "the free strip leads with the rarity against the S&P 500"
-    assert "1 of them are sealed" in page, "the free subline states the seal as one fact"
+    # ONE STRIP FOR EVERYONE: the universe's aggregates, no company's stake
+    assert '<div class="n hl">2</div><div class="k">CEOs own more than 5%</div>' in page, \
+        "the strip leads with the count over every company, the sealed one included"
+    assert "of them are sealed" not in page, "no second Go Pro: the nav button is the one call"
+    assert 'data-pro="' not in page, "one strip, no second copy to swap in"
     assert 'class="brow"' in page and 'href="/company/TSLA/"' in page and "28.44% of co." in page, "the board's rows are real HTML"
+    # a sealed company is a row in its rank, named, locked, without a bar
+    assert 'class="brow sealed"' in page and 'href="/company/SEALD/"' in page and 'class="lock"' in page, \
+        "a sealed company is on the board with its name and a lock"
+    assert "41.2" not in page, "and none of its numbers"
     assert 'class="hstat"' in page and "Founder-led companies" in page, "and so is the stat strip"
-    assert 'id="herostats" data-pro="' in page and "CEOs own more than 5%" in html.unescape(page), \
-        "and the Pro strip rides along, escaped, for the first paint, leading with the bare count"
-    # a subscriber's first byte already carries the Pro hero: the function
-    # on / rewrites from the same attributes the stamp wrote, and the page
-    # sets no cookie to do it
     fn = open(os.path.join(ROOT, "functions", "_tier.js"), encoding="utf-8").read()
-    assert 'getAttribute("data-pro")' in fn and "HTMLRewriter" in fn and "isPro" in fn
-    assert 'span.sealnote' in fn, "a subscriber's page does not say N are sealed"
+    assert "HTMLRewriter" in fn and "isPro" in fn
     assert "proPage" in open(os.path.join(ROOT, "functions", "index.js")).read()
     assert "proPage" in open(os.path.join(ROOT, "functions", "company", "[[path]].js")).read()
     assert "document.cookie" not in src

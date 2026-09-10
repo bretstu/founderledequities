@@ -41,19 +41,22 @@ def top_rows(panel_p, sp_p, prices_p, founders_p, n=10):
             founders[r["ticker"].upper()] = ((r.get("founder") or "").lower(), r.get("evidence") or "")
     except OSError:
         pass
+    # EVERY COMPANY IN ITS PLACE. The stamped board is what a free reader
+    # sees first: the true ranking over the whole panel, with a sealed
+    # company's row carrying its name and a lock where the value would be.
     rows = []
     for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
         tk = (r.get("ticker") or "").upper()
-        if tk not in sp:
-            continue
         try:
             pct = float(r.get("pct") or "")
             sh = float(r.get("shares") or 0)
         except ValueError:
             continue
         val = sh * prices[tk] if tk in prices else 0.0
+        if not val:
+            continue
         rows.append({"tk": tk, "ceo": r.get("ceo") or "", "pct": pct, "val": val,
-                     "f": founders.get(tk, ("", ""))})
+                     "f": founders.get(tk, ("", "")), "sealed": tk not in sp})
     rows.sort(key=lambda x: -x["val"])
     return rows[:n]
 
@@ -70,9 +73,17 @@ def badge(f):
 def bars_html(rows):
     if not rows:
         return ""
-    mx = max(r["val"] for r in rows) or 1
+    mx = max((r["val"] for r in rows if not r["sealed"]), default=0) or 1
     out = []
     for r in rows:
+        link0 = (f'<span class="tk"><a class="pglink" href="/company/{r["tk"]}/" onclick="event.stopPropagation()" '
+                 f'title="this company\'s own page">{r["tk"]}</a></span><span class="nm">{html.escape(r["ceo"])}</span>{badge(r["f"])}')
+        if r["sealed"]:
+            out.append(
+                f'<div class="brow sealed" onclick="openDrawer(\'{r["tk"]}\')" role="button" tabindex="0">'
+                f'<div class="btrack"><div class="blab out" style="--w:0%">{link0}</div></div>'
+                f'<div class="bpct"><button class="lock" onclick="event.stopPropagation();openPro()" title="the stake\'s value is in Pro">Pro</button></div></div>')
+            continue
         w = max(2.0, r["val"] / mx * 100)
         inside = w > 20
         link = (f'<span class="tk"><a class="pglink" href="/company/{r["tk"]}/" onclick="event.stopPropagation()" '
@@ -106,21 +117,18 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out):
     # is what the page counts (masked rows stay in a free reader's list)
     rows_all = sum(1 for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")) if (r.get("ticker") or "").strip())
     sealed = rows_all - n["open"]
-    if sealed:
-        page = page.replace(
-            '<p class="herosub" id="herosub">Computed from their SEC filings, never estimated. Every US public company worth $1B or more.</p>',
-            '<p class="herosub" id="herosub">Computed from their SEC filings, never estimated. Every US public company worth $1B or more.'
-            f' <span class="sealnote">{sealed:,} of them are sealed <button class="gopro" onclick="openPro()">Go Pro</button></span></p>', 1)
-    def stats(m, free):
-        first = (f'<div class="hstat"><div class="n hl">{m["above5"]} of {m["open"]:,}</div><div class="k">S&amp;P 500 CEOs own more than 5%</div></div>'
-                 if free else
-                 f'<div class="hstat"><div class="n hl">{m["above5"]:,}</div><div class="k">CEOs own more than 5%</div></div>')
-        return (first
-                + f'<div class="hstat"><div class="n">{m["led"]}</div><div class="k">Founder-led companies</div></div>'
+    # THE STRIP IS THE SAME FOR EVERYONE: four aggregates over every
+    # company, none of them a company's stake, all of them the size of
+    # what the site covers. The "N of them are sealed · Go Pro" line is
+    # gone; the nav button is the one call, and the locks on the sealed
+    # rows sell in context.
+    def stats(m):
+        return (f'<div class="hstat"><div class="n hl">{m["above5"]:,}</div><div class="k">CEOs own more than 5%</div></div>'
+                f'<div class="hstat"><div class="n">{m["led"]}</div><div class="k">Founder-led companies</div></div>'
                 f'<div class="hstat"><div class="n">{money(m["led_value"])}</div><div class="k">Held by those founders</div></div>'
                 f'<div class="hstat"><div class="n">{m["share"]}%</div><div class="k">Of all CEO wealth</div></div>')
     page = page.replace('<div class="herostats" id="herostats"></div>',
-                        f'<div class="herostats" id="herostats" data-pro="{html.escape(stats(p, False), quote=True)}">{stats(n, True)}</div>', 1)
+                        f'<div class="herostats" id="herostats">{stats(p)}</div>', 1)
     page = page.replace('<div class="bars" id="bars"></div>',
                         f'<div class="bars" id="bars">{bars_html(rows)}</div>', 1)
     with open(index_out, "w", encoding="utf-8") as fh:

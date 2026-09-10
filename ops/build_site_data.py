@@ -7,7 +7,10 @@
 
 Layout produced (paths relative to the output dir):
     universe.csv            every company, list-page columns; non-S&P rows
-                            carry pct only if GENEROUS, else masked=1
+                            carry pct only if GENEROUS, else masked=1, and
+                            every row carries its rank by value and by
+                            share, so a free page can place a sealed row
+                            where it belongs without its number
     trends.csv              ticker, pct_now, pct_1y, direction -- the list's
                             arrows without loading any history
     founders.csv            passthrough (small)
@@ -42,6 +45,11 @@ LIST_COLS = ["ticker", "cik", "company", "ceo", "pct", "shares",
              "problems", "cautions", "excluded_shares", "excluded_detail",
              "operating_partnership", "flags", "error", "form4_url",
              "cover_url", "outstanding_as_of", "shares_tabled", "masked", "sp"]
+# THE PLACE WITHOUT THE NUMBER. A free reader sees every company in its
+# true rank with its name; the value and the share are the product and
+# stay out of the free file. The ranks are computed here over the whole
+# panel, before masking, and written to both files.
+RANK_COLS = ["rank_value", "rank_pct"]
 # what a sealed row must not carry: anything that states or bounds the stake
 MASKED_COLS = ("pct", "shares", "form4_url", "cover_url",
                "excluded_shares", "excluded_detail", "shares_tabled")
@@ -145,6 +153,51 @@ def write_price_shards(store: str, out_dir: str) -> int:
     return n
 
 
+def latest_closes(store, tickers) -> dict:
+    """TICKER -> the last close in the price store; empty without a store."""
+    out = {}
+    if not store:
+        return out
+    for tk in tickers:
+        p = os.path.join(store, f"{tk}.csv")
+        try:
+            with open(p, encoding="utf-8", newline="") as fh:
+                last = None
+                for row in csv.reader(fh):
+                    if row and row[0] != "date":
+                        last = row
+                if last:
+                    out[tk] = float(last[1])
+        except (OSError, ValueError, IndexError):
+            continue
+    return out
+
+
+def ranks(panel, closes) -> dict:
+    """TICKER -> (rank by stake value, rank by share), 1-based, over every
+    row with a figure; rows without one get blanks."""
+    def num(v):
+        try:
+            return float(v) if v not in (None, "") else None
+        except ValueError:
+            return None
+    withv, withp = [], []
+    for r in panel:
+        pct, sh = num(r.get("pct")), num(r.get("shares"))
+        if pct is None or sh is None:
+            continue
+        withp.append((pct, r["ticker"]))
+        c = closes.get(r["ticker"])
+        if c:
+            withv.append((sh * c, r["ticker"]))
+    out = {}
+    for i, (_, t) in enumerate(sorted(withv, key=lambda x: -x[0]), 1):
+        out.setdefault(t, ["", ""])[0] = i
+    for i, (_, t) in enumerate(sorted(withp, key=lambda x: -x[0]), 1):
+        out.setdefault(t, ["", ""])[1] = i
+    return out
+
+
 def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
          fresh_dir=None, perf_p="perf.csv", prices_dir=None) -> int:
     sp = {r["ticker"] for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
@@ -159,11 +212,19 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
 
     # ---- the two list files ----
     rets = one_year_returns(prices_dir, [r["ticker"] for r in panel])
+    closes = latest_closes(prices_dir, [r["ticker"] for r in panel])
+    if not closes:   # no store: the pipeline's prices.csv beside the panel
+        try:
+            for r in csv.DictReader(open(os.path.join(os.path.dirname(os.path.abspath(panel_p)), "prices.csv"), encoding="utf-8-sig")):
+                closes[(r.get("ticker") or "").upper()] = float(r["close"])
+        except (OSError, ValueError, KeyError):
+            pass
+    rk = ranks(panel, closes)
 
     def write_list(path, mask_new):
         with open(path, "w", newline="", encoding="utf-8") as fh:
             w = csv.writer(fh)
-            w.writerow(LIST_COLS + ["ret_1y"])
+            w.writerow(LIST_COLS + ["ret_1y"] + RANK_COLS)
             for r in panel:
                 masked = 1 if (mask_new and r["ticker"] not in sp
                                and not GENEROUS) else 0
@@ -180,6 +241,7 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
                 row.append(1 if r["ticker"] in sp else 0)
                 rv = rets.get(r["ticker"])
                 row.append("" if rv is None else f"{rv:.2f}")
+                row.extend(rk.get(r["ticker"], ["", ""]))
                 w.writerow(row)
     write_list(os.path.join(out_dir, "universe.csv"), mask_new=True)
     n_perf = write_perf_for_chart(perf_p, founders_p, out_dir)
@@ -334,11 +396,35 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     # THE SEAL IS THE ONLY GATE: the free file is the S&P's ENTIRE event
     # archive -- every sale, every year -- not a windowed teaser. Pro adds
     # companies, never features.
-    cols = ev_cols
+    # A SEALED FILING IS A ROW WITHOUT ITS NUMBERS. The free feed also
+    # carries the last year of filings by sealed companies with the ticker,
+    # the name, the dates and the kind, and every figure blank (value,
+    # shares, prices, the stake and its change, the link). The feed's
+    # windows never look past a year, so the file grows by one year of
+    # rows, not ten. A masked column says which rows these are.
+    cols = ev_cols + ["masked"]
     all_rows = ev_rows_shard
-    for path, rows in (("events-free.csv",
-                        [r for r in all_rows if r.get("ticker") in sp]),
-                       (os.path.join("pro", "events.csv"), all_rows)):
+    newest = max((r.get("filed") or "" for r in all_rows), default="")
+    year_ago = ""
+    if newest:
+        import datetime as _dt
+        year_ago = (_dt.date.fromisoformat(newest) - _dt.timedelta(days=366)).isoformat()
+    EV_MASK = ("value", "avg_price", "avg_price_adjusted", "shares", "pct_of_holding", "pct_approx",
+               "net_change", "day_net", "holding_after", "outstanding", "pct_after", "residue", "url",
+               "rows", "unpriced_rows", "securities", "price_flag")
+    def masked_row(r):
+        m = dict(r)
+        for c in EV_MASK:
+            if c in m:
+                m[c] = ""
+        m["masked"] = "1"
+        return m
+    free_rows = ([dict(r, masked="0") for r in all_rows if r.get("ticker") in sp]
+                 + [masked_row(r) for r in all_rows
+                    if r.get("ticker") not in sp and (r.get("filed") or "") >= year_ago])
+    free_rows.sort(key=lambda r: (r.get("filed") or "", r.get("ticker") or ""))
+    for path, rows in (("events-free.csv", free_rows),
+                       (os.path.join("pro", "events.csv"), [dict(r, masked="0") for r in all_rows])):
         with open(os.path.join(out_dir, path), "w", newline="",
                   encoding="utf-8") as fh:
             w = csv.DictWriter(fh, fieldnames=cols)
@@ -365,8 +451,9 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     print(f"  pro/history-lite    {len(lite_all)} rows, "
           f"{os.path.getsize(os.path.join(out_dir, 'pro', 'history-lite.csv')) // 1024} KB")
     print(f"  events-free.csv     "
-          f"{sum(1 for r in all_rows if r.get('ticker') in sp)} rows, "
-          f"{_kb('events-free.csv')} KB (full S&P archive)")
+          f"{sum(1 for r in free_rows if r['masked'] == '0')} S&P rows + "
+          f"{sum(1 for r in free_rows if r['masked'] == '1')} sealed rows (a year, numbers blank), "
+          f"{_kb('events-free.csv')} KB")
     print(f"  pro/events.csv      {len(all_rows)} rows")
     print(f"  GENEROUS={GENEROUS}  (public pct on non-S&P rows)")
     if fresh_dir:
