@@ -2226,6 +2226,14 @@ function sealedMore(side){
   const n=EVENTS.filter(e=>e.mk&&e.fd>=cut&&fOnly(e.tk,state.ev.f)&&(side==="buys"?e.c==="P":e.c==="S")&&unchangedKind(e)===null).length;
   return n?` · <a onclick="openPro()" title="filings by sealed companies in this window; their sizes are in Pro" style="cursor:pointer">${n} more in Pro</a>`:"";
 }
+function evSealed(){
+  const days=+state.ev.win||30;
+  const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
+  let evs=EVENTS.filter(e=>e.mk&&e.fd>=cut&&fOnly(e.tk,state.ev.f));
+  const q=state.ev.q.trim().toLowerCase();
+  if(q)evs=evs.filter(e=>e.tk.toLowerCase().includes(q)||coOf(e.tk).toLowerCase().includes(q)||e.ceo.toLowerCase().includes(q));
+  return evs;
+}
 function evBase(){
   /* WINDOW, FOUNDERS, SEARCH -- everything EXCEPT which side or manner.
      The chip counts and the column totals are taken from here, so each
@@ -2268,7 +2276,10 @@ function evMatch(e){
   return true;
 }
 function evFiltered(){
-  let evs=evBase().filter(evMatch);
+  /* THE TABLE IS EVERY FILING OF THE WINDOW, in date order; the sealed
+     ones too, with their figures blurred (the columns above rank by size
+     and cannot place them; a table sorted by date can). */
+  let evs=evBase().filter(evMatch).concat(evSealed().filter(evMatch));
   const {key,dir}=state.ev.sort;
   /* A FLAGGED PRICE SORTS AS WORTHLESS.
      Nadella's decimal-shift "sale" is $189bn as filed; sorted by value it
@@ -2345,10 +2356,10 @@ function evTable(rows,sortable,emptyMsg){
        onclick="event.stopPropagation();setKind('${e.c==="P"?"buys":sellKind(e)}')"
        role="button" tabindex="0" onkeydown="if(event.key==='Enter'){event.stopPropagation();setKind('${e.c==="P"?"buys":sellKind(e)}')}"
        >${b.t}</span>${plan?`<span class="aplan">${plan}</span>`:""}</td>
-     <td class="n aval ${e.c==="P"?"up":"down"}">${evValCell(e)}</td>
-     <td class="n asub" title="${fmt(e.sh)} shares">${compact(e.sh)}${e.ap?`<span class="apx">@ $${e.ap>=1000?Math.round(e.ap).toLocaleString("en-US"):e.ap.toFixed(2)}</span>`:""}</td>
-     <td class="n asub">${evPctCell(e)}</td>
-     <td class="asrc">${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</td>
+     <td class="n aval ${e.c==="P"?"up":"down"}">${e.mk?LOCK("in Pro","$0.0M"):evValCell(e)}</td>
+     <td class="n asub" title="${e.mk?"in Pro":`${fmt(e.sh)} shares`}">${e.mk?LOCK("in Pro","00K"):`${compact(e.sh)}${e.ap?`<span class="apx">@ $${e.ap>=1000?Math.round(e.ap).toLocaleString("en-US"):e.ap.toFixed(2)}</span>`:""}`}</td>
+     <td class="n asub">${e.mk?LOCK("in Pro","−0.0%"):evPctCell(e)}</td>
+     <td class="asrc">${e.mk?"":e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</td>
     </tr>`}).join("")+`</tbody></table></div>`;
 }
 function ago(d){
