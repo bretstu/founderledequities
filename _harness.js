@@ -107,7 +107,7 @@ const P=runPage();
     assert(rows.length>50,"the window holds the year's stake-moving trades: "+rows.length);
     assert(rows.every(e=>P.evSide(e)!=="exsell"),"All is purchases and sales that moved a stake; compensation is its own chip");
     // the default sort is by stake change, largest move first, sealed rows last
-    const pcs=rows.filter(e=>!e.mk).map(e=>{const p=P.pctOf(e);return p?Math.abs(p.v):null;});
+    const pcs=rows.filter(e=>!e.mk).map(e=>{const p=P.pctOf(e);if(!p)return null;return e.c==="P"?Math.max(0,p.v):Math.max(0,-p.v);});
     const ranked=pcs.filter(x=>x!==null);
     assert(ranked.length>10&&ranked.every((x,i)=>i===0||x<=ranked[i-1]),"sorted by stake change, largest first");
     const firstSealed=rows.findIndex(e=>e.mk), lastOpen=rows.map(e=>!e.mk).lastIndexOf(true);
@@ -120,9 +120,11 @@ const P=runPage();
     const stats=els["#actstats"]._html;
     assert(/<b>\d+<\/b> CEOs? bought · <b>\d+<\/b> cut a stake/.test(stats),"the counts line says who bought and who cut: "+stats.replace(/<[^>]+>/g,""));
     const cards=els["#actcards"]._html;
-    assert((cards.match(/class="acard"/g)||[]).length===3&&cards.includes("Biggest buy")&&cards.includes("Biggest cut")&&cards.includes("First-ever purchase"),"three cards: the biggest buy, the biggest cut, the first-ever purchase");
+    assert((cards.match(/class="acard"/g)||[]).length===3&&cards.includes("Largest buy")&&cards.includes("Largest sale")&&cards.includes("Biggest cut"),"three cards: the largest buy, the largest sale, the biggest cut");
     const buys=rows.filter(e=>e.c==="P"&&!e.mk&&!e.fl&&e.v);
-    if(buys.length){const top=buys.reduce((a,b)=>(b.v||0)>(a.v||0)?b:a);assert(cards.includes(`openCompany('${top.tk}')`),"the biggest buy card is the largest purchase by value: "+top.tk);}
+    if(buys.length){const top=buys.reduce((a,b)=>(b.v||0)>(a.v||0)?b:a);assert(cards.includes(`openCompany('${top.tk}')`),"the largest buy card is the largest purchase by value: "+top.tk);}
+    const sales=rows.filter(e=>e.c==="S"&&!e.mk&&!e.fl&&e.v);
+    if(sales.length){const top=sales.reduce((a,b)=>(b.v||0)>(a.v||0)?b:a);assert(cards.includes(`openCompany('${top.tk}')`),"the largest sale card is the largest sale by value: "+top.tk);}
     const cuts=rows.filter(e=>e.c==="S"&&!e.mk).map(e=>[e,P.pctOf(e)]).filter(x=>x[1]&&x[1].v<0);
     if(cuts.length){const top=cuts.reduce((a,b)=>b[1].v<a[1].v?b:a)[0];assert(cards.includes(`openCompany('${top.tk}')`),"the biggest cut card is the largest reduction of a stake, not the largest sale: "+top.tk);}
     // the kind chips narrow; the sort chips reorder
@@ -162,7 +164,7 @@ const P=runPage();
               {tk:"OLDB",ceo:"Old Hand",c:"P",lb:"open-market purchase",pl:"discretionary",sh:1000,v:9e5,fd:"2026-09-03",td:"2026-09-02",pc:0.1,ha:1e6,nc:1000,rs:null,u:"https://www.sec.gov/y",fb:false}];
     setWin(30); setKind("all"); renderActivity();
     assert(els["#actstats"]._html.includes("<b>1</b> bought for the first time ever"),"the counts line counts first-ever purchases");
-    assert(els["#actcards"]._html.includes("First-ever purchase")&&els["#actcards"]._html.includes("openCompany('NEWB')"),"the first-ever card names the person");
+    assert(els["#actcards"]._html.includes("Largest buy")&&els["#actcards"]._html.includes("openCompany('OLDB')"),"the largest buy card is by value");
     assert(els["#actwrap"]._html.includes('class="firstb"'),"and the row carries the tag");
     P.EVENTS=savedE; setWin(365); renderActivity();
   }

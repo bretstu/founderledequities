@@ -2169,7 +2169,10 @@ function actRows(){
 }
 function actSorted(rows){
   const {key,dir}=state.ev.sort;
-  const pc=e=>{if(e.mk)return null;const p=pctOf(e);return p?Math.abs(p.v):null;};
+  /* a sale ranks by how much it cut, a purchase by how much it added; a
+     move against its own kind (a "sale" that raised the stake: an exercise
+     mostly kept) ranks as nothing, so it does not lead the table */
+  const pc=e=>{if(e.mk)return null;const p=pctOf(e);if(!p)return null;return e.c==="P"?Math.max(0,p.v):Math.max(0,-p.v);};
   const val=e=>e.mk?null:(e.fl?0:(e.v||0));
   const f=key==="v"?val:key==="fd"?(e=>e.fd):pc;
   return [...rows].sort((a,b)=>{
@@ -2210,24 +2213,24 @@ function actStats(){
   if(first)parts.push(`<b>${first}</b> bought for the first time ever`);
   return parts.join(" · ");
 }
-/* the three cards: the biggest buy, the biggest cut, the first-ever purchase */
+/* the three cards: the largest buy and the largest sale by dollars, and the
+   biggest cut by share of the stake, which the dollar cards miss */
 function actCards(){
   const w=actWindow().filter(e=>!e.mk&&evSide(e)!=="exsell");
-  const buys=w.filter(e=>e.c==="P"&&!e.fl&&e.v),sells=w.filter(e=>e.c==="S");
+  const buys=w.filter(e=>e.c==="P"&&!e.fl&&e.v),sells=w.filter(e=>e.c==="S"&&!e.fl&&e.v);
   const bigBuy=buys.length?buys.reduce((a,b)=>(b.v||0)>(a.v||0)?b:a):null;
-  const cuts=sells.map(e=>[e,pctOf(e)]).filter(x=>x[1]&&x[1].v<0);
+  const bigSale=sells.length?sells.reduce((a,b)=>(b.v||0)>(a.v||0)?b:a):null;
+  const cuts=w.filter(e=>e.c==="S").map(e=>[e,pctOf(e)]).filter(x=>x[1]&&x[1].v<0);
   const bigCut=cuts.length?cuts.reduce((a,b)=>b[1].v<a[1].v?b:a)[0]:null;
-  const firsts=w.filter(e=>e.c==="P"&&e.fb).sort((a,b)=>b.fd.localeCompare(a.fd));
-  const firstBuy=firsts.length?firsts[0]:null;
   const card=(k,e,big,sub,cls)=>`<div class="acard" ${e?`onclick="openCompany('${e.tk}')" role="button" tabindex="0"`:""}>
       <div class="k">${k}</div>
       ${e?`<div class="who">${e.ceo||coOf(e.tk)} · <span class="atk">${e.tk}</span>${fMark(e.tk)}</div><div class="big ${cls}">${big}<small>${sub}</small></div>`:`<div class="who">none in this window</div>`}
     </div>`;
-  const pcOf=e=>{const p=pctOf(e);return p?stakeChange(p.v,p.approx):"";};
+  const pcOf=e=>{const p=pctOf(e);return p?stakeChange(p.v,p.approx):"stake change not stated";};
   return `<div class="acards">
-    ${card("Biggest buy",bigBuy,bigBuy?money(bigBuy.v):"",bigBuy?pcOf(bigBuy):"","up")}
-    ${card("Biggest cut",bigCut,bigCut?pcOf(bigCut).replace(/^stake /,""):"",bigCut?`of the stake · ${bigCut.fl?"":money(bigCut.v||0)}`:"","down")}
-    ${card("First-ever purchase",firstBuy,firstBuy?money(firstBuy.v||0):"",firstBuy?`never bought before · ${shortDay(firstBuy.td||firstBuy.fd)}`:"","up")}
+    ${card("Largest buy",bigBuy,bigBuy?money(bigBuy.v):"",bigBuy?pcOf(bigBuy):"","up")}
+    ${card("Largest sale",bigSale,bigSale?money(bigSale.v):"",bigSale?pcOf(bigSale):"","down")}
+    ${card("Biggest cut",bigCut,bigCut?pcOf(bigCut).replace(/^stake /,""):"",bigCut?`of the stake${bigCut.fl||!bigCut.v?"":" · "+money(bigCut.v)}`:"","down")}
   </div>`;
 }
 function actRow(e){
