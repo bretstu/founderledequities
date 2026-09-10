@@ -391,13 +391,38 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     for r in ev_rows_shard:
         ev_cols = ev_cols or list(r.keys())
         ev_by_t[r["ticker"]].append(r)
+    # A SEALED FILING IS A ROW WITHOUT ITS NUMBERS (see the feed below): the
+    # same masking gives every sealed company a free shard of its last year,
+    # so its page shows the same table as an open one, dates and kinds
+    # visible, every figure a blur.
+    newest = max((r.get("filed") or "" for r in ev_rows_shard), default="")
+    year_ago = ""
+    if newest:
+        import datetime as _dt
+        year_ago = (_dt.date.fromisoformat(newest) - _dt.timedelta(days=366)).isoformat()
+    EV_MASK = ("value", "avg_price", "avg_price_adjusted", "shares", "pct_of_holding", "pct_approx",
+               "net_change", "day_net", "holding_after", "pct_after", "residue", "url",
+               "rows", "unpriced_rows", "securities", "price_flag")
+    def masked_row(r):
+        m = dict(r)
+        for c in EV_MASK:
+            if c in m:
+                m[c] = ""
+        m["masked"] = "1"
+        return m
     for t, rows in sorted(ev_by_t.items()):
         sub = "events" if t in sp else "pro/events"
         with open(os.path.join(out_dir, sub, f"{t}.csv"), "w",
                   newline="", encoding="utf-8") as fh:
-            w = csv.DictWriter(fh, fieldnames=ev_cols)
+            w = csv.DictWriter(fh, fieldnames=ev_cols + ["masked"])
             w.writeheader()
-            w.writerows(rows)
+            w.writerows(dict(r, masked="0") for r in rows)
+        if t not in sp:
+            with open(os.path.join(out_dir, "events", f"{t}.csv"), "w",
+                      newline="", encoding="utf-8") as fh:
+                w = csv.DictWriter(fh, fieldnames=ev_cols + ["masked"])
+                w.writeheader()
+                w.writerows(masked_row(r) for r in rows if (r.get("filed") or "") >= year_ago)
 
     # ---- the aggregate event files the feed loads ----
     # THE SEAL IS THE ONLY GATE: the free file is the S&P's ENTIRE event
@@ -411,21 +436,6 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     # rows, not ten. A masked column says which rows these are.
     cols = ev_cols + ["masked"]
     all_rows = ev_rows_shard
-    newest = max((r.get("filed") or "" for r in all_rows), default="")
-    year_ago = ""
-    if newest:
-        import datetime as _dt
-        year_ago = (_dt.date.fromisoformat(newest) - _dt.timedelta(days=366)).isoformat()
-    EV_MASK = ("value", "avg_price", "avg_price_adjusted", "shares", "pct_of_holding", "pct_approx",
-               "net_change", "day_net", "holding_after", "outstanding", "pct_after", "residue", "url",
-               "rows", "unpriced_rows", "securities", "price_flag")
-    def masked_row(r):
-        m = dict(r)
-        for c in EV_MASK:
-            if c in m:
-                m[c] = ""
-        m["masked"] = "1"
-        return m
     free_rows = ([dict(r, masked="0") for r in all_rows if r.get("ticker") in sp]
                  + [masked_row(r) for r in all_rows
                     if r.get("ticker") not in sp and (r.get("filed") or "") >= year_ago])

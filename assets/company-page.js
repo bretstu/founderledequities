@@ -26,20 +26,6 @@ function setRow(row){
 /* whose stake: "Elon Musk's", "Jabbok Schlacks'" */
 const poss=n=>n+(/s$/i.test(n)?"'":"'s");
 
-function renderSealed(){
-  /* the static teaser stays (the question, the public facts, the price
-     line); the Pro box replaces its last card */
-  const seal=$("#cbody .cseal");
-  const box=`<div class="cseal">
-    <div class="k" style="font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--blue)">${esc(poss(C.ceo||"The chief executive"))} stake</div>
-    <h2 class="p s">is in Pro</h2>
-    <div class="l">Computed from the filings like every other. Pro is every company beyond the S&amp;P 500: the stake, the record, every trade. $5 a month, cancel in one click.</div>
-    <a class="gopro" href="/api/checkout">Go Pro, $5/month</a>
-    <div class="l" style="font-size:13px">Already subscribed? <a href="/" style="color:var(--blue)">Sign in on the home page</a> and come back.</div>
-  </div>`;
-  if(seal)seal.outerHTML=box;else $("#cbody").insertAdjacentHTML("beforeend",box);
-  $("#creport").innerHTML=reportBlock({tk:C.tk,co:C.co});
-}
 
 /* ---- the answer band: five cards ----
    THE LABELS ARE THE TABLE'S. Value, Market cap, 1Y return: the words the
@@ -50,12 +36,18 @@ function renderSealed(){
    chart's job, not a "3-year change" card that had to say "since 2026-01"
    when the record was eight months old. */
 function stat(k,v,cls,sub,title){return `<div class="cstat"${title?` title="${esc(title)}"`:""}><div class="k">${k}</div><div class="v ${cls||""}">${v}</div>${sub?`<div class="s">${sub}</div>`:""}</div>`;}
+/* THE SEAL IS A BLUR. A sealed company's page is the open page with a
+   blurred placeholder wherever a figure would be: the number is not on the
+   page or in any file the page loads, so there is nothing behind the blur.
+   Hovering says where it is; clicking opens the box. */
+const BLUR=(shape)=>`<span class="sealed" onclick="event.stopPropagation();openPro()" title="in Pro">${shape}</span>`;
 function band(r){
   const mcap=r.price&&r.out?r.out*r.price:null;
   /* the card reads as one sentence around the number: MARK ZUCKERBERG
      OWNS / 13.44% / of Meta Platforms, Inc. */
   const who=`<div class="k">${esc(C.ceo||"The chief executive")} ${r.units||r.pct===null?"holds":"owns"}</div>`;
-  const big=r.units?`${who}<div class="p s">partnership units</div><div class="pl">Exchangeable units rather than common stock, so a percent of common shares cannot describe the stake.</div>`
+  const big=r.masked?`<h2 class="p"><span class="k">${esc(C.ceo||"The chief executive")} owns</span>${BLUR("0.00%")}</h2>`
+    :r.units?`${who}<div class="p s">partnership units</div><div class="pl">Exchangeable units rather than common stock, so a percent of common shares cannot describe the stake.</div>`
     :r.pct===null?`${who}<div class="p s">a stake not measured</div><div class="pl">${esc(r.flags||"the record could not settle on a figure")}</div>`
     :`<h2 class="p"><span class="k">${esc(C.ceo||"The chief executive")} owns</span>${r.pct.toFixed(r.pct<1?3:2)}%</h2>`;
   const asof=PRICES_ASOF||"latest";
@@ -70,9 +62,9 @@ function band(r){
   if(kick)kick.innerHTML=`${esc(r.tk)}${mcap?` · ${money(mcap)}`:""}`;
   return `<div class="cband four">
     <div>${big}</div>
-    ${stat("Shares held",r.sh!==null?fmt(r.sh):"&mdash;","",tabled,"shares held, per the latest filing")}
+    ${stat("Shares held",r.masked?BLUR("00,000,000"):r.sh!==null?fmt(r.sh):"&mdash;","",r.masked?"":tabled,"shares held, per the latest filing")}
     ${stat("Outstanding",r.out?fmt(r.out):"&mdash;","","",`shares outstanding${r.oasof?`, per the ${dayLabel(r.oasof)} cover page`:""}: the denominator of the percent`)}
-    ${stat("Worth",r.val?money(r.val):"&mdash;","","",`the stake's value: shares held at the ${asof} close${r.price?` of $${r.price.toFixed(2)}`:""}`)}
+    ${stat("Worth",r.masked?BLUR("$0.0B"):r.val?money(r.val):"&mdash;","","",`the stake's value: shares held at the ${asof} close${r.price?` of $${r.price.toFixed(2)}`:""}`)}
   </div>`;
 }
 
@@ -297,10 +289,10 @@ function recordBlock(r){
   /* the chips carry the only words: what each line is, on hover */
   const modes=[["price","Price","the share price: daily closes, split-adjusted. Dots sit at the price on the filing"],
                ["pct","Stake","the share of the company, one point per month-end: it moves when the holding changes and when the share count changes. Steps without a dot are grants, gifts, or the share count changing"]];
-  const chips=`<div class="chips" role="group" aria-label="chart view">${modes.filter(m=>m[0]==="price"?havePx:haveRec).map(m=>`<button class="chip${mode===m[0]?" on":""}" onclick="setChartMode('${m[0]}')" title="${m[2]}">${m[1]}</button>`).join("")}</div>`;
+  const chips=`<div class="chips" role="group" aria-label="chart view">${modes.filter(m=>m[0]==="price"?havePx:(haveRec||r.masked)).map(m=>`<button class="chip${mode===m[0]?" on":""}" onclick="${r.masked&&m[0]!=="price"?"openPro()":`setChartMode('${m[0]}')`}" title="${r.masked&&m[0]!=="price"?"the stake's record is in Pro":m[2]}">${m[1]}</button>`).join("")}</div>`;
   /* the dots follow the table's filter: Bought draws purchases, Sold sales,
      All both; the other kinds have no dots to draw */
-  const moving=EVENTS.filter(e=>e.tk===r.tk&&unchangedKind(e)===null&&(e.c==="P"||e.c==="S")
+  const moving=EVENTS.filter(e=>e.tk===r.tk&&!e.mk&&unchangedKind(e)===null&&(e.c==="P"||e.c==="S")
     &&(VIEW==="all"||(VIEW==="buys"&&e.c==="P")||(VIEW==="sells"&&e.c==="S")));
   const key=moving.length?`<div class="ckey"><span class="b"><i></i>bought</span><span class="s"><i></i>sold</span></div>`:"";
   if(mode==="price"&&havePx){
@@ -385,6 +377,13 @@ function tradesBlock(r){
       <td class="n lv po">${e.po!==null&&e.po!==undefined?e.po.toFixed(e.po<1?3:2)+"%":"&mdash;"}</td>
       <td class="f">${e.u?`<a href="${e.u}" target="_blank" rel="noopener" title="the filing, on EDGAR">${esc(e.form)} ↗</a>`:""}</td></tr>`;
     const {kd,p,uk,stkTxt,stkCls,span}=cell(e);
+    if(e.mk)return `<tr><td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
+      <td class="ty ${kd.k}" title="${esc(kd.n)}"><i></i>${kd.t}</td>
+      <td class="n v">${BLUR("$0.0M")}</td><td class="n sh">${BLUR("−00,000")}</td><td class="n stk">${BLUR("−0.00%")}</td>
+      <td class="n lv">${BLUR("00,000,000")}</td>
+      <td class="n lv">${e.os?fmt(e.os):"&mdash;"}</td>
+      <td class="n lv po">${BLUR("0.00%")}</td>
+      <td class="f">${BLUR("Form 4")}</td></tr>`;
     return `<tr><td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
       <td class="ty ${kd.k}" title="${esc(kd.n)}"><i></i>${kd.t}</td>
       <td class="n v ${e.c==="P"?"up":e.c==="S"?"down":"lv"}">${e.c==="P"||e.c==="S"?evValCell(e):"&mdash;"}</td>
@@ -407,9 +406,9 @@ function tradesBlock(r){
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${r.tk}-trades.csv`;a.click();
   };
   const bigChip=`<button class="chip big${BIG?" on":""}" onclick="BIG=!BIG;renderOpen(PANEL[0])" title="only the rows that moved the stake by at least 1% of what it was">Moved the stake &ge; 1%</button>`;
-  return `<div class="csec ctrades"><div class="thead"><h2>Trades</h2><button class="export" onclick="exportTrades()">Export CSV</button></div>
+  return `<div class="csec ctrades"><div class="thead"><h2>Trades</h2><button class="export" onclick="${r.masked?"openPro()":"exportTrades()"}" title="${r.masked?"the record is in Pro":"the rows below, as a CSV"}">Export CSV</button></div>
     <div class="tchips">${chip("all","All",count("all"))}${chip("buys","Bought",count("buys"))}${chip("sells","Sold",count("sells"))}${chip("comp","Compensation",count("comp"))}${chip("transfers","Transfers",count("transfers"))}${chip("covers","Share count",count("covers"))}<span class="tsep"></span>${bigChip}</div>
-    ${rows?`<table><thead><tr><th>Date</th><th>Trade</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Change</th><th class="n lv">Held</th><th class="n lv">Outstanding</th><th class="n lv">Owned</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
+    ${rows?`<table><thead><tr><th>Date</th><th>Trade</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Change</th><th class="n lv">Held</th><th class="n lv">Outstanding</th><th class="n lv">Owned</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">${r.masked?"No filings in the last twelve months; the full record is in Pro.":"Nothing in this view."}</div>`}
     ${VIEW==="comp"?`<div class="sub" style="margin-top:10px">Compensation: what the company gave and what was sold of it. Awards granted, options exercised and held or cashed, vests, tax withholding, forfeitures. None of it is counted as buying or selling in the site's summaries.</div>`:""}
     ${VIEW==="transfers"?`<div class="sub" style="margin-top:10px">Transfers: gifts, conversions between classes, pre-IPO catch-ups and other non-market transactions the filing reports.</div>`:""}
     ${VIEW==="covers"?`<div class="sub" style="margin-top:10px">Share count: the company's cover pages that changed the number of shares outstanding. The stake moves with them though nothing of the chief executive's did.</div>`:""}
@@ -418,6 +417,7 @@ function tradesBlock(r){
 
 /* ---- the receipt for the badge ---- */
 function whyBlock(r){
+  if(r.masked)return "";
   const fi=fInfo(r.tk);if(!fi||!fi.ev)return"";
   /* whole sentences only: trim the window to its first and last full stop */
   let ev=fi.ev.replace(/\s+/g," ").trim();
@@ -461,13 +461,17 @@ async function fetchText(paths){
     const t=await fetchText(["/pro/universe.csv"]);
     if(t){const p=mapPanel(parseCSV(t)).find(x=>x.tk===C.tk);if(p)row=p;}
   }
-  if(!row){setRow({tk:C.tk,co:C.co,ceo:C.ceo,pct:null,sh:null,out:null,asof:"",conf:"medium"});renderSealed();return;}
+  if(!row){
+    /* a sealed company: the same page, the seals on the figures; a free
+       shard of the last year's filings, dates and kinds only, fills the table */
+    row={tk:C.tk,co:C.co,ceo:C.ceo,pct:null,sh:null,out:C.out||null,oasof:C.oasof||"",asof:"",conf:"medium",masked:true,tabled:null};
+  }
   if(C.price){row.price=C.price;row.val=row.sh?row.sh*C.price:null;PRICES_ASOF=C.price_date||"";}
   setRow(row);
   renderOpen(row,{animate:false});   /* the numbers first; the record and trades fill in */
   const base=(C.sp||!pro)?"":"/pro";
   const [h,e,p]=await Promise.all([
-    fetchText([`${base}/history/${C.tk}.csv`,`/history/${C.tk}.csv`]),
+    row.masked?Promise.resolve(null):fetchText([`${base}/history/${C.tk}.csv`,`/history/${C.tk}.csv`]),
     fetchText([`${base}/events/${C.tk}.csv`,`/events/${C.tk}.csv`]),
     fetchText([`/prices/${C.tk}.csv`])]);   /* prices are public on every page */
   if(h){const m=mapHistory(parseCSV(h));if(m[C.tk])HIST=m;}

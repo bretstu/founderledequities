@@ -75,7 +75,8 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert "co-founded the Company" in tsla, "the founder evidence rides in the shell (as data for the receipt)"
     # the sealed page carries the person and the verdict, and no figure
     assert "<title>How much of Sealed Co does Jane Doe own? (SEALD)" in sealed
-    assert "41.2" not in sealed and "1000000" not in sealed and "2400000" not in sealed
+    assert "41.2" not in sealed and "1000000" not in sealed, "no stake, no shares on a sealed page"
+    assert "2400000" in sealed, "the cover page's count is public and the page carries it"
     assert '"sp": false' in sealed and '"row"' not in sealed
     assert '"price": 10.0' in sealed, "the close is public and rides on a sealed page; the shares do not"
     assert "Sealed universe" not in sealed and "open to everyone" not in tsla
@@ -84,7 +85,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert "<h1>Tesla, Inc.</h1>" in tsla, "the heading is the company's name and nothing else"
     # a sealed page is a teaser: the question as its heading, no robots directive, in the sitemap
     assert '<meta name="robots"' not in sealed and "<h2 class=\"cq2\">How much of" in sealed and "does " in sealed
-    assert "<title>How much of" in sealed and "is in Pro" in sealed
+    assert "<title>How much of" in sealed and 'class="sealed"' in sealed, "the question, and blurred figures where the stake would be"
     sitemap = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
     assert "/company/TSLA/" in sitemap and "/company/SEALD/" in sitemap
     # the machinery around them
@@ -97,7 +98,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     robots = open(os.path.join(out, "robots.txt"), encoding="utf-8").read()
     assert "Disallow: /pro/" in robots and "Sitemap:" in robots
     js = open(os.path.join(out, "company.js"), encoding="utf-8").read()
-    assert "function renderSealed(" in js and "function cleanHist(" in js, "the page's own logic follows the shared code"
+    assert "const BLUR=" in js and "function cleanHist(" in js, "the page's own logic follows the shared code"
 
 
 def test_the_nav_on_a_page_points_home():
@@ -194,7 +195,7 @@ def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path
     assert "names Elon Musk a founder" in body
     sealed = open(out / "company" / "SEALD" / "index.html", encoding="utf-8").read()
     sbody = sealed[sealed.index('<div id="cbody">'):sealed.index('<div class="creport"')]
-    assert "chief executive of" in sbody and "are in Pro" in sbody and "41.2" not in sbody, "a sealed page: the question, the person, the offer, no stake"
+    assert "chief executive of" in sbody and 'class="sealed"' in sbody and "41.2" not in sbody, "a sealed page: the question, the person, the blurred figures, no stake"
     idx = open(out / "companies" / "index.html", encoding="utf-8").read()
     assert 'href="/company/TSLA/"' in idx and 'href="/company/SEALD/"' in idx, "every page has a plain link"
     assert "FOUNDER" in idx and "Pro</span>" in idx
@@ -215,7 +216,7 @@ def test_the_seo_layer(tmp_path):
     assert '"@type": "BreadcrumbList"' in tsla and '/companies/' in tsla
     assert '<div id="cmore"><div class="cmore">' in tsla or '<div id="cmore"></div>' in tsla, "neighbour links live outside the block the script redraws"
     sealed = open(out / "company" / "SEALD" / "index.html", encoding="utf-8").read()
-    assert "2 Form 4 filings by the chief executive are on record since 2016, the most recent filed 2021-01-01" in sealed, "a count and a date, never a number behind the seal"
+    assert "2 Form 4 filings on record since 2016, the most recent filed 2021-01-01" in sealed, "a count and a date, never a number behind the seal"
     assert "41.2" not in sealed
     sm = open(out / "sitemap.xml", encoding="utf-8").read()
     assert "<lastmod>2026-07-06</lastmod>" in sm, "a company page is dated by its as-of"
@@ -264,15 +265,21 @@ def test_the_band_uses_the_tables_words_and_has_no_three_year_cell():
     assert "\u2014" not in js, "no em dashes"
 
 
-def test_a_sealed_page_says_whose_stake_is_in_pro(tmp_path):
+def test_a_sealed_page_is_the_open_page_with_the_seals_on_the_figures(tmp_path):
+    """The same card and the same table shape; a blurred placeholder where
+    the stake, the shares and the worth would be; the cover page's count
+    shown; one line of prose; no box (the nav's button is the one)."""
     panel, founders, prices, sp, _ = _fixture(tmp_path)
     out = tmp_path / "pub"
     bcp.main(panel, founders, prices, sp, str(out))
     sealed = open(out / "company" / "SEALD" / "index.html", encoding="utf-8").read()
-    assert "Jane Doe&#x27;s stake</div><h2 class=\"p\">is in Pro" in sealed
+    assert '<h2 class="p"><span class="k">Jane Doe owns</span><span class="sealed"' in sealed
+    assert sealed.count('class="sealed"') == 3, "the share, the shares, the worth"
+    assert '<div class="k">Outstanding</div><div class="v ">2,400,000</div>' in sealed
+    assert "Go Pro, $5" not in sealed and "cseal" not in sealed, "no box on the page"
     assert bcp.poss("Jabbok Schlacks") == "Jabbok Schlacks'"
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
-    assert "is in Pro" in js and "const poss=" in js
+    assert "const BLUR=" in js and "row.masked?Promise.resolve(null)" in js, "the page loads no record for a sealed company"
 
 
 def test_the_one_year_return_on_a_page_is_the_lists(tmp_path):

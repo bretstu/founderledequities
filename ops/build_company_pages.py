@@ -280,27 +280,26 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
     if not is_sp:
         q = founder_quote(founder)
         quote = f' <span class="cq">The proxy statement says: &ldquo;{q}&rdquo;</span>' if q else ""
-        onrec = (f" {n_filings} Form 4 filings by the chief executive are on record since 2016"
+        onrec = (f" {n_filings} Form 4 filings on record since 2016"
                  + (f", the most recent filed {html.escape(last_filed)}." if last_filed else ".")) if n_filings else ""
         out = num(r.get("outstanding"))
-        r1 = ret_1y.get(payload["tk"]) if ret_1y else None
         def stat(k, v, cls=""):
             return f'<div class="cstat"><div class="k">{k}</div><div class="v {cls}">{v}</div></div>'
+        # THE OPEN PAGE'S SHAPE, WITH THE SEALS ON THE FIGURES. The same four
+        # cards; a blurred placeholder where the stake, the shares and the
+        # worth would be (the numbers are not on the page), the cover page's
+        # count shown. One line of prose. No box: the nav's button is the one.
+        blur = lambda shape: f'<span class="sealed" onclick="openPro()" title="in Pro">{shape}</span>'
         cards = ('<div class="cband four">'
-                 + stat("Market cap", money(out * price) if (price and out) else "&mdash;")
-                 + stat("Share price", f"${price:,.2f}" if price else "&mdash;")
-                 + (stat("1Y return", f"{r1:+.1f}%", "up" if r1 >= 0 else "down") if r1 is not None else stat("1Y return", "&mdash;", "none"))
-                 + stat("Filings on record", f"{n_filings:,}" if n_filings else "&mdash;")
+                 f'<div><h2 class="p"><span class="k">{ceo} owns</span>{blur("0.00%")}</h2></div>'
+                 + stat("Shares held", blur("00,000,000"))
+                 + stat("Outstanding", f"{int(out):,}" if out else "&mdash;")
+                 + stat("Worth", blur("$0.0B"))
                  + '</div>')
-        scale_line = (f' For scale: in the S&amp;P 500, where every stake is free to read, {scale[0]} of {scale[1]} chief executives own more than 5% of their company.'
-                      if scale else "")
         co_s = co[:-1] if co.endswith(".") else co   # "Inc." takes no second period
         return (f'<h2 class="cq2">How much of {co} does {ceo} own?</h2>'
-                f'<p class="cprose">{ceo} is the chief executive of {co_s}.{fsent}{quote}{onrec} '
-                f'The stake, the shares, what they are worth and every trade, computed from those filings and never estimated, '
-                f'are in Pro: <a href="/api/checkout">$5 a month</a>, and the S&amp;P 500 is free.{scale_line}</p>'
-                + cards + price_svg
-                + f'<div class="cseal"><div class="k">{html.escape(poss(payload["ceo"] or "The chief executive"))} stake</div><h2 class="p">is in Pro</h2></div>')
+                f'<p class="cprose">{ceo} is the chief executive of {co_s}.{fsent}{onrec}</p>'
+                + cards + price_svg)
     pct = num(r.get("pct")); sh = num(r.get("shares")); out = num(r.get("outstanding"))
     if pct is None or sh is None:
         return f'<p class="cprose">{ceo} is the chief executive of {co}.{fsent} The record could not settle on a figure; the reasons are on the row.</p>'
@@ -528,6 +527,9 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
             n_open += 1
         else:
             n_sealed += 1
+            # the cover page's count is public; the page shows it in its card
+            payload["out"] = num(r.get("outstanding"))
+            payload["oasof"] = r.get("outstanding_as_of") or ""
         if price:   # the close is public data; a sealed page carries it and no shares
             payload["price"] = price
             payload["price_date"] = price_date
