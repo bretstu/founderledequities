@@ -354,20 +354,29 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
    it. It is the thing a returning reader looks at first and the thing that
    gets screenshotted, so it carries a date a human can read, a count, and
    its own permalink. */
-.dayb{border:1px solid var(--line);border-radius:12px;padding:14px 18px 6px;margin-bottom:22px;background:#fff}
-.dayh{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
-.dayh .dt{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
-.dayh .dt b{color:var(--blue);font-weight:600}
 /* the day chips are the section's own chips -- white with a border, the
    chosen one filled ink -- so they read as the filter they are */
-.dayh .dn{display:flex;gap:6px;flex-wrap:wrap}
-.dayh .dn .chip{cursor:pointer}
-.dayh .dn .chip:hover{border-color:var(--ink);color:var(--ink)}
-.dayh .dn .chip.on:hover{color:#fff}
 /* THE DAY IS A TABLE. Kind, company, value, stake, manner, transaction,
    filing: seven columns, every row the same shape, so twelve filings
    scan as a table and not as twelve sentences of different lengths. A
    sealed row keeps the shape: value and stake blurred, the rest shown. */
+.actstats{font-size:13.5px;color:var(--mut);margin:2px 0 14px}
+.actstats b{color:var(--ink);font-weight:700}
+.acards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+@media(max-width:760px){.acards{grid-template-columns:1fr}}
+.acard{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 16px 14px;cursor:pointer;min-height:96px}
+.acard:hover{background:var(--wash)}
+.acard .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+.acard .who{font-size:13px;font-weight:600;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acard .who .atk{font-family:var(--mono);font-weight:500;color:var(--mut)}
+.acard .big{font-family:var(--disp);font-size:26px;font-weight:700;letter-spacing:-.01em;margin-top:6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.acard .big.up{color:var(--buy)}.acard .big.down{color:#c22a2a}
+.acard .big small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--mut);letter-spacing:0}
+.actctl{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.actsort .k{font-family:var(--mono);font-size:11px;color:var(--faint);margin-right:6px}
+.daylist.tall{height:auto;max-height:560px;margin:0;padding:0}
+.firstb{display:inline-block;margin-left:8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--buy);border:1px solid var(--buy);border-radius:999px;padding:1px 6px;vertical-align:middle}
+.actnote{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--mut);margin-top:12px}
 .daytab{width:100%;border-collapse:collapse;margin-top:6px}
 .daytab th{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:500;text-align:left;padding:6px 8px 8px;border-bottom:1px solid var(--line)}
 .daytab th.n,.daytab td.n{text-align:right}
@@ -391,52 +400,12 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
    the absolute comparison, the bars carry the ranking within a side. */
 /* align-items:start, deliberately: a short buy column beside a long sell
    column is the finding, so neither column is stretched to the other */
-.actcols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-bottom:6px;align-items:start}
-@media(max-width:760px){.actcols{grid-template-columns:1fr}}
-.acol{border:1px solid var(--line);border-radius:12px;padding:14px 18px 12px;background:#fff;display:flex;flex-direction:column}
-.acol:has(.aempty){min-height:260px}
-.acol .ah{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
-.acol .at{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)}
-.acol.sell .at{color:#C13A2E}
-.acol .an{font-size:13px;color:var(--mut)}
-.acol .an b{font-weight:600;color:var(--ink)}
-.acol .achips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 12px}
-.acol .achips .chip{padding:6px 11px;font-size:12px}
-.acol .achips .chip i{margin-left:6px}
-.abar{display:grid;grid-template-columns:minmax(120px,42%) minmax(0,1fr) 138px;gap:8px 10px;align-items:center;padding:6px 0;cursor:pointer;border-radius:6px}
-.abar:hover{background:var(--wash);margin:0 -8px;padding-left:8px;padding-right:8px}
-.abar .who{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--disp);font-weight:650;font-size:13px;letter-spacing:-.012em;line-height:1.15}
-.abar .who small{display:block;font-family:var(--mono);font-weight:600;font-size:10.5px;color:var(--mut);letter-spacing:.02em;margin-top:2px}
-.abar .who{display:block}
-.abar .who .nmrow{display:flex;align-items:center;min-width:0}
-.acol.sell .abar .who small{color:#C13A2E}
-.abar .trk{height:18px;background:var(--panel);border-radius:3px;display:flex;overflow:hidden}
-.abar .seg{height:100%;background:var(--buy);flex:none}
 /* ONE COLOUR FOR ONE FACT. The badges already say 10b5-1 with a light
    tint of the same colour; the bars said it with stripes, a second
    vocabulary for the same thing. Now the light tint everywhere. */
-.abar .seg.plan{background:rgba(27,52,224,.36)}
-.abar .seg.unknown{background:rgba(27,52,224,.35)}
-.acol.sell .abar .seg{background:#C13A2E}
-.acol.sell .abar .seg.plan{background:rgba(193,58,46,.36)}
-.acol.sell .abar .seg.unknown{background:rgba(193,58,46,.35)}
-.abar .amt{text-align:right;white-space:nowrap;font-family:var(--mono);font-size:12px;line-height:1.3}
-.abar .amt b{font-weight:600;color:var(--ink);display:block;font-size:13px}
-.abar .amt span{color:var(--faint);font-size:10.5px}
-.abar .amt span.q{cursor:help}
-.aempty{flex:1;display:grid;place-items:center;text-align:center;font-size:13px;color:var(--mut);line-height:1.6;padding:18px 12px;min-height:140px}
 /* on a phone the bar takes its own line beneath the name, full width */
 @media(max-width:640px){
-  .abar{grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding:8px 0}
-  .abar .trk{grid-column:1/-1;order:3}
-  .abar .who{white-space:normal}
 }
-.acol .af{margin-top:auto;padding-top:12px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--faint)}
-.acol .af .key{display:flex;gap:10px;align-items:center}
-.acol .af .key i{display:inline-block;width:14px;height:9px;border-radius:2px;vertical-align:-1px;margin-right:4px;background:var(--blue)}
-.acol .af .key i.plan{background:rgba(27,52,224,.36)}
-.acol.sell .af .key i{background:#C13A2E}
-.acol.sell .af .key i.plan{background:rgba(193,58,46,.36)}
 /* THE FOUNDER MARK. The site exists to tell founders from hired hands, so
    the section says which is which -- quietly, and in the leaderboard's own
    badge: the same ink pill, abbreviated to F, always after the name so
@@ -444,19 +413,12 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
    an ambiguous proxy gets nothing. In a bar the name is the flexible part
    and the pill is not, so a long name shortens before the pill can go. */
 .fm{display:inline-block;flex:none;box-sizing:border-box;width:15px;height:15px;line-height:15px;text-align:center;font-family:var(--ui);font-size:10px;font-weight:700;letter-spacing:0;border-radius:4px;padding:0;margin-left:7px;vertical-align:1px;background:var(--ink);color:#fff;cursor:help}
-.abar .who .nm{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.abar .who .fm{margin-top:-1px}
-.acol .af .key .fm{margin-left:0;margin-right:4px}
 /* the day chips: the last five filing days, newest on the right */
-.dayh .dn .chip{padding:5px 10px;font-size:11.5px;font-family:var(--mono);letter-spacing:.02em;font-weight:600}
-.dayh .dn .chip i{margin-left:6px}
 /* THE STRIP IS A FIXED FRAME. A day of three trades and a day of thirty
    take the same space; the rows scroll inside it, and the page below never
    jumps when a chip is chosen. */
 .daylist{height:290px;overflow:auto;overscroll-behavior:contain;margin:0 -18px;padding:0 18px}
 .dayempty{height:100%;display:grid;place-items:center}
-.acol .af a{color:var(--mut);text-decoration:none;font-weight:600;cursor:pointer}
-.acol .af a:hover{color:var(--blue)}
 /* SALES THAT DID NOT MOVE A STAKE ARE OFF THE PAGE AND ONE CLICK AWAY.
    The site's question is ownership. Options cashed and units converted
    are real sales of real shares and the measured stake ends where it
@@ -468,15 +430,6 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .actnote{margin:10px 2px 0;font-size:12.5px;color:var(--mut);line-height:1.6}
 .actnote a{color:var(--mut);font-weight:600;text-decoration:none;cursor:pointer}
 .actnote a:hover{color:var(--blue)}
-.dayalso{padding:9px 0 4px;border-top:1px solid var(--line2);font-size:12.5px;color:var(--faint);cursor:pointer}
-.daykey{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;margin:14px 2px 0;font-family:var(--mono);font-size:11px;color:var(--faint)}
-.daykey .abadge{transform:scale(.85);min-width:0;margin-right:-2px}
-.daykey .sep{margin:0 4px}
-.dayalso:hover{color:var(--blue)}
-.acttable{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
-.acttop{justify-content:space-between}
-.tview{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
-.tview em{font-style:normal;color:var(--faint);font-weight:400;letter-spacing:.02em;text-transform:none;margin-left:8px}
 .actctl{margin-bottom:14px}
 /* THE CONTROLS ARE THE SALES COPY.
    A free reader sees the whole instrument panel -- every chip, the search,
@@ -485,8 +438,6 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
    sheet: the interface explains the paid tier without a sentence of copy,
    and the click arrives at the exact moment of curiosity. */
 .controls.gated{position:relative;opacity:.92}
-.gatecover{position:absolute;inset:0;z-index:3;cursor:pointer;border-radius:8px}
-.gatecover:hover{background:rgba(27,52,224,.035)}
 /* TWO KINDS OF CHIP, TOLD APART BY TONE.
    Views and directions are white; the chips after the divider -- the
    manners of selling, the founders-only modifier -- sit on the panel wash,
@@ -531,11 +482,7 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .chip i{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:7px}
 .chip.on i{color:rgba(255,255,255,.62)}
 /* the badge in a row is the fastest filter on the page, so it acts like one */
-.actf .abadge{cursor:pointer}
-.actf .abadge:hover{outline:2px solid var(--blue);outline-offset:1px}
 /* the feed is a window, not a wall -- same rule as the company table */
-.escroll{max-height:660px;overflow:auto;overscroll-behavior:contain;border-bottom:1px solid var(--line)}
-.escroll thead th{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:none;box-shadow:inset 0 -1px 0 var(--ink)}
 .aplan{display:block;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.05em;margin-top:4px}
 .apx{font-family:var(--mono);font-size:11px;color:var(--faint);display:block;font-weight:400;margin-top:2px}
 .pwarn{cursor:help;color:var(--amber)}
@@ -545,15 +492,6 @@ td.asrc a:hover{color:var(--blue)}
 .efoot{padding:12px 2px 0;font-size:13px;color:var(--mut)}
 .eempty{height:520px;display:grid;place-items:center;text-align:center;
   font-size:13.5px;color:var(--mut);line-height:1.7;padding:0 24px}
-.actf{width:100%;border-collapse:collapse}
-.actf thead th{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-align:left;padding:9px 12px;border-bottom:1px solid var(--ink);white-space:nowrap}
-.actf thead th.sortable{cursor:pointer;user-select:none}
-.actf thead th.sortable:hover{color:var(--ink)}
-.actf thead th .arr{display:inline-block;width:1em;color:var(--blue)}
-.actf thead th.n{text-align:right}
-.actf td{padding:11px 12px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:middle}
-.actf tbody tr{cursor:pointer}
-.actf tbody tr:hover{background:var(--wash)}
 .adate{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap}
 .adate .atd{display:block;font-size:10px;color:var(--faint);margin-top:2px}
 .atk{font-family:var(--mono);font-weight:600;font-size:13px}
@@ -576,7 +514,6 @@ td.asrc a:hover{color:var(--blue)}
 .aval.down{color:#C13A2E}
 .nopr{color:var(--faint);font-weight:400}
 .actlock{margin-top:16px}
-.actfree{margin-bottom:6px}
 
 .fb{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;border-radius:4px;padding:2px 6px;margin-left:8px;vertical-align:1px}
 .fb.yes{background:var(--ink);color:#fff}
@@ -667,52 +604,27 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="shead">
     <h2>Recent activity</h2>
     <div class="r shr">
-      <!-- ONE SWITCH FOR THE WHOLE SECTION. The day strip, its chips' counts,
-           the two columns and the trade table are one dataset at three zooms;
-           a filter that applied to two of them and not the first put a hired
-           CEO's sale above a founders-only column. -->
+      <!-- ONE WINDOW AND ONE FOUNDERS SWITCH FOR THE WHOLE SECTION: the
+           counts, the cards and the table are one dataset at one zoom. -->
+      <span class="chips" id="actwin" role="group" aria-label="window">
+        <button class="chip win" data-win="7" title="filings that reached EDGAR in the last 7 days">7 days</button>
+        <button class="chip win" data-win="30">30</button>
+        <button class="chip win" data-win="90">90</button>
+        <button class="chip win" data-win="365">12 months</button>
+      </span>
       <span class="fsw" id="evf" role="switch" aria-checked="false" tabindex="0"
-        title="only companies still run by a person the proxy names as a founder — applies to the day strip, the columns and the table">Founders only<span class="tr"><i></i></span></span>
-      <span id="actsub"></span>
+        title="only companies still run by a person the proxy names as a founder">Founders only<span class="tr"><i></i></span></span>
     </div>
   </div>
   <div class="sbody">
-  <div id="actday"></div>
-  <!-- THE WINDOW AND THE FOUNDERS SWITCH ARE THE ONLY SHARED CONTROLS.
-       Direction is no longer a chip: the columns are the direction. Each
-       column carries its own two manner chips (Discretionary, Planned),
-       both on by default, so the two sides read as the same instrument.
-       A sale that leaves the measured stake where it was (options
-       cashed, units converted) is not a third manner of reducing a stake
-       -- the stake does not move -- so it sits as a stated line beneath
-       the sell column rather than as a chip that only one side has. The old gate
-       cover is kept, hidden, so the seal stays the only gate on the page. -->
-  <div class="controls actctl" id="actctl">
-    <div class="gatecover hide" id="actgate" role="button" tabindex="0"
-      title="Filters, search and the full decade back to 2016 are Pro — select to unlock"
-      onclick="openPro()" onkeydown="if(event.key==='Enter')openPro()"></div>
-    <button class="chip win on" data-win="30" title="filings that reached EDGAR in the last 30 days">Last 30 days</button>
-    <button class="chip win" data-win="90">90 days</button>
-    <button class="chip win" data-win="365">12 months</button>
-  </div>
-  <div class="actcols" id="actcols"></div>
-  <div class="daykey" id="actkey"><span class="abadge up">BOUGHT</span> open market <span class="abadge down">SOLD</span> discretionary <span class="abadge dsoft">SOLD</span> on a plan <span class="fm">F</span> founder <span class="sep">·</span> in the strip, each row's date is the transaction and the strip is the filing day</div>
-  <div class="actnote" id="actnote"></div>
-  <!-- THE TABLE IS A DRAWER, NOT A WALL. It opens from a column footer, a
-       badge, or the day strip, already narrowed to what was asked for. The
-       search box is static markup so it never loses focus to a re-render:
-       only #actwrap below it is rebuilt. -->
-  <div class="acttable hide" id="acttable">
-    <div class="controls acttop">
-      <span class="tview" id="tview"></span>
-      <label class="search">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="eq" type="search" placeholder="Filter by ticker, company, or CEO" aria-label="Filter events">
-      </label>
-      <button class="chip" onclick="setView('')" title="close the table">Close ✕</button>
+    <div class="actstats" id="actstats"></div>
+    <div id="actcards"></div>
+    <div class="controls actctl">
+      <span class="chips" id="actkinds"></span>
+      <span class="chips actsort" id="actsort"></span>
     </div>
-    <div id="actwrap"></div>
-  </div>
+    <div class="daylist tall" id="actwrap"></div>
+    <div class="actnote" id="actnote"></div>
   </div>
 </div></section>
 
@@ -879,7 +791,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"mcap",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,distOpen:null,pc:"sp",pro:false,meKnown:false,acct:"",ev:{view:"",kinds:{buys:["disc","plan"],sells:["disc","plan"]},q:"",win:"30",f:false,day:"",sort:{key:"fd",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
+const state={q:"",min:0,sort:{key:"mcap",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,distOpen:null,pc:"sp",pro:false,meKnown:false,acct:"",ev:{kind:"all",q:"",win:"7",f:false,sort:{key:"pc",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -1082,6 +994,7 @@ function mapEvents(recs){
     /* a sealed company's filing: the ticker, the name, the dates and the
        kind are here; every figure is blank and mk says so */
     mk:String(r.masked||"")==="1",
+    fb:String(r.first_buy||"")==="1",   /* this person's first open-market purchase on record */
     rs:num(r.residue),pl:r.plan||"unknown",u:r.url||"",fl:r.price_flag||"",acc:r.accession||"",
     pre:String(r.pre_ipo||"")==="1",reg:r.registered||""
   })).filter(e=>e.tk&&e.fd).sort((a,b)=>a.fd<b.fd?1:-1);
@@ -2220,148 +2133,57 @@ function sellKind(e){
 }
 /* the sealed filings of the window, counted for the column's header: the
    sizes that would rank them are in Pro, said once, quietly */
-function sealedMore(side){
-  const days=+state.ev.win||30;
-  const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
-  const n=EVENTS.filter(e=>e.mk&&e.fd>=cut&&fOnly(e.tk,state.ev.f)&&(side==="buys"?e.c==="P":e.c==="S")&&unchangedKind(e)===null).length;
-  return n?` · <a onclick="openPro()" title="filings by sealed companies in this window; their sizes are in Pro" style="cursor:pointer">${n} more in Pro</a>`:"";
+/* ================================================================
+   RECENT ACTIVITY: one table, ranked by what moved the stake.
+   The questions a reader brings, in order: what happened lately that
+   matters; who is buying; who is cutting their stake; then browsing. The
+   section answers the first three before anyone scrolls (a counts line
+   and three cards) and the fourth with one table over the window, sorted
+   by stake change by default, with value and date one click away. The
+   two bar columns that ranked by dollars are gone: the site's premise is
+   the stake, and dollars mostly rank company size. A sealed filing is a
+   row with its figures blurred; the ranked cards use open rows only,
+   since a blurred figure cannot be the biggest of anything.
+   ================================================================ */
+function evSide(e){
+  if(unchangedKind(e)!==null)return"exsell";
+  return e.c==="P"?"buys":"sells";
 }
-function evSealed(){
-  const days=+state.ev.win||30;
+function actWindow(){
+  const days=+state.ev.win||7;
   const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
-  let evs=EVENTS.filter(e=>e.mk&&e.fd>=cut&&fOnly(e.tk,state.ev.f));
+  let evs=EVENTS.filter(e=>(e.c==="P"||e.c==="S")&&e.fd>=cut&&fOnly(e.tk,state.ev.f));
   const q=state.ev.q.trim().toLowerCase();
   if(q)evs=evs.filter(e=>e.tk.toLowerCase().includes(q)||coOf(e.tk).toLowerCase().includes(q)||e.ceo.toLowerCase().includes(q));
   return evs;
 }
-function evBase(){
-  /* WINDOW, FOUNDERS, SEARCH -- everything EXCEPT which side or manner.
-     The chip counts and the column totals are taken from here, so each
-     number reports what selecting that chip would actually return. */
-  const days=+state.ev.win||30;
-  const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
-  let evs=EVENTS.filter(e=>e.fd>=cut&&!e.mk&&fOnly(e.tk,state.ev.f));
-  const q=state.ev.q.trim().toLowerCase();
-  if(q)evs=evs.filter(e=>e.tk.toLowerCase().includes(q)
-    ||coOf(e.tk).toLowerCase().includes(q)||e.ceo.toLowerCase().includes(q));
-  return evs;
-}
-function evSide(e){
-  /* which column a filing belongs to. Options cashed is a sale whose stake
-     did not move: it is neither a purchase nor a stake reduction, so it has
-     a side of its own and never enters the Sold ranking. */
-  if(unchangedKind(e)!==null)return"exsell";   /* the kept-apart pile, both directions */
-  if(e.c==="P")return"buys";
-  if(e.c==="S")return"sells";
-  return"";
-}
-function mannerOK(e,side){
-  /* the two chips are the two manners the checkbox can state. "unknown" is
-     the absence of the checkbox (before April 2023), not a third manner:
-     it shows whenever nothing has been narrowed, and drops out the moment
-     a reader asks for one manner specifically -- an honest exclusion, not
-     a guess about which pile it belongs in. */
-  const ks=state.ev.kinds[side]||[];
-  const k=sellKind(e);
-  if(k==="unknown")return ks.length===2;
-  return ks.includes(k);
-}
-function evMatch(e){
-  const v=state.ev.view;
-  if(!v)return true;
-  const side=evSide(e);
-  if(v==="day")return e.fd===dayShown();   /* the whole day, unchanged rows included */
-  if(v==="exsell")return side==="exsell";
-  if(v==="buys"||v==="sells")return side===v&&mannerOK(e,v);
-  return true;
-}
-function evFiltered(){
-  /* THE TABLE IS EVERY FILING OF THE WINDOW, in date order; the sealed
-     ones too, with their figures blurred (the columns above rank by size
-     and cannot place them; a table sorted by date can). */
-  let evs=evBase().filter(evMatch).concat(evSealed().filter(evMatch));
-  const {key,dir}=state.ev.sort;
-  /* A FLAGGED PRICE SORTS AS WORTHLESS.
-     Nadella's decimal-shift "sale" is $189bn as filed; sorted by value it
-     would sit on top of the feed forever. It still shows, in date order,
-     with its caution -- it simply does not get to lead. */
-  const val=e=>e.fl?0:(e.v||0);
-  const KEY={
-    fd:e=>e.fd, co:e=>e.tk, act:e=>(e.c==="P"?"0":"1")+e.lb,
-    v:val, sh:e=>e.sh, pc:e=>{const p=pctOf(e);return p?p.v:-1;},
-  };
-  const f=KEY[key]||KEY.fd;
-  evs=[...evs].sort((a,b)=>{
-    const va=f(a),vb=f(b);
-    if(typeof va==="string")return va.localeCompare(vb)*dir||(a.fd<b.fd?1:-1);
-    return (va-vb)*dir||(a.fd<b.fd?1:-1);   /* newest first inside a tie */
+/* the rows of the table: the window narrowed by the kind chip */
+function actRows(){
+  const k=state.ev.kind||"all";
+  return actWindow().filter(e=>{
+    const side=evSide(e);
+    if(k==="all")return side!=="exsell";
+    if(k==="comp")return side==="exsell";
+    return side===k;
   });
-  return evs;
 }
-function toggleKind(side,k){
-  /* each column's chips are its own; the other column does not move */
-  const ks=state.ev.kinds[side];
-  const i=ks.indexOf(k);
-  if(i>=0)ks.splice(i,1);else ks.push(k);
-  renderCols();
-  if(state.ev.view===side)renderFeed();
+function actSorted(rows){
+  const {key,dir}=state.ev.sort;
+  const pc=e=>{if(e.mk)return null;const p=pctOf(e);return p?Math.abs(p.v):null;};
+  const val=e=>e.mk?null:(e.fl?0:(e.v||0));
+  const f=key==="v"?val:key==="fd"?(e=>e.fd):pc;
+  return [...rows].sort((a,b)=>{
+    const va=f(a),vb=f(b);
+    /* a sealed row has no figure to rank by: it follows the ranked rows,
+       in date order, and interleaves only under a date sort */
+    if(key!=="fd"){if(va===null&&vb===null)return b.fd.localeCompare(a.fd);if(va===null)return 1;if(vb===null)return -1;}
+    if(va>vb)return dir;if(va<vb)return -dir;   /* dir -1: largest first */
+    return b.fd.localeCompare(a.fd)||a.tk.localeCompare(b.tk);
+  });
 }
 function setWin(w){state.ev.win=String(w);renderActivity();}
-function setView(v){
-  /* the table opens on request and closes on request; nothing else on the
-     page moves when it does */
-  state.ev.view=v||"";
-  const box=$("#acttable");if(!box)return;
-  box.classList.toggle("hide",!state.ev.view);
-  if(state.ev.view){renderFeed();
-    if(box.scrollIntoView)box.scrollIntoView({block:"nearest",behavior:"smooth"});}
-}
-function setKind(k){
-  /* the badge in a row is a filter: clicking SOLD, BOUGHT or EX & SELL
-     opens the table on exactly that side, and a manner badge narrows the
-     side's chips to that manner */
-  if(k==="buys"){setView("buys");return;}
-  if(k==="exsell"){setView("exsell");return;}
-  if(k==="disc"||k==="plan"){state.ev.kinds.sells=[k];renderCols();setView("sells");return;}
-  setView("sells");
-}
-
-function sortTape(key){
-  const s=state.ev.sort;
-  if(s.key===key)s.dir*=-1;
-  else state.ev.sort={key,dir:key==="co"?1:-1};   /* text ascends, numbers descend */
-  renderFeed();
-}
-function evTable(rows,sortable,emptyMsg){
-  const th=(key,label,cls)=>{
-    if(!sortable)return `<th class="${cls||""}">${label}</th>`;
-    const on=state.ev.sort.key===key;
-    return `<th class="sortable ${cls||""}" onclick="sortTape('${key}')"
-      aria-sort="${on?(state.ev.sort.dir<0?"descending":"ascending"):"none"}"
-      >${label}<span class="arr">${on?(state.ev.sort.dir<0?" ↓":" ↑"):""}</span></th>`;
-  };
-  return `<div class="escroll"><table class="actf"><thead><tr>
-    ${th("fd","Filed")}${th("co","Company")}${th("act","Action")}
-    ${th("v","Value","n")}${th("sh","Shares","n")}${th("pc","Stake change","n")}
-    <th>Filing</th>
-   </tr></thead><tbody>`+
-   (rows.length?"":`<tr><td colspan="7"><div class="eempty">${emptyMsg||"Nothing here."}</div></td></tr>`)+
-   rows.map(e=>{
-    const b=evBadge(e);
-    const plan=e.pl==="plan"?"planned":e.pl==="discretionary"?"discretionary":"";
-    return `<tr onclick="openCompany('${e.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
-     <td class="adate" title="filed ${e.fd}; traded ${e.td}${lagNote(e)}">${e.fd}${e.td&&e.td!==e.fd?`<span class="atd">traded ${e.td}</span>`:""}</td>
-     <td><span class="atk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></span><span class="aceo">${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span></td>
-     <td><span class="abadge ${b.k}" title="${b.n} — select for more like this"
-       onclick="event.stopPropagation();setKind('${e.c==="P"?"buys":sellKind(e)}')"
-       role="button" tabindex="0" onkeydown="if(event.key==='Enter'){event.stopPropagation();setKind('${e.c==="P"?"buys":sellKind(e)}')}"
-       >${b.t}</span>${plan?`<span class="aplan">${plan}</span>`:""}</td>
-     <td class="n aval ${e.c==="P"?"up":"down"}">${e.mk?LOCK("in Pro","$0.0M"):evValCell(e)}</td>
-     <td class="n asub" title="${e.mk?"in Pro":`${fmt(e.sh)} shares`}">${e.mk?LOCK("in Pro","00K"):`${compact(e.sh)}${e.ap?`<span class="apx">@ $${e.ap>=1000?Math.round(e.ap).toLocaleString("en-US"):e.ap.toFixed(2)}</span>`:""}`}</td>
-     <td class="n asub">${e.mk?LOCK("in Pro","−0.0%"):evPctCell(e)}</td>
-     <td class="asrc">${e.mk?"":e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</td>
-    </tr>`}).join("")+`</tbody></table></div>`;
-}
+function setKind(k){state.ev.kind=k;renderActivity();}
+function setSort(key){const s=state.ev.sort;if(s.key===key)s.dir=-s.dir;else{s.key=key;s.dir=-1;}renderActivity();}
 function ago(d){
   const days=Math.round((Date.now()-Date.parse(d+"T00:00:00Z"))/86400e3);
   if(days<=0)return"today";
@@ -2370,297 +2192,83 @@ function ago(d){
   if(days<365){const m=Math.round(days/30);return m+(m===1?" month ago":" months ago");}
   const y=Math.floor(days/365);return y+(y===1?" year ago":" years ago");
 }
-function nFilings(evs){
-  /* A ROW IS A TRADE; A FILING CAN HOLD TWO. The feed holds one row per
-     (filing, code): a Form 4 that both bought and sold is two rows. Rows
-     are "trades"; "filings" counts distinct accession numbers. */
-  const s=new Set();for(const e of evs)s.add(e.acc||e.u||(e.tk+e.fd));return s.size;
-}
-function tradesAndFilings(evs){
-  const n=evs.length,f=nFilings(evs);
-  return `${n.toLocaleString()} trade${n===1?"":"s"}${f!==n?` in ${f.toLocaleString()} filing${f===1?"":"s"}`:""}`;
-}
-function dayShown(){
-  /* the day strip shows the newest filing day in the feed unless a
-     permalink asked for another. "Yesterday" is deliberately not the rule:
-     on a Monday the newest day is Friday, and after a nightly that failed
-     the newest day is whatever day it is -- a true date beats an empty box
-     titled with a false one. */
-  if(state.ev.day)return state.ev.day;
-  let m="";for(const e of EVENTS)if(e.fd>m)m=e.fd;
-  return m;
-}
-function filingDays(){
-  const s=new Set();for(const e of EVENTS)s.add(e.fd);
-  return [...s].sort();
-}
-function dayRows(day,all){
-  /* the strip lists trades that moved a stake; the table (all=true) holds
-     every trade of the day, the unchanged ones badged for what they are */
-  /* LARGEST FIRST, BUYS AND SALES TOGETHER. The badge carries the side; the
-     order carries the size, so the day's biggest trade is the first line
-     whichever way it went. Kept-apart trades stay beneath the line. */
-  return EVENTS.filter(e=>e.fd===day&&(all||unchangedKind(e)===null)&&fOnly(e.tk,state.ev.f)).sort((a,b)=>{
-    const ka=unchangedKind(a)===null?0:1,kb=unchangedKind(b)===null?0:1;
-    if(ka!==kb)return ka-kb;
-    return ((b.fl?0:b.v)||0)-((a.fl?0:a.v)||0);
-  });
-}
-function dayScope(){
-  /* WHAT THE STRIP COVERS, SAID FROM THE TIER, NOT FROM THE FILE.
-     The free tier is the S&P 500 by definition; a Pro reader whose panel
-     came unsealed sees the whole universe. Keying this off "are there
-     sealed rows" instead was wrong the moment a free-shaped file with no
-     masked column loaded (the harness, a dev folder, a lapsed session):
-     the strip called the S&P "500 companies". */
-  /* the strip now covers every company for every reader; a free reader's
-     sealed rows carry locks where the sizes would be, and say so */
-  const sealed=PANEL.some(r=>r.masked);
-  return (state.pro&&!sealed)?"":"sizes of sealed companies' trades are in Pro";
-}
 /*@shared*/
 function shortDay(d){
   const t=Date.parse(d+"T00:00:00Z");if(isNaN(t))return d;
-  return new Date(t).toLocaleDateString("en-US",{weekday:"short",month:"numeric",day:"numeric",timeZone:"UTC"}).replace(",","");
+  const x=new Date(t);return ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][x.getUTCDay()]+" "+(x.getUTCMonth()+1)+"/"+x.getUTCDate();
 }
-/*@shared*/
 function niceDay(d){
   const t=Date.parse(d+"T00:00:00Z");if(isNaN(t))return d;
   return new Date(t).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:"UTC"});
 }
-function dayAlso(day){
-  /* the sales that did not move a stake, said in one line: how many, and
-     which kinds, so a reader checking the strip against a headline finds
-     the filing accounted for rather than missing */
-  const ex=EVENTS.filter(e=>e.fd===day&&unchangedKind(e)!==null&&fOnly(e.tk,state.ev.f));
-  if(!ex.length)return"";
-  const nP=ex.filter(e=>unchangedKind(e)==="pre").length;
-  const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nV=ex.filter(e=>unchangedKind(e)==="vest").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nB=ex.filter(e=>unchangedKind(e)==="bought").length;
-  const kinds=[nP?"before the company was public":"",nM?"options cashed":"",nV?"vests part sold":"",nC?"units converted":"",nB?"a purchase the position did not register":"",ex.length-nP-nM-nV-nC-nB?"source not in the filing":""].filter(Boolean).join(", ");
-  const n=ex.length;
-  return `Also filed: ${n} compensation trade${n===1?"":"s"} (${kinds}), ${money(ex.reduce((t,e)=>t+((e.fl?0:e.v)||0),0))}`;
+/* the counts line: what the window held */
+function actStats(){
+  const w=actWindow().filter(e=>evSide(e)!=="exsell");
+  const who=side=>new Set(w.filter(e=>evSide(e)===side).map(e=>e.tk+"|"+e.ceo)).size;
+  const first=w.filter(e=>e.c==="P"&&e.fb).length;
+  const parts=[`<b>${who("buys")}</b> CEO${who("buys")===1?"":"s"} bought`,`<b>${who("sells")}</b> cut a stake`];
+  if(first)parts.push(`<b>${first}</b> bought for the first time ever`);
+  return parts.join(" · ");
 }
-function dayText(day,rows){
-  /* the day as plain text, one line per trade in the strip's own words.
-     No control calls this today; it is the seed of the daily digest. */
-  const L=[`CEO trades filed ${niceDay(day)} (${dayScope()}):`];
-  for(const e of rows){
-    const side=evSide(e);
-    const uk=unchangedKind(e);
-    const what=side==="buys"?"bought":uk==="pre"?(e.c==="P"?"bought (pre-IPO)":"sold (pre-IPO)"):uk==="exercise"?"cashed options for":uk==="vest"?"vested and sold":uk==="convert"?"converted and sold":uk==="bought"?"bought (position unchanged)":uk===""?"sold (position unchanged)":"sold";
-    const pp=pctOf(e);
-    const man=side==="exsell"?(pp?"":"stake unchanged"):e.pl==="plan"?"planned":e.pl==="discretionary"?"discretionary":"";
-    const pc=!pp?"":", "+stakeChange(pp.v,pp.approx);
-    L.push(`${e.ceo||coOf(e.tk)} (${e.tk}) ${what} ${e.v&&!e.fl?money(e.v):compact(e.sh)+" sh"}${pc}${man?", "+man:""}${e.td&&e.td!==e.fd?` (traded ${spanDay(e,d=>d)})`:""}`);
-  }
-  const also=dayAlso(day);if(also)L.push(also+".");
-  L.push(`Every filing linked: https://founderledequities.com/?day=${day}#activity`);
-  return L.join("\n");
-}
-function gotoDay(d){
-  state.ev.day=d||"";
-  if(typeof history!=="undefined"&&history.replaceState&&typeof URL==="function"&&location.href){
-    const u=new URL(location.href);
-    if(state.ev.day)u.searchParams.set("day",state.ev.day);else u.searchParams.delete("day");
-    history.replaceState(null,"",u.pathname+(u.search||"")+"#activity");
-  }
-  renderDay();
-  if(state.ev.view==="day")renderFeed();
-}
-function renderDay(){
-  const el=$("#actday");if(!el)return;
-  const day=dayShown();
-  const rows=dayRows(day);
-  /* THE LAST FIVE FILING DAYS, AS CHIPS. Filing days, not calendar days:
-     a weekend is not a day nobody filed, and a chip for it would be an
-     empty box. Each chip names its day the way a person says it and
-     carries the count of trades that moved a stake. The arrows, the
-     permalink and the copy control that were here read as machinery; the
-     ?day= address still works for anyone who has one. */
-  const days=filingDays();
-  let recent=days.slice(-5);
-  if(day&&!recent.includes(day))recent=[day,...recent].sort().slice(-5);
-  const chipDay=d=>{const t=Date.parse(d+"T00:00:00Z");
-    const lab=shortDay(d);
-    const n=EVENTS.filter(e=>e.fd===d&&unchangedKind(e)===null&&fOnly(e.tk,state.ev.f)).length;
-    return `<button class="chip${d===day?" on":""}" onclick="gotoDay('${d===days[days.length-1]?"":d}')" title="${niceDay(d)} — ${n} trade${n===1?"":"s"} that moved a stake">${lab}<i>${n}</i></button>`;};
-  const scope=dayScope();
-  const row=e=>{
-    const b=evBadge(e),side=evSide(e);
-    const pp=pctOf(e);
-    const pc=side==="exsell"?(pp?stakeChange(pp.v,pp.approx):`<span title="compensation cashed in one filing; the stake did not move">unchanged</span>`)
-      :!pp?`<span class="nopr" title="${pctWhy(e)}">not stated</span>`
-      :`${pp.approx?`<span class="approx" title="${approxNote(e)}">≈ </span>`:""}${stakeChange(pp.v,false).replace(/^stake /,"")}`;
-    const man=side==="exsell"?"":e.pl==="plan"?`<span title="sold under a Rule 10b5-1 plan, set up long before the trade date and executed automatically">planned</span>`:e.pl==="discretionary"?`<span title="not under a pre-set plan: their own decision, at their own timing">discretionary</span>`:"";
-    const when=`<span class="dtd" title="the transaction date${e.tf&&e.tf!==e.td?"s, first to last":""}; the filing reached EDGAR ${e.fd}${lagNote(e)}">${spanDay(e,shortDay)}</span>`;
-    return `<tr class="dayrow" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
-      <td class="kd"><span class="abadge ${b.k}" title="${b.n} — traded ${e.td||e.fd}${lagNote(e)}">${b.t}</span></td>
-      <td class="co"><span class="atk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></span>${e.ceo||coOf(e.tk)}${fMark(e.tk)}</td>
-      <td class="n v">${e.mk?LOCK("in Pro","$0.0M"):`<b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>`}</td>
-      <td class="n st">${e.mk?LOCK("in Pro","−0.0%"):pc}</td>
-      <td class="mn">${man}</td>
-      <td class="tx">${when}</td>
-      <td class="fl">${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</td>
-    </tr>`;};
-  el.innerHTML=`<div class="dayb">
-    <div class="dayh">
-      <span class="dt">Filed <b>${day?niceDay(day):"—"}</b> · ${tradesAndFilings(rows)}${scope?` · ${scope}`:""}</span>
-      <span class="dn">${recent.map(chipDay).join("")}</span>
-    </div>
-    <div class="daylist">${rows.length?`<table class="daytab"><thead><tr><th>Kind</th><th>Company</th><th class="n">Value</th><th class="n">Stake</th><th>Manner</th><th>Transaction</th><th>Filing</th></tr></thead><tbody>${rows.map(row).join("")}</tbody></table>`:`<div class="dayempty">No CEO of these companies filed a trade that moved a stake on ${day?niceDay(day):"this day"}.</div>`}</div>
-
-    ${dayAlso(day)?`<div class="dayalso" onclick="setView('day')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')setView('day')" title="every trade of the day as a table, these included">${dayAlso(day)} →</div>`:""}
+/* the three cards: the biggest buy, the biggest cut, the first-ever purchase */
+function actCards(){
+  const w=actWindow().filter(e=>!e.mk&&evSide(e)!=="exsell");
+  const buys=w.filter(e=>e.c==="P"&&!e.fl&&e.v),sells=w.filter(e=>e.c==="S");
+  const bigBuy=buys.length?buys.reduce((a,b)=>(b.v||0)>(a.v||0)?b:a):null;
+  const cuts=sells.map(e=>[e,pctOf(e)]).filter(x=>x[1]&&x[1].v<0);
+  const bigCut=cuts.length?cuts.reduce((a,b)=>b[1].v<a[1].v?b:a)[0]:null;
+  const firsts=w.filter(e=>e.c==="P"&&e.fb).sort((a,b)=>b.fd.localeCompare(a.fd));
+  const firstBuy=firsts.length?firsts[0]:null;
+  const card=(k,e,big,sub,cls)=>`<div class="acard" ${e?`onclick="openCompany('${e.tk}')" role="button" tabindex="0"`:""}>
+      <div class="k">${k}</div>
+      ${e?`<div class="who">${e.ceo||coOf(e.tk)} · <span class="atk">${e.tk}</span>${fMark(e.tk)}</div><div class="big ${cls}">${big}<small>${sub}</small></div>`:`<div class="who">none in this window</div>`}
+    </div>`;
+  const pcOf=e=>{const p=pctOf(e);return p?stakeChange(p.v,p.approx):"";};
+  return `<div class="acards">
+    ${card("Biggest buy",bigBuy,bigBuy?money(bigBuy.v):"",bigBuy?pcOf(bigBuy):"","up")}
+    ${card("Biggest cut",bigCut,bigCut?pcOf(bigCut).replace(/^stake /,""):"",bigCut?`of the stake · ${bigCut.fl?"":money(bigCut.v||0)}`:"","down")}
+    ${card("First-ever purchase",firstBuy,firstBuy?money(firstBuy.v||0):"",firstBuy?`never bought before · ${shortDay(firstBuy.td||firstBuy.fd)}`:"","up")}
   </div>`;
 }
-
-function evAgg(side){
-  /* ONE BAR PER PERSON. Schwarzman buys Blackstone most months and every
-     10b5-1 seller files weekly; per-filing bars would fill a column with
-     one name. Each person's filings in the window fold into one bar, and
-     the table underneath keeps every filing with its own link. */
-  const pool=evBase().filter(e=>evSide(e)===side&&mannerOK(e,side));
-  const by={};
-  for(const e of pool){
-    const k=e.tk+"|"+(e.ceo||"");
-    (by[k]=by[k]||{tk:e.tk,ceo:e.ceo||coOf(e.tk),evs:[]}).evs.push(e);
-  }
-  const people=Object.values(by).map(p=>{
-    const evs=[...p.evs].sort((a,b)=>a.td<b.td?-1:a.td>b.td?1:(a.fd<b.fd?-1:1));
-    /* value: as filed, flagged prices count for nothing (they still sit in
-       the table with their caution); unpriced rows add shares, not dollars */
-    const v=evs.reduce((t,e)=>t+((e.fl?0:e.v)||0),0);
-    const sh=evs.reduce((t,e)=>t+(e.sh||0),0);
-    const seg={disc:0,plan:0,unknown:0};
-    for(const e of evs)seg[sellKind(e)]+=((e.fl?0:e.v)||0);
-    /* STAKE CHANGE FOR THE WHOLE WINDOW: what these filings did to the
-       position, added up, against the position before the FIRST of them
-       -- the pipeline's own rule (before = after minus the filing's net)
-       applied once, so a person with one filing gets exactly the figure
-       the feed prints. Any constituent the pipeline declined to state a
-       percentage for makes the aggregate unstatable too, with that row's
-       reason: the site does not assert a number one of its own rows would
-       not. Signed by the sum, so a seller whose filings exercised and kept
-       shares reads as the rise it was. */
-    let pc=null,why="",approx=false;
-    const bad=evs.find(e=>!pctOf(e));
-    if(bad)why=pctWhy(bad);
-    else{
-      approx=evs.some(e=>pctOf(e).approx);
-      const f=evs[0];
-      /* the stake as the day opened: the day's position less what the day
-         did (every filing of the day is measured against it) */
-      const before=(f.ha||0)-((f.dn===null||f.dn===undefined)?(f.nc||0):f.dn);
-      const net=evs.reduce((t,e)=>t+(e.nc||0),0);
-      if(before>0)pc=100*net/before;
-      else why="the position before the first trade computes to zero, and a percentage of nothing is not a number";
-    }
-    const priced=evs.some(e=>!e.fl&&e.v);
-    return {tk:p.tk,ceo:p.ceo,n:evs.length,evs,v,sh,seg,pc,why,approx,priced,
-            latest:evs[evs.length-1].fd,flagged:evs.some(e=>e.fl)};
-  });
-  people.sort((a,b)=>b.v-a.v||b.sh-a.sh);
-  return {pool,people};
-}
-function evColumn(side){
-  const sell=side==="sells";
-  const {pool,people}=evAgg(side);
-  const base=evBase().filter(e=>evSide(e)===side);
-  const cnt=k=>base.filter(e=>sellKind(e)===k).length;
-  const ks=state.ev.kinds[side];
-  const total=people.reduce((t,p)=>t+p.v,0);
-  const N=8;
-  const top=people.slice(0,N);
-  const max=top.length?Math.max(...top.map(p=>p.v)):0;
-  const chip=(k,label,tip)=>`<button class="chip${ks.includes(k)?" on":""}" data-kind="${k}" aria-pressed="${ks.includes(k)}"
-      onclick="toggleKind('${side}','${k}')" title="${tip}">${label}<i>${cnt(k).toLocaleString()}</i></button>`;
-  const bar=p=>{
-    /* the track is the column's largest person; each segment is that
-       person's money under one manner, so a bar reads its length against
-       the top of the column and its mix against itself */
-    const segs=["disc","plan","unknown"].map(k=>p.seg[k]>0?`<span class="seg ${k}" style="width:${max?(100*p.seg[k]/max).toFixed(2):0}%" title="${k==="disc"?"discretionary":k==="plan"?"under a 10b5-1 plan":"before the checkbox existed"} — ${money(p.seg[k])}"></span>`:"").join("");
-    const pc=p.pc===null?`<span class="q" title="${p.why}">stake change not stated</span>`
-      :`<span title="what these filings did to the position, against the position before the first of them${p.approx?"; ≈: a residue too small to move the figure on one of these days":""}">${stakeChange(p.pc,p.approx)}</span>`;
-    return `<div class="abar" onclick="openCompany('${p.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${p.tk}')"
-      title="${p.ceo} — ${tradesAndFilings(p.evs)}, ${fmt(p.sh)} shares, latest ${p.latest}. Open the full record.">
-      <div class="who"><span class="nmrow"><span class="nm">${p.ceo}</span>${fMark(p.tk)}</span><small><a class="pglink" href="/company/${p.tk}/" onclick="event.stopPropagation()" title="this company's own page">${p.tk}</a>${p.n>1?` · ${p.n} trades`:""}</small></div>
-      <div class="trk">${segs||(p.sh?`<span class="seg unknown" style="width:2%" title="unpriced"></span>`:"")}</div>
-      <div class="amt"><b>${p.priced?money(p.v):`<span class="nopr" title="the filing reports no price on these rows">${compact(p.sh)} sh</span>`}</b>${pc}</div>
-    </div>`;};
-  const win={30:"the last 30 days",90:"the last 90 days",365:"the last 12 months"}[state.ev.win]||"this window";
-  return `<div class="acol${sell?" sell":""}">
-    <div class="ah"><span class="at">${sell?"Sold":"Bought"}</span>
-      <span class="an">${pool.length?`<b>${people.length}</b> ${sell?"reduced a stake":"bought"} · <b>${pool.length.toLocaleString()}</b> trade${pool.length===1?"":"s"} · <b>${money(total)}</b>${sealedMore(side)}`:"&mdash;"}</span></div>
-    <div class="achips">
-      ${chip("disc","Discretionary",sell?"sold without a pre-set plan — their own decision, at their own timing. It says nothing about why: diversification and a tax bill look identical here":"bought on the open market with their own money, at their own timing")}
-      ${chip("plan","Planned",sell?"sold under a Rule 10b5-1 plan, set up long before the trade date and executed automatically":"bought under a Rule 10b5-1 plan — rarer still than an open-market purchase")}
-    </div>
-    ${top.length?top.map(bar).join(""):`<div class="aempty">${ks.length?`No CEO of these companies ${sell?"reduced a stake":"bought shares"}${ks.length===1?` ${ks[0]==="plan"?"under a plan":"at their own discretion"}`:""} in ${win}.`:"Both manners are off — select one to see the column."}</div>`}
-    <div class="af">
-      ${pool.length?`<a onclick="setView('${side}')">${people.length>N?`Top ${N} of ${people.length} · `:""}all ${pool.length.toLocaleString()} trade${pool.length===1?"":"s"} →</a>`:""}
-    </div>
-  </div>`;
-}
-function actNote(){
-  /* ONE SENTENCE FOR THE SECTION: what was kept out, and where it is */
-  const ex=evBase().filter(e=>evSide(e)==="exsell");
-  if(!ex.length)return"";
-  const nP=ex.filter(e=>unchangedKind(e)==="pre").length;
-  const nM=ex.filter(e=>unchangedKind(e)==="exercise").length,nV=ex.filter(e=>unchangedKind(e)==="vest").length,nC=ex.filter(e=>unchangedKind(e)==="convert").length,nB=ex.filter(e=>unchangedKind(e)==="bought").length;
-  const kinds=[nM?"options cashed":"",nV?"vests part sold":"",nC?"units converted":"",nB?"purchases the position did not register":"",nP?`${nP} before the company was public`:""].filter(Boolean).join(", ")||"shares from outside the filing";
-  const win={30:"the last 30 days",90:"the last 90 days",365:"the last 12 months"}[state.ev.win]||"this window";
-  const n=ex.length;
-  return `Kept out of everything above: ${n.toLocaleString()} trade${n===1?"":"s"} in ${win} did not move a stake (${kinds}). <a onclick="setView('exsell')">They are in the table →</a>`;
-}
-function renderCols(){
-  const el=$("#actcols");if(!el)return;
-  el.innerHTML=evColumn("buys")+evColumn("sells");
-  const n=$("#actnote");if(n)n.innerHTML=actNote();
-  document.querySelectorAll(".chip.win").forEach(c=>c.classList.toggle("on",c.dataset.win===state.ev.win));
-  paintSw("evf",state.ev.f);
-}
-function renderFeed(){
-  const el=$("#actwrap");if(!el)return;
-  const v=state.ev.view;
-  const tv=$("#tview");
-  if(tv)tv.innerHTML={buys:"Bought",sells:"Sold",exsell:"Compensation",day:"Filed "+niceDay(dayShown())}[v]
-    +`<em>${v==="day"?"every filing that day":({30:"last 30 days",90:"last 90 days",365:"last 12 months"}[state.ev.win]||"")+(v!=="exsell"&&v!=="day"&&state.ev.kinds[v].length===1?" · "+(state.ev.kinds[v][0]==="plan"?"planned only":"discretionary only"):"")}</em>`;
-  const evs=evFiltered();
-  const CAP=200;
-  /* ONE "SALES" TOTAL WAS A MISLEADING NUMBER.
-     Over the last 90 days the feed held $5.4bn of selling, and $2.9bn of
-     it -- 55% of the money, from 13% of the rows -- was options being
-     cashed, where the stake does not move. Reporting that as one figure
-     overstated stake reduction by a factor of two. */
-  const sum=a=>a.reduce((t,e)=>t+((e.fl?0:e.v)||0),0);
-  const cashed=evs.filter(e=>sellKind(e)==="exsell");
-  const buys=evs.filter(e=>e.c==="P"&&sellKind(e)!=="exsell");
-  const cut=evs.filter(e=>e.c==="S"&&sellKind(e)!=="exsell");
-  const part=(n,one,many,v)=>n?`${n.toLocaleString()} ${n===1?one:many}${v?" "+money(v):""}`:"";
-  const parts=[part(buys.length,"purchase","purchases",sum(buys)),
-               part(cut.length,"stake reduction","stake reductions",sum(cut)),
-               part(cashed.length,"compensation trade","compensation trades",sum(cashed))].filter(Boolean);
-  /* AN EMPTY RESULT KEEPS THE TABLE'S FRAME.
-     Collapsing to one line of text made the whole section jump and read
-     as broken. The headers stay, the frame stays its height, and the
-     finding sits inside it where the rows would be. */
-  el.innerHTML=evTable(evs.slice(0,CAP),true,
-      "Nothing matches — which is itself the answer: no such filing exists in this window.<br>Widen the window, turn a manner chip back on, or clear the search.")
-    +(evs.length?`<div class="efoot">${parts.join(" · ")}${
-       evs.length>CAP?` — showing the first ${CAP} of ${evs.length.toLocaleString()}; narrow the window or search to reach the rest`:""}</div>`:"");
+function actRow(e){
+  const b=evBadge(e),side=evSide(e);
+  const pp=pctOf(e);
+  const pc=side==="exsell"?(pp?stakeChange(pp.v,pp.approx).replace(/^stake /,""):`<span title="compensation cashed in one filing; the stake did not move">unchanged</span>`)
+    :!pp?`<span class="nopr" title="${pctWhy(e)}">not stated</span>`
+    :`${pp.approx?`<span class="approx" title="${approxNote(e)}">≈ </span>`:""}${stakeChange(pp.v,false).replace(/^stake /,"")}`;
+  const man=side==="exsell"?"":e.pl==="plan"?`<span title="sold under a Rule 10b5-1 plan, set up long before the trade date and executed automatically">planned</span>`:e.pl==="discretionary"?`<span title="not under a pre-set plan: their own decision, at their own timing">discretionary</span>`:"";
+  const when=`<span class="dtd" title="the transaction date${e.tf&&e.tf!==e.td?"s, first to last":""}; the filing reached EDGAR ${e.fd}${lagNote(e)}">${spanDay(e,shortDay)}</span>`;
+  return `<tr class="dayrow" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
+    <td class="kd"><span class="abadge ${b.k}" title="${b.n} — traded ${e.td||e.fd}${lagNote(e)}">${b.t}</span></td>
+    <td class="co"><span class="atk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></span>${e.ceo||coOf(e.tk)}${fMark(e.tk)}${e.fb?`<span class="firstb" title="this person's first open-market purchase on record">first buy</span>`:""}</td>
+    <td class="n v">${e.mk?LOCK("in Pro","$0.0M"):`<b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>`}</td>
+    <td class="n st">${e.mk?LOCK("in Pro","−0.0%"):pc}</td>
+    <td class="mn">${man}</td>
+    <td class="tx">${when}</td>
+    <td class="fl">${e.mk?"":e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</td>
+  </tr>`;
 }
 function renderActivity(){
-  if(!$("#actcols"))return;
-  $("#actctl").classList.remove("hide");
-  $("#actctl").classList.remove("gated");
-  $("#actgate").classList.add("hide");
-  /* the badges, the tooltips and the columns already say what this
-     section is; one line gives a first-time reader the reading itself */
-  $("#actsub").textContent="";   /* the colours say it: planned in grey, the purchase in blue */
-  renderDay();
-  renderCols();
-  const box=$("#acttable");
-  if(box)box.classList.toggle("hide",!state.ev.view);
-  if(state.ev.view)renderFeed();
+  if(!$("#actwrap"))return;
+  paintSw("evf",state.ev.f);
+  document.querySelectorAll("#actwin .win").forEach(c=>c.classList.toggle("on",c.dataset.win===state.ev.win));
+  const all=actWindow();
+  const counts={all:all.filter(e=>evSide(e)!=="exsell").length,buys:all.filter(e=>evSide(e)==="buys").length,sells:all.filter(e=>evSide(e)==="sells").length,comp:all.filter(e=>evSide(e)==="exsell").length};
+  $("#actstats").innerHTML=actStats();
+  $("#actcards").innerHTML=actCards();
+  const kind=state.ev.kind||"all";
+  const chip=(k,lab,title)=>`<button class="chip${kind===k?" on":""}" onclick="setKind('${k}')" title="${title}">${lab} <small>${counts[k].toLocaleString()}</small></button>`;
+  const sortChip=(k,lab)=>`<button class="chip${state.ev.sort.key===k?" on":""}" onclick="setSort('${k}')">${lab}${state.ev.sort.key===k?(state.ev.sort.dir<0?" ↓":" ↑"):""}</button>`;
+  $("#actkinds").innerHTML=chip("all","All","every purchase and sale that moved a stake")+chip("buys","Bought","open-market purchases")+chip("sells","Sold","sales that reduced the stake")+chip("comp","Compensation","options cashed, vests part sold, units converted: real trades that did not move the stake");
+  $("#actsort").innerHTML=`<span class="k">sort</span>${sortChip("pc","Stake change")}${sortChip("v","Value")}${sortChip("fd","Date")}`;
+  const rows=actSorted(actRows());
+  const sealedN=rows.filter(e=>e.mk).length;
+  $("#actwrap").innerHTML=rows.length
+    ?`<table class="daytab"><thead><tr><th>Kind</th><th>Company</th><th class="n">Value</th><th class="n">Stake</th><th>Manner</th><th>Transaction</th><th>Filing</th></tr></thead><tbody>${rows.map(actRow).join("")}</tbody></table>`
+    :`<div class="dayempty">No filings of this kind in this window.</div>`;
+  const win={7:"the last 7 days",30:"the last 30 days",90:"the last 90 days",365:"the last 12 months"}[state.ev.win]||"this window";
+  $("#actnote").innerHTML=`<span>${rows.length.toLocaleString()} filing${rows.length===1?"":"s"} in ${win}${sealedN?` · <a onclick="openPro()" style="cursor:pointer">${sealedN.toLocaleString()} from sealed companies, figures in Pro</a>`:""}</span>`
+    +(kind!=="comp"&&counts.comp?`<span class="r"><a onclick="setKind('comp')" style="cursor:pointer" title="options cashed, vests part sold, units converted: real trades that did not move the stake">Also filed: ${counts.comp.toLocaleString()} compensation trade${counts.comp===1?"":"s"} that did not move a stake →</a></span>`:"");
 }
 
 
@@ -2744,13 +2352,13 @@ document.querySelectorAll(".chip[data-min]").forEach(c=>c.addEventListener("clic
 }));
 /* the feed's controls live in static markup, so the search box never loses
    focus to a re-render: only the feed below them is rebuilt */
-$("#eq").addEventListener("input",e=>{state.ev.q=e.target.value;renderCols();renderFeed();});
+
 document.querySelectorAll(".chip.win").forEach(c=>
   c.addEventListener("click",()=>setWin(c.dataset.win)));
-wireSw("evf",()=>{state.ev.f=!state.ev.f;renderDay();renderCols();if(state.ev.view)renderFeed();});
+wireSw("evf",()=>{state.ev.f=!state.ev.f;renderActivity();});
 /* ?day=YYYY-MM-DD pins the day strip: the link in a post lands on the day
    the post was about, whatever day it is read */
-{const m=/[?&]day=(\d{4}-\d{2}-\d{2})/.exec(location.search);if(m)state.ev.day=m[1];}
+
 
 /* THE ACTIONS THAT SAY WHAT A READER WANTED. Each is wrapped, not edited,
    so the count is one line per action and the action itself is untouched. */
@@ -2760,10 +2368,9 @@ wireSw("evf",()=>{state.ev.f=!state.ev.f;renderDay();renderCols();if(state.ev.vi
   wrap("openCompany","open","page",tk=>tk);
   wrap("signIn","click","signin");
   wrap("exportTable","click","export");
-  wrap("setView","table","view",v=>v||"close");
   wrap("setWin","window","days",w=>w);
-  wrap("gotoDay","day","strip",d=>d||"newest");
-  wrap("toggleKind","click","manner",(side,k)=>side+":"+k);
+  wrap("setKind","click","kind",k=>k);
+  wrap("setSort","click","sort",k=>k);
   /* chips, switches, column heads and filing links are wired with listeners,
      so one delegated listener counts them by what they say */
   if(typeof document!=="undefined"&&document.addEventListener){

@@ -812,7 +812,7 @@ def event_row(e) -> list:
         e.direct, e.form, e.accession, e.price_flag, e.url,
         e.registered, "1" if e.pre_registration else "",
         "" if e.avg_price_adjusted is None else f"{e.avg_price_adjusted:.4f}",
-        e.traded_from]
+        e.traded_from, "1" if e.first_buy else ""]
 
 
 EVENT_COLUMNS = ["ticker", "cik", "ceo", "owner_cik", "filed", "traded",
@@ -820,7 +820,7 @@ EVENT_COLUMNS = ["ticker", "cik", "ceo", "owner_cik", "filed", "traded",
                  "pct_of_holding", "pct_approx", "net_change", "day_net", "holding_after", "outstanding", "pct_after", "residue",
                  "plan", "other_codes", "rows", "unpriced_rows", "securities",
                  "direct", "form", "accession", "price_flag", "url",
-                 "registered", "pre_ipo", "avg_price_adjusted", "traded_from"]
+                 "registered", "pre_ipo", "avg_price_adjusted", "traded_from", "first_buy"]
 
 
 def cmd_events(args) -> int:

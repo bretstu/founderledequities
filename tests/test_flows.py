@@ -726,3 +726,17 @@ def test_a_filing_with_no_trade_that_moved_the_stake_is_a_row_of_its_own():
     c = _client_for(_own_doc(both), acc="0001-24-B", report="2024-03-01")
     ev = build_events(c, 320193, "1494730", "TST", "Someone", history=hist)
     assert len(ev) == 1 and ev[0].code == "S" and ev[0].label == "exercise, part sold" and ev[0].net_change == 60_000
+
+
+def test_the_first_open_market_purchase_is_flagged_once():
+    """The earliest purchase that moved the stake carries first_buy; a later
+    one does not."""
+    from fle.events import build_events
+    hist = {320193: [("2024-01-01", 1_000_000.0, 1_000_000.0, 0.0, 1e8, 1.0),
+                     ("2024-03-01", 1_001_000.0, 1_001_000.0, 0.0, 1e8, 1.001),
+                     ("2024-06-01", 1_003_000.0, 1_003_000.0, 0.0, 1e8, 1.003)]}
+    first = _own_doc([("2024-03-01", "P", "A", 1_000, 50.0, 0, "D", "Common Stock", "")])
+    second = _own_doc([("2024-06-01", "P", "A", 2_000, 55.0, 0, "D", "Common Stock", "")])
+    c = _client_for(second, acc="0001-24-B", report="2024-06-01", prior=first)
+    ev = sorted(build_events(c, 320193, "1494730", "TST", "Someone", history=hist), key=lambda e: e.traded)
+    assert len(ev) == 2 and [e.first_buy for e in ev] == [True, False]

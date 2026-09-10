@@ -163,6 +163,7 @@ class Event:
     price_flag: str = ""
     url: str = ""
     registered: str = ""               # the issuer's first Section 16 filing date
+    first_buy: bool = False            # the person's first open-market purchase in the record
 
     @property
     def pre_registration(self) -> bool:
@@ -630,6 +631,15 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                 url=_doc_url(issuer_cik, acc, f.get("primaryDocument") or ""),
                 registered=registered,
             ))
+    # THE FIRST TIME THEY BOUGHT. A chief executive who has never bought a
+    # share on the market and buys one is the strongest signal the feed
+    # carries. The earliest open-market purchase in the record that moved
+    # the stake is flagged; a catch-up filing for a pre-registration trade
+    # is not a purchase in the market the reader can see.
+    buys = sorted((e for e in out if e.code == "P" and not e.pre_registration),
+                  key=lambda e: (e.traded_from or e.traded, e.filed, e.accession))
+    if buys:
+        buys[0].first_buy = True
     return out
 
 
