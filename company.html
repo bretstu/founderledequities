@@ -31,7 +31,13 @@
     .cnav a:hover{border-color:var(--ink)}
     .chead{margin-top:14px}
     /* the ticker and the market cap, set small beside the name */
-    .chead .tk{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--faint);text-transform:uppercase;font-weight:500;margin-left:14px;white-space:nowrap}
+    /* the ticker and the market cap beside the name, as a sibling of the
+       heading: inside the h1 a crawler read "lockheed martin corp lmt ·
+       $125b" as the company's name */
+    .chead .cname{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+    .chead .tk{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--faint);text-transform:uppercase;font-weight:500;white-space:nowrap}
+    /* the chart is drawn, not read: its toggle and axis labels are not a
+       description of the page ("Price Stake $500 $700 2022" was one) */
     .chead h1{font-family:var(--disp);font-weight:650;letter-spacing:-.025em;line-height:1.02;font-size:clamp(30px,4vw,54px);margin:8px 0 6px}
     .chead .ce{font-size:16px;color:var(--mut)}
     .chead .ce b{color:var(--ink);font-weight:600}
@@ -62,6 +68,7 @@
     .cband>div{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--panel);min-height:112px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.05)}
     .cband>div:first-child{background:var(--bg);border-color:var(--ink)}
     .cband .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+    .cband h2 .k{display:block;font-weight:500;margin-bottom:0}
     .cband>div:first-child .k{color:var(--ink)}
     /* one size for every figure; the answer is blue, and that is enough */
     .cband .p{font-family:var(--disp);font-size:clamp(30px,2.6vw,40px);font-weight:650;color:var(--blue);letter-spacing:-.02em;line-height:1;margin:14px 0 0}
@@ -167,7 +174,7 @@
 <main class="cpage"><div class="wrap">
   <div class="cnav"><a href="/">← All companies</a></div>
   <div class="chead">
-    <h1>{{COMPANY}} <span class="tk" id="ctk">{{TICKER}}{{MCAP}}</span></h1>
+    <div class="cname"><h1>{{COMPANY}}</h1><span class="tk" id="ctk">{{TICKER}}{{MCAP}}</span></div>
     <div class="ce"><b>{{CEO}}</b> · CEO <span id="cbadge"></span></div>
   </div>
   <div id="cbody"></div>

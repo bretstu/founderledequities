@@ -71,6 +71,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert "Sealed universe" not in sealed and "open to everyone" not in tsla
     # the ticker and the market cap sit beside the name, on both tiers (public data)
     assert 'id="ctk">TSLA · $' in tsla and 'id="ctk">' in sealed
+    assert "<h1>Tesla, Inc.</h1>" in tsla, "the heading is the company's name and nothing else"
     # the machinery around them
     assert os.path.exists(os.path.join(out, "company.js"))
     assert 'src="/company.js?v=' in tsla and 'href="/site.css?v=' in tsla, "a new script is a new address"
@@ -192,7 +193,7 @@ def test_the_seo_layer(tmp_path):
     out = tmp_path / "pub"
     bcp.main(panel, founders, prices, sp, str(out), str(tmp_path / "none.csv"), str(hist))
     tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
-    assert '<div class="k">Elon Musk owns</div><h2 class="p">28.44%</h2>' in tsla, \
+    assert '<h2 class="p"><span class="k">Elon Musk owns</span>28.44%</h2>' in tsla, \
         "the query phrase is the card, read top to bottom, with the number as the heading"
     assert '"@type": "BreadcrumbList"' in tsla and '/companies/' in tsla
     assert '<div id="cmore"><div class="cmore">' in tsla or '<div id="cmore"></div>' in tsla, "neighbour links live outside the block the script redraws"

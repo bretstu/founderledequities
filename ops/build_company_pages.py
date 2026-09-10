@@ -258,7 +258,7 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
     r1 = ret_1y.get(payload["tk"]) if ret_1y else None
     # four cards of one width: the numbers the percent is made of
     band = ('<div class="cband four">'
-            f'<div><div class="k">{ceo} owns</div><h2 class="p">{pct:.2f}%</h2></div>'
+            f'<div><h2 class="p"><span class="k">{ceo} owns</span>{pct:.2f}%</h2></div>'
             + stat("Shares held", f"{int(sh):,}")
             + stat("Outstanding", f"{int(out):,}" if out else "&mdash;")
             + stat("Worth", money(sh * price) if price else "&mdash;")

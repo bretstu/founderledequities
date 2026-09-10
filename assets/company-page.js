@@ -49,7 +49,7 @@ function band(r){
   const who=`<div class="k">${esc(C.ceo||"The chief executive")} ${r.units||r.pct===null?"holds":"owns"}</div>`;
   const big=r.units?`${who}<div class="p s">partnership units</div><div class="pl">Exchangeable units rather than common stock, so a percent of common shares cannot describe the stake.</div>`
     :r.pct===null?`${who}<div class="p s">a stake not measured</div><div class="pl">${esc(r.flags||"the record could not settle on a figure")}</div>`
-    :`${who}<h2 class="p">${r.pct.toFixed(r.pct<1?3:2)}%</h2>`;
+    :`<h2 class="p"><span class="k">${esc(C.ceo||"The chief executive")} owns</span>${r.pct.toFixed(r.pct<1?3:2)}%</h2>`;
   const asof=PRICES_ASOF||"latest";
   const tabled=r.tabled!==null&&r.sh!==null&&r.out?`${fmt(r.tabled)} in the filing tables; the rest stated in a remark`:"";
   /* THREE CARDS, ONE SUBJECT. The page is about what this person owns of
@@ -296,14 +296,14 @@ function recordBlock(r){
     &&(VIEW==="all"||(VIEW==="buys"&&e.c==="P")||(VIEW==="sells"&&e.c==="S")));
   const key=moving.length?`<div class="ckey"><span class="b"><i></i>bought</span><span class="s"><i></i>sold</span></div>`:"";
   if(mode==="price"&&havePx){
-    return `<div class="csec crec"><div class="cshead">${chips}</div>
+    return `<div class="csec crec" data-nosnippet><div class="cshead">${chips}</div>
       <div class="cchart">${priceChart(px,moving)}</div>${key}
     </div>`;
   }
   if(!haveRec)return "";
   const pts=cleanHist(r.tk);
   const series=pts.length>1?pts:raw;
-  return `<div class="csec crec"><div class="cshead">${chips}</div>
+  return `<div class="csec crec" data-nosnippet><div class="cshead">${chips}</div>
     <div class="cchart">${stakeChart(series,moving)}</div>${key}
   </div>`;
 }
