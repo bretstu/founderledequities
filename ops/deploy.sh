@@ -91,6 +91,10 @@ $OGPY ops/og_image.py panel.csv "$SP_LIST" prices.csv founders.csv og.png \
 
 rm -rf public && mkdir -p public
 cp index.html about.html public/
+# THE FONTS ARE OURS. Four woff2 files, Latin-subset, served from the site:
+# no third-party round trips before the type renders, and no invisible
+# text while a font is on its way (font-display: swap).
+mkdir -p public/fonts && cp fonts/*.woff2 public/fonts/
 [ -f terms.html ] && cp terms.html public/
 # the universe page: every member, the snapshot date, the rules. The About
 # page has linked to it since the promotion; it deploys now.
@@ -132,6 +136,14 @@ $OGPY ops/company_cards.py panel.csv "$SP_LIST" prices.csv founders.csv events.c
   || echo "  company cards: not drawn; pages keep og.png"
 if [ -d og ] && [ -n "$(ls og 2>/dev/null)" ]; then mkdir -p public/og && cp og/*.png public/og/; fi
 python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" public/ events.csv history.csv --og og --prices price-history
+# THE DATA HAS A VERSION. The pages fetched every CSV with no-store, so a
+# return visit re-downloaded eleven megabytes. Each fetch now carries
+# ?v=<this deploy>, so the browser and the edge cache a deploy's files
+# until the next deploy changes the key.
+DATAV=$(date -u +%Y%m%d%H%M)
+sed -i "s|const DATA_V=\"dev\"|const DATA_V=\"$DATAV\"|" public/index.html public/about.html public/company.js
+echo "  data version: $DATAV"
+
 [ -s prices.csv ] && cp prices.csv public/
 # perf.csv is published by build_site_data, cut to the chart's cohort; the
 # full file (every company's closes) stays on disk for the 3-year returns.

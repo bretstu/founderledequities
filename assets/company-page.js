@@ -1,3 +1,7 @@
+/* the data's version, stamped by deploy.sh: every data fetch carries it so a
+   deploy's files are cached until the next deploy changes the key */
+const DATA_V="dev";
+const withV=p=>p+(p.includes("?")?"&":"?")+"v="+DATA_V;
 /* ---------------- the company page ----------------
    Everything above this line was extracted from index.html at deploy (the
    declarations marked @shared). Below: what this page does with it. */
@@ -439,7 +443,7 @@ function renderOpen(r,{animate=true}={}){
 }
 
 async function fetchText(paths){
-  for(const p of paths){try{const q=await fetch(p,{cache:"no-store"});if(q.ok)return await q.text();}catch(e){}}
+  for(const p of paths){try{const q=await fetch(withV(p));if(q.ok)return await q.text();}catch(e){}}
   return null;
 }
 

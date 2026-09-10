@@ -27,7 +27,7 @@ global.window={scrollY:0, scrollTo(){}, };
 global.location={search:"", hash:""};
 global.requestAnimationFrame=f=>f();
 global.fetch=async(name)=>{
-  const n=String(name);
+  const n=String(name).replace(/\?v=[^&]*$/,"");   // the data version key the page appends
   if(n==="/api/me")return {ok:true,json:async()=>({pro:true,email:"harness@test"}),text:async()=>""};
   if(String(n)==="perf.csv"){
     // 24 months: founders (two tickers) double while spy adds 20%; a third
