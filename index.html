@@ -194,11 +194,13 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .blab.out{color:var(--ink);position:absolute;left:var(--w);top:0;bottom:0;padding-left:12px;align-items:center;display:flex;gap:10px;overflow:visible}
 .blab.out .tk{color:var(--ink)}.blab.out .nm{color:var(--ink)}
 .bpct{font-family:var(--disp);font-weight:650;font-size:20px;letter-spacing:-.01em;text-align:right;line-height:1}
-/* THE LOCK: a small ink-outlined pill where a sealed company's number
+/* THE SEAL PILL: a small ink-outlined pill where a sealed company's number
    would be. One shape everywhere (board, table, strip); it opens the Pro
-   box. The number is not in the file, so there is nothing to un-blur. */
-.lock{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink);background:transparent;border:1px solid var(--ink);border-radius:999px;padding:3px 9px;cursor:pointer;line-height:1;vertical-align:middle}
-.lock:hover{background:var(--ink);color:var(--bg)}
+   box. The number is not in the file, so there is nothing to un-blur.
+   (Not named .lock: that is the old gate overlay, position:absolute and
+   inset:0, and the pill inherited it for the length of a first paint.) */
+.sealpill{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink);background:transparent;border:1px solid var(--ink);border-radius:999px;padding:3px 9px;cursor:pointer;line-height:1;vertical-align:middle}
+.sealpill:hover{background:var(--ink);color:var(--bg)}
 .brow.sealed .btrack{background:transparent}
 .bpct .b2{display:block;font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--faint);margin-top:5px;letter-spacing:0}
 .bfoot{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:16px}
@@ -1744,7 +1746,7 @@ function renderBars(){
 /* THE LOCK. Wherever a sealed company's number would be, this: a small
    pill that opens the Pro box. The number is not in the file; there is
    nothing behind the pill to reveal. */
-const LOCK=(what)=>`<button class="lock" onclick="event.stopPropagation();openPro()" title="${what||"in Pro"}">Pro</button>`;
+const LOCK=(what)=>`<button class="sealpill" onclick="event.stopPropagation();openPro()" title="${what||"in Pro"}">Pro</button>`;
 function trendArrow(tk){
   /* the year-over-year direction, from trends.csv. Deliberately present
      on SEALED rows too: "this founder is accumulating" without the
@@ -2057,7 +2059,7 @@ function valTitle(e){
    drawer's fallback for tickers the events file does not cover. */
 function lockedBlock(inner,msg,cls){
   return `<div class="locked tall ${cls||""}"><div class="under">${inner}</div>
-   <div class="lock"><div class="seal">${SEAL}</div><p>${msg}</p>
+   <div class="sealpill"><div class="seal">${SEAL}</div><p>${msg}</p>
    <button class="lockbtn" onclick="openPro()">Unlock</button></div></div>`;
 }
 function coOf(tk){const r=PANEL.find(p=>p.tk===tk);return r?r.co:"";}
