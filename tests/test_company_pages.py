@@ -121,6 +121,7 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     """A fetch without scripts must read tonight's hero and top ten, not
     the placeholder '20 of 500' and an empty board."""
     import stamp_static as st
+    st.OPEN_TOP = 1   # the fixture has two rows; keep the sealed one sealed
     panel, founders, prices, sp, _ = _fixture(tmp_path)
     out = tmp_path / "index.html"
     src = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
@@ -136,8 +137,8 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     assert 'data-pro="' not in page, "one strip, no second copy to swap in"
     assert 'class="brow"' in page and 'href="/company/TSLA/"' in page and "28.44% of co." in page, "the board's rows are real HTML"
     # a sealed company is a row in its rank, named, locked, without a bar
-    assert 'class="brow sealed"' in page and 'href="/company/SEALD/"' in page and 'class="sealpill"' in page, \
-        "a sealed company is on the board with its name and a lock"
+    assert 'class="brow sealed"' in page and 'href="/company/SEALD/"' in page and 'class="sealed"' in page, \
+        "a sealed company is on the board with its name and a blurred placeholder"
     assert "41.2" not in page, "and none of its numbers"
     assert 'class="hstat"' in page and "Founder-led companies" in page, "and so is the stat strip"
     fn = open(os.path.join(ROOT, "functions", "_tier.js"), encoding="utf-8").read()

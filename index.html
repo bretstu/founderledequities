@@ -199,8 +199,8 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    box. The number is not in the file, so there is nothing to un-blur.
    (Not named .lock: that is the old gate overlay, position:absolute and
    inset:0, and the pill inherited it for the length of a first paint.) */
-.sealpill{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink);background:transparent;border:1px solid var(--ink);border-radius:999px;padding:3px 9px;cursor:pointer;line-height:1;vertical-align:middle}
-.sealpill:hover{background:var(--ink);color:var(--bg)}
+.sealed{filter:blur(4px);opacity:.55;user-select:none;cursor:pointer;color:var(--mut)}
+.sealed:hover{opacity:.8}
 .brow.sealed .btrack{background:transparent}
 .bpct .b2{display:block;font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--faint);margin-top:5px;letter-spacing:0}
 .bfoot{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:16px}
@@ -1720,7 +1720,7 @@ function renderBars(){
     if(r.masked)return `<div class="brow sealed${isF?" fdr":""}" onclick="openCompany('${r.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${r.tk}')">
       <div class="brank">${i+1}</div>
       <div class="btrack"><div class="blab out" style="--w:0%"><span class="tk" style="color:var(--ink)"><a class="pglink" href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></span><span class="nm" style="color:var(--mut)">${r.ceo}</span>${fBadge(r.tk)}</div></div>
-      <div class="bpct">${LOCK(useVal?"the stake's value is in Pro":"the share is in Pro")}</div>
+      <div class="bpct">${LOCK("in Pro",useVal?"$0.0B":"0.00%")}</div>
     </div>`;
     const w=Math.max(2,metric(r)/max*100);
     /* every label is drawn inside first; the pass after the render moves
@@ -1746,7 +1746,11 @@ function renderBars(){
 /* THE LOCK. Wherever a sealed company's number would be, this: a small
    pill that opens the Pro box. The number is not in the file; there is
    nothing behind the pill to reveal. */
-const LOCK=(what)=>`<button class="sealpill" onclick="event.stopPropagation();openPro()" title="${what||"in Pro"}">Pro</button>`;
+/* THE PLACEHOLDER IS A BLURRED FIGURE. A fixed string the shape of the
+   number, blurred: it reads as a number not yet visible, which is what it
+   is. The real number is not in the file, so there is nothing behind the
+   blur; hovering says where it is and clicking opens the box. */
+const LOCK=(what,shape)=>`<span class="sealed" onclick="event.stopPropagation();openPro()" title="${what||"in Pro"}">${shape||"$0.0B"}</span>`;
 function trendArrow(tk){
   /* the year-over-year direction, from trends.csv. Deliberately present
      on SEALED rows too: "this founder is accumulating" without the
@@ -1857,13 +1861,13 @@ function renderTable(){
      <td class="c-co"><div class="tk"><a href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></div><div class="nm" title="${r.co.replace(/"/g,"&quot;")}">${r.co}</div></td>
      <td class="ceo h-ceo"><span class="ceow"><span class="cn" title="${r.ceo.replace(/"/g,"&quot;")}">${r.ceo}</span></span></td>
      <td class="c-fd">${r.fd?"Yes":""}</td>
-     <td class="n num c-own">${r.masked?LOCK("the share is in Pro"):r.units?`<span class="nopr" title="ownership held as exchangeable partnership units, not common stock">units</span>`:r.pct.toFixed(r.pct<1?3:2)+"%"}</td>
-     <td class="n num">${r.masked?LOCK("the stake's value is in Pro"):r.val?money(r.val):""}</td>
+     <td class="n num c-own">${r.masked?LOCK("in Pro","0.000%"):r.units?`<span class="nopr" title="ownership held as exchangeable partnership units, not common stock">units</span>`:r.pct.toFixed(r.pct<1?3:2)+"%"}</td>
+     <td class="n num">${r.masked?LOCK("in Pro","$00.0M"):r.val?money(r.val):""}</td>
      <td class="n num c-mc">${r.mcap?money(r.mcap):""}</td>
      <td class="n num c-r1">${r.r1===null||r.r1===undefined?`<span class="nopr"></span>`:`<span class="${r.r1>=0?"up":"down"}">${r.r1>=0?"+":""}${r.r1.toFixed(1)}%</span>`}</td>
      <td class="c-lt">${r.ltev?`<span class="${r.ltev.c==="P"?"up":"down"}">${r.ltev.c==="P"?"Bought":"Sold"}</span>`:`<span class="nopr" title="no trade that moved the public-company stake on record"></span>`}</td>
      <td class="c-man">${r.man||""}</td>
-     <td class="n num c-amt">${r.ltev&&r.ltev.mk?LOCK("the trade's size is in Pro"):r.ltev&&r.ltev.v&&!r.ltev.fl?money(r.ltev.v):`<span class="nopr"></span>`}</td>
+     <td class="n num c-amt">${r.ltev&&r.ltev.mk?LOCK("in Pro","$0.0M"):r.ltev&&r.ltev.v&&!r.ltev.fl?money(r.ltev.v):`<span class="nopr"></span>`}</td>
      <td class="c-ltd">${r.ltev?`<span class="ltd" title="traded ${r.ltev.td||r.ltev.fd}; filed ${r.ltev.fd}${lagNote(r.ltev)}">${r.ltev.td||r.ltev.fd}</span>`:`<span class="nopr"></span>`}</td>
     </tr>`}).join("");
   const sealedN=PANEL.filter(r=>r.masked).length;
@@ -2059,7 +2063,7 @@ function valTitle(e){
    drawer's fallback for tickers the events file does not cover. */
 function lockedBlock(inner,msg,cls){
   return `<div class="locked tall ${cls||""}"><div class="under">${inner}</div>
-   <div class="sealpill"><div class="seal">${SEAL}</div><p>${msg}</p>
+   <div class="lock"><div class="seal">${SEAL}</div><p>${msg}</p>
    <button class="lockbtn" onclick="openPro()">Unlock</button></div></div>`;
 }
 function coOf(tk){const r=PANEL.find(p=>p.tk===tk);return r?r.co:"";}
@@ -2205,6 +2209,14 @@ function sellKind(e){
   if(unchangedKind(e)!==null)return"exsell";
   if(e.c!=="S"&&e.c!=="P")return"";
   return e.pl==="plan"?"plan":e.pl==="discretionary"?"disc":"unknown";
+}
+/* the sealed filings of the window, counted for the column's header: the
+   sizes that would rank them are in Pro, said once, quietly */
+function sealedMore(side){
+  const days=+state.ev.win||30;
+  const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
+  const n=EVENTS.filter(e=>e.mk&&e.fd>=cut&&fOnly(e.tk,state.ev.f)&&(side==="buys"?e.c==="P":e.c==="S")&&unchangedKind(e)===null).length;
+  return n?` · <a onclick="openPro()" title="filings by sealed companies in this window; their sizes are in Pro" style="cursor:pointer">${n} more in Pro</a>`:"";
 }
 function evBase(){
   /* WINDOW, FOUNDERS, SEARCH -- everything EXCEPT which side or manner.
@@ -2457,7 +2469,7 @@ function renderDay(){
   const row=e=>{
     const b=evBadge(e),side=evSide(e);
     const pp=pctOf(e);
-    const pc=e.mk?LOCK("what this did to the stake is in Pro")
+    const pc=e.mk?""
       :side==="exsell"?(pp?stakeChange(pp.v,pp.approx):`<span title="compensation cashed in one filing; the stake did not move">stake unchanged</span>`)
       :!pp?`<span class="nopr" title="${pctWhy(e)}">stake change not stated</span>`
       :`${pp.approx?`<span class="approx" title="${approxNote(e)}">≈ </span>`:""}${stakeChange(pp.v,false)}`;
@@ -2466,7 +2478,7 @@ function renderDay(){
     return `<div class="dayrow" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
       <span class="abadge ${b.k}" title="${b.n} — traded ${e.td||e.fd}${lagNote(e)}">${b.t}</span>
       <span class="drwho"><span class="atk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></span>${e.ceo||coOf(e.tk)}${fMark(e.tk)}</span>
-      <span class="drv"><b class="${side==="buys"?"up":"down"}">${e.mk?LOCK("the trade's size is in Pro"):evValCell(e)}</b>${pc}${man} · ${when}${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</span>
+      <span class="drv">${e.mk?LOCK("in Pro","$0.0M stake −0.0%"):`<b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>${pc}`}${man} · ${when}${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</span>
     </div>`;};
   el.innerHTML=`<div class="dayb">
     <div class="dayh">
@@ -2555,7 +2567,7 @@ function evColumn(side){
   const win={30:"the last 30 days",90:"the last 90 days",365:"the last 12 months"}[state.ev.win]||"this window";
   return `<div class="acol${sell?" sell":""}">
     <div class="ah"><span class="at">${sell?"Sold":"Bought"}</span>
-      <span class="an">${pool.length?`<b>${people.length}</b> ${sell?"reduced a stake":"bought"} · <b>${pool.length.toLocaleString()}</b> trade${pool.length===1?"":"s"} · <b>${money(total)}</b>`:"—"}</span></div>
+      <span class="an">${pool.length?`<b>${people.length}</b> ${sell?"reduced a stake":"bought"} · <b>${pool.length.toLocaleString()}</b> trade${pool.length===1?"":"s"} · <b>${money(total)}</b>${sealedMore(side)}`:"&mdash;"}</span></div>
     <div class="achips">
       ${chip("disc","Discretionary",sell?"sold without a pre-set plan — their own decision, at their own timing. It says nothing about why: diversification and a tax bill look identical here":"bought on the open market with their own money, at their own timing")}
       ${chip("plan","Planned",sell?"sold under a Rule 10b5-1 plan, set up long before the trade date and executed automatically":"bought under a Rule 10b5-1 plan — rarer still than an open-market purchase")}

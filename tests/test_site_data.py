@@ -26,6 +26,7 @@ def _write(path, cols, rows):
 
 
 def test_list_files_carry_what_the_page_reads(tmp_path):
+    bsd.OPEN_TOP = 0   # two-row fixture: the sealed row stays sealed
     panel_cols = ["cik", "ticker", "company", "ceo", "pct", "shares",
                   "outstanding", "shares_as_of", "confidence", "problems",
                   "cautions", "excluded_shares", "excluded_detail",

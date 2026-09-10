@@ -27,6 +27,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from og_image import money, numbers  # noqa: E402
 
 
+OPEN_TOP = 25   # keep equal to build_site_data.OPEN_TOP
+
+
 def top_rows(panel_p, sp_p, prices_p, founders_p, n=10):
     sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
     prices = {}
@@ -58,6 +61,12 @@ def top_rows(panel_p, sp_p, prices_p, founders_p, n=10):
         rows.append({"tk": tk, "ceo": r.get("ceo") or "", "pct": pct, "val": val,
                      "f": founders.get(tk, ("", "")), "sealed": tk not in sp})
     rows.sort(key=lambda x: -x["val"])
+    # the top of the board is everyone's (the same OPEN_TOP as
+    # build_site_data); the stamped ten are inside it, so no stamped row
+    # is sealed unless the rule is
+    for i, r in enumerate(rows):
+        if i < OPEN_TOP:
+            r["sealed"] = False
     return rows[:n]
 
 
@@ -82,7 +91,7 @@ def bars_html(rows):
             out.append(
                 f'<div class="brow sealed" onclick="openDrawer(\'{r["tk"]}\')" role="button" tabindex="0">'
                 f'<div class="btrack"><div class="blab out" style="--w:0%">{link0}</div></div>'
-                f'<div class="bpct"><button class="sealpill" onclick="event.stopPropagation();openPro()" title="the stake\'s value is in Pro">Pro</button></div></div>')
+                f'<div class="bpct"><span class="sealed" onclick="event.stopPropagation();openPro()" title="in Pro">$0.0B</span></div></div>')
             continue
         w = max(2.0, r["val"] / mx * 100)
         inside = w > 20

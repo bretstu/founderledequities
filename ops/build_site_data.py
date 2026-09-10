@@ -50,6 +50,11 @@ LIST_COLS = ["ticker", "cik", "company", "ceo", "pct", "shares",
 # stay out of the free file. The ranks are computed here over the whole
 # panel, before masking, and written to both files.
 RANK_COLS = ["rank_value", "rank_pct"]
+# THE TOP OF THE BOARD IS EVERYONE'S. The leaderboard is the site's poster,
+# and the stakes at its top are the least secret numbers on the site. The
+# top 25 by value and by share are open in the free file; the rest of a
+# sealed row's numbers stay behind the seal.
+OPEN_TOP = 25
 # what a sealed row must not carry: anything that states or bounds the stake
 MASKED_COLS = ("pct", "shares", "form4_url", "cover_url",
                "excluded_shares", "excluded_detail", "shares_tabled")
@@ -226,8 +231,10 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
             w = csv.writer(fh)
             w.writerow(LIST_COLS + ["ret_1y"] + RANK_COLS)
             for r in panel:
+                rv, rp = rk.get(r["ticker"], ["", ""])
+                on_top = (rv != "" and rv <= OPEN_TOP) or (rp != "" and rp <= OPEN_TOP)
                 masked = 1 if (mask_new and r["ticker"] not in sp
-                               and not GENEROUS) else 0
+                               and not GENEROUS and not on_top) else 0
                 row = []
                 for c in LIST_COLS[:-2]:
                     v = r.get(c, "") or ""
