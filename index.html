@@ -22,6 +22,7 @@
 <style>
 /* self-hosted, Latin subset, swapped in when they arrive */
 @font-face{font-family:"Bricolage Grotesque";src:url("/fonts/bricolage.woff2") format("woff2");font-weight:200 800;font-stretch:75% 100%;font-display:swap}
+@font-face{font-family:"Fraunces";src:url("/fonts/fraunces.woff2") format("woff2");font-weight:100 900;font-display:swap}
 @font-face{font-family:"Hanken Grotesk";src:url("/fonts/hanken.woff2") format("woff2");font-weight:100 900;font-display:swap}
 @font-face{font-family:"IBM Plex Mono";src:url("/fonts/plexmono.woff2") format("woff2");font-weight:400;font-display:swap}
 @font-face{font-family:"IBM Plex Mono";src:url("/fonts/plexmono-medium.woff2") format("woff2");font-weight:500 600;font-display:swap}
@@ -31,12 +32,16 @@
   /* PAPER, NOT WHITE. The page is a warm off-white; a card is a shade
      lighter, so white is what lifts a card off the page rather than the
      page itself. Hairlines warm to match. */
-  --bg:#F3F0E8;
-  --panel:#FBFAF6;
-  --line:#E0DBCF;
-  --rule:#D2CCBE;      /* the section divider: one step darker than a hairline */
-  --line2:#EBE7DD;
-  --ink:#0C0D0E;
+  /* THE DESIGN SYSTEM OF 2026-09-13 (PLAN.md section 4): paper, ink, hairline
+     warm grey; a serif for headlines and the big figures; rectangular
+     buttons; no shadows. A research publication that happens to be a
+     website. */
+  --bg:#F7F4EE;
+  --panel:#F7F4EE;
+  --line:#D6D1C7;
+  --rule:#1A1A1A;      /* the section divider is an ink rule, as in a footnote */
+  --line2:#E8E4DC;
+  --ink:#1A1A1A;
   --mut:#5D6167;
   /* THE GREYS HAD DRIFTED TOO PALE.
      --faint was #A0A4A9, which is 2.6:1 on white -- fine for a hairline,
@@ -58,7 +63,7 @@
   --wash:#DCEBE1;
   --amber:#B06A00;
   --amber-w:#FBF3E2;
-  --disp:"Bricolage Grotesque",system-ui,sans-serif;
+  --disp:"Fraunces",Georgia,"Times New Roman",serif;
   --ui:"Hanken Grotesk",-apple-system,sans-serif;
   --mono:"IBM Plex Mono","SF Mono",monospace;
   --max:1520px;
@@ -86,23 +91,25 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 /* THE MASTHEAD IS INK. An edge-to-edge band in the site's own colour
    separates navigation from the page without a rule, and states the
    scheme in the first row of pixels. */
-.top{position:sticky;top:0;z-index:30;background:var(--ink);border-bottom:1px solid var(--ink)}
+.top{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--ink)}
 /* the sticky bar would otherwise sit on top of whatever we jump to */
 [id]{scroll-margin-top:80px}
 .topin{display:flex;align-items:center;justify-content:space-between;gap:18px;padding-top:16px;padding-bottom:16px;flex-wrap:wrap}
-.logo{font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:-.01em;color:var(--bg)}
-.logo i{font-style:normal;color:var(--bg)}   /* one colour: the type is the mark, not a split */
+.logo{font-family:var(--disp);font-weight:600;font-size:22px;letter-spacing:-.01em;color:var(--ink)}
+.logo i{font-style:normal;color:var(--ink)}   /* one colour: the type is the mark, not a split */
 .topnav{display:flex;align-items:center;gap:22px;font-size:13.5px;font-weight:600;flex-wrap:wrap}
-.topnav a{color:#B9B6AE}
-.topnav a:hover{color:var(--bg);text-decoration:none}
+.topnav a{color:var(--mut)}
+.topnav a:hover{color:var(--ink);text-decoration:none}
 .topnav a.gopro,.topnav a.gopro:hover{color:var(--bg)}   /* the company pages' nav button is a link */
-.top .devtog{color:#B9B6AE;border-color:#555}
+.top .devtog{color:var(--mut);border-color:var(--line)}
 .devtog{font-family:var(--mono);font-size:11.5px;font-weight:500;padding:7px 12px;border:1px dashed var(--rule);border-radius:8px;color:var(--mut)}
 .devtog.on{border-style:solid;border-color:var(--ink);color:var(--ink);background:var(--panel)}
-.gopro{font-size:13.5px;font-weight:700;color:#fff;background:var(--blue);border-radius:9px;padding:9px 18px}
-.gopro:hover{background:var(--blue-d)}
-.top .gopro{background:transparent;border:1px solid var(--bg);color:var(--bg);padding:8px 17px}   /* on the ink band: outlined in paper */
-.top .gopro:hover{background:var(--bg);color:var(--ink)}
+.gopro{font-size:13.5px;font-weight:600;color:var(--bg);background:var(--ink);border-radius:0;padding:9px 18px;border:1px solid var(--ink)}
+.gopro:hover{background:#000}
+.top .gopro{padding:8px 17px}
+/* the second masthead button: the weekly, outlined */
+.top .weekly{font-size:13.5px;font-weight:600;color:var(--ink);background:transparent;border:1px solid var(--ink);border-radius:0;padding:8px 17px;margin-right:10px}
+.top .weekly:hover{background:var(--ink);color:var(--bg);text-decoration:none}
 
 /* ---------- sections ----------
    THE DIVIDER AND THE TITLE, AND NOTHING ELSE.
@@ -119,8 +126,8 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
   border-top:2px solid var(--rule)}
 
 /* ---------- hero ---------- */
-.hero h1{font-family:var(--disp);font-weight:600;letter-spacing:-.028em;line-height:1.02;font-size:clamp(34px,4.6vw,74px);max-width:22ch}
-.hero h1 b{font-weight:700}   /* a coloured word made the sentence look like a template */
+.hero h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(34px,4.6vw,72px);max-width:22ch}
+.hero h1 b{font-weight:500}
 .herosub{margin:18px 0 0;font-size:clamp(15px,1.25vw,18px);line-height:1.5;color:var(--mut);white-space:nowrap}
 @media(max-width:900px){.herosub{white-space:normal;max-width:52ch}}
 .herosub .sealnote{display:block;margin-top:8px;color:var(--faint)}
@@ -139,7 +146,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    headline. A row beneath uses the height the words already take. */
 .hero .wrap{display:block}
 .herostats{margin-top:30px;padding:22px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:row;flex-wrap:wrap;gap:20px 44px;align-items:flex-start}
-.hstat .n{font-family:var(--disp);font-size:clamp(26px,2.6vw,34px);font-weight:650;
+.hstat .n{font-family:var(--disp);font-size:clamp(28px,2.8vw,38px);font-weight:500;
   letter-spacing:-.022em;line-height:1;white-space:nowrap}
 .hstat .n.hl{color:var(--ink)}
 .hstat .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
@@ -153,7 +160,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 
 /* ---------- leaderboard ---------- */
 .shead{display:flex;justify-content:space-between;align-items:baseline;gap:18px;margin-bottom:20px;flex-wrap:wrap}
-.shead h2{font-family:var(--disp);font-weight:650;letter-spacing:-.025em;font-size:clamp(26px,2.9vw,40px);line-height:1.08}
+.shead h2{font-family:var(--disp);font-weight:500;letter-spacing:-.015em;font-size:clamp(28px,3vw,44px);line-height:1.08}
 .shead .r{font-size:13px;color:var(--mut)}
 .shead .shr{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:flex-end}
 /* Ten bars in the frame, the rest a scroll away -- the ranking runs the
@@ -167,7 +174,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    and shared, so everything a screenshot needs is inside the card: what it
    ranks, at which close, the legend, and where it came from. Ten rows and
    no scrollbar (a scrolling list reads as cut off); "show all" expands. */
-.sbody{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px 18px;margin-top:14px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.sbody{background:transparent;border:0;border-radius:0;padding:6px 0 0;margin-top:14px;box-shadow:none}
 .sbody .bsub{margin-top:0}
 .bcap2{font-size:13px;color:var(--mut);margin:0 0 16px}
 /* THE LIST SCROLLS INSIDE THE CARD. Ten rows show; the rest are a scroll
@@ -176,7 +183,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .bars{display:flex;flex-direction:column;gap:8px;max-height:512px;overflow-y:auto;overscroll-behavior:contain;padding-right:10px}
 .brow{display:grid;grid-template-columns:24px minmax(0,1fr) 104px;gap:14px;align-items:center;cursor:pointer}
 .brank{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:right}
-.btrack{position:relative;height:44px;background:#fff;border-radius:7px;overflow:hidden}
+.btrack{position:relative;height:44px;background:var(--line2);border-radius:2px;overflow:hidden}
 /* STONE: A BAR THAT ONLY MEASURES. Green would say "bought" and red
    "sold"; a leaderboard bar says neither, so it takes the one colour on
    the site that means nothing, a warm stone a step below the paper. Light
@@ -184,7 +191,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    they sit on the track beside it, so a name inside the bar and one past
    its edge are set the same way; a screenshot is done without a cursor on
    it. Hover deepens the tone. */
-.bfill{position:absolute;inset:0 auto 0 0;background:var(--stone);border-radius:7px;display:flex;align-items:center;min-width:0;transition:background .12s}
+.bfill{position:absolute;inset:0 auto 0 0;background:var(--stone);border-radius:2px;display:flex;align-items:center;min-width:0;transition:background .12s}
 .brow:hover .bfill{background:var(--stone-d)}
 .brow:hover .btrack{box-shadow:inset 0 0 0 1px var(--ink)}
 .blab{display:flex;align-items:baseline;gap:10px;padding:0 12px;white-space:nowrap;overflow:hidden;color:var(--ink)}
@@ -193,7 +200,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .blab .fb{vertical-align:1px}
 .blab.out{color:var(--ink);position:absolute;left:var(--w);top:0;bottom:0;padding-left:12px;align-items:center;display:flex;gap:10px;overflow:visible}
 .blab.out .tk{color:var(--ink)}.blab.out .nm{color:var(--ink)}
-.bpct{font-family:var(--disp);font-weight:650;font-size:20px;letter-spacing:-.01em;text-align:right;line-height:1}
+.bpct{font-family:var(--disp);font-weight:500;font-size:21px;letter-spacing:-.01em;text-align:right;line-height:1}
 /* THE SEAL PILL: a small ink-outlined pill where a sealed company's number
    would be. One shape everywhere (board, table, strip); it opens the Pro
    box. The number is not in the file, so there is nothing to un-blur.
@@ -214,12 +221,12 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 
 /* ---------- table ---------- */
 .controls{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-.search{flex:1;min-width:240px;display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:9px;padding:9px 13px;background:#fff}
+.search{flex:1;min-width:240px;display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:2px;padding:9px 13px;background:#fff}
 .search svg{flex:none;opacity:.35}
 .search input{border:none;outline:none;width:100%;font:inherit;background:none}
-.chip{font-size:12.5px;font-weight:600;padding:8px 13px;border:1px solid var(--line);border-radius:99px;color:var(--mut);background:#fff}
+.chip{font-size:12.5px;font-weight:600;padding:7px 12px;border:1px solid var(--line);border-radius:2px;color:var(--ink);background:transparent}
 .chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
-select{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:#fff}
+select{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:2px;padding:9px 11px;background:#fff}
 select:disabled{opacity:.45;cursor:not-allowed}
 /* A WINDOW, NOT A WALL.
    Five hundred rows pushed everything below the table off the page, and the
@@ -233,7 +240,7 @@ select:disabled{opacity:.45;cursor:not-allowed}
   /* a sticky cell cannot carry a collapsed border, so it is drawn inset */
   border-bottom:none;box-shadow:inset 0 -1px 0 var(--ink)}
 table{width:100%;border-collapse:collapse}
-.sbody .tscroll{background:#fff;border:1px solid var(--line);border-radius:10px}   /* the scroll box keeps its own overflow */
+.sbody .tscroll{background:var(--bg);border:1px solid var(--line);border-radius:2px}   /* the scroll box keeps its own overflow */
 /* THE SCREENER IS THE WIDTH OF THE PAGE. Fixed layout, every column with a
    width, the two text columns truncating; nothing scrolls sideways. */
 table.screen{table-layout:fixed}
@@ -294,7 +301,7 @@ td.c-fd,td.c-man{font-size:12.5px;color:var(--mut);white-space:nowrap;overflow:h
 table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .c-r1 .up{color:#0b7a4b}.c-r1 .down{color:#c22a2a}
 .tfoot{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 4px 0;font-size:12.5px;color:var(--mut);flex-wrap:wrap}
-.more{font-weight:700;font-size:13px;border:1px solid var(--ink);border-radius:9px;padding:8px 16px}
+.more{font-weight:700;font-size:13px;border:1px solid var(--ink);border-radius:0;padding:8px 16px}
 .more:hover{background:var(--ink);color:#fff}
 
 /* the screener's two new cells */
@@ -324,7 +331,7 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
    the page colour over it so the text underneath cannot be read, and one
    card on top. What is locked is the shape you can still see; what unlocks
    it is the same button every time. */
-.locked{position:relative;overflow:hidden;border-radius:12px}
+.locked{position:relative;overflow:hidden;border-radius:2px}
 /* A LOCKED TABLE IS THE SAME SIZE AS AN OPEN ONE.
    Blurring nine rows produced a 500px field of haze taller than the table
    it was teasing. The locked block is capped to the height of the tables
@@ -360,24 +367,43 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
    filing: seven columns, every row the same shape, so twelve filings
    scan as a table and not as twelve sentences of different lengths. A
    sealed row keeps the shape: value and stake blurred, the rest shown. */
-.actstats{font-size:13.5px;color:var(--mut);margin:2px 0 14px}
+/* THE TAPE (PLAN.md section 5): a weather line, the controls, one table
+   grouped by kind; no card grid. Tables are the site. */
+.tapehead{align-items:flex-start}
+.tapesub{font-size:17px;color:var(--mut);margin-top:10px}
+.actstats{font-size:15px;color:var(--mut);margin:18px 0 18px}
 .actstats b{color:var(--ink);font-weight:700}
-.acards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
-@media(max-width:900px){.acards{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.acards{grid-template-columns:1fr}}
-.acard{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 16px 14px;cursor:pointer;min-height:96px}
-.acard:hover{background:var(--wash)}
-.acard .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
-.acard .who{font-size:13px;font-weight:600;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.acard .who .atk{font-family:var(--mono);font-weight:500;color:var(--mut)}
-.acard .big{font-family:var(--disp);font-size:24px;font-weight:700;letter-spacing:-.01em;margin-top:6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.acard .big.up{color:var(--buy)}.acard .big.down{color:#c22a2a}
-.acard .big small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--mut);letter-spacing:0}
-.actctl{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
-.actsort .k{font-family:var(--mono);font-size:11px;color:var(--faint);margin-right:6px}
+.tapectl{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.tapectl .chips{gap:6px}
+.chip.win.dim{color:var(--faint);border-color:var(--line2)}
+.chip.win.dim:hover{color:var(--ink);border-color:var(--line)}
+.toggles{display:flex;gap:22px;flex-wrap:wrap;margin-left:6px}
+.tg{font-size:13.5px;color:var(--ink);display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+.tg input{accent-color:var(--ink);width:14px;height:14px;margin:0}
+.pronote{font-family:var(--mono);font-size:11px;color:var(--faint);margin:10px 0 16px}
+.pronote a{color:var(--faint);text-decoration:underline;text-underline-offset:2px}
+.tapewrap{overflow:auto}
+table.tape{width:100%;border-collapse:collapse}
+table.tape th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
+table.tape th.n,table.tape td.n{text-align:right}
+table.tape td{padding:9px 10px 9px 0;border-top:1px solid var(--line2);font-size:14px;vertical-align:middle;white-space:nowrap}
+table.tape tr.dayrow{cursor:pointer}
+table.tape tr.dayrow:hover td{background:var(--line2)}
+table.tape tr.dim td{color:var(--faint)}
+table.tape td.kd{width:120px}
+table.tape .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
+table.tape .kind.bought{color:var(--buy)}table.tape .kind.disc{color:#B23428}table.tape .kind.plan{color:var(--mut)}table.tape .kind.comp{color:var(--faint)}
+table.tape td.co{width:90px;font-weight:600}
+table.tape td.co a{color:inherit;text-decoration:none}table.tape td.co a:hover{text-decoration:underline}
+table.tape td.ceo{min-width:0;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+table.tape td.n{font-family:var(--mono);font-size:13px}
+table.tape td.v a{color:inherit;text-decoration:none}table.tape td.v a:hover{text-decoration:underline}
+table.tape td.mn{color:var(--mut);font-size:13px}
+table.tape td.mn .dt{color:var(--faint);font-family:var(--mono);font-size:11px}
 .daylist.tall{height:auto;max-height:560px;margin:0;padding:0}
 .firstb{display:inline-block;margin-left:8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--buy);border:1px solid var(--buy);border-radius:999px;padding:1px 6px;vertical-align:middle}
-.actnote{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--mut);margin-top:12px}
+.actnote{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:14px}
+.actnote a{color:var(--faint);text-decoration:underline;text-underline-offset:2px}
 .daytab{width:100%;border-collapse:collapse;margin-top:6px}
 .daytab th{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:500;text-align:left;padding:6px 8px 8px;border-bottom:1px solid var(--line)}
 .daytab th.n,.daytab td.n{text-align:right}
@@ -431,7 +457,6 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .actnote{margin:10px 2px 0;font-size:12.5px;color:var(--mut);line-height:1.6}
 .actnote a{color:var(--mut);font-weight:600;text-decoration:none;cursor:pointer}
 .actnote a:hover{color:var(--blue)}
-.actctl{margin-bottom:14px}
 /* THE CONTROLS ARE THE SALES COPY.
    A free reader sees the whole instrument panel -- every chip, the search,
    the window, each carrying its real count of what sits behind the seal --
@@ -454,7 +479,7 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .distbox .dbin:hover .hit{stroke:var(--line2);stroke-width:1.2}
 .distbox .dbin.open .hit{stroke:var(--ink);stroke-width:1.2}
 .distcap .hint{color:var(--faint)}
-.dpanel{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:14px 16px 16px;background:#fff}
+.dpanel{margin-top:14px;border:1px solid var(--line);border-radius:2px;padding:14px 16px 16px;background:#fff}
 .dph{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--mut);margin-bottom:12px}
 .dph b{color:var(--ink);font-family:var(--mono)}
 .dpx{border:0;background:transparent;font-size:18px;line-height:1;color:var(--faint);cursor:pointer;padding:0 2px}
@@ -465,7 +490,7 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .dtile.joined{}
 
 .dtile:hover{filter:brightness(0.9)}
-.disth{font-family:var(--disp);font-size:19px;font-weight:650;letter-spacing:-.01em;margin:30px 0 3px}
+.disth{font-family:var(--disp);font-size:20px;font-weight:500;letter-spacing:-.01em;margin:30px 0 3px}
 .distsub{font-size:14px;color:var(--mut);margin-bottom:12px}
 .distsub b{color:var(--ink)}
 .distkey{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:12.5px;color:var(--mut);margin-top:10px}
@@ -528,14 +553,14 @@ td.c-co .tk a:hover{text-decoration:underline}
 /* ---------- modal ---------- */
 .modal{position:fixed;inset:0;display:none;place-items:center;z-index:60;padding:20px;background:rgba(12,13,14,.4)}
 .modal.on{display:grid}
-.mcard{position:relative;background:#fff;border:1px solid var(--ink);border-radius:14px;max-width:440px;width:100%;padding:34px}
+.mcard{position:relative;background:#fff;border:1px solid var(--ink);border-radius:2px;max-width:440px;width:100%;padding:34px}
 .mcard .seal{width:48px;height:48px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:18px;margin-bottom:16px}
-.mcard h3{font-family:var(--disp);font-weight:600;font-size:26px;letter-spacing:-.02em;margin-bottom:6px}
+.mcard h3{font-family:var(--disp);font-weight:500;font-size:26px;letter-spacing:-.02em;margin-bottom:6px}
 .mcard>p{font-size:14px;color:var(--mut);margin-bottom:16px}
 .mcard ul{list-style:none;margin-bottom:22px}
 .mcard li{font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--line2);display:flex;gap:10px}
 .mcard li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue);flex:none;margin-top:6px}
-.mwide{width:100%;text-align:center;font-weight:700;color:#fff;background:var(--ink);border-radius:9px;padding:12px}
+.mwide{width:100%;text-align:center;font-weight:700;color:#fff;background:var(--ink);border-radius:0;padding:12px}
 .mwide:hover{background:#000}
 .mlater{display:block;text-align:center;margin-top:10px;font-size:12.5px;color:var(--faint)}
 .mclose{position:absolute;top:14px;right:14px;width:30px;height:30px;color:var(--faint)}
@@ -553,12 +578,13 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     onclick="window.scrollTo({top:0,behavior:'smooth'})"
     onkeydown="if(event.key==='Enter')window.scrollTo({top:0,behavior:'smooth'})">Founder Led <i>Equities</i></div>
   <div class="topnav">
-    <a href="#board">Leaderboard</a>
-    <a href="#activity">Recent activity</a>
-    <a href="#table">Every company</a>
+    <a href="#board">Scoreboard</a>
+    <a href="/tape/">Tape</a>
+    <a href="#table">Companies</a>
     <a href="#perfsec">Performance</a>
-    <a href="about.html">About</a>
+    <a href="about.html">Method</a>
     <button class="devtog" id="devtog" onclick="toggleDev()" title="Developer preview — see the site as a Pro subscriber">Preview: Free</button>
+    <a class="weekly" href="/tape/#subscribe">Weekly tape, free</a>
     <button class="gopro" onclick="openPro()">Go Pro</button>
   </div>
 </div></div>
@@ -602,29 +628,33 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
      hatched as scheduled -- is the finding before a chip is touched. The
      table underneath is every filing, and it opens only when asked. -->
 <section class="activitysec" id="activity"><div class="wrap">
-  <div class="shead">
-    <h2>Recent activity</h2>
-    <div class="r shr">
-      <!-- ONE WINDOW AND ONE FOUNDERS SWITCH FOR THE WHOLE SECTION: the
-           counts, the cards and the table are one dataset at one zoom. -->
-      <span class="chips" id="actwin" role="group" aria-label="window">
-        <button class="chip win" data-win="7" title="filings that reached EDGAR in the last 7 days">7 days</button>
-        <button class="chip win" data-win="30">30</button>
-        <button class="chip win" data-win="90">90</button>
-        <button class="chip win" data-win="365">12 months</button>
-      </span>
-      <span class="fsw" id="evf" role="switch" aria-checked="false" tabindex="0"
-        title="only companies still run by a person the proxy names as a founder">Founders only<span class="tr"><i></i></span></span>
+  <div class="shead tapehead">
+    <div>
+      <h2>This week's tape.</h2>
+      <div class="tapesub" id="tapesub">Founders only · last 7 days · stake-moving trades first.</div>
     </div>
   </div>
   <div class="sbody">
     <div class="actstats" id="actstats"></div>
-    <div id="actcards"></div>
-    <div class="controls actctl">
-      <span class="chips" id="actkinds"></span>
-      <span class="chips actsort" id="actsort"></span>
+    <!-- THE TAPE'S CONTROLS: a window (7 days free; the longer ones open the
+         Pro box for a free reader and are drawn dimmed so they never look
+         free), and three toggles. The Pro note sits under them, never in
+         their row. -->
+    <div class="tapectl">
+      <span class="chips" id="actwin" role="group" aria-label="window">
+        <button class="chip win" data-win="7" title="filings that reached EDGAR in the last 7 days">7d</button>
+        <button class="chip win" data-win="30">30d</button>
+        <button class="chip win" data-win="90">90d</button>
+        <button class="chip win" data-win="365">12m</button>
+      </span>
+      <span class="toggles">
+        <label class="tg"><input type="checkbox" id="tg-f" checked> Founders only</label>
+        <label class="tg"><input type="checkbox" id="tg-buys"> Open-market buys</label>
+        <label class="tg"><input type="checkbox" id="tg-nocomp"> Hide compensation</label>
+      </span>
     </div>
-    <div class="daylist tall" id="actwrap"></div>
+    <div class="pronote" id="pronote"></div>
+    <div class="tapewrap" id="actwrap"></div>
     <div class="actnote" id="actnote"></div>
   </div>
 </div></section>
@@ -792,7 +822,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"mcap",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,distOpen:null,pc:"sp",pro:false,meKnown:false,acct:"",ev:{kind:"all",q:"",win:"7",f:false,sort:{key:"pc",dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
+const state={q:"",min:0,sort:{key:"mcap",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,distOpen:null,pc:"sp",pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,buys:false,nocomp:false},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -2150,44 +2180,60 @@ function evSide(e){
   if(unchangedKind(e)!==null)return"exsell";
   return e.c==="P"?"buys":"sells";
 }
+function tapeKind(e){
+  /* THE FOUR KINDS OF THE TAPE, in the order the tape lists them. Bought:
+     an open-market purchase that moved the stake. Discretionary: a sale
+     the person chose the day of. Plan: a 10b5-1 sale. Compensation: an
+     exercise cashed, a vest part sold, units converted: a real trade
+     that did not move the stake the way a purchase or sale does. */
+  if(unchangedKind(e)!==null)return "comp";
+  if(e.c==="P")return "bought";
+  return e.pl==="plan"?"plan":"disc";
+}
+const KIND_ORDER={bought:0,disc:1,plan:2,comp:3};
+const KIND_WORD={bought:"Bought",disc:"Discretionary",plan:"Plan",comp:"Compensation"};
+function tapeManner(e){
+  const k=tapeKind(e);
+  if(k==="bought"||k==="disc")return "Open market";
+  if(k==="plan")return "10b5-1 plan";
+  return {"exercise and sell":"Options cashed","exercise, part sold":"Options cashed, part kept","vested and sold":"Vest, part sold",
+          "convert and sell":"Units converted","sale, position unchanged":"Sale, stake unchanged","purchase, position unchanged":"Purchase, stake unchanged"}[e.lb]||"Compensation";
+}
 function actWindow(){
   const days=+state.ev.win||7;
   const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
-  let evs=EVENTS.filter(e=>(e.c==="P"||e.c==="S")&&e.fd>=cut&&fOnly(e.tk,state.ev.f));
-  const q=state.ev.q.trim().toLowerCase();
-  if(q)evs=evs.filter(e=>e.tk.toLowerCase().includes(q)||coOf(e.tk).toLowerCase().includes(q)||e.ceo.toLowerCase().includes(q));
-  return evs;
+  return EVENTS.filter(e=>(e.c==="P"||e.c==="S")&&e.fd>=cut&&fOnly(e.tk,state.ev.f));
 }
-/* the rows of the table: the window narrowed by the kind chip */
+/* the rows of the table: the window narrowed by the toggles */
 function actRows(){
-  const k=state.ev.kind||"all";
   return actWindow().filter(e=>{
-    const side=evSide(e);
-    if(k==="all")return side!=="exsell";
-    if(k==="comp")return side==="exsell";
-    return side===k;
+    const k=tapeKind(e);
+    if(state.ev.buys)return k==="bought";
+    if(state.ev.nocomp&&k==="comp")return false;
+    return true;
   });
 }
+/* KIND GROUPS IN ORDER, RANKED BY THE STAKE'S MOVE WITHIN EACH. A sale
+   ranks by how much it cut, a purchase by how much it added; a row with
+   no figure (a sealed one, or an unstated move) follows the ranked rows
+   of its group, in date order. */
 function actSorted(rows){
-  const {key,dir}=state.ev.sort;
-  /* a sale ranks by how much it cut, a purchase by how much it added; a
-     move against its own kind (a "sale" that raised the stake: an exercise
-     mostly kept) ranks as nothing, so it does not lead the table */
-  const pc=e=>{if(e.mk)return null;const p=pctOf(e);if(!p)return null;return e.c==="P"?Math.max(0,p.v):Math.max(0,-p.v);};
-  const val=e=>e.mk?null:(e.fl?0:(e.v||0));
-  const f=key==="v"?val:key==="fd"?(e=>e.fd):pc;
+  const mv=e=>{if(e.mk)return null;const p=pctOf(e);if(!p)return null;return e.c==="P"?Math.max(0,p.v):Math.max(0,-p.v);};
   return [...rows].sort((a,b)=>{
-    const va=f(a),vb=f(b);
-    /* a sealed row has no figure to rank by: it follows the ranked rows,
-       in date order, and interleaves only under a date sort */
-    if(key!=="fd"){if(va===null&&vb===null)return b.fd.localeCompare(a.fd);if(va===null)return 1;if(vb===null)return -1;}
-    if(va>vb)return dir;if(va<vb)return -dir;   /* dir -1: largest first */
+    const ka=KIND_ORDER[tapeKind(a)],kb=KIND_ORDER[tapeKind(b)];
+    if(ka!==kb)return ka-kb;
+    const va=mv(a),vb=mv(b);
+    if(va===null&&vb===null)return b.fd.localeCompare(a.fd);
+    if(va===null)return 1;if(vb===null)return -1;
+    if(va!==vb)return vb-va;
     return b.fd.localeCompare(a.fd)||a.tk.localeCompare(b.tk);
   });
 }
-function setWin(w){state.ev.win=String(w);renderActivity();}
-function setKind(k){state.ev.kind=k;renderActivity();}
-function setSort(key){const s=state.ev.sort;if(s.key===key)s.dir=-s.dir;else{s.key=key;s.dir=-1;}renderActivity();}
+function setWin(w){
+  /* the longer windows are Pro; a free reader's click opens the box */
+  if(String(w)!=="7"&&!state.pro){openPro();return;}
+  state.ev.win=String(w);renderActivity();
+}
 function ago(d){
   const days=Math.round((Date.now()-Date.parse(d+"T00:00:00Z"))/86400e3);
   if(days<=0)return"today";
@@ -2205,79 +2251,48 @@ function niceDay(d){
   const t=Date.parse(d+"T00:00:00Z");if(isNaN(t))return d;
   return new Date(t).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:"UTC"});
 }
-/* the counts line: what the window held */
+/* the weather line: what the window held */
 function actStats(){
-  const w=actWindow().filter(e=>evSide(e)!=="exsell");
-  const who=side=>new Set(w.filter(e=>evSide(e)===side).map(e=>e.tk+"|"+e.ceo)).size;
+  const w=actWindow();
+  const who=k=>new Set(w.filter(e=>tapeKind(e)===k).map(e=>e.tk+"|"+e.ceo)).size;
+  const nb=who("bought"),nc=who("disc"),np=who("plan"),ncomp=w.filter(e=>tapeKind(e)==="comp").length;
   const first=w.filter(e=>e.c==="P"&&e.fb).length;
-  const parts=[`<b>${who("buys")}</b> CEO${who("buys")===1?"":"s"} bought`,`<b>${who("sells")}</b> cut a stake`];
-  if(first)parts.push(`<b>${first}</b> bought for the first time ever`);
+  const parts=[`<b>${nb}</b> CEO${nb===1?"":"s"} bought`,`<b>${nc}</b> cut a stake`,`<b>${np}</b> sold on a plan`,
+    `<b>${ncomp}</b> compensation filing${ncomp===1?"":"s"} did not move a stake`];
+  if(first)parts.splice(1,0,`<b>${first}</b> for the first time ever`);
   return parts.join(" · ");
 }
-/* the four cards: the largest buy and the largest sale by dollars, and the
-   biggest add and the biggest cut by share of the person's own stake,
-   which the dollar cards miss (a $1M purchase that is +11% of a stake
-   says more than a $2.6M one that is +2.7%) */
-function actCards(){
-  const w=actWindow().filter(e=>!e.mk&&evSide(e)!=="exsell");
-  const buys=w.filter(e=>e.c==="P"&&!e.fl&&e.v),sells=w.filter(e=>e.c==="S"&&!e.fl&&e.v);
-  const bigBuy=buys.length?buys.reduce((a,b)=>(b.v||0)>(a.v||0)?b:a):null;
-  const bigSale=sells.length?sells.reduce((a,b)=>(b.v||0)>(a.v||0)?b:a):null;
-  const cuts=w.filter(e=>e.c==="S").map(e=>[e,pctOf(e)]).filter(x=>x[1]&&x[1].v<0);
-  const bigCut=cuts.length?cuts.reduce((a,b)=>b[1].v<a[1].v?b:a)[0]:null;
-  const adds=w.filter(e=>e.c==="P").map(e=>[e,pctOf(e)]).filter(x=>x[1]&&x[1].v>0);
-  const bigAdd=adds.length?adds.reduce((a,b)=>b[1].v>a[1].v?b:a)[0]:null;
-  const card=(k,e,big,sub,cls)=>`<div class="acard" ${e?`onclick="openCompany('${e.tk}')" role="button" tabindex="0"`:""}>
-      <div class="k">${k}</div>
-      ${e?`<div class="who">${e.ceo||coOf(e.tk)} · <span class="atk">${e.tk}</span>${fMark(e.tk)}</div><div class="big ${cls}">${big}<small>${sub}</small></div>`:`<div class="who">none in this window</div>`}
-    </div>`;
-  const pcOf=e=>{const p=pctOf(e);return p?stakeChange(p.v,p.approx):"stake change not stated";};
-  return `<div class="acards four">
-    ${card("Largest buy",bigBuy,bigBuy?money(bigBuy.v):"",bigBuy?pcOf(bigBuy):"","up")}
-    ${card("Biggest add",bigAdd,bigAdd?pcOf(bigAdd).replace(/^stake /,""):"",bigAdd?`of the stake${bigAdd.fl||!bigAdd.v?"":" · "+money(bigAdd.v)}`:"","up")}
-    ${card("Largest sale",bigSale,bigSale?money(bigSale.v):"",bigSale?pcOf(bigSale):"","down")}
-    ${card("Biggest cut",bigCut,bigCut?pcOf(bigCut).replace(/^stake /,""):"",bigCut?`of the stake${bigCut.fl||!bigCut.v?"":" · "+money(bigCut.v)}`:"","down")}
-  </div>`;
-}
 function actRow(e){
-  const b=evBadge(e),side=evSide(e);
-  const pp=pctOf(e);
-  const pc=side==="exsell"?(pp?stakeChange(pp.v,pp.approx).replace(/^stake /,""):`<span title="compensation cashed in one filing; the stake did not move">unchanged</span>`)
-    :!pp?`<span class="nopr" title="${pctWhy(e)}">not stated</span>`
-    :`${pp.approx?`<span class="approx" title="${approxNote(e)}">≈ </span>`:""}${stakeChange(pp.v,false).replace(/^stake /,"")}`;
-  const man=side==="exsell"?"":e.pl==="plan"?`<span title="sold under a Rule 10b5-1 plan, set up long before the trade date and executed automatically">planned</span>`:e.pl==="discretionary"?`<span title="not under a pre-set plan: their own decision, at their own timing">discretionary</span>`:"";
-  const when=`<span class="dtd" title="the transaction date${e.tf&&e.tf!==e.td?"s, first to last":""}; the filing reached EDGAR ${e.fd}${lagNote(e)}">${spanDay(e,shortDay)}</span>`;
-  return `<tr class="dayrow" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
-    <td class="kd"><span class="abadge ${b.k}" title="${b.n} — traded ${e.td||e.fd}${lagNote(e)}">${b.t}</span></td>
-    <td class="co"><span class="atk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></span>${e.ceo||coOf(e.tk)}${fMark(e.tk)}${e.fb?`<span class="firstb" title="this person's first open-market purchase on record">first buy</span>`:""}</td>
-    <td class="n v">${e.mk?LOCK("in Pro","$0.0M"):`<b class="${side==="buys"?"up":"down"}">${evValCell(e)}</b>`}</td>
-    <td class="n st">${e.mk?LOCK("in Pro","−0.0%"):pc}</td>
-    <td class="mn">${man}</td>
-    <td class="tx">${when}</td>
-    <td class="fl">${e.mk?"":e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</td>
+  const k=tapeKind(e),dim=k==="comp";
+  const stake=e.mk?LOCK("the stake after the trade is in Pro","0.00%"):(e.po!==null&&e.po!==undefined)?e.po.toFixed(e.po<1?3:2)+"%":`<span class="nopr">&mdash;</span>`;
+  const amt=dim?"&mdash;":(e.fl?`<span class="nopr" title="${e.fl}">${evValCell(e)}</span>`:evValCell(e));
+  return `<tr class="dayrow${dim?" dim":""}" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
+    <td class="kd"><span class="kind ${k}" title="${k==="bought"?"an open-market purchase that moved the stake":k==="disc"?"a sale the person chose the day of":k==="plan"?"a sale under a Rule 10b5-1 plan set up long before the trade":"compensation cashed; the stake did not move the way a purchase or sale does"}">${KIND_WORD[k]}</span></td>
+    <td class="co"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></td>
+    <td class="ceo">${e.ceo||coOf(e.tk)}${fMark(e.tk)}${e.fb?`<span class="firstb" title="this person's first open-market purchase on record">first buy</span>`:""}</td>
+    <td class="n v">${e.u&&!dim?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">${amt}</a>`:amt}</td>
+    <td class="n st">${stake}</td>
+    <td class="mn">${tapeManner(e)}<span class="dt" title="the transaction date${e.tf&&e.tf!==e.td?"s":""}; filed ${e.fd}${lagNote(e)}"> · ${spanDay(e,shortDay)}</span></td>
   </tr>`;
 }
 function renderActivity(){
   if(!$("#actwrap"))return;
-  paintSw("evf",state.ev.f);
-  document.querySelectorAll("#actwin .win").forEach(c=>c.classList.toggle("on",c.dataset.win===state.ev.win));
-  const all=actWindow();
-  const counts={all:all.filter(e=>evSide(e)!=="exsell").length,buys:all.filter(e=>evSide(e)==="buys").length,sells:all.filter(e=>evSide(e)==="sells").length,comp:all.filter(e=>evSide(e)==="exsell").length};
+  const f=$("#tg-f"),bu=$("#tg-buys"),nc=$("#tg-nocomp");
+  if(f)f.checked=state.ev.f;if(bu)bu.checked=state.ev.buys;if(nc)nc.checked=state.ev.nocomp;
+  document.querySelectorAll("#actwin .win").forEach(c=>{c.classList.toggle("on",c.dataset.win===state.ev.win);c.classList.toggle("dim",c.dataset.win!=="7"&&!state.pro);});
+  const days=+state.ev.win||7;
+  const to=new Date(),from=new Date(Date.now()-days*86400e3);
+  const dd=x=>x.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
+  const win={7:"last 7 days",30:"last 30 days",90:"last 90 days",365:"last 12 months"}[state.ev.win]||"this window";
+  const sub=$("#tapesub");if(sub)sub.textContent=`${state.ev.f?"Founders only":"Every CEO"} · ${win}, ${dd(from)} to ${dd(to)} · stake-moving trades first.`;
   $("#actstats").innerHTML=actStats();
-  $("#actcards").innerHTML=actCards();
-  const kind=state.ev.kind||"all";
-  const chip=(k,lab,title)=>`<button class="chip${kind===k?" on":""}" onclick="setKind('${k}')" title="${title}">${lab} <small>${counts[k].toLocaleString()}</small></button>`;
-  const sortChip=(k,lab)=>`<button class="chip${state.ev.sort.key===k?" on":""}" onclick="setSort('${k}')">${lab}${state.ev.sort.key===k?(state.ev.sort.dir<0?" ↓":" ↑"):""}</button>`;
-  $("#actkinds").innerHTML=chip("all","All","every purchase and sale that moved a stake")+chip("buys","Bought","open-market purchases")+chip("sells","Sold","sales that reduced the stake")+chip("comp","Compensation","options cashed, vests part sold, units converted: real trades that did not move the stake");
-  $("#actsort").innerHTML=`<span class="k">sort</span>${sortChip("pc","Stake change")}${sortChip("v","Value")}${sortChip("fd","Date")}`;
+  const pn=$("#pronote");if(pn)pn.innerHTML=state.pro?"":`30d, 90d, 12m and export are <a onclick="openPro()" style="cursor:pointer">Pro</a>.`;
   const rows=actSorted(actRows());
-  const sealedN=rows.filter(e=>e.mk).length;
+  const sealedN=rows.filter(e=>e.mk).length,compN=rows.filter(e=>tapeKind(e)==="comp").length;
   $("#actwrap").innerHTML=rows.length
-    ?`<table class="daytab"><thead><tr><th>Kind</th><th>Company</th><th class="n">Value</th><th class="n">Stake</th><th>Manner</th><th>Transaction</th><th>Filing</th></tr></thead><tbody>${rows.map(actRow).join("")}</tbody></table>`
+    ?`<table class="tape"><thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Manner</th></tr></thead><tbody>${rows.map(actRow).join("")}</tbody></table>`
     :`<div class="dayempty">No filings of this kind in this window.</div>`;
-  const win={7:"the last 7 days",30:"the last 30 days",90:"the last 90 days",365:"the last 12 months"}[state.ev.win]||"this window";
-  $("#actnote").innerHTML=`<span>${rows.length.toLocaleString()} filing${rows.length===1?"":"s"} in ${win}${sealedN?` · <a onclick="openPro()" style="cursor:pointer">${sealedN.toLocaleString()} from sealed companies, figures in Pro</a>`:""}</span>`
-    +(kind!=="comp"&&counts.comp?`<span class="r"><a onclick="setKind('comp')" style="cursor:pointer" title="options cashed, vests part sold, units converted: real trades that did not move the stake">Also filed: ${counts.comp.toLocaleString()} compensation trade${counts.comp===1?"":"s"} that did not move a stake →</a></span>`:"");
+  $("#actnote").innerHTML=`${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${sealedN?` · the stake after the trade is in <a onclick="openPro()" style="cursor:pointer">Pro</a> for the ${sealedN.toLocaleString()} from companies outside the S&P 500`:""}${compN?` · compensation listed last`:""}`;
 }
 
 
@@ -2364,7 +2379,7 @@ document.querySelectorAll(".chip[data-min]").forEach(c=>c.addEventListener("clic
 
 document.querySelectorAll(".chip.win").forEach(c=>
   c.addEventListener("click",()=>setWin(c.dataset.win)));
-wireSw("evf",()=>{state.ev.f=!state.ev.f;renderActivity();});
+for(const [id,key] of [["tg-f","f"],["tg-buys","buys"],["tg-nocomp","nocomp"]]){const el=$("#"+id);if(el)el.addEventListener("change",()=>{state.ev[key]=el.checked;renderActivity();});}
 /* ?day=YYYY-MM-DD pins the day strip: the link in a post lands on the day
    the post was about, whatever day it is read */
 
@@ -2378,8 +2393,6 @@ wireSw("evf",()=>{state.ev.f=!state.ev.f;renderActivity();});
   wrap("signIn","click","signin");
   wrap("exportTable","click","export");
   wrap("setWin","window","days",w=>w);
-  wrap("setKind","click","kind",k=>k);
-  wrap("setSort","click","sort",k=>k);
   /* chips, switches, column heads and filing links are wired with listeners,
      so one delegated listener counts them by what they say */
   if(typeof document!=="undefined"&&document.addEventListener){

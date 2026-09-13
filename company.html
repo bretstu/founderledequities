@@ -33,7 +33,7 @@
     .cpage{padding:clamp(24px,3.5vw,44px) 0 60px}
     /* THE WAY BACK IS A BUTTON. A small blue link read as a footnote; a
        pill in the header's own weight reads as the way home. */
-    .cnav a{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);text-decoration:none;font-size:13px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .cnav a{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid var(--line);border-radius:0;background:#fff;color:var(--ink);text-decoration:none;font-size:13px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.04)}
     .cnav a:hover{border-color:var(--ink)}
     .chead{margin-top:14px}
     /* the ticker and the market cap, set small beside the name */
@@ -44,7 +44,7 @@
     .chead .tk{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--faint);text-transform:uppercase;font-weight:500;white-space:nowrap}
     /* the chart is drawn, not read: its toggle and axis labels are not a
        description of the page ("Price Stake $500 $700 2022" was one) */
-    .chead h1{font-family:var(--disp);font-weight:650;letter-spacing:-.025em;line-height:1.02;font-size:clamp(30px,4vw,54px);margin:8px 0 6px}
+    .chead h1{font-family:var(--disp);font-weight:500;letter-spacing:-.015em;line-height:1.02;font-size:clamp(30px,4vw,54px);margin:8px 0 6px}
     .chead .ce{font-size:16px;color:var(--mut)}
     .chead .ce b{color:var(--ink);font-weight:600}
     /* THE ANSWER BAND: five cards in a row. The answer in the tinted one,
@@ -73,18 +73,18 @@
     .cband.four>div{align-items:center;text-align:center;justify-content:center;min-height:112px;padding:18px 12px}
     .cband.four .k{text-align:center}
     .cband.four .p,.cband.four .cstat .v{font-size:clamp(22px,1.9vw,28px);font-variant-numeric:tabular-nums;letter-spacing:-.01em;margin-top:10px}
-    .cband>div{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--panel);min-height:112px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+    .cband>div{border:1px solid var(--line);border-radius:2px;padding:18px 20px;background:var(--panel);min-height:112px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.05)}
     .cband>div:first-child{background:var(--bg);border-color:var(--ink)}
     .cband .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
     .cband h2 .k{display:block;font-weight:500;margin-bottom:0}
     .cband>div:first-child .k{color:var(--ink)}
     /* one size for every figure; the answer is blue, and that is enough */
-    .cband .p{font-family:var(--disp);font-size:clamp(30px,2.6vw,40px);font-weight:650;color:var(--blue);letter-spacing:-.02em;line-height:1;margin:14px 0 0}
+    .cband .p{font-family:var(--disp);font-size:clamp(30px,2.6vw,40px);font-weight:500;color:var(--blue);letter-spacing:-.02em;line-height:1;margin:14px 0 0}
     .cband .p.s{font-size:22px;color:var(--ink);font-weight:650;letter-spacing:-.01em;line-height:1.2}
     .cband .pl{color:var(--mut);font-size:12.5px;margin-top:6px;line-height:1.45}
     .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
     .cq{display:block;margin-top:8px;color:var(--ink)}
-    .cstat .v{font-family:var(--disp);font-size:clamp(30px,2.6vw,40px);font-weight:650;letter-spacing:-.02em;margin-top:14px;line-height:1}
+    .cstat .v{font-family:var(--disp);font-size:clamp(30px,2.6vw,40px);font-weight:500;letter-spacing:-.02em;margin-top:14px;line-height:1}
     .cstat .v.up{color:#0b7a4b}.cstat .v.down{color:#c22a2a}.cstat .v.none{color:var(--faint)}
     .cstat .s{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
     .sealed{filter:blur(4px);opacity:.55;user-select:none;cursor:pointer;color:var(--mut)}
@@ -106,7 +106,7 @@
     .cmore li span{color:var(--mut);font-size:13px;margin-left:6px}
     /* THE CHART: no title, no caption. The toggle says which line it is. */
     .csec{margin-top:40px}
-    .csec h2{font-family:var(--disp);font-size:22px;font-weight:650;letter-spacing:-.01em;margin:0 0 6px}
+    .csec h2{font-family:var(--disp);font-size:24px;font-weight:500;letter-spacing:-.01em;margin:0 0 6px}
     .csec .sub{font-size:13px;color:var(--mut);margin-bottom:14px}
     .crec{margin-top:30px;padding-top:12px;border-top:1px solid var(--line)}
     .crec .cshead{justify-content:flex-end;margin-bottom:8px}
@@ -160,7 +160,7 @@
     .ctrades td.f a{color:var(--blue);text-decoration:none;font-size:11px}
     .ctrades th.f,.ctrades td.f{text-align:right;padding-right:0}
     /* the receipt */
-    .cwhy{margin-top:40px;padding:16px 20px;background:var(--panel);border-radius:10px;font-size:14px;line-height:1.55;color:var(--mut)}
+    .cwhy{margin-top:40px;padding:16px 20px;background:var(--panel);border-radius:2px;font-size:14px;line-height:1.55;color:var(--mut)}
     .cwhy .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
     .cwhy q{color:var(--ink)}
     .cwhy .src{display:block;margin-top:8px;font-family:var(--mono);font-size:11px}
@@ -169,7 +169,7 @@
     .cshead{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
     .cshead h2{margin:0}
     .cshead .chips{display:flex;gap:6px}
-    .cshead .chip{font-family:var(--ui);font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--mut);cursor:pointer}
+    .cshead .chip{font-family:var(--ui);font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:2px;border:1px solid var(--line);background:#fff;color:var(--mut);cursor:pointer}
     .cshead .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
     .creport{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--mut);line-height:1.6}
     .creport a{color:var(--blue)}

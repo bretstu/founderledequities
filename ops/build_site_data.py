@@ -400,9 +400,12 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     if newest:
         import datetime as _dt
         year_ago = (_dt.date.fromisoformat(newest) - _dt.timedelta(days=366)).isoformat()
-    EV_MASK = ("value", "avg_price", "avg_price_adjusted", "shares", "pct_of_holding", "pct_approx",
+    # THE AMOUNT SHOWS ON EVERY ROW (PLAN.md section 2): it is the Form 4's
+    # own number. The stake after the trade, and everything derived from
+    # the walk, is the seal. The filing link stays sealed with the record.
+    EV_MASK = ("avg_price", "avg_price_adjusted", "shares", "pct_of_holding", "pct_approx",
                "net_change", "day_net", "holding_after", "pct_after", "residue", "url",
-               "rows", "unpriced_rows", "securities", "price_flag")
+               "rows", "unpriced_rows", "securities")
     def masked_row(r):
         m = dict(r)
         for c in EV_MASK:

@@ -9,7 +9,7 @@ function el(id){
     set innerHTML(v){this._html=v;}, get innerHTML(){return this._html;},
     set textContent(v){this._text=v;}, get textContent(){return this._text;},
     classList:{
-      toggle(c,f){}, add(c){}, remove(c){}, contains(c){return false;}
+      toggle(c,f){}, add(c){el._last=el._last||{};el._last[id]=c;}, remove(c){}, contains(c){return false;}
     },
     addEventListener(){}, setAttribute(){}, querySelector(){return el(id+">q");},
     querySelectorAll(){return [];},
@@ -72,12 +72,12 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setKind,setWin,setSort,actWindow,actRows,actSorted,actStats,actCards,trajStats,soldTickers,sparkline,lastTrades,exportTable,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,perfChart,renderPerf,perfReturns,perfBins,distChart,renderDist,distCrown,distPanel,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setWin,actWindow,actRows,actSorted,actStats,tapeKind,tapeManner,trajStats,soldTickers,sparkline,lastTrades,exportTable,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,perfChart,renderPerf,perfReturns,perfBins,distChart,renderDist,distCrown,distPanel,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
   await P.loadData();
-  const {state,EVENTS,renderActivity,evValCell,evPctCell,openCompany,money,setWin,setKind,setSort,actWindow,actRows,actSorted}=P;
+  const {state,EVENTS,renderActivity,evValCell,evPctCell,openCompany,money,setWin,actWindow,actRows,actSorted,tapeKind}=P;
   const assert=(c,m)=>{if(!c){console.error("FAIL:",m);process.exit(1);}console.log("ok:",m);};
   const idxsrc=require("fs").readFileSync("index.html","utf8");
 
@@ -96,77 +96,70 @@ const P=runPage();
   assert(idxsrc.indexOf('href="#activity"')<idxsrc.indexOf('href="#perfsec"'),"and the nav follows the page");
   assert(!/class="blurred"/.test(els["#actwrap"]._html),"no blur class from the old gate anywhere: a sealed figure is a data-shape placeholder");
 
-  // ---- RECENT ACTIVITY: one table, ranked by what moved the stake ----
+  // ---- THE TAPE: a weather line, the controls, one table grouped by kind ----
   {
-    // the section is one dataset at one zoom: a window, a founders switch,
-    // a counts line, three cards, a kind chip row, a sort, one table
-    assert(idxsrc.includes('id="actwin"')&&idxsrc.includes('data-win="7"')&&idxsrc.includes('data-win="365"'),"the window chips run 7 days to 12 months");
-    assert(!idxsrc.includes('id="actcols"')&&!idxsrc.includes('id="actday"')&&!idxsrc.includes('id="acttable"'),"the day strip, the two columns and the drawer are gone");
-    setWin(365); setKind("all");
+    assert(idxsrc.includes('id="actwin"')&&idxsrc.includes('data-win="7"')&&idxsrc.includes('data-win="365"'),"the window chips run 7d to 12m");
+    assert(!idxsrc.includes('id="actcards"')&&!idxsrc.includes('id="actkinds"')&&!idxsrc.includes('id="actsort"'),"no card grid, no kind or sort chips: the table is the tape");
+    assert(idxsrc.includes('id="tg-f"')&&idxsrc.includes('id="tg-buys"')&&idxsrc.includes('id="tg-nocomp"'),"three toggles: founders only, open-market buys, hide compensation");
+    assert(/id="tg-f" checked/.test(idxsrc),"founders only is on by default");
+    state.pro=true; setWin(365); state.ev.f=false; state.ev.buys=false; state.ev.nocomp=false; renderActivity();
     const rows=actSorted(actRows());
-    assert(rows.length>50,"the window holds the year's stake-moving trades: "+rows.length);
-    assert(rows.every(e=>P.evSide(e)!=="exsell"),"All is purchases and sales that moved a stake; compensation is its own chip");
-    // the default sort is by stake change, largest move first, sealed rows last
-    const pcs=rows.filter(e=>!e.mk).map(e=>{const p=P.pctOf(e);if(!p)return null;return e.c==="P"?Math.max(0,p.v):Math.max(0,-p.v);});
-    const ranked=pcs.filter(x=>x!==null);
-    assert(ranked.length>10&&ranked.every((x,i)=>i===0||x<=ranked[i-1]),"sorted by stake change, largest first");
-    const firstSealed=rows.findIndex(e=>e.mk), lastOpen=rows.map(e=>!e.mk).lastIndexOf(true);
-    assert(firstSealed===-1||firstSealed>lastOpen,"a sealed row has no figure to rank by and follows the ranked rows");
+    assert(rows.length>50,"the window holds the year's filings: "+rows.length);
+    // kind groups in order: bought, discretionary, plan, compensation
+    const order={bought:0,disc:1,plan:2,comp:3};
+    const ks=rows.map(e=>order[tapeKind(e)]);
+    assert(ks.every((k,i)=>i===0||k>=ks[i-1]),"kind groups in the tape's order");
+    assert(ks.includes(0)&&ks.includes(1)&&ks.includes(2)&&ks.includes(3),"all four kinds present in a year");
+    // ranked by the stake's move within a group
+    const mv=e=>{const p=P.pctOf(e);if(!p||e.mk)return null;return e.c==="P"?Math.max(0,p.v):Math.max(0,-p.v);};
+    for(const k of [0,1,2]){const g=rows.filter(e=>order[tapeKind(e)]===k).map(mv).filter(x=>x!==null);assert(g.every((x,i)=>i===0||x<=g[i-1]),"ranked by the stake's move within kind "+k);}
     const html=els["#actwrap"]._html;
-    assert(html.includes('class="daytab"')&&(html.match(/class="dayrow"/g)||[]).length===rows.length,"one table row per filing, seven columns");
-    assert(/<th>Kind<\/th><th>Company<\/th><th class="n">Value<\/th><th class="n">Stake<\/th><th>Manner<\/th><th>Transaction<\/th><th>Filing<\/th>/.test(html),"the columns, in order");
-    assert(html.includes("openCompany(")&&html.includes("sec.gov"),"rows are doors and carry filing links");
-    // the counts line and the three cards
+    assert(html.includes('class="tape"')&&(html.match(/class="dayrow/g)||[]).length===rows.length,"one table row per filing");
+    assert(/<th>Kind<\/th><th>Company<\/th><th>CEO<\/th><th class="n">Amount<\/th><th class="n">New stake<\/th><th>Manner<\/th>/.test(html),"the six columns, in order");
+    assert(html.includes("openCompany(")&&html.includes("sec.gov"),"rows are doors and the amount links to the filing");
+    assert(!html.includes("DISCRET."),"kinds are spelled out");
     const stats=els["#actstats"]._html;
-    assert(/<b>\d+<\/b> CEOs? bought · <b>\d+<\/b> cut a stake/.test(stats),"the counts line says who bought and who cut: "+stats.replace(/<[^>]+>/g,""));
-    const cards=els["#actcards"]._html;
-    assert((cards.match(/class="acard"/g)||[]).length===4&&cards.includes("Largest buy")&&cards.includes("Biggest add")&&cards.includes("Largest sale")&&cards.includes("Biggest cut"),"four cards: largest buy, biggest add, largest sale, biggest cut");
-    const adds=rows.filter(e=>e.c==="P"&&!e.mk).map(e=>[e,P.pctOf(e)]).filter(x=>x[1]&&x[1].v>0);
-    if(adds.length){const top=adds.reduce((a,b)=>b[1].v>a[1].v?b:a)[0];assert(cards.includes(`openCompany('${top.tk}')`),"the biggest add card is the purchase that added most to a stake: "+top.tk);}
-    const buys=rows.filter(e=>e.c==="P"&&!e.mk&&!e.fl&&e.v);
-    if(buys.length){const top=buys.reduce((a,b)=>(b.v||0)>(a.v||0)?b:a);assert(cards.includes(`openCompany('${top.tk}')`),"the largest buy card is the largest purchase by value: "+top.tk);}
-    const sales=rows.filter(e=>e.c==="S"&&!e.mk&&!e.fl&&e.v);
-    if(sales.length){const top=sales.reduce((a,b)=>(b.v||0)>(a.v||0)?b:a);assert(cards.includes(`openCompany('${top.tk}')`),"the largest sale card is the largest sale by value: "+top.tk);}
-    const cuts=rows.filter(e=>e.c==="S"&&!e.mk).map(e=>[e,P.pctOf(e)]).filter(x=>x[1]&&x[1].v<0);
-    if(cuts.length){const top=cuts.reduce((a,b)=>b[1].v<a[1].v?b:a)[0];assert(cards.includes(`openCompany('${top.tk}')`),"the biggest cut card is the largest reduction of a stake, not the largest sale: "+top.tk);}
-    // the kind chips narrow; the sort chips reorder
-    setKind("buys"); assert(actRows().every(e=>e.c==="P"),"Bought is purchases only");
-    setKind("sells"); assert(actRows().every(e=>e.c==="S"&&P.unchangedKind(e)===null),"Sold is sales that reduced the stake");
-    setKind("comp"); assert(actRows().every(e=>P.unchangedKind(e)!==null),"Compensation is the kept-apart trades");
-    setKind("all"); setSort("v");
-    const byV=actSorted(actRows()).filter(e=>!e.mk).map(e=>e.fl?0:(e.v||0));
-    assert(byV.every((x,i)=>i===0||x<=byV[i-1]),"sorted by value, largest first");
-    setSort("fd");
-    const byD=actSorted(actRows()).map(e=>e.fd);
-    assert(byD.every((x,i)=>i===0||x<=byD[i-1]),"sorted by date, newest first, sealed rows interleaved");
-    setSort("pc"); setWin(7);
-    assert(actWindow().every(e=>Date.now()-Date.parse(e.fd+"T00:00:00Z")<=8*86400e3),"the 7-day window is seven days");
-    // the note under the table says what was shown and where the rest is
-    assert(/\d[\d,]* filings? in the last 7 days/.test(els["#actnote"]._html),"the note counts the rows of the window");
-    setWin(365);
+    assert(/<b>\d+<\/b> CEOs? bought · (<b>\d+<\/b> for the first time ever · )?<b>\d+<\/b> cut a stake · <b>\d+<\/b> sold on a plan · <b>\d+<\/b> compensation filings? did not move a stake/.test(stats),"the weather line: "+stats.replace(/<[^>]+>/g,""));
+    // a plan is never counted as a cut; compensation never as a cut
+    const cut=+(stats.match(/<b>(\d+)<\/b> cut a stake/)||[])[1];
+    const discPeople=new Set(actWindow().filter(e=>tapeKind(e)==="disc").map(e=>e.tk+"|"+e.ceo)).size;
+    assert(cut===discPeople,"'cut a stake' counts discretionary sellers only: "+cut+" vs "+discPeople);
+    // toggles
+    state.ev.buys=true; renderActivity(); assert(actRows().every(e=>tapeKind(e)==="bought"),"open-market buys only");
+    state.ev.buys=false; state.ev.nocomp=true; renderActivity(); assert(actRows().every(e=>tapeKind(e)!=="comp"),"hide compensation hides it");
+    state.ev.nocomp=false;
+    // the subhead names the window's dates
+    assert(/last 12 months, [A-Z][a-z]{2} \d+ to [A-Z][a-z]{2} \d+/.test(els["#tapesub"]._text||""),"the subhead names the dates: "+els["#tapesub"]._text);
+    // a free reader: 7d only, the longer chips dimmed and gated, the Pro note under the chips
+    state.pro=false; setWin(7); renderActivity();
+    assert(state.ev.win==="7","7 days for a free reader");
+    el._last={};
+    setWin(30); assert(el._last["#promodal"]==="on"&&state.ev.win==="7","a longer window opens the Pro box and does not change the window");
+    el._last={};
+    assert((els["#pronote"]._html||"").includes("Pro"),"the Pro note sits under the chips");
+    state.pro=true; setWin(365);
   }
 
-  // ---- a sealed filing is a row with its figures blurred ----
+  // ---- a sealed filing: the amount shows, the stake after is blurred ----
   {
     const savedE=P.EVENTS;
-    P.EVENTS=savedE.concat([{tk:"ZZSEAL",ceo:"Sealed Person",c:"S",lb:"discretionary sale",pl:"discretionary",sh:null,v:null,fd:"2026-09-01",td:"2026-08-31",pc:null,ha:null,nc:null,rs:null,u:"",mk:true}]);
-    setWin(365); setKind("all"); renderActivity();
-    const html=els["#actwrap"]._html;
-    const row=html.slice(html.indexOf("ZZSEAL"));
-    assert(row.includes('class="sealed"')&&(row.slice(0,900).match(/class="sealed"/g)||[]).length===2,"a sealed row blurs its value and its stake change, and nothing else");
-    assert(!row.slice(0,900).includes("sec.gov"),"and carries no filing link");
-    assert(els["#actnote"]._html.includes("from sealed companies"),"the note says how many rows are sealed");
+    P.EVENTS=savedE.concat([{tk:"ZZSEAL",ceo:"Sealed Person",c:"S",lb:"discretionary sale",pl:"discretionary",sh:null,v:1.5e6,fd:"2026-09-01",td:"2026-08-31",pc:null,po:null,ha:null,nc:null,rs:null,u:"",mk:true}]);
+    state.ev.f=false; setWin(365); renderActivity();
+    const html=els["#actwrap"]._html; const row=html.slice(html.indexOf("ZZSEAL"),html.indexOf("ZZSEAL")+900);
+    assert(row.includes("$1.5M"),"the amount is the Form 4's own number and shows on a sealed row");
+    assert((row.match(/class="sealed"/g)||[]).length===1,"and the stake after the trade is the one blur");
+    assert(!row.includes("sec.gov"),"no filing link on a sealed row");
+    assert((els["#actnote"]._html||"").includes("outside the S&P 500"),"the note says where the sealed stakes are");
     P.EVENTS=savedE; renderActivity();
   }
 
   // ---- the first-ever purchase ----
   {
     const savedE=P.EVENTS;
-    P.EVENTS=[{tk:"NEWB",ceo:"First Timer",c:"P",lb:"open-market purchase",pl:"discretionary",sh:1000,v:5e5,fd:"2026-09-03",td:"2026-09-02",pc:2.5,ha:41000,nc:1000,rs:null,u:"https://www.sec.gov/x",fb:true},
-              {tk:"OLDB",ceo:"Old Hand",c:"P",lb:"open-market purchase",pl:"discretionary",sh:1000,v:9e5,fd:"2026-09-03",td:"2026-09-02",pc:0.1,ha:1e6,nc:1000,rs:null,u:"https://www.sec.gov/y",fb:false}];
-    setWin(30); setKind("all"); renderActivity();
-    assert(els["#actstats"]._html.includes("<b>1</b> bought for the first time ever"),"the counts line counts first-ever purchases");
-    assert(els["#actcards"]._html.includes("Largest buy")&&els["#actcards"]._html.includes("openCompany('OLDB')"),"the largest buy card is by value");
+    P.EVENTS=[{tk:"NEWB",ceo:"First Timer",c:"P",lb:"open-market purchase",pl:"discretionary",sh:1000,v:5e5,fd:"2026-09-03",td:"2026-09-02",pc:2.5,po:41.0,ha:41000,nc:1000,rs:null,u:"https://www.sec.gov/x",fb:true},
+              {tk:"OLDB",ceo:"Old Hand",c:"P",lb:"open-market purchase",pl:"discretionary",sh:1000,v:9e5,fd:"2026-09-03",td:"2026-09-02",pc:0.1,po:1.0,ha:1e6,nc:1000,rs:null,u:"https://www.sec.gov/y",fb:false}];
+    state.ev.f=false; setWin(30); renderActivity();
+    assert(els["#actstats"]._html.includes("<b>1</b> for the first time ever"),"the weather line counts first-ever purchases");
     assert(els["#actwrap"]._html.includes('class="firstb"'),"and the row carries the tag");
     P.EVENTS=savedE; setWin(365); renderActivity();
   }
@@ -535,27 +528,24 @@ const P=runPage();
   }
 
 
-  // ---- ONE FOUNDERS SWITCH FOR THE WHOLE ACTIVITY SECTION ----
+  // ---- ONE FOUNDERS TOGGLE FOR THE WHOLE TAPE ----
   {
   const savedE=P.EVENTS,savedF=P.FOUNDERS;
   P.FOUNDERS={FND:{f:"yes",ev:"co-founded",src:"x"},HIRE:{f:"no",ev:"",src:"x"}};
   P.EVENTS=[
-    {tk:"FND",ceo:"A Founder",c:"S",lb:"sale",pl:"plan",sh:100,v:1e6,fd:"2026-09-02",td:"2026-09-01",pc:10,ha:1000,nc:-100,rs:null},
-    {tk:"HIRE",ceo:"A Hire",c:"S",lb:"sale",pl:"discretionary",sh:100,v:5e6,fd:"2026-09-02",td:"2026-09-01",pc:20,ha:1000,nc:-100,rs:null},
-    {tk:"HIRE",ceo:"A Hire",c:"S",lb:"exercise and sell",pl:"plan",sh:10,v:2e5,fd:"2026-09-02",td:"2026-09-01",pc:null,ha:1000,nc:0,rs:null},
+    {tk:"FND",ceo:"A Founder",c:"S",lb:"sale",pl:"plan",sh:100,v:1e6,fd:"2026-09-02",td:"2026-09-01",pc:-10,po:5,ha:1000,nc:-100,rs:null},
+    {tk:"HIRE",ceo:"A Hire",c:"S",lb:"sale",pl:"discretionary",sh:100,v:5e6,fd:"2026-09-02",td:"2026-09-01",pc:-20,po:1,ha:1000,nc:-100,rs:null},
+    {tk:"HIRE",ceo:"A Hire",c:"S",lb:"exercise and sell",pl:"plan",sh:10,v:2e5,fd:"2026-09-02",td:"2026-09-01",pc:null,po:1,ha:1000,nc:0,rs:null},
   ];
-  P.state.ev.f=false;setWin(30);setKind("all");renderActivity();
+  P.state.pro=true;P.state.ev.f=false;setWin(30);renderActivity();
   const off=els["#actwrap"]._html;
-  assert(off.includes("A Founder")&&off.includes("A Hire"),"switch off: the table lists every CEO's stake-moving trade");
-  assert(els["#actstats"]._html.includes("<b>2</b> cut a stake"),"and the counts line counts both");
+  assert(off.includes("A Founder")&&off.includes("A Hire"),"toggle off: every CEO");
+  assert(els["#actstats"]._html.includes("<b>1</b> cut a stake")&&els["#actstats"]._html.includes("<b>1</b> sold on a plan"),"the weather line counts the discretionary seller as a cut and the planned one as a plan");
   P.state.ev.f=true;renderActivity();
   const on=els["#actwrap"]._html;
-  assert(on.includes("A Founder")&&!on.includes("A Hire"),"switch on: the table is founders only");
-  assert(els["#actstats"]._html.includes("<b>1</b> cut a stake"),"the counts line counts founders only");
-  assert(!els["#actnote"]._html.includes("compensation trade"),"and the compensation line does not count a hired CEO's options cashed");
-  const shead=require("fs").readFileSync("index.html","utf8");
-  assert(/<div class="shead">\s*<h2>Recent activity<\/h2>[\s\S]{0,900}id="evf"/.test(shead)&&(shead.match(/id="evf"/g)||[]).length===1,"the one switch sits in the section's head");
-  P.state.ev.f=false;P.EVENTS=savedE;P.FOUNDERS=savedF;setWin(365);renderActivity();
+  assert(on.includes("A Founder")&&!on.includes("A Hire"),"toggle on: founders only");
+  assert((els["#tapesub"]._text||"").startsWith("Founders only"),"and the subhead says so");
+  P.state.ev.f=true;P.EVENTS=savedE;P.FOUNDERS=savedF;setWin(365);renderActivity();
 }
 
   console.log("\nALL RENDER PATHS PASS");
