@@ -1,7 +1,7 @@
 # Founder Led Equities: the plan
 
 Written 2026-09-13, after the redesign brief and the conversation that
-followed it. This is the document to read before any product decision.
+followed it; the two copy corrections of the same day are in. This is the document to read before any product decision.
 It says what the site is, what is free, what is paid, why anyone pays,
 what the site looks like, and the order the work ships in.
 
@@ -28,18 +28,20 @@ Monday email that upgrades into Pro.
 
 ## 2. Free and paid
 
-The rule: the free tier is the whole product on the S&P 500, plus the
-whole universe's last seven days; Pro is more names, the archive, longer
-windows, the export and a list of watches. The calculation is identical
+The rule: the free tier is the current S&P 500 picture plus twelve
+months of trades, and the whole universe's last seven days; Pro is more
+names, the archive, longer windows, the export and a list of watches. The calculation is identical
 on both sides of the seal. Pro is more of the same file, never a
 different lens.
 
 ### Free (no card)
 
-- Everything on the S&P 500: current stake, shares, value, founder or
-  hired with the proxy's sentence, confidence, the stake-over-time chart
-  (and the price-with-trades toggle), the last twelve months of trades
-  with filing links; the scoreboard, the screener and its filters.
+- The current S&P 500 picture: stake, shares, value, founder or hired
+  with the proxy's sentence, confidence, the stake-over-time chart (and
+  the price-with-trades toggle), and the last twelve months of trades
+  with filing links, on every S&P company page; the scoreboard, the
+  screener and its filters over the S&P. The archive before that is
+  not free, S&P or not.
 - The tape for the last seven days, for every company in the universe:
   every purchase, sale and compensation filing by any chief executive,
   with the name, the kind (bought / discretionary / planned /
@@ -67,9 +69,12 @@ different lens.
 Not sold in either tier: recommendations, real-time quotes, speed to
 the Form 4, a different formula behind the paywall, a second tier.
 
-Copy rule: never "the full S&P is free." The accurate line is "S&P 500
-current stakes are open. History, every name over $1B, and export are
-Pro."
+Copy rule: never "the full S&P is free," and never "history is Pro"
+without saying which history, since twelve months are open. The
+accurate line, used verbatim on the hero, the /pro page and the email:
+
+> S&P 500 current stakes and the last twelve months are open. The
+> archive, every other $1B+ name, longer tape windows, and export are Pro.
 
 ## 3. Why anyone pays (the conversation of 2026-09-13)
 
@@ -100,8 +105,8 @@ turn a reader into a subscriber:
    and the longer windows.
 
 Why a buyer knows what they are getting: Pro is not a different
-product. A free visitor has used every screen, chart, table and the
-email on 500 companies with real numbers. Pro removes the blur from
+product. A free visitor has used every screen, chart and table on 500
+companies with a year of real numbers, and the email every Monday. Pro removes the blur from
 1,600 more names, extends every table to 2016, and lets a watch become
 a list. The /pro page says exactly that in four lines and one quiet
 one: S&P 500 current stakes stay free.
@@ -137,7 +142,7 @@ side "Weekly tape, free" and "Go Pro" (or Account when signed in).
 
 - `/` in this order: hero (headline "What the person running the
   company still owns.", subhead, three live stats, two buttons, the
-  quiet line), the this-week strip, the scoreboard "What they own now",
+  quiet line from the copy rule above), the this-week strip, the scoreboard "What they own now",
   the tape excerpt `#tape` with the Monday-email field beside it, the
   performance chart "Founders against the index" with "A portrait, not
   a strategy."
@@ -154,6 +159,47 @@ side "Weekly tape, free" and "Go Pro" (or Account when signed in).
 - `/about` (Method): the essay, unchanged, plus the one-person line at
   the top; pricing moved out to /pro.
 
+## 5a. Email: the weekly and the alerts
+
+Two jobs, one provider.
+
+- The Monday tape is a broadcast: one message to a list, with signup,
+  unsubscribe and an archive. A watch alert is transactional: one
+  message to one person, triggered by a filing, sent by the pipeline.
+- Provider: Resend, for both. A transactional API for the alerts and
+  Audiences + Broadcasts for the list (unsubscribes handled, sends can
+  be scheduled). One domain verification, one key, one place to look.
+  Free to 3,000 emails a month. Substack is ruled out (it moves the
+  audience onto another domain); Buttondown would be the pick if there
+  were no alerts; Beehiiv is the wrong shape.
+- The archive lives on this site (`/tape/2026-09-14/`): indexable, and
+  what the email links to. Never on another domain.
+- The weekly is never automatic. The nightly's Monday run writes a
+  draft (an editable file and a rendered preview) and nothing is sent
+  until a person runs `ops/send-tape.sh`, or finishes the draft
+  broadcast in Resend's dashboard and presses Send there. The pipeline
+  prepares; the person sends.
+- The alerts are the opposite: one fixed template, sent by the nightly
+  when a watched founder buys on the open market or sells at discretion,
+  no hand in the loop.
+- The look is ours, not the provider's: an HTML template built once in
+  the site's design (paper, a serif headline set in Georgia since mail
+  clients do not load web fonts, the counts line, the four cards, the
+  tape table reduced to the five columns that fit, sealed names with
+  "in Pro" where the figure would be, one link to `/tape`, the plain
+  footer), table-based with inline styles, tested in Gmail, Apple Mail
+  and Outlook before the first send.
+- Legitimacy is not the template: an authenticated sending domain (SPF,
+  DKIM, DMARC on founderledequities.com), a consistent from-address
+  (tape@founderledequities.com), a working unsubscribe link and the
+  List-Unsubscribe header, a physical-address line in the footer
+  (CAN-SPAM), and double opt-in so the list is people who asked.
+- Setup: DNS records on the Cloudflare zone; an API key in the
+  pipeline's environment beside the Polygon key; a signup endpoint (a
+  Pages function that adds an address to the audience, double opt-in);
+  the digest rewritten to the tape's terms and drafted by the Monday
+  run. The watches, later in the order, reuse the key and a D1 table.
+
 ## 6. What already exists (do not rebuild)
 
 Nightly EDGAR refresh and deploy at 02:30; the walk and its rules;
@@ -168,9 +214,11 @@ writes a digest that nobody sends.
 ## 7. Implementation order
 
 1. Monday email plumbing and the `/tape` page it links to, in the new
-   design. Provider: Buttondown or Resend; the digest from weekly.py;
-   the leaderboard image attached. This is the cadence and the only
-   item that changes the visitor count.
+   design (section 5a: Resend, the drafted-not-sent weekly, our
+   template). The digest from weekly.py, rewritten; the leaderboard
+   image attached. This is the cadence and the only item that changes
+   the visitor count. Both the /tape page and the email are shown as
+   rendered mocks in the new design before either is built.
 2. `/pro` page, price change to $19 / $190, card-backed Stripe trial.
 3. Homepage restructure and the design system across the site.
 4. Sealing rule on S&P company pages (archive behind Pro, last twelve
