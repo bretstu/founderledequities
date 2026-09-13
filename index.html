@@ -1136,6 +1136,7 @@ async function loadData(){
 
 /*@shared*/
 function fInfo(tk){return FOUNDERS[tk]||null}
+/*@shared*/
 function fOnly(tk,on){
   /* off: everyone. on: only companies whose chief executive the proxy
      names a founder -- the uncertain row is never asserted either way. */
@@ -1702,6 +1703,7 @@ function renderBars(){
    number, blurred: it reads as a number not yet visible, which is what it
    is. The real number is not in the file, so there is nothing behind the
    blur; hovering says where it is and clicking opens the box. */
+/*@shared*/
 const LOCK=(what,shape)=>`<span class="sealed" data-shape="${shape||"$0.0B"}" aria-label="in Pro" onclick="event.stopPropagation();openPro()" title="${what||"in Pro"}"></span>`;
 function trendArrow(tk){
   /* the year-over-year direction, from trends.csv. Deliberately present
@@ -2018,6 +2020,7 @@ function lockedBlock(inner,msg,cls){
    <div class="lock"><div class="seal">${SEAL}</div><p>${msg}</p>
    <button class="lockbtn" onclick="openPro()">Unlock</button></div></div>`;
 }
+/*@shared*/
 function coOf(tk){const r=PANEL.find(p=>p.tk===tk);return r?r.co:"";}
 /* THREE LABELS, ONE FACT: the measured stake did not move. "exercise and
    sell" is options cashed; "convert and sell" is units or a convertible
@@ -2180,6 +2183,7 @@ function evSide(e){
   if(unchangedKind(e)!==null)return"exsell";
   return e.c==="P"?"buys":"sells";
 }
+/*@shared*/
 function tapeKind(e){
   /* THE FOUR KINDS OF THE TAPE, in the order the tape lists them. Bought:
      an open-market purchase that moved the stake. Discretionary: a sale
@@ -2190,8 +2194,11 @@ function tapeKind(e){
   if(e.c==="P")return "bought";
   return e.pl==="plan"?"plan":"disc";
 }
+/*@shared*/
 const KIND_ORDER={bought:0,disc:1,plan:2,comp:3};
+/*@shared*/
 const KIND_WORD={bought:"Bought",disc:"Discretionary",plan:"Plan",comp:"Compensation"};
+/*@shared*/
 function tapeManner(e){
   const k=tapeKind(e);
   if(k==="bought"||k==="disc")return "Open market";
@@ -2199,12 +2206,14 @@ function tapeManner(e){
   return {"exercise and sell":"Options cashed","exercise, part sold":"Options cashed, part kept","vested and sold":"Vest, part sold",
           "convert and sell":"Units converted","sale, position unchanged":"Sale, stake unchanged","purchase, position unchanged":"Purchase, stake unchanged"}[e.lb]||"Compensation";
 }
+/*@shared*/
 function actWindow(){
   const days=+state.ev.win||7;
   const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
   return EVENTS.filter(e=>(e.c==="P"||e.c==="S")&&e.fd>=cut&&fOnly(e.tk,state.ev.f));
 }
 /* the rows of the table: the window narrowed by the toggles */
+/*@shared*/
 function actRows(){
   return actWindow().filter(e=>{
     const k=tapeKind(e);
@@ -2217,6 +2226,7 @@ function actRows(){
    ranks by how much it cut, a purchase by how much it added; a row with
    no figure (a sealed one, or an unstated move) follows the ranked rows
    of its group, in date order. */
+/*@shared*/
 function actSorted(rows){
   const mv=e=>{if(e.mk)return null;const p=pctOf(e);if(!p)return null;return e.c==="P"?Math.max(0,p.v):Math.max(0,-p.v);};
   return [...rows].sort((a,b)=>{
@@ -2229,6 +2239,7 @@ function actSorted(rows){
     return b.fd.localeCompare(a.fd)||a.tk.localeCompare(b.tk);
   });
 }
+/*@shared*/
 function setWin(w){
   /* the longer windows are Pro; a free reader's click opens the box */
   if(String(w)!=="7"&&!state.pro){openPro();return;}
@@ -2252,6 +2263,7 @@ function niceDay(d){
   return new Date(t).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:"UTC"});
 }
 /* the weather line: what the window held */
+/*@shared*/
 function actStats(){
   const w=actWindow();
   const who=k=>new Set(w.filter(e=>tapeKind(e)===k).map(e=>e.tk+"|"+e.ceo)).size;
@@ -2262,6 +2274,7 @@ function actStats(){
   if(first)parts.splice(1,0,`<b>${first}</b> for the first time ever`);
   return parts.join(" · ");
 }
+/*@shared*/
 function actRow(e){
   const k=tapeKind(e),dim=k==="comp";
   const stake=e.mk?LOCK("the stake after the trade is in Pro","0.00%"):(e.po!==null&&e.po!==undefined)?e.po.toFixed(e.po<1?3:2)+"%":`<span class="nopr">&mdash;</span>`;
@@ -2275,6 +2288,7 @@ function actRow(e){
     <td class="mn">${tapeManner(e)}<span class="dt" title="the transaction date${e.tf&&e.tf!==e.td?"s":""}; filed ${e.fd}${lagNote(e)}"> · ${spanDay(e,shortDay)}</span></td>
   </tr>`;
 }
+/*@shared*/
 function renderActivity(){
   if(!$("#actwrap"))return;
   const f=$("#tg-f"),bu=$("#tg-buys"),nc=$("#tg-nocomp");
@@ -2428,6 +2442,7 @@ syncDev();
    changed its mind twice before settling. Now nothing draws until the
    live data is in; the sections with no stamp wait empty. */
 syncNav();renderStatus();
+if(location.hash==="#pro")openPro();          /* a Go Pro link from another page lands on the box */
 loadData();                                   /* the live CSVs, then one render */
 </script>
 </body>

@@ -1,0 +1,49 @@
+// The Monday tape's signup (PLAN.md section 5a): double opt-in.
+// POST {email} -> a confirmation link is mailed; nothing is added yet.
+// GET ?token=... -> the click adds the address to the Resend audience.
+// The response to POST is the same whatever the address, so the endpoint
+// cannot be used to test which addresses are on the list.
+import { site, redirect, json } from "../_shared.js";
+
+const RESEND = (env) => env.RESEND_API_BASE || "https://api.resend.com";
+
+export async function onRequestPost({ request, env }) {
+  let email = "";
+  try { email = ((await request.json()).email || "").trim().toLowerCase(); } catch {}
+  const generic = json({ ok: true, message: "Check your inbox: one click confirms it." });
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return generic;
+  if (!env.RESEND_API_KEY) {
+    return json({ ok: false, message: "The list isn't open yet; write to hello@founderledequities.com and I'll add you." }, 503);
+  }
+  const token = [...crypto.getRandomValues(new Uint8Array(24))].map((b) => b.toString(16).padStart(2, "0")).join("");
+  await env.SUBS.put(`sub:${token}`, email, { expirationTtl: 86400 });
+  const link = `${site(env)}/api/subscribe?token=${token}`;
+  await fetch(`${RESEND(env)}/emails`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: "Founder Led Equities <tape@founderledequities.com>",
+      to: [email],
+      subject: "Confirm: the Monday tape",
+      text: `One click and you're on the list for the Monday tape: who bought, who cut a stake, who sold on a plan, founders first.\n\n${link}\n\nThe link works once and expires in a day. If you didn't ask for this, ignore it and nothing happens.`,
+    }),
+  });
+  return generic;
+}
+
+export async function onRequestGet({ request, env }) {
+  const token = new URL(request.url).searchParams.get("token") || "";
+  if (!/^[0-9a-f]{48}$/.test(token)) return redirect(`${site(env)}/tape/`);
+  const email = await env.SUBS.get(`sub:${token}`);
+  if (!email) return redirect(`${site(env)}/tape/?subscribed=expired`);
+  await env.SUBS.delete(`sub:${token}`);
+  // Resend's audience is account-level now: one list, no audience id.
+  // (RESEND_AUDIENCE_ID, if ever set, selects the older per-audience path.)
+  const path = env.RESEND_AUDIENCE_ID ? `/audiences/${env.RESEND_AUDIENCE_ID}/contacts` : "/contacts";
+  await fetch(`${RESEND(env)}${path}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, unsubscribed: false }),
+  });
+  return redirect(`${site(env)}/tape/?subscribed=1`);
+}

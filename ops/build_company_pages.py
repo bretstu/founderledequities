@@ -102,7 +102,7 @@ def extract_topnav(index_html: str) -> str:
     nav = nav.replace('href="#', 'href="/#').replace('href="about.html"', 'href="/about.html"')
     nav = re.sub(r'\s*<button class="devtog".*?</button>', "", nav, flags=re.S)
     nav = re.sub(r'<button class="gopro" onclick="openPro\(\)">Go Pro</button>',
-                 '<a class="gopro" href="/#account" style="text-decoration:none">Go Pro</a>', nav)
+                 '<a class="gopro" href="/#pro" style="text-decoration:none">Go Pro</a>', nav)
     nav = nav.replace("onclick=\"window.scrollTo({top:0,behavior:'smooth'})\"", "onclick=\"location.href='/'\"")
     nav = nav.replace("onkeydown=\"if(event.key==='Enter')window.scrollTo({top:0,behavior:'smooth'})\"",
                       "onkeydown=\"if(event.key==='Enter')location.href='/'\"")
@@ -449,6 +449,23 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     # at company.js?v=<hash> and site.css?v=<hash>, so a change is fetched.
     js_v = hashlib.sha256(js_text.encode("utf-8")).hexdigest()[:10]
     css_v = hashlib.sha256(css_text.encode("utf-8")).hexdigest()[:10]
+    # THE TAPE AS A PAGE (PLAN.md section 5): /tape/ is the same block the
+    # home page carries, built from the same shared declarations plus its
+    # own script, with the Monday-tape signup beside it.
+    tape_tpl_p = os.path.join(root, "tape.html")
+    tape_js_p = os.path.join(root, "assets", "tape-page.js")
+    if os.path.exists(tape_tpl_p) and os.path.exists(tape_js_p):
+        tape_js = header + shared + "\n\n" + open(tape_js_p, encoding="utf-8").read()
+        tape_v = hashlib.sha256(tape_js.encode("utf-8")).hexdigest()[:10]
+        with open(os.path.join(out_dir, "tape.js"), "w", encoding="utf-8") as fh:
+            fh.write(tape_js)
+        tape_html = (open(tape_tpl_p, encoding="utf-8").read()
+                     .replace("{{TOPNAV}}", extract_topnav(index_html))
+                     .replace('href="/site.css"', f'href="/site.css?v={css_v}"')
+                     .replace('src="/tape.js"', f'src="/tape.js?v={tape_v}"'))
+        os.makedirs(os.path.join(out_dir, "tape"), exist_ok=True)
+        with open(os.path.join(out_dir, "tape", "index.html"), "w", encoding="utf-8") as fh:
+            fh.write(tape_html)
     topnav = extract_topnav(index_html)
 
     sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
@@ -572,7 +589,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     with open(os.path.join(out_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
         fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
         today = datetime.date.today().isoformat()
-        for u in [f"{SITE}/", f"{SITE}/about.html"] + urls:
+        for u in [f"{SITE}/", f"{SITE}/tape/", f"{SITE}/about.html"] + urls:
             m = re.search(r"/company/([A-Z0-9.\-]+)/$", u)
             lm = (lastmods.get(m.group(1)) if m else "") or today
             fh.write(f"  <url><loc>{html.escape(u)}</loc><lastmod>{lm}</lastmod></url>\n")

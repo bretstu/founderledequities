@@ -141,7 +141,7 @@ python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" 
 # ?v=<this deploy>, so the browser and the edge cache a deploy's files
 # until the next deploy changes the key.
 DATAV=$(date -u +%Y%m%d%H%M)
-sed -i "s|const DATA_V=\"dev\"|const DATA_V=\"$DATAV\"|" public/index.html public/about.html public/company.js
+sed -i "s|const DATA_V=\"dev\"|const DATA_V=\"$DATAV\"|" public/index.html public/about.html public/company.js public/tape.js
 echo "  data version: $DATAV"
 
 [ -s prices.csv ] && cp prices.csv public/

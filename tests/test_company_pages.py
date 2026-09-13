@@ -43,8 +43,14 @@ def test_the_shared_code_is_extracted_whole_and_parses():
                  "function unchangedKind(", "function pctOf(", "function lagNote(", "const money=",
                  "const SEAL=", "let _cleanCache="):
         assert name in js, f"{name} is not marked @shared"
-    assert "document.querySelector" not in js, "shared code must not touch the DOM"
-    assert "state.pro" not in js and "state.live" not in js, "shared code must not read app state"
+    # the parsers and formatters never touch the DOM; the tape's renderer is
+    # shared on purpose (the home page and /tape/ draw the same block) and
+    # is the one declaration allowed to
+    dom_free = js[:js.index("function renderActivity(")]
+    assert "document.querySelector" not in dom_free, "shared code before the renderer must not touch the DOM"
+    assert js.count("document.querySelector") <= 2, "only the renderer touches the DOM"
+    assert "state.pro" not in dom_free.split("function setWin(")[0] and "state.live" not in js, \
+        "shared parsers and formatters must not read app state (the tape's gate and renderer may: both pages carry the same state shape)"
     if shutil.which("node"):
         r = subprocess.run(["node", "-e", "new Function(process.argv[1])", "--", js],
                            capture_output=True, text=True)
@@ -93,7 +99,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert 'src="/company.js?v=' in tsla and 'href="/site.css?v=' in tsla, "a new script is a new address"
     assert os.path.exists(os.path.join(out, "site.css"))
     sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
-    assert sm.count("<loc>") == 5 and "/company/SEALD/" in sm and "/companies/" in sm, \
+    assert sm.count("<loc>") == 6 and "/company/SEALD/" in sm and "/companies/" in sm and "/tape/" in sm, \
         "every company is in the sitemap: the open ones with the answer, the sealed ones with the question"
     robots = open(os.path.join(out, "robots.txt"), encoding="utf-8").read()
     assert "Disallow: /pro/" in robots and "Sitemap:" in robots
@@ -357,3 +363,23 @@ def test_a_filing_link_opens_the_index_page_not_the_xml():
     out = subprocess.run(["node", "-e", prog], capture_output=True, text=True).stdout.split("\n")
     assert out[0] == "https://www.sec.gov/Archives/edgar/data/1318605/000110465926075213/0001104659-26-075213-index.htm"
     assert out[1] == "https://example.com/x" and out[2] == ""
+
+
+def test_the_tape_is_a_page(tmp_path):
+    """/tape/ is the same block the home page carries, built from the shared
+    declarations plus its own script, with the Monday-tape signup beside it
+    and the masthead from index.html; it is in the sitemap."""
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    page = open(os.path.join(out, "tape", "index.html"), encoding="utf-8").read()
+    js = open(os.path.join(out, "tape.js"), encoding="utf-8").read()
+    assert "{{TOPNAV}}" not in page and 'class="topnav"' in page, "the masthead is the site's"
+    assert 'id="actwrap"' in page and 'id="tg-f" checked' in page and 'id="subform"' in page, "the tape block, founders on, the signup"
+    assert 'src="/tape.js?v=' in page and 'href="/site.css?v=' in page, "versioned script and stylesheet"
+    for fn in ("function renderActivity(", "function actSorted(", "function tapeKind(", "function boot(", "async function subscribe("):
+        assert fn in js, fn
+    assert js.count("function renderActivity(") == 1, "shared once"
+    sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
+    assert "/tape/</loc>" in sm
+    fn_src = open(os.path.join(ROOT, "functions", "api", "subscribe.js"), encoding="utf-8").read()
+    assert '"/contacts"' in fn_src and "sub:${token}" in fn_src and "expirationTtl: 86400" in fn_src, "double opt-in through a one-day token, into the account's audience"

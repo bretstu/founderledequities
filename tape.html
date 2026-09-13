@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>This week's tape · Founder Led Equities</title>
+  <meta name="description" content="Every purchase, sale and compensation filing by the chief executive of a US public company worth $1B or more, this week: who bought, who cut a stake, who sold on a plan. Founders first. Computed from the filings, never estimated.">
+  <link rel="canonical" href="https://founderledequities.com/tape/">
+  <meta property="og:title" content="This week's tape · Founder Led Equities">
+  <meta property="og:description" content="Who bought, who cut a stake, who sold on a plan. Founders first.">
+  <meta property="og:image" content="https://founderledequities.com/og.png">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/hanken.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/site.css">
+  <style>
+    /* THE TAPE AS A PAGE (PLAN.md section 5): the same block the home page
+       carries, with the Monday-tape signup beside it. */
+    .tapepage{max-width:1120px;margin:0 auto;padding:0 clamp(20px,3.5vw,48px)}
+    .tapepage .activitysec{padding:48px 0 40px}
+    .tapegrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:40px;align-items:start}
+    @media(max-width:900px){.tapegrid{grid-template-columns:1fr}}
+    .subscribe{border:1px solid var(--ink);padding:24px;position:sticky;top:90px}
+    .subscribe h3{font-family:var(--disp);font-weight:500;font-size:28px;letter-spacing:-.01em;margin:0 0 10px}
+    .subscribe .rule{width:56px;height:2px;background:var(--ink);margin:0 0 16px}
+    .subscribe p{font-size:15px;line-height:1.45;margin:0 0 16px;color:var(--ink)}
+    .subscribe input{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;margin-bottom:10px}
+    .subscribe button{width:100%;font:inherit;font-size:15px;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:0;padding:10px;cursor:pointer}
+    .subscribe button:hover{background:#000}
+    .subscribe .fine{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:10px}
+    .subscribe .msg{font-size:13.5px;color:var(--mut);margin-top:10px;min-height:1.2em}
+    .tapefoot{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--mut)}
+    .tapefoot a{color:var(--mut)}
+    .tapefoot .site{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  </style>
+</head>
+<body>
+{{TOPNAV}}
+<div class="tapepage">
+<section class="activitysec" id="activity">
+  <div class="tapegrid">
+    <div>
+  <div class="shead tapehead">
+    <div>
+      <h1 style="font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">This week's tape.</h1>
+      <div class="tapesub" id="tapesub">Founders only · last 7 days · stake-moving trades first.</div>
+    </div>
+  </div>
+  <div class="sbody">
+    <div class="actstats" id="actstats"></div>
+    <!-- THE TAPE'S CONTROLS: a window (7 days free; the longer ones open the
+         Pro box for a free reader and are drawn dimmed so they never look
+         free), and three toggles. The Pro note sits under them, never in
+         their row. -->
+    <div class="tapectl">
+      <span class="chips" id="actwin" role="group" aria-label="window">
+        <button class="chip win" data-win="7" title="filings that reached EDGAR in the last 7 days">7d</button>
+        <button class="chip win" data-win="30">30d</button>
+        <button class="chip win" data-win="90">90d</button>
+        <button class="chip win" data-win="365">12m</button>
+      </span>
+      <span class="toggles">
+        <label class="tg"><input type="checkbox" id="tg-f" checked> Founders only</label>
+        <label class="tg"><input type="checkbox" id="tg-buys"> Open-market buys</label>
+        <label class="tg"><input type="checkbox" id="tg-nocomp"> Hide compensation</label>
+      </span>
+    </div>
+    <div class="pronote" id="pronote"></div>
+    <div class="tapewrap" id="actwrap"></div>
+    <div class="actnote" id="actnote"></div>
+
+    </div>
+    <aside class="subscribe" id="subscribe">
+      <h3>Monday tape, free.</h3>
+      <div class="rule"></div>
+      <p>Founders only. Stake-moving trades. Every Monday.</p>
+      <form id="subform" onsubmit="return subscribe(event)">
+        <input type="email" id="subemail" placeholder="you@example.com" required autocomplete="email">
+        <button type="submit">Send it</button>
+      </form>
+      <div class="msg" id="submsg"></div>
+      <div class="fine">No ads. No spam. Just the tape.</div>
+    </aside>
+  </div>
+  <div class="tapefoot">
+    <span><a href="/about.html">Method</a> · <a href="mailto:corrections@founderledequities.com">Corrections</a> · <a href="mailto:hello@founderledequities.com">Ideas</a> · Nothing here is investment advice · Every figure links to the filing</span>
+    <span class="site">founderledequities.com</span>
+  </div>
+</section>
+</div>
+<script src="/tape.js"></script>
+</body>
+</html>
