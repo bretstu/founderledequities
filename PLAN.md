@@ -45,8 +45,14 @@ different lens.
 - The tape for the last seven days, for every company in the universe:
   every purchase, sale and compensation filing by any chief executive,
   with the name, the kind (bought / discretionary / planned /
-  compensation), the manner and the date. Figures shown for S&P names;
-  blurred for the rest.
+  compensation), the manner, the date and the amount. The amount is the
+  Form 4's own number and shows on every row; the stake after the trade
+  is the number only this site computes, and it is sealed outside the
+  S&P (blurred on the page, "in Pro" in the email). Decided 2026-09-13
+  after two other drafts were considered: blurring both figures made
+  the free tape read worse than a Form 4 site without protecting
+  anything of ours; opening both gave away the product's own number
+  each week.
 - The Monday email: the week's tape in those terms.
 - One founder watch: an email when that one person buys on the open
   market or makes a discretionary sale.
@@ -80,15 +86,18 @@ accurate line, used verbatim on the hero, the /pro page and the email:
 
 The free tier is dynamic on purpose. Because the seven-day tape covers
 the whole universe, every Monday there is something true and new to
-send, and the email never invents or withholds what happened; it
-withholds the sizes of the sealed names' trades and everything older
-than a week or a year. Four moments, all created by the free tier,
-turn a reader into a subscriber:
+send, and the email never invents or withholds what happened this week:
+who traded, what kind, how much. What it withholds is the one number
+this site computes (the stake after the trade) for names outside the
+S&P, and everything older than a week. Four moments, all created by
+the free tier, turn a reader into a subscriber:
 
-1. The email names someone outside the S&P. "Mark Lappe bought at
-   Inhibrx." How much, and what does he own now? In Pro. This is the
-   most frequent moment: most interesting buyers are outside the index,
-   which is mostly hired CEOs with small stakes.
+1. The email names someone outside the S&P with the trade: "Mark Lappe
+   bought $2.6M at Inhibrx." What does he own now? In Pro. This is the
+   most frequent moment and it is the pitch sentence in one line: other
+   sites show the Form 4; this site shows whether the stake moved. Most
+   interesting buyers are outside the index, which is mostly hired CEOs
+   with small stakes.
 2. They care about one company and want the whole story. The free page
    shows the chart and a year of trades; the chart's shape says the
    stake went from 22% to 28%; the trades that did it are in the
@@ -146,9 +155,13 @@ side "Weekly tape, free" and "Go Pro" (or Account when signed in).
   the tape excerpt `#tape` with the Monday-email field beside it, the
   performance chart "Founders against the index" with "A portrait, not
   a strategy."
-- `/tape`: the full tape with windows 7d/30d/90d/12m (free: 7d) and
-  toggles (founders only, open-market buys, hide compensation). Kind
-  groups in the brief's order, ranked by stake change within each.
+- `/tape`: the full tape with windows 7d/30d/90d/12m (free: 7d;
+  longer windows Pro) and toggles (founders only, on by default;
+  open-market buys; hide compensation). Columns: Kind · Company · CEO ·
+  Amount · New stake · Manner; the amount on every row, the new stake
+  blurred outside the S&P. Kind groups in the brief's order, ranked by
+  stake change within each. The archive of past tapes
+  (`/tape/2026-09-14/`) is Pro beyond the current week.
 - `/company/:ticker`: the current shape (name, ticker, market cap; the
   four cards; the chart with Stake default and Price toggle; the trades
   table with its kinds). Free S&P: last twelve months; Pro: the archive.
@@ -236,8 +249,9 @@ an API, a second tier, recommendations, YouTube/Discord/podcast.
 - A logged-out visitor sees Tesla's and Nvidia's current stake and
   chart, and their last twelve months of trades, not their archive.
 - A logged-out visitor cannot see the current stake of a non-S&P name.
-- The seven-day tape lists every company's filings for everyone; sealed
-  figures are blurred; nothing is invented.
+- The seven-day tape lists every company's filings for everyone with
+  the amount; the stake after the trade is blurred outside the S&P;
+  nothing is invented.
 - Compensation never counts as "cut a stake."
 - `/tape` and `/pro` exist as pages; `/pro` states $19 / $190.
 - The watch cap of one is enforced.
