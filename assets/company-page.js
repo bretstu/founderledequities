@@ -63,10 +63,9 @@ function band(r){
   /* the ticker and the market cap beside the name */
   const kick=$("#ctk");
   if(kick)kick.innerHTML=`${esc(r.tk)}${mcap?` · ${money(mcap)}`:""}`;
-  return `<div class="cband four">
+  return `<div class="cband three">
     <div>${big}</div>
     ${stat("Shares held",r.masked?BLUR("00,000,000"):r.sh!==null?fmt(r.sh):"&mdash;","",r.masked?"":tabled,"shares held, per the latest filing")}
-    ${stat("Outstanding",r.out?fmt(r.out):"&mdash;","","",`shares outstanding${r.oasof?`, per the ${dayLabel(r.oasof)} cover page`:""}: the denominator of the percent`)}
     ${stat("Worth",r.masked?BLUR("$0.0B"):r.val?money(r.val):"&mdash;","","",`the stake's value: shares held at the ${asof} close${r.price?` of $${r.price.toFixed(2)}`:""}`)}
   </div>`;
 }
@@ -286,7 +285,10 @@ function recordBlock(r){
   const raw=HIST[r.tk];
   const px=PRICES_DAILY;
   const havePx=!!(px&&px.length>1),haveRec=!!(raw&&raw.length);
-  let mode=window._chartMode||"price";
+  /* THE STAKE IS THE CHART (PLAN.md section 5): the share over time opens
+     the page; the price with the trades on it is the toggle. A first visit
+     is not a trading page. */
+  let mode=window._chartMode||"pct";
   if(mode==="price"&&!havePx)mode="pct";
   if(mode!=="price"&&!haveRec&&havePx)mode="price";
   /* the chips carry the only words: what each line is, on hover */
@@ -501,7 +503,9 @@ function reportBlock(r){
 
 function renderOpen(r,{animate=true}={}){
   window._lastRow=r;
-  $("#cbody").innerHTML=band(r)+recordBlock(r)+tradesBlock(r)+watchBlock(r)+whyBlock(r);
+  /* the watch sits under the cards, before the chart: it is the page's
+     conversion, and under the trades table it was missed */
+  $("#cbody").innerHTML=band(r)+watchBlock(r)+recordBlock(r)+tradesBlock(r)+whyBlock(r);
   $("#creport").innerHTML=reportBlock(r);
   const svg=document.querySelector(".cchart svg.fchart");
   if(svg){attachHover(svg);if(animate)drawIn(svg);}

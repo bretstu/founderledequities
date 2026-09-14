@@ -218,8 +218,9 @@ def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path
     assert "28.44%" in body and "1,120,000,000 of 3,950,000,000 shares" in body and "$370B" in body, "the answer band is in the HTML"
     assert "Confidence" not in body and "3-year" not in body
     # three cards about the stake; the stock's facts are in the kicker, not cards
-    for label in ("Shares held", "Outstanding", "Worth"):
-        assert f'<div class="k">{label}</div>' in body, "the band is the stake: share, shares, outstanding, worth"
+    for label in ("Shares held", "Worth"):
+        assert f'<div class="k">{label}</div>' in body, "the band is the stake: share, shares, worth"
+    assert '<div class="k">Outstanding</div>' not in body, "shares outstanding is a column of the trades table, not a card"
     for label in ("Market cap", "1Y return"):
         assert f'<div class="k">{label}</div>' not in body, "the stock's facts are not cards"
     assert "from 21.10% in 2016 to 28.44% on 2026-07-06" in body, "the record, as a sentence"
@@ -285,14 +286,14 @@ def test_the_band_uses_the_tables_words_and_has_no_three_year_cell():
     it read "+5.0% since 2026-01" for a company eight months old."""
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
     band = js[js.index("function stat("):js.index("/* ---- the record:")]
-    for label in ('"Shares held"', '"Outstanding"', '"Worth"'):
+    for label in ('"Shares held"', '"Worth"'):
         assert label in band, f"{label} is a stat"
     for label in ('"Market cap"', '"1Y return"', '"Value"'):
         assert f"stat({label}" not in band, f"{label} is not a card"
     assert "kick.innerHTML" in band and "1Y" not in band, "beside the name: the ticker and the market cap, nothing else of the stock's"
     assert "3-year" not in band[band.index("function band("):] and "trajStats" not in js
     assert "never estimated" not in band, "the answer needs no sentence beside it"
-    assert 'class="cband four">' in band and 'class="cstat"' in band, "four cards of one width"
+    assert 'class="cband three">' in band and 'class="cstat"' in band, "three cards of one width"
     assert "confidence</summary>" not in band, "confidence is not on the card; the reasons block below the chart carries it"
     assert 'r.conf' not in band, "the band carries no confidence word; the reasons block below the chart does"
     assert "\u2014" not in js, "no em dashes"
@@ -308,7 +309,7 @@ def test_a_sealed_page_is_the_open_page_with_the_seals_on_the_figures(tmp_path):
     sealed = open(out / "company" / "SEALD" / "index.html", encoding="utf-8").read()
     assert '<h2 class="p"><span class="k">Jane Doe owns</span><span class="sealed"' in sealed
     assert sealed.count('class="sealed"') == 3, "the share, the shares, the worth"
-    assert '<div class="k">Outstanding</div><div class="v ">2,400,000</div>' in sealed
+    assert '<div class="k">Outstanding</div>' not in sealed and "2,400,000" not in sealed[:sealed.index("cband")] 
     assert "Go Pro, $5" not in sealed and "cseal" not in sealed, "no box on the page"
     assert bcp.poss("Jabbok Schlacks") == "Jabbok Schlacks'"
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
@@ -440,7 +441,7 @@ def test_the_watches_have_a_box_a_page_and_two_ways_to_stop(tmp_path):
     bcp.main(panel, founders, prices, sp, out)
     assert os.path.exists(os.path.join(out, "watches", "index.html")) and os.path.exists(os.path.join(out, "watches.js"))
     page_js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
-    assert "function watchBlock(" in page_js and "watchBlock(r)+whyBlock(r)" in page_js, "the box sits under the record on every page"
+    assert "function watchBlock(" in page_js and "band(r)+watchBlock(r)+recordBlock(r)" in page_js, "the box sits under the cards, before the chart, on every page"
     assert "Stopped. No more emails about" in page_js and "No more emails about anyone" in page_js, "the box says what a stop link did"
     w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
     assert "A list of names is Pro" in w and "stopall" in w and "confirm=" in w

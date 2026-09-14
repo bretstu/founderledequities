@@ -6,6 +6,12 @@ const $=s=>document.querySelector(s);
 function openPro(){location.href="/pro/";}
 function openCompany(tk){location.href="/company/"+tk+"/";}
 function hit(){}
+/* one masthead button, two lives, on this page too; a signed-in reader's watches beside it */
+function nav(me){
+  const b=document.querySelector(".topnav .gopro");if(!b)return;
+  if(me&&me.pro){b.textContent="Account";b.setAttribute("href","/api/portal");b.title="Manage your subscription";
+    if(!document.querySelector("#navwatches")){const a=document.createElement("a");a.id="navwatches";a.href="/watches/";a.textContent="Watches";a.className="weekly";b.parentNode.insertBefore(a,b);}}
+}
 let SCREEN_COUNTS=null,TABLE_LIMIT=0;
 async function fetchText(paths){
   for(const p of paths){try{const q=await fetch(withV(p));if(q.ok)return await q.text();}catch(e){}}
@@ -15,14 +21,21 @@ async function boot(){
   let me=null;
   try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)me=await q.json();}catch(e){}
   state.pro=!!(me&&me.pro);
-  const [p,f,h,e,c]=await Promise.all([
+  nav(me);
+  const [p,f,h,e,c,pr]=await Promise.all([
     fetchText(state.pro?["/pro/universe.csv","/universe.csv","/panel.csv"]:["/universe.csv","/panel.csv"]),
     fetchText(["/founders.csv"]),
     fetchText(state.pro?["/pro/history-lite.csv","/history-free-lite.csv"]:["/history-free-lite.csv"]),
     fetchText(state.pro?["/pro/events.csv","/events-free.csv"]:["/events-free.csv"]),
     fetchText(["/screen-counts.json"]),
+    fetchText(["/prices.csv"]),
   ]);
   if(p){PANEL=mapPanel(parseCSV(p));state.live.panel=true;}
+  /* THE PRICES MAKE THE VALUE AND THE MARKET CAP. Without them the two
+     columns were blank on this page (2026-09-14). */
+  if(pr){const m={};let asof="";for(const r of parseCSV(pr)){const c=num(r.close);if(r.ticker&&c){m[r.ticker.toUpperCase()]=c;asof=r.as_of||asof;}}
+    if(Object.keys(m).length){PRICES=m;PRICES_ASOF=asof;state.live.prices=true;}}
+  applyPrices();
   if(f)for(const r of parseCSV(f)){if(r.ticker)FOUNDERS[r.ticker.toUpperCase()]={f:(r.founder||"").toLowerCase(),ev:r.evidence||"",src:r.source||""};}
   if(h){HIST=mapHistory(parseCSV(h));state.live.hist=true;}
   if(e)EVENTS=mapEvents(parseCSV(e));

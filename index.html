@@ -126,7 +126,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 /* ---------- hero ---------- */
 .hero h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(34px,4.6vw,72px);max-width:22ch}
 .hero h1 b{font-weight:500}
-.herosub{margin:18px 0 0;font-size:clamp(15px,1.25vw,18px);line-height:1.5;color:var(--mut);max-width:62ch}
+.herosub{margin:18px 0 0;font-size:clamp(15px,1.25vw,18px);line-height:1.5;color:var(--mut)}
 @media(max-width:900px){.herosub{white-space:normal;max-width:52ch}}
 .herosub .sealnote{display:block;margin-top:8px;color:var(--faint)}
 .herosub .sealnote .gopro{font-size:12.5px;padding:7px 14px;margin-left:10px;vertical-align:middle}
@@ -154,7 +154,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .thisweek .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-right:4px}
 .thisweek b{color:var(--ink);font-weight:700}
 /* the tape excerpt on the home page: no controls; the full tape a click away */
-.excerpt .tapectl,.excerpt .pronote{display:none}
+.excerpt .tapectl,.excerpt .pronote,.excerpt .actstats{display:none}
 .hometape{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
 .hometape .gopro{text-decoration:none;display:inline-block}
 .homesub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -587,13 +587,13 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
        line. Then what they own now, this week's tape, every company, and
        founders against the index. -->
   <h1 id="thesis">What the person running the company still owns.</h1>
-  <p class="herosub" id="herosub">Economic ownership, computed from the filings they signed. Not cap tables. Not estimates. Every US public company worth $1B or more.</p>
+  <p class="herosub" id="herosub">Economic ownership from the filings they signed. Not cap tables. Every US company worth $1B or more.</p>
   <div class="herostats" id="herostats"></div>
   <div class="herobtns">
     <a class="gopro" href="/tape/">Read this week's tape</a>
     <a class="hbtn2" href="/pro/">Go Pro &middot; $15/mo</a>
   </div>
-  <p class="heroquiet">S&amp;P 500 current stakes and the last twelve months are open. The archive, every other $1B+ name, longer tape windows, and export are Pro.</p>
+  <p class="heroquiet">S&amp;P 500 current stakes and the last twelve months are open. Everything else is Pro.</p>
   <div class="thisweek" id="thisweek"></div>
 </div></section>
 
@@ -1108,6 +1108,7 @@ function fBadge(tk){
   if(i.f==="uncertain")return `<span class="fb unc" title="founder language near the name, but the proxy sentence is ambiguous — see founders.csv">FOUNDER?</span>`;
   return"";
 }
+/*@shared*/
 function applyPrices(){
   for(const r of PANEL){
     r.price=PRICES[r.tk]||null;

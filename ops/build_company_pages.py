@@ -307,10 +307,9 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
         # worth would be (the numbers are not on the page), the cover page's
         # count shown. One line of prose. No box: the nav's button is the one.
         blur = lambda shape: f'<span class="sealed" data-shape="{shape}" aria-label="in Pro" onclick="openPro()" title="in Pro"></span>'
-        cards = ('<div class="cband four">'
+        cards = ('<div class="cband three">'
                  f'<div><h2 class="p"><span class="k">{ceo} owns</span>{blur("0.00%")}</h2></div>'
                  + stat("Shares held", blur("00,000,000"))
-                 + stat("Outstanding", f"{int(out):,}" if out else "&mdash;")
                  + stat("Worth", blur("$0.0B"))
                  + '</div>')
         co_s = co[:-1] if co.endswith(".") else co   # "Inc." takes no second period
@@ -329,11 +328,12 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
         return (f'<div class="cstat"><div class="k">{k}</div><div class="v {cls}">{v}</div>'
                 + (f'<div class="s">{sub}</div>' if sub else "") + '</div>')
     r1 = ret_1y.get(payload["tk"]) if ret_1y else None
-    # four cards of one width: the numbers the percent is made of
-    band = ('<div class="cband four">'
+    # THREE CARDS (2026-09-14): the share, the shares, what they are worth.
+    # Shares outstanding to the share was a second ledger above the chart;
+    # it is a column of the trades table and in the kicker's market cap.
+    band = ('<div class="cband three">'
             f'<div><h2 class="p"><span class="k">{ceo} owns</span>{pct:.2f}%</h2></div>'
             + stat("Shares held", f"{int(sh):,}")
-            + stat("Outstanding", f"{int(out):,}" if out else "&mdash;")
             + stat("Worth", money(sh * price) if price else "&mdash;")
             + '</div>'
             )

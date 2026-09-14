@@ -429,7 +429,7 @@ const P=runPage();
    assert(!/chief executive/i.test(labels),"no label on the page says chief executive: "+(labels.match(/.{0,40}chief executive.{0,40}/i)||[""])[0]);
    assert(idx.includes('<h1 id="thesis">What the person running the company still owns.</h1>'),"the hero says what the site is, the same for every reader");
    assert(idx.includes('href="/tape/">Read this week\'s tape</a>')&&idx.includes('href="/pro/">Go Pro &middot; $15/mo</a>'),"two doors under the headline: the tape and the plan");
-   assert(idx.includes("the last twelve months are open. The archive, every other $1B+ name, longer tape windows, and export are Pro."),"the copy rule, verbatim, under the doors");
+   assert(idx.includes("the last twelve months are open. Everything else is Pro."),"the copy rule's one-line form under the doors");
    assert(idx.includes('id="thisweek"')&&idx.includes("function weekLine("),"the week in one line under the hero");
 
    assert(idx.includes('"CEOs own more than 5%"')&&idx.includes('"S&P 500 CEOs own more than 5%"'),"the rarity is the strip's first cell: a known denominator or none");

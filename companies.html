@@ -17,14 +17,21 @@
        same table the home page shows twenty rows of, with its search, its
        filters, its sort and its export. Under it, the A-Z index of every
        company page, for crawlers and for people who know the name. */
-    .cpage{max-width:1120px;margin:0 auto;padding:48px clamp(20px,3.5vw,48px) 0}
+    /* ONE CONTENT WIDTH for the title, the search row, the table and the
+       A-Z: every block is a .wrap of the site's measure; the page adds
+       none of its own. */
+    .cpage{padding:48px 0 0}
     .cpage .tablesec{padding:0}
+    .cpage .cidx .wrap{max-width:var(--max);margin:0 auto;padding:0 clamp(20px,3.5vw,48px)}
     .cpage .tapesub{font-size:17px;color:var(--mut);margin:10px 0 22px}
     .screens{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 14px}
     .screens .chip{text-decoration:none;color:var(--ink)}
     .screens .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
     .screendesc{font-size:13.5px;color:var(--mut);margin-left:6px}
     .screendesc:empty{display:none}
+    /* the year's return is not this page's question; it stays in the export */
+    .tablesec .h-r1,.tablesec .c-r1,.tablesec .w-r1{display:none}
+    .tablesec .w-co{width:18%}.tablesec .w-ceo{width:15%}
     {{INDEX_CSS}}
   </style>
 </head>
