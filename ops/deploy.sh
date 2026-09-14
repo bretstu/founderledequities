@@ -117,6 +117,13 @@ cp -r site-data/. public/
 if [ "$(date +%u)" = "6" ]; then
   python3 ops/weekly.py || echo "  weekly: briefing failed; the site is unaffected"
 fi
+# ---- 2c. THE MONDAY TAPE IS DRAFTED, NEVER SENT, BY THE PIPELINE (PLAN.md 5a) ----
+# On Mondays the letter for the week is drafted to weekly/letter-<date>.md
+# with a preview beside it; a person edits it and runs ops/send-tape.sh.
+# An existing draft is never overwritten (an edit must survive a redeploy).
+if [ "$(date +%u)" = "1" ]; then
+  python3 ops/letter.py draft || echo "  letter: draft failed; the site is unaffected"
+fi
 
 # ---- 3. the HTML says what the page says ----
 # The hero, the stat strip and the top ten of the leaderboard are written
@@ -136,6 +143,12 @@ $OGPY ops/company_cards.py panel.csv "$SP_LIST" prices.csv founders.csv events.c
   || echo "  company cards: not drawn; pages keep og.png"
 if [ -d og ] && [ -n "$(ls og 2>/dev/null)" ]; then mkdir -p public/og && cp og/*.png public/og/; fi
 python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" public/ events.csv history.csv --og og --prices price-history
+# ---- 4b. the archive of letters: every letter ever drafted is a page, /tape/<date>/ ----
+for f in weekly/letter-*.md; do
+  [ -f "$f" ] || continue
+  d=$(basename "$f" .md); d=${d#letter-}
+  python3 ops/letter.py page "$d" public/ >/dev/null || echo "  letter page $d failed"
+done
 # THE DATA HAS A VERSION. The pages fetched every CSV with no-store, so a
 # return visit re-downloaded eleven megabytes. Each fetch now carries
 # ?v=<this deploy>, so the browser and the edge cache a deploy's files
