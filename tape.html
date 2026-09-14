@@ -18,19 +18,22 @@
        carries, with the Monday-tape signup beside it. */
     .tapepage{max-width:1120px;margin:0 auto;padding:0 clamp(20px,3.5vw,48px)}
     .tapepage .activitysec{padding:48px 0 40px}
-    .tapegrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:40px;align-items:start}
-    @media(max-width:900px){.tapegrid{grid-template-columns:1fr}}
-    .subscribe{border:1px solid var(--ink);padding:24px;position:sticky;top:96px;margin-top:118px}
-    @media(max-width:900px){.subscribe{position:static;margin-top:24px}}
-    .subscribe h3{font-family:var(--disp);font-weight:500;font-size:28px;letter-spacing:-.01em;margin:0 0 10px}
-    .subscribe .rule{width:56px;height:2px;background:var(--ink);margin:0 0 16px}
-    .subscribe p{font-size:15px;line-height:1.45;margin:0 0 16px;color:var(--ink)}
-    .subscribe input{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;margin-bottom:10px}
-    .subscribe button{width:100%;font:inherit;font-size:15px;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:0;padding:10px;cursor:pointer}
+    /* THE SIGNUP IS A BAND, NOT A COLUMN (2026-09-14): a sidebar took 300px
+       from seven columns and clipped the names. One row under the table's
+       count line, the same band the home page has; the table takes the
+       whole measure. */
+    .subscribe{margin-top:12px}
+    .subscribe .homesub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .subscribe .hs-k{font-size:14px;font-weight:600;margin-right:4px}
+    .subscribe input{font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;width:240px}
+    .subscribe button{font:inherit;font-size:14px;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:0;padding:9px 16px;cursor:pointer}
     .subscribe button:hover{background:#000}
     .subscribe button:disabled,.subscribe input:disabled{opacity:.55;cursor:default}
-    .subscribe .fine{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:10px}
-    .subscribe .msg{font-size:13.5px;color:var(--mut);margin-top:10px;min-height:1.2em}
+    .subscribe .msg{font-size:13.5px;color:var(--mut);flex-basis:100%;min-height:0}
+    .subscribe .msg:empty{display:none}
+    .subscribe .done{border:1px solid var(--ink);padding:18px 20px;margin-top:6px}
+    .subscribe .done h3{font-family:var(--disp);font-weight:500;font-size:24px;margin:0 0 6px}
+    .subscribe .done p{font-size:14px;color:var(--mut);margin:0}
     .tapefoot{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--mut)}
     .tapefoot a{color:var(--mut)}
     .tapefoot .site{font-family:var(--mono);font-size:11px;color:var(--faint)}
@@ -40,8 +43,6 @@
 {{TOPNAV}}
 <div class="tapepage">
 <section class="activitysec" id="activity">
-  <div class="tapegrid">
-    <div>
   <div class="shead tapehead">
     <div>
       <h1 style="font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">This week's tape.</h1>
@@ -71,19 +72,14 @@
     <div class="tapewrap" id="actwrap"></div>
     <div class="actnote" id="actnote"></div>
   </div>
-    </div>
-    <aside class="subscribe" id="subscribe">
-      <h3>Monday tape, free.</h3>
-      <div class="rule"></div>
-      <p>Founders only. Stake-moving trades. Every Monday.</p>
-      <form id="subform" onsubmit="return subscribe(event)">
+    <div class="subscribe" id="subscribe">
+      <form class="homesub" id="subform" onsubmit="return subscribe(event)">
+        <span class="hs-k">Monday letter, free.</span>
         <input type="email" id="subemail" placeholder="you@example.com" required autocomplete="email">
         <button type="submit">Send it</button>
+        <div class="msg" id="submsg"></div>
       </form>
-      <div class="msg" id="submsg"></div>
-      <div class="fine">No ads. No spam. Just the tape.</div>
-    </aside>
-  </div>
+    </div>
   <div class="tapefoot">
     <span><a href="/about.html">Method</a> · <a href="mailto:corrections@founderledequities.com">Corrections</a> · <a href="mailto:hello@founderledequities.com">Ideas</a> · Nothing here is investment advice · Every figure links to the filing</span>
     <span class="site">founderledequities.com</span>
