@@ -55,10 +55,12 @@ def test_the_monday_thread_carries_every_decision_and_the_large_plans(tmp_path, 
     (tmp_path / "universe" / "sp500-2026-09-01.csv").write_text("ticker\nTSLA\n")
     (tmp_path / "founders.csv").write_text("ticker,founder\nTSLA,yes\nHIRE,yes\n")
     t = fact.monday_thread("2026-09-14")
-    assert t.startswith("This week: 2 founders bought. 1 sold without a plan.")
-    assert "Elon Musk bought $1B of TSLA on the open market, added 0.51% to the stake. Now owns 28.44%." in t
-    assert "A Hire sold $12M of HIRE at their own discretion, sold 40.0% of the stake. Now owns 0.500%." in t
+    assert t.startswith("## The thread: three posts, then the tape\n\n1.\nThis week: 2 founders bought. 1 sold without a plan.")
+    assert "Elon Musk bought $1B of TSLA on the open market, added 0.51% to their stake. Now owns 28.44%." in t
+    assert "A Hire sold $12M of HIRE at their own discretion, sold 40% of their stake. Now owns 0.500%." in t
+    assert "(read both filings on the page before this one is public)" in t, "a large cut is checked before it is posted"
+    assert "## The whole week: the packet" in t
     assert "38.4M" not in t, "a plan that moved the stake 0.3% is not in the thread"
     assert t.rstrip().endswith("/tape/")
     tz = fact.monday_thread("2026-09-14", tease=True)
-    assert "A Hire sold $12M of HIRE at their own discretion, sold 40.0% of the stake. The stake after is in Pro." in tz
+    assert "A Hire sold $12M of HIRE at their own discretion, sold 40% of their stake. The stake after is in Pro." in tz

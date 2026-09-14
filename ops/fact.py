@@ -170,10 +170,12 @@ def monday_thread(date, tease=False):
         ch = r.get("change")
         if ch is None or abs(ch) < 0.05:
             return ""                      # a move too small to say is not said
+        # "their": the pipeline never guesses a person's gender from a name;
+        # swap in his or her when pasting if you know it
         if ch >= 100:
-            return f"the stake ×{1 + ch/100:.1f}"
-        mag = f"{abs(ch):.1f}%" if abs(ch) >= 10 else f"{abs(ch):.2f}%"
-        return f"added {mag} to the stake" if ch > 0 else f"sold {mag} of the stake"
+            return f"their stake ×{1 + ch/100:.1f}"
+        mag = f"{abs(ch):.0f}%" if abs(ch) >= 10 else f"{abs(ch):.1f}%" if abs(ch) >= 1 else f"{abs(ch):.2f}%"
+        return f"added {mag} to their stake" if ch > 0 else f"sold {mag} of their stake"
     def stake_after(r):
         if r["after"] is None:
             return ""
@@ -191,17 +193,32 @@ def monday_thread(date, tease=False):
             what = f"sold{' ' + v if v else ''} of {r['tk']} at their own discretion{n}"
         mv = move(r)
         return f"{r['ceo']} {what}{', ' + mv if mv else ''}.{stake_after(r)}\n{SITE}/company/{r['tk']}/"
-    for r in [x for x in c if x["kind"] == "bought"]:
-        lines += [line_for(r), ""]
-    for r in [x for x in c if x["kind"] == "disc"]:
-        lines += [line_for(r), ""]
+    buys = [x for x in c if x["kind"] == "bought"]
+    discs = [x for x in c if x["kind"] == "disc"]
     big_plans = [x for x in c if x["kind"] == "plan" and x.get("change") is not None and abs(x["change"]) >= 5]
+    # THE THREAD IS THREE POSTS: the sentence; the largest buy; the decision
+    # or plan that moved a stake most; the tape. The rest is the packet.
+    weather = lines[0]
+    top_buy = max(buys, key=lambda r: r["value"] or 0) if buys else None
+    movers = [r for r in discs + big_plans if r.get("change") is not None]
+    top_move = max(movers, key=lambda r: abs(r["change"])) if movers else (discs[0] if discs else None)
+    out = ["## The thread: three posts, then the tape", "", "1.", weather, ""]
+    if top_buy:
+        out += ["2.", line_for(top_buy), ""]
+    if top_move and top_move is not top_buy:
+        out += ["3." if top_buy else "2.", line_for(top_move, planned=top_move["kind"] == "plan")
+                + ("\n   (read both filings on the page before this one is public)" if top_move["kind"] == "plan" or abs(top_move.get("change") or 0) >= 10 else ""), ""]
+    out += [f"{'4' if top_buy and top_move else '3'}.", f"The rest of the week: {SITE}/tape/", "", "## The whole week: the packet", "", weather, ""]
+    for r in buys:
+        out += [line_for(r), ""]
+    for r in discs:
+        out += [line_for(r), ""]
     if big_plans:
-        lines += ["Planned, but large enough to note:", ""]
+        out += ["Planned, but large enough to note:", ""]
         for r in big_plans:
-            lines += [line_for(r, planned=True), ""]
-    lines.append(f"Every filing of the week, founders first, free: {SITE}/tape/")
-    return "\n".join(lines) + "\n"
+            out += [line_for(r, planned=True), ""]
+    out.append(f"Every filing of the week, founders first, free: {SITE}/tape/")
+    return "\n".join(out) + "\n"
 
 
 def main(argv):
