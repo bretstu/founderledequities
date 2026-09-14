@@ -113,8 +113,8 @@ const P=runPage();
     state.pro=true; setWin(365); state.ev.f=false; state.ev.buys=false; state.ev.nocomp=false; renderActivity();
     const rows=actSorted(actRows());
     // THE HOME PAGE IS AN EXCERPT: twelve rows, the full tape a click away
-    assert(idxsrc.includes("let TAPE_LIMIT=8;")&&idxsrc.includes('class="activitysec excerpt"'),"the home page's tape is an eight-row excerpt");
-    assert((els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===8&&/^8 of [\d,]+ filings/.test(els["#actnote"]._html),"eight rows, and the note says of how many: "+els["#actnote"]._html.slice(0,40));
+    assert(idxsrc.includes("let TAPE_LIMIT=10;")&&idxsrc.includes('class="activitysec excerpt"'),"the home page's tape is a ten-row excerpt, like the scoreboard");
+    assert((els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===10&&/^10 of [\d,]+ filings/.test(els["#actnote"]._html),"ten rows, and the note says of how many: "+els["#actnote"]._html.slice(0,40));
     assert(idxsrc.includes('<a class="exit" href="/tape/">The full tape &rarr;</a>')&&idxsrc.includes('<a class="exit" href="/companies/">All companies &rarr;</a>'),"both previews exit the same way: heading left, the full page right");
     assert(idxsrc.includes('id="homesub"'),"the letter's signup sits under the tape excerpt");
     P.TAPE_LIMIT=0;

@@ -230,7 +230,7 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
         except OSError:
             pass
         out = []
-        shown = [r for r in wrows if r["kind"] != "comp"][:8]
+        shown = [r for r in wrows if r["kind"] != "comp"][:10]
         for r in shown:
             k = r["kind"]
             amt = "" if not r["value"] or r["flag"] else _letter.money(r["value"])
