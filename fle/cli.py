@@ -1602,8 +1602,19 @@ def _refresh(args, log) -> int:
     # site with yesterday's feed beats no site at all.
     run("events", lambda: cmd_events(ns(
         panel=path("panel.csv"), history=path("history.csv"),
-        tickers=None, since=args.since, exclusions=args.exclusions,
+        tickers=",".join(targeted) or None, since=args.since, exclusions=args.exclusions,
         out=path("events.csv"))))
+    if targeted:
+        # THE EVENTS STAGE IS TARGETED TOO. Built for every company it reads
+        # every filing index, and by late afternoon those have aged out of
+        # the cache: 2,135 requests and thirteen minutes for one company's
+        # filing (2026-09-14, 17:30). The targeted companies' events replace
+        # theirs in last night's file; the rest stand.
+        n = _merge_rows(path("events.csv", staged=False), path("events.csv"), targeted, "ticker")
+        if n is None:
+            log("targeted: no published events.csv to merge into; run the full refresh first")
+            return 1
+        log(f"targeted: events rebuilt for {n} compan{'y' if n == 1 else 'ies'}; the rest carried")
 
     # 6 -- founders, weekly
     fpath = path("founders.csv", staged=False)
