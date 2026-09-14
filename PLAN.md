@@ -334,3 +334,9 @@ with the letter (the week as one thread), `ops/fact.py TICKER` for the
 reply sentence, and "Copy the sentence" on every company page. Next: a
 Monday dashboard line (list size, visitors, signups, watches, pages
 indexed) and the unfurl check.
+
+Note (2026-09-14, evening): the copy rule no longer appears on the home
+page's fold. One column at 1,120px for the whole page; no buttons; the
+week sentence is the door to the tape; the one Pro hint on / is the
+scoreboard's count line ("10 of 37 · 263 more in Pro"), and a Pro session
+sees no hint at all. The rule itself stands and lives on /pro/ and Method.

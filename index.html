@@ -66,7 +66,7 @@
   --disp:"Fraunces",Georgia,"Times New Roman",serif;
   --ui:"Hanken Grotesk",-apple-system,sans-serif;
   --mono:"IBM Plex Mono","SF Mono",monospace;
-  --max:1200px;   /* a letter's measure, not a dashboard's (2026-09-14); /companies/ sets its own */
+  --max:1120px;   /* one column for the whole page, headline to email (2026-09-14); /companies/ sets its own */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -121,7 +121,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .hero{padding:clamp(36px,4.5vw,60px) 0 clamp(28px,3vw,40px)}
 
 /* ---------- hero ---------- */
-.hero h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(34px,4.6vw,72px);max-width:22ch}
+.hero h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(34px,4.6vw,72px)}   /* the same edges as the tables */
 .hero h1 b{font-weight:500}
 .herosub{margin:18px 0 0;font-size:clamp(15px,1.25vw,18px);line-height:1.5;color:var(--mut)}
 @media(max-width:900px){.herosub{white-space:normal;max-width:52ch}}
@@ -141,14 +141,12 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    headline. A row beneath uses the height the words already take. */
 .hero .wrap{display:block}
 .herostats{margin-top:30px;padding:22px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:row;flex-wrap:wrap;gap:20px 44px;align-items:flex-start}
-.heroquiet{font-family:var(--ui);font-size:13.5px;font-style:italic;color:var(--mut);margin:16px 0 0;max-width:70ch}
 .thisweek{margin:26px 0 0;font-size:clamp(16px,1.35vw,19px);line-height:1.45;color:var(--ink)}
 .thisweek:empty{display:none}
 .thisweek b{font-weight:700}
 .thisweek a{color:inherit;text-decoration:none;border-bottom:1px solid var(--line)}
 .thisweek a:hover{border-bottom-color:var(--ink)}
 .thisweek .arr{color:var(--mut);margin-left:2px}
-.heroquiet{margin-top:14px}
 /* the tape excerpt on the home page: no controls; the full tape a click away */
 .excerpt .tapectl,.excerpt .pronote,.excerpt .actstats{display:none}
 .hometape{margin-top:12px}
@@ -618,7 +616,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
        for $15 before the first row; Pro is the header's, the tape has its
        own exit, the email sits under the tape). -->
   <p class="thisweek" id="thisweek"></p>
-  <p class="heroquiet">S&amp;P 500 current stakes and the last twelve months are open. Everything else is Pro.</p>
+  <!-- the one Pro hint on this page is the scoreboard's count line ("10 of 37 · 263 more in Pro"); the copy rule lives on /pro/ and Method -->
 </div></section>
 
 
