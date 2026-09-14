@@ -99,6 +99,9 @@ def test_a_list_send_refuses_without_the_audience_id(tmp_path, monkeypatch):
     monkeypatch.setenv("RESEND_API_KEY", "re_test")
     monkeypatch.setenv("POSTAL_ADDRESS", "PO Box 1")
     monkeypatch.delenv("RESEND_AUDIENCE_ID", raising=False)
+    monkeypatch.delenv("RESEND_SEGMENT_ID", raising=False)
     import argparse
     rc = letter.cmd_send(argparse.Namespace(root=root, date="2026-09-14", test=False, send=True, confirm=False, to=None))
     assert rc == 2, "a list send never guesses its audience"
+    monkeypatch.setenv("RESEND_SEGMENT_ID", "seg_1")
+    assert letter.list_target() == {"segment_id": "seg_1"}, "a segment meaning everyone is how the list is addressed"
