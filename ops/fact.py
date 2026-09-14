@@ -148,8 +148,13 @@ def today_lines(panel, founders, by, since):
     return [l for _, _, l in out]
 
 
-def monday_thread(date):
-    """The week as one thread: the spoken sentence, three rows, the link."""
+def monday_thread(date, tease=False):
+    """The week as one thread: the spoken sentence; every open-market buy
+    and every discretionary sale, each with the amount, the stake's move
+    and the stake after (the move is the edge; one number a week is the
+    marketing, the record and the chart stay Pro); then any planned sale
+    that moved the stake by 5% or more, labelled as planned; the link.
+    --tease withholds the stake after for names outside the S&P."""
     sys.path.insert(0, HERE)
     import letter  # noqa: E402
     rows, since = letter.week_rows(ROOT, date)
@@ -158,14 +163,39 @@ def monday_thread(date):
     b, d, p = who("bought"), who("disc"), who("plan")
     lines = [f"This week: {b} founder{'s' if b != 1 else ''} bought. {d} sold without a plan. "
              f"{p} sale{' was' if p == 1 else 's were'} already scheduled.", ""]
-    picks = [r for r in c if r["kind"] == "bought"][:2] + [r for r in c if r["kind"] == "disc"][:1]
-    for r in picks:
+    def move(r):
+        ch = r.get("change")
+        if ch is None or abs(ch) < 0.05:
+            return ""                      # a move too small to say is not said
+        if abs(ch) >= 100:
+            return f"stake ×{1 + ch/100:.1f}"
+        return f"stake {ch:+.2f}%" if abs(ch) < 10 else f"stake {ch:+.1f}%"
+    def stake_after(r):
+        if r["after"] is None:
+            return ""
+        if tease and r["sealed"]:
+            return " The stake after is in Pro."
+        return f" Now owns {pct(r['after'])}."
+    def line_for(r, planned=False):
         v = money(r["value"]) if r["value"] and not r["flag"] else ""
-        stake = f" Now owns {pct(r['after'])}." if (r["after"] is not None and not r["sealed"]) else (" The stake after is in Pro." if r["sealed"] else "")
-        how = "on the open market" if r["kind"] == "bought" else "at their own discretion"
-        verb = "bought" if r["kind"] == "bought" else "sold"
-        lines.append(f"{r['ceo']} {verb}{' ' + v if v else ''} of {r['tk']} {how}.{stake}\n{SITE}/company/{r['tk']}/")
-        lines.append("")
+        n = f" across {r['n']} filings" if r.get("n", 1) > 1 else ""
+        if r["kind"] == "bought":
+            what = f"bought{' ' + v if v else ''} of {r['tk']} on the open market{n}"
+        elif planned:
+            what = f"sold{' ' + v if v else ''} of {r['tk']} under a plan set months ago{n}"
+        else:
+            what = f"sold{' ' + v if v else ''} of {r['tk']} at their own discretion{n}"
+        mv = move(r)
+        return f"{r['ceo']} {what}{' (' + mv + ')' if mv else ''}.{stake_after(r)}\n{SITE}/company/{r['tk']}/"
+    for r in [x for x in c if x["kind"] == "bought"]:
+        lines += [line_for(r), ""]
+    for r in [x for x in c if x["kind"] == "disc"]:
+        lines += [line_for(r), ""]
+    big_plans = [x for x in c if x["kind"] == "plan" and x.get("change") is not None and abs(x["change"]) >= 5]
+    if big_plans:
+        lines += ["Planned, but large enough to note:", ""]
+        for r in big_plans:
+            lines += [line_for(r, planned=True), ""]
     lines.append(f"Every filing of the week, founders first, free: {SITE}/tape/")
     return "\n".join(lines) + "\n"
 
@@ -186,7 +216,7 @@ def main(argv):
         i = argv.index("--monday")
         date = argv[i + 1] if i + 1 < len(argv) else dt.date.today().isoformat()
         p = os.path.join(drafts, "x-monday.md")
-        open(p, "w", encoding="utf-8").write(f"# The week of {date}, as one thread · paste, do not auto-post\n\n" + monday_thread(date))
+        open(p, "w", encoding="utf-8").write(f"# The week of {date}, as one thread · paste, do not auto-post\n\n" + monday_thread(date, tease="--tease" in argv))
         print(f"  {p}")
         return 0
     tks = [a.upper() for a in argv if not a.startswith("-")]

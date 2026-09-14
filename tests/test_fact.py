@@ -44,3 +44,21 @@ def test_todays_lines_are_decisions_only_notable_first(tmp_path, monkeypatch):
     assert any("first buy ever" in l for l in lines)
     assert not any("38.4M" in l for l in lines), "a plan is not a decision"
     assert all("/company/" in l for l in lines)
+
+
+def test_the_monday_thread_carries_every_decision_and_the_large_plans(tmp_path, monkeypatch):
+    """Every open-market buy and discretionary sale of the week with the
+    move and the stake after; a planned sale only when it moved the stake
+    5% or more, and then labelled as planned."""
+    _data(tmp_path, monkeypatch)
+    (tmp_path / "universe").mkdir()
+    (tmp_path / "universe" / "sp500-2026-09-01.csv").write_text("ticker\nTSLA\n")
+    (tmp_path / "founders.csv").write_text("ticker,founder\nTSLA,yes\nHIRE,yes\n")
+    t = fact.monday_thread("2026-09-14")
+    assert t.startswith("This week: 2 founders bought. 1 sold without a plan.")
+    assert "Elon Musk bought $1B of TSLA on the open market (stake +0.51%). Now owns 28.44%." in t
+    assert "A Hire sold $12M of HIRE at their own discretion (stake -40.0%). Now owns 0.500%." in t
+    assert "38.4M" not in t, "a plan that moved the stake 0.3% is not in the thread"
+    assert t.rstrip().endswith("/tape/")
+    tz = fact.monday_thread("2026-09-14", tease=True)
+    assert "A Hire sold $12M of HIRE at their own discretion (stake -40.0%). The stake after is in Pro." in tz
