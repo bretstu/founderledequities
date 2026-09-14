@@ -3,8 +3,9 @@
 # passes, today's founder filings and what became of each, and EDGAR's front
 # page checked independently.
 #
-#   ops/live-status.sh          # today
+#   ops/live-status.sh          # today, the last four hours of passes
 #   ops/live-status.sh 2026-09-11
+#   HOURS=8 ops/live-status.sh  # a longer timeline
 set -uo pipefail
 cd "$(dirname "$0")/.."
 DAY="${1:-$(date +%F)}"
@@ -16,11 +17,12 @@ if systemctl is-active --quiet fle-live.service; then
   echo "  a pass is running now (a run inside it takes about two minutes)"
 fi
 
-echo "== the last 12 passes (a pass that found a filing shows the ticker instead of 'nothing new') =="
+HOURS="${HOURS:-4}"
+echo "== the last $HOURS hours of passes (a pass that found a filing shows the ticker instead of 'nothing new') =="
 journalctl -u fle-live.service --since "$DAY" --no-pager 2>/dev/null \
   | grep -E "python3\[" | sed 's/.*python3\[[0-9]*\]: //' \
   | grep -E "^\s+[0-9]{2}:[0-9]{2} |^- [0-9]{2}:[0-9]{2} [A-Z.-]+ ·" \
-  | sed -E 's/^- ([0-9:]+) ([A-Z.-]+) · (.*)$/  \1 FOUND \2: \3/' | cut -c1-120 | tail -12
+  | sed -E 's/^- ([0-9:]+) ([A-Z.-]+) · (.*)$/  \1 FOUND \2: \3/' | cut -c1-120 | tail -$((HOURS * 12))
 
 echo "== founder filings on $DAY =="
 F="drafts/live-$DAY.md"
