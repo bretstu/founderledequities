@@ -144,7 +144,7 @@ const P=runPage();
     state.ev.buys=false; state.ev.nocomp=true; renderActivity(); assert(actRows().every(e=>tapeKind(e)!=="comp"),"hide compensation hides it");
     state.ev.nocomp=false;
     // the subhead names the window's dates
-    assert(/last 12 months, [A-Z][a-z]{2} \d+ to [A-Z][a-z]{2} \d+/.test(els["#tapesub"]._text||""),"the subhead names the dates: "+els["#tapesub"]._text);
+    assert(/(Founder-led|Every CEO) · \d+ [A-Z][a-z]{2}–\d+ [A-Z][a-z]{2} · moves first/.test(els["#tapesub"]._text||""),"the caption is who · when · order: "+els["#tapesub"]._text);
     // a free reader: 7d only, the longer chips dimmed and gated, the Pro note under the chips
     state.pro=false; setWin(7); renderActivity();
     assert(state.ev.win==="7","7 days for a free reader");
@@ -485,7 +485,7 @@ const P=runPage();
   P.state.ev.f=true;renderActivity();
   const on=els["#actwrap"]._html;
   assert(on.includes("A Founder")&&!on.includes("A Hire"),"toggle on: founders only");
-  assert((els["#tapesub"]._text||"").startsWith("Founders only"),"and the subhead says so");
+  assert((els["#tapesub"]._text||"").startsWith("Founder-led"),"and the caption says so");
   P.state.ev.f=true;P.EVENTS=savedE;P.FOUNDERS=savedF;setWin(365);renderActivity();
 }
 

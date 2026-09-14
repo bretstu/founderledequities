@@ -149,7 +149,10 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .thisweek .arr{color:var(--mut);margin-left:2px}
 /* the tape excerpt on the home page: no controls; the full tape a click away */
 .excerpt .tapectl,.excerpt .pronote,.excerpt .actstats{display:none}
-.hometape{margin-top:12px}
+.hometape{margin-top:34px;padding:22px 0 0;border-top:1px solid var(--ink)}
+.hometape .hs-k{font-family:var(--disp);font-size:20px;font-weight:500;margin-right:6px}
+.hometape .hs-fine{flex-basis:100%;font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
+body.pro .hometape{display:none}
 .homesub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .homesub .hs-k{font-size:14px;font-weight:600;margin-right:4px}
 .homesub input{font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;width:220px}
@@ -234,7 +237,7 @@ table.screen td{overflow:hidden}   /* the two text columns truncate; a header ne
 .tscroll{overflow-x:hidden}
 /* /companies/: eleven columns, widths that sum to 100 */
 .w-rk{width:4%}.w-co{width:16%}.w-ceo{width:14%}.w-fd{width:7%}.w-own{width:8%}.w-val{width:8%}.w-mc{width:8%}.w-r1{width:8%}.w-lt{width:11%}.w-amt{width:8%}.w-ltd{width:8%}
-.c-ltd .ltd{font-family:var(--mono);font-size:12px;color:var(--mut);white-space:nowrap}
+.c-ltd .ltd{font-family:var(--mono);font-size:11px;color:var(--faint);white-space:nowrap}   /* as the tape's Traded column */
 table.screen thead th{letter-spacing:.06em}
 table.screen thead th .arr{width:auto}
 table.screen .c-lt .lt{gap:6px}
@@ -278,7 +281,7 @@ td.ceo .fb{flex:none;margin-left:0}
 .tbar i{display:block;height:100%;background:var(--stone-d)}
 .tpct{font-family:var(--mono);font-weight:600;font-size:13.5px;min-width:64px;text-align:right}
 .tarr{font-size:10px;margin-left:6px;vertical-align:1px}.tarr.up{color:#0B8A3E}.tarr.down{color:#C23B3B}.tarr.flat{color:var(--faint)}
-td.num{font-family:var(--mono);font-size:12.5px;color:var(--mut)}
+td.num{font-family:var(--mono);font-size:13px;color:var(--ink)}   /* a figure looks the same in every table */
 td.asof{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap}
 .conf{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)}
 .dot{width:8px;height:8px;border-radius:50%;flex:none}
@@ -317,8 +320,9 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:0}
    (Company 28 · CEO 24 · Own 12 · Value 12 · Last move 24). The columns
    it does not carry are removed from the DOM at first paint (pruneHome),
    not hidden: a fixed-layout grid counts a hidden <col> inconsistently. */
-.tablesec.home td.rk,.tablesec.home .c-fd,.tablesec.home .c-ltd,.tablesec.home .c-mc,.tablesec.home .c-r1,.tablesec.home .c-amt{display:none}
-.tablesec.home .w-co{width:28%}.tablesec.home .w-ceo{width:24%}.tablesec.home .w-own{width:12%}.tablesec.home .w-val{width:12%}.tablesec.home .w-lt{width:24%}
+.tablesec.home td.rk,.tablesec.home .c-fd,.tablesec.home .c-mc,.tablesec.home .c-r1,.tablesec.home .c-amt{display:none}
+.tablesec.home .w-co{width:26%}.tablesec.home .w-ceo{width:22%}.tablesec.home .w-own{width:12%}.tablesec.home .w-val{width:12%}.tablesec.home .w-lt{width:16%}.tablesec.home .w-ltd{width:12%}
+.tablesec.home td.c-lt .dt{display:none}   /* the date is its own column, as on the tape */
 .tablesec.home td.ceo .cn{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
 .tablesec.home td.c-lt .dt{display:inline}
 td.c-lt .dt{display:none;font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:8px}
@@ -398,7 +402,7 @@ td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .
 .tapehead{align-items:flex-start}
 .activitysec.excerpt{padding-top:56px}
 .activitysec.excerpt .shead .exit{margin-top:6px}
-.tapesub{font-size:17px;color:var(--mut);margin-top:10px}
+.tapesub{font-family:var(--ui);font-size:13.5px;color:var(--mut);margin-top:8px}   /* a caption: who · when · order, one size on both tables */
 .actstats{font-size:15px;color:var(--mut);margin:18px 0 18px}
 .actstats b{color:var(--ink);font-weight:700}
 .tapectl{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
@@ -702,7 +706,7 @@ footer .fline a:hover{border-bottom-color:var(--ink)}
   <div class="shead tapehead">
     <div>
       <h2>This week's tape.</h2>
-      <div class="tapesub" id="tapesub">Founders only · last 7 days · stake-moving trades first.</div>
+      <div class="tapesub" id="tapesub">Founder-led · the last seven days · moves first</div>
     </div>
     <a class="exit" href="/tape/">The full tape &rarr;</a>
   </div>
@@ -730,12 +734,15 @@ footer .fline a:hover{border-bottom-color:var(--ink)}
     <div class="actnote" id="actnote"></div>
     <!-- THE LETTER, ON THE PAGE THAT SHOWS ITS CONTENTS. One field, one
          button, the same signup /tape/ carries. -->
-    <div class="hometape">
+    <!-- THE ASK IS A BAND, not footer furniture: after the tape, above the
+         footer, its own air; hidden for a Pro session (Account carries it) -->
+    <div class="hometape" id="hometape">
       <form class="homesub" id="homesub" onsubmit="return subscribeHome(event)">
-        <span class="hs-k">Monday letter, free.</span>
+        <span class="hs-k">Monday letter &mdash; the week, one email.</span>
         <input type="email" id="homeemail" placeholder="you@example.com" required autocomplete="email">
         <button type="submit">Send it</button>
         <span class="hs-msg" id="homemsg"></span>
+        <span class="hs-fine">No ads. Unsubscribe any time.</span>
       </form>
     </div>
   </div>
@@ -1160,7 +1167,7 @@ function applyPrices(){
 }
 
 /* ---------------- render ---------------- */
-function renderAll(){syncNav();renderStatus();renderHero();renderTable();renderActivity();
+function renderAll(){if(typeof document!=="undefined"&&document.body&&document.body.classList)document.body.classList.toggle("pro",!!state.pro);syncNav();renderStatus();renderHero();renderTable();renderActivity();
   if(/[?&]welcome=1/.test(location.search)&&!state._welcomed){
     state._welcomed=true;
     const t=document.createElement("div");
@@ -1414,7 +1421,7 @@ function renderTable(){
      <td class="n num c-r1">${r.r1===null||r.r1===undefined?`<span class="nopr"></span>`:`<span class="${r.r1>=0?"up":"down"}">${r.r1>=0?"+":""}${r.r1.toFixed(1)}%</span>`}</td>
      <td class="c-lt">${r.ltev?`<span class="kind ${r.ltk==="bought"?"bought":r.ltk==="planned"?"plan":"disc"}">${r.man}</span><span class="dt">${shortDay(r.ltev.td||r.ltev.fd)}</span>`:`<span class="nopr" title="no trade that moved the public-company stake on record"></span>`}</td>
      <td class="n num c-amt">${r.ltev&&r.ltev.mk?LOCK("in Pro","$0.0M"):r.ltev&&r.ltev.v&&!r.ltev.fl?money(r.ltev.v):`<span class="nopr"></span>`}</td>
-     <td class="c-ltd">${r.ltev?`<span class="ltd" title="traded ${r.ltev.td||r.ltev.fd}; filed ${r.ltev.fd}${lagNote(r.ltev)}">${r.ltev.td||r.ltev.fd}</span>`:`<span class="nopr"></span>`}</td>
+     <td class="c-ltd">${r.ltev?`<span class="ltd" title="traded ${r.ltev.td||r.ltev.fd}; filed ${r.ltev.fd}${lagNote(r.ltev)}">${shortDay(r.ltev.td||r.ltev.fd)}</span>`:`<span class="nopr"></span>`}</td>
     </tr>`}).join("");
   const sealedN=PANEL.filter(r=>r.masked).length;
   /* THE FREE SCREEN SAYS HOW MUCH OF THE ANSWER IS SEALED. Under a share
@@ -1827,7 +1834,10 @@ function renderActivity(){
   const to=new Date(),from=new Date(Date.now()-days*86400e3);
   const dd=x=>x.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
   const win={7:"last 7 days",30:"last 30 days",90:"last 90 days",365:"last 12 months"}[state.ev.win]||"this window";
-  const sub=$("#tapesub");if(sub)sub.textContent=`${state.ev.f?"Founders only":"Every CEO"} · ${win}, ${dd(from)} to ${dd(to)} · stake-moving trades first.`;
+  /* THE CAPTION IS THE SAME SHAPE ON BOTH TABLES: who · when/how · order.
+     "Founder-led" is the category; "Founders only" is the switch's label
+     on /tape/, where it is a filter. */
+  const sub=$("#tapesub");if(sub)sub.textContent=`${state.ev.f?"Founder-led":"Every CEO"} · ${dd(from).replace(/^(\w+) (\d+)$/,"$2 $1")}–${dd(to).replace(/^(\w+) (\d+)$/,"$2 $1")} · moves first`;
   $("#actstats").innerHTML=actStats();
   const pn=$("#pronote");if(pn)pn.innerHTML=state.pro?"":`30d, 90d, 12m and export are <a onclick="openPro()" style="cursor:pointer">Pro</a>.`;
   const rows=actSorted(actRows());
@@ -1839,7 +1849,8 @@ function renderActivity(){
   $("#actwrap").innerHTML=rows.length
     ?`<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-st"><col class="tw-mn"><col class="tw-td"></colgroup><thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Manner</th><th>Traded</th></tr></thead><tbody>${shown.map(actRow).join("")}</tbody></table>`
     :`<div class="dayempty">No filings of this kind in this window.</div>`;
-  $("#actnote").innerHTML=`${shown.length<rows.length?`${shown.length} of `:""}${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${sealedN?` · the stake after the trade is in <a onclick="openPro()" style="cursor:pointer">Pro</a> for the ${sealedN.toLocaleString()} from companies outside the S&P 500`:""}${compN?` · compensation listed last`:""}`;
+  const excerpt=typeof TAPE_LIMIT==="number"&&TAPE_LIMIT>0;
+  $("#actnote").innerHTML=`${shown.length<rows.length?`${shown.length} of `:""}${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${sealedN&&!excerpt?` · the stake after the trade is in <a onclick="openPro()" style="cursor:pointer">Pro</a> for the ${sealedN.toLocaleString()} from companies outside the S&P 500`:""}${compN?` · compensation listed last`:""}`;
   const tw=$("#thisweek");if(tw)tw.innerHTML=`<a href="/tape/">${weekLine()} <span class="arr">&rarr;</span></a>`;
 }
 
@@ -1891,7 +1902,7 @@ let TABLE_LIMIT=10;    /* the home page's list is ten rows: a preview whose job 
    layout has exactly the five it draws. */
 (function pruneHome(){
   const t=document.querySelector(".tablesec.home table.screen");if(!t)return;
-  for(const sel of [".w-rk",".w-fd",".w-mc",".w-r1",".w-amt",".w-ltd","th:first-child",".h-fd",".h-mc",".h-r1",".h-amt",".h-ltd"]){
+  for(const sel of [".w-rk",".w-fd",".w-mc",".w-r1",".w-amt","th:first-child",".h-fd",".h-mc",".h-r1",".h-amt"]){
     t.querySelectorAll(sel).forEach(el=>{if(el.tagName==="COL"||el.tagName==="TH")el.remove();});
   }
 })();

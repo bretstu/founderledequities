@@ -26,9 +26,12 @@
        from seven columns and clipped the names. One row under the table's
        count line, the same band the home page has; the table takes the
        whole measure. */
-    .subscribe{margin-top:12px}
+    /* under the filters, before the rows: the ask is seen before the scroll */
+    .subscribe{margin:14px 0 22px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .subscribe .hs-fine{flex-basis:100%;font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
+    body.pro .subscribe{display:none}
     .subscribe .homesub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-    .subscribe .hs-k{font-size:14px;font-weight:600;margin-right:4px}
+    .subscribe .hs-k{font-family:var(--disp);font-size:20px;font-weight:500;margin-right:6px}
     .subscribe input{font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;width:240px}
     .subscribe button{font:inherit;font-size:14px;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:0;padding:9px 16px;cursor:pointer}
     .subscribe button:hover{background:#000}
@@ -73,17 +76,18 @@
       </span>
     </div>
     <div class="pronote" id="pronote"></div>
-    <div class="tapewrap" id="actwrap"></div>
-    <div class="actnote" id="actnote"></div>
-  </div>
     <div class="subscribe" id="subscribe">
       <form class="homesub" id="subform" onsubmit="return subscribe(event)">
-        <span class="hs-k">Monday letter, free.</span>
+        <span class="hs-k">Monday letter &mdash; the week, one email.</span>
         <input type="email" id="subemail" placeholder="you@example.com" required autocomplete="email">
         <button type="submit">Send it</button>
         <div class="msg" id="submsg"></div>
+        <span class="hs-fine">No ads. Unsubscribe any time.</span>
       </form>
     </div>
+    <div class="tapewrap" id="actwrap"></div>
+    <div class="actnote" id="actnote"></div>
+  </div>
   <div class="tapefoot">
     <span><a href="/about.html">Method</a> · <a href="mailto:corrections@founderledequities.com">Corrections</a> · <a href="mailto:hello@founderledequities.com">Ideas</a> · Nothing here is investment advice · Every figure links to the filing</span>
     <span class="site">founderledequities.com</span>

@@ -15,6 +15,7 @@ async function boot(){
   let me=null;
   try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)me=await q.json();}catch(e){}
   state.pro=!!(me&&me.pro);
+  document.body.classList.toggle("pro",state.pro);   /* the letter's band is hidden for Pro */
   {const b=document.querySelector(".topnav .gopro");if(b&&state.pro){b.textContent="Account";b.setAttribute("href","/account/");b.title="Your letter, your watches, your billing";}}
   const [p,f,e]=await Promise.all([
     fetchText(state.pro?["/pro/universe.csv","/universe.csv","/panel.csv"]:["/universe.csv","/panel.csv"]),
