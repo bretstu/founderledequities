@@ -414,10 +414,50 @@ function tradesBlock(r){
     ${VIEW==="comp"?`<div class="sub" style="margin-top:10px">Compensation: what the company gave and what was sold of it. Awards granted, options exercised and held or cashed, vests, tax withholding, forfeitures. None of it is counted as buying or selling in the site's summaries.</div>`:""}
     ${VIEW==="transfers"?`<div class="sub" style="margin-top:10px">Transfers: gifts, conversions between classes, pre-IPO catch-ups and other non-market transactions the filing reports.</div>`:""}
     ${VIEW==="covers"?`<div class="sub" style="margin-top:10px">Share count: the company's cover pages that changed the number of shares outstanding. The stake moves with them though nothing of the chief executive's did.</div>`:""}
+    ${!state.pro&&C.older?`<div class="sub archive" style="margin-top:12px">The last twelve months. ${C.older.toLocaleString()} earlier trade${C.older===1?"":"s"}, back to ${C.since||"2016"}, are the archive: <a onclick="openPro()" style="cursor:pointer">in Pro</a>.</div>`:""}
   </div>`;
 }
 
 /* ---- the receipt for the badge ---- */
+/* THE WATCH (PLAN.md sections 2 and 5): "email me if this founder buys on the
+   open market or makes a discretionary sale." One is free, confirmed by a
+   click; a signed-in Pro reader is watching at once and can watch a list.
+   The box sits under the record on every page, sealed or open: what a
+   person does is not behind the seal, only what they own. */
+let WATCHING=null;   /* the signed-in reader's watch on this company, once known */
+function watchBlock(r){
+  const who=r.ceo||C.ceo||"this chief executive";
+  const on=WATCHING&&WATCHING.tk===r.tk;
+  const q=new URLSearchParams(location.search).get("watch");
+  const note=q==="on"?"You're watching. An email when they buy on the open market or sell at discretion.":q==="off"?"Stopped.":q==="expired"?"That link expired; ask again.":"";
+  return `<div class="csec cwatch" id="cwatch">
+    <div class="wk">Watch this ${(fInfo(r.tk)||{}).f==="yes"?"founder":"chief executive"}</div>
+    <div class="wrow">
+      <div class="wtext">Email me if <b>${who}</b> buys on the open market or makes a discretionary sale. Never for a plan or compensation.</div>
+      ${on?`<div class="wstate">Watching</div>`:state.pro
+        ?`<button class="wbtn" onclick="watchThis('${r.tk}')">Watch</button>`
+        :`<form class="wform" onsubmit="return watchThis('${r.tk}',event)"><input type="email" id="wemail" placeholder="you@example.com" required autocomplete="email"><button class="wbtn" type="submit">Watch</button></form>`}
+    </div>
+    <div class="wmsg" id="wmsg">${note}</div>
+    <div class="wfine">One founder watch is free. A list of names is <a href="/pro/">Pro</a>.</div>
+  </div>`;
+}
+async function watchThis(tk,ev){
+  if(ev)ev.preventDefault();
+  const m=$("#wmsg"),btn=document.querySelector("#cwatch .wbtn");
+  const email=$("#wemail")?($("#wemail").value||"").trim():"";
+  if(!state.pro&&!email)return false;
+  if(btn){btn.disabled=true;btn.textContent="…";}
+  try{
+    const q=await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk,ceo:C.ceo||"",email})});
+    const j=await q.json();
+    m.innerHTML=j.pro?`${j.message} <a href="/pro/">The plan &rarr;</a>`:(j.message||"");
+    if(j.ok&&j.watching){const row=document.querySelector("#cwatch .wrow");if(row)row.innerHTML=`<div class="wtext">Email me if <b>${C.ceo||tk}</b> buys on the open market or makes a discretionary sale. Never for a plan or compensation.</div><div class="wstate">Watching</div>`;}
+    else if(j.ok){if($("#wemail"))$("#wemail").disabled=true;if(btn)btn.textContent="Sent";}
+    else if(btn){btn.disabled=false;btn.textContent="Watch";}
+  }catch(e){m.textContent="Something went wrong; write to hello@founderledequities.com.";if(btn){btn.disabled=false;btn.textContent="Watch";}}
+  return false;
+}
 function whyBlock(r){
   if(r.masked)return "";
   const fi=fInfo(r.tk);if(!fi||!fi.ev)return"";
@@ -442,7 +482,7 @@ function reportBlock(r){
 
 function renderOpen(r,{animate=true}={}){
   window._lastRow=r;
-  $("#cbody").innerHTML=band(r)+recordBlock(r)+tradesBlock(r)+whyBlock(r);
+  $("#cbody").innerHTML=band(r)+recordBlock(r)+tradesBlock(r)+watchBlock(r)+whyBlock(r);
   $("#creport").innerHTML=reportBlock(r);
   const svg=document.querySelector(".cchart svg.fchart");
   if(svg){attachHover(svg);if(animate)drawIn(svg);}
@@ -458,6 +498,7 @@ async function fetchText(paths){
   try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)me=await q.json();}catch(e){}
   nav(me);
   const pro=!!(me&&me.pro);
+  if(me&&me.pro){try{const w=await (await fetch("/api/watch?tk="+encodeURIComponent(C.tk),{cache:"no-store"})).json();if(w.watches&&w.watches.length)WATCHING=w.watches[0];}catch(e){}}
   let row=C.row?mapPanel([C.row])[0]:null;
   if(!row&&pro){
     const t=await fetchText(["/pro/universe.csv"]);

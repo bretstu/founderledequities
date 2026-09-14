@@ -221,7 +221,16 @@ Two jobs, one provider.
   prepares; the person sends.
 - The alerts are the opposite: one fixed template, sent by the nightly
   when a watched founder buys on the open market or sells at discretion,
-  no hand in the loop.
+  no hand in the loop. Built 2026-09-14: the watch box sits under the
+  record on every company page (one free per email, confirmed by a
+  click; a signed-in Pro reader is watching at once and can watch a
+  list); the watches live in the D1 database on Cloudflare, never on
+  the mini PC; the nightly posts the day's decisions to /api/watch/run
+  with a shared secret (ALERTS_KEY), the function matches them to the
+  watches, sends one email per watcher and records each (watch, filing)
+  so nothing is sent twice; every alert carries a one-click stop link.
+  A second watch by a free reader answers "You're watching Musk. A list
+  of names is Pro."
 - The look is ours, not the provider's: an HTML template built once in
   the site's design (paper, a serif headline set in Georgia since mail
   clients do not load web fonts, the counts line, the four cards, the
@@ -281,5 +290,5 @@ an API, a second tier, recommendations, YouTube/Discord/podcast.
   nothing is invented.
 - Compensation never counts as "cut a stake."
 - `/tape` and `/pro` exist as pages; `/pro` states $15 / $150.
-- The watch cap of one is enforced.
+- The watch cap of one is enforced (at the request and at the confirming click).
 - The Method page still explains the number in full.
