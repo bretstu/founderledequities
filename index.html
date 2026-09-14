@@ -1783,7 +1783,11 @@ function weekLine(){
   if(!w.length)return "";
   const who=k=>new Set(w.filter(e=>tapeKind(e)===k).map(e=>e.tk+"|"+e.ceo)).size;
   const b=who("bought"),d=who("disc"),p=who("plan");
-  return `<b>This week:</b> ${b} founder${b===1?"":"s"} bought. ${d} sold without a plan. ${p} sale${p===1?" was":"s were"} already scheduled.`;
+  /* A ROLLING WEEK, NAMED AS ONE. "This week" on a Monday claimed a week
+     that had not happened; the window is the last seven days of filings,
+     and the sentence says so. The Monday letter keeps "This week's tape":
+     for a letter that lands Monday morning, that is the week just closed. */
+  return `<b>Past seven days:</b> ${b} founder${b===1?"":"s"} bought. ${d} sold without a plan. ${p} sale${p===1?" was":"s were"} already scheduled.`;
 }
 /* the weather line: what the window held */
 /*@shared*/
