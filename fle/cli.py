@@ -1260,6 +1260,79 @@ def _log_tail(live: str, n: int = 40) -> str:
         return ""
 
 
+def _merge_rows(live_p: str, fresh_p: str, tickers: list, key: str):
+    """Rows for `tickers` from the fresh (partial) file replace theirs in
+    the live file; every other row is kept in its place. Writes the merged
+    file over the fresh path. Returns the number of tickers replaced, or
+    None when there is no live file to merge into."""
+    if not os.path.exists(live_p):
+        return None
+    want = {t.upper() for t in tickers}
+    with open(fresh_p, encoding="utf-8-sig", newline="") as fh:
+        fresh_reader = csv.DictReader(fh)
+        fresh_cols = fresh_reader.fieldnames or []
+        fresh = [r for r in fresh_reader if (r.get(key) or "").upper() in want]
+    with open(live_p, encoding="utf-8-sig", newline="") as fh:
+        cols = list(csv.DictReader(fh).fieldnames or fresh_cols)
+    for c in fresh_cols:
+        if c not in cols:
+            cols.append(c)
+    have = {(r.get(key) or "").upper() for r in fresh}
+    by_t: dict = {}
+    for r in fresh:
+        by_t.setdefault((r.get(key) or "").upper(), []).append(r)
+    tmp = fresh_p + ".merge"
+    with open(tmp, "w", encoding="utf-8", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=cols, extrasaction="ignore")
+        w.writeheader()
+        # the live file's order, the fresh rows where the old ones stood; a
+        # targeted company with no old rows (new to the file) goes last
+        placed = set()
+        with open(live_p, encoding="utf-8-sig", newline="") as lf:
+            for r in csv.DictReader(lf):
+                t = (r.get(key) or "").upper()
+                if t in want:
+                    if t not in placed:
+                        for fr in by_t.get(t, []):
+                            w.writerow(fr)
+                        placed.add(t)
+                    continue
+                w.writerow(r)
+        for t, rows in by_t.items():
+            if t not in placed:
+                for fr in rows:
+                    w.writerow(fr)
+    os.replace(tmp, fresh_p)
+    return len(have)
+
+
+def _merge_state(live_state: str, scratch_state: str, tickers: list) -> None:
+    """The walk's memory: only the targeted companies' entries move from the
+    scratch state into the live one."""
+    if not os.path.exists(scratch_state):
+        return
+    try:
+        with open(scratch_state, encoding="utf-8") as fh:
+            fresh = json.load(fh)
+    except (OSError, ValueError):
+        return
+    state = {}
+    if os.path.exists(live_state):
+        try:
+            with open(live_state, encoding="utf-8") as fh:
+                state = json.load(fh)
+        except (OSError, ValueError):
+            state = {}
+    want = {t.upper() for t in tickers}
+    for k, v in fresh.items():
+        if str(k).upper() in want or str(k).split(":")[0].upper() in want:
+            state[k] = v
+    tmp = live_state + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(state, fh)
+    os.replace(tmp, live_state)
+
+
 def _refresh(args, log) -> int:
     """One command, run by a timer, that publishes only if the data is sane.
 
@@ -1390,16 +1463,59 @@ def _refresh(args, log) -> int:
     # new relevant filing and recomputing the rest. An unfinished
     # checkpoint (a night that died) is left in place to resume.
     ck, prior = path("panel.jsonl"), path("panel-prior.jsonl")
-    if rotate_checkpoint(ck, prior, args.universe):
+    # THE TARGETED RUN (ops/live.py): the live feed already said which
+    # companies filed, so only they are walked; every other company keeps
+    # the row the nightly published. Same stages, same gates, same files;
+    # the feed answers "who filed?" instead of 2,135 index reads. The
+    # nightly still reads every index and would reach the same rows.
+    targeted = sorted({t.strip().upper() for t in (getattr(args, "tickers", None) or "").split(",") if t.strip()})
+    if targeted:
+        log(f"targeted: {', '.join(targeted)} (the rest keep last night's rows)")
+        ck = path("panel-targeted.jsonl")
+        if os.path.exists(ck):
+            os.remove(ck)
+        prior = ""
+    elif rotate_checkpoint(ck, prior, args.universe):
         log("panel: last night's checkpoint is tonight's prior")
     # Each stage gets exactly what its own command reads. These defaults
     # mirror the parser's; a stage that grew an option and was not added
     # here used to die mid-run, hours in.
     if run("panel", lambda: cmd_panel(ns(
             universe=args.universe, out=path("panel.csv"), limit=None,
-            tickers=None, ciks=None, redo="none",
+            tickers=",".join(targeted) or None, ciks=None, redo="none",
             checkpoint=ck, prior=prior, workers=args.workers))):
         return 1
+    if targeted:
+        # the fresh rows into last night's file, by ticker; a partial panel
+        # is never published
+        n = _merge_rows(path("panel.csv", staged=False), path("panel.csv"), targeted, "ticker")
+        if n is None:
+            log("targeted: no published panel.csv to merge into; run the full refresh first")
+            return 1
+        log(f"targeted: {n} row(s) replaced in the panel; {sum(1 for _ in open(path('panel.csv'), encoding='utf-8-sig')) - 1} rows in all")
+    else:
+        # IDEMPOTENCE, SAID OUT LOUD: the companies the live runs published
+        # since the last full run must come out of the full walk unchanged.
+        # A difference is not repaired here (the full run is the record); it
+        # is logged for a person to read.
+        lp = os.path.join(live, "weekly", "live-published.txt")
+        if os.path.exists(lp):
+            tks = sorted({t.strip().upper() for t in open(lp, encoding="utf-8").read().split() if t.strip()})
+            try:
+                before = {r["ticker"].upper(): r for r in csv.DictReader(open(path("panel.csv", staged=False), encoding="utf-8-sig"))}
+                after = {r["ticker"].upper(): r for r in csv.DictReader(open(path("panel.csv"), encoding="utf-8-sig"))}
+                same, diff = [], []
+                for t in tks:
+                    b, a = before.get(t), after.get(t)
+                    if b and a and (b.get("pct"), b.get("shares")) == (a.get("pct"), a.get("shares")):
+                        same.append(t)
+                    else:
+                        diff.append(t)
+                log(f"idempotence: {len(same)} live-published compan{'y' if len(same) == 1 else 'ies'} unchanged by the full walk"
+                    + (f"; DIFFER: {', '.join(diff)} (a newer filing, or a live run that the index had not caught up with)" if diff else ""))
+            except Exception as exc:  # noqa: BLE001
+                log(f"idempotence: could not compare ({exc.__class__.__name__})")
+            os.remove(lp)
 
     # 2 -- the gate
     log("checking the verified holdings...")
@@ -1437,13 +1553,29 @@ def _refresh(args, log) -> int:
             f"the nightly allowance, worth a look: {', '.join(odd)}")
 
     # 3 -- history, reusing companies that have not filed
+    state_p = os.path.join(live, "history-state.json")
+    if targeted:
+        # the walk's memory is read from the live state but written to a
+        # scratch copy, then only the targeted entries are merged back
+        state_scratch = path("history-state-targeted.json")
+        if os.path.exists(state_p):
+            shutil.copy2(state_p, state_scratch)
+        elif os.path.exists(state_scratch):
+            os.remove(state_scratch)
     if run("history", lambda: cmd_history(ns(
             universe=args.universe, out=path("history.csv"), limit=None,
-            tickers=None, exclusions=args.exclusions, since=args.since,
+            tickers=",".join(targeted) or None, exclusions=args.exclusions, since=args.since,
             splits=True, reuse=path("history.csv", staged=False),
-            state=os.path.join(live, "history-state.json"),
+            state=state_scratch if targeted else state_p,
             workers=min(int(args.workers or 2), 3)))):
         return 1
+    if targeted:
+        n = _merge_rows(path("history.csv", staged=False), path("history.csv"), targeted, "ticker")
+        if n is None:
+            log("targeted: no published history.csv to merge into; run the full refresh first")
+            return 1
+        log(f"targeted: {n} history row(s) replaced")
+        _merge_state(state_p, state_scratch, targeted)
 
     # 3.5 -- the trailing edge. History has just been rebuilt and the panel
     # is still staged, so the two can be reconciled before either is live.
@@ -2361,6 +2493,8 @@ def main(argv=None) -> int:
     rf.add_argument("--universe", default="universe/sp500-2026-08-25.csv")
     rf.add_argument("--exclusions", default=None)
     rf.add_argument("--since", default="2016-01-01")
+    rf.add_argument("--tickers", default=None,
+                    help="targeted: walk only these companies (comma-separated); the rest keep last night's rows")
     rf.add_argument("--workers", type=int, default=4)
     rf.add_argument("--founders", action="store_true",
                     help="re-read every proxy tonight, not just weekly")

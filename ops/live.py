@@ -73,10 +73,11 @@ def money(v):
 
 
 def universe():
-    """issuer cik -> the founder-CEO's reporting cik, name, company, stake
-    now. FOUNDERS ONLY: the proxy names them a founder (founders.csv), the
-    same file the site uses; a hired chief executive's filing is not the
-    watcher's business."""
+    """issuer cik -> the CEO's reporting cik, name, company, stake now, and
+    whether the proxy names them a founder (founders.csv, the same file the
+    site uses). EVERY CEO's filing runs the data, so a reader watching a
+    hired chief executive is served the same minute; only a FOUNDER's
+    decision reaches the owner's inbox and the X drafts."""
     founders = set()
     with open(os.path.join(ROOT, "founders.csv"), encoding="utf-8-sig", newline="") as fh:
         for r in csv.DictReader(fh):
@@ -91,9 +92,9 @@ def universe():
                 continue
             oc = (r.get("owner_cik") or "").strip().lstrip("0")
             tk = (r.get("ticker") or "").upper()
-            if cik and oc and tk in founders:
+            if cik and oc:
                 out[cik] = {"tk": tk, "owner": oc, "ceo": r.get("ceo") or "", "co": r.get("company") or "",
-                            "pct": r.get("pct") or "", "asof": r.get("shares_as_of") or ""}
+                            "pct": r.get("pct") or "", "asof": r.get("shares_as_of") or "", "founder": tk in founders}
     return out
 
 
@@ -213,8 +214,9 @@ def publish_and_mail(pending, uni):
     if os.path.exists(lock) and time.time() - os.path.getmtime(lock) < 1800:
         return [f"  a run is in progress; {len(pending)} decision(s) wait for the next pass"], pending
     open(lock, "w").write(str(os.getpid()))
+    tickers = ",".join(sorted({uni[cik]["tk"] for _, cik in pending}))
     try:
-        r = subprocess.run(["bash", os.path.join(HERE, "now.sh")], cwd=ROOT, capture_output=True, text=True, timeout=1800)
+        r = subprocess.run(["bash", os.path.join(HERE, "now.sh"), tickers], cwd=ROOT, capture_output=True, text=True, timeout=1800)
         ok = r.returncode == 0
     except Exception as e:  # noqa: BLE001
         ok = False
@@ -226,6 +228,10 @@ def publish_and_mail(pending, uni):
             pass
     lines = []
     still = []
+    if ok:
+        # the nightly checks its own answer against these (fle.cli refresh logs "idempotence")
+        with open(os.path.join(ROOT, "weekly", "live-published.txt"), "a", encoding="utf-8") as fh:
+            fh.write("\n".join(sorted({uni[cik]["tk"] for _, cik in pending})) + "\n")
     for acc, cik in pending:
         u = uni[cik]
         ev = published_event(acc) if ok else None
@@ -234,14 +240,14 @@ def publish_and_mail(pending, uni):
             lines.append(f"  {u['tk']}: the run did not publish this filing yet; it waits for the next pass")
             continue
         text = sentence(u, ev)
-        sent = send_mail(os.environ.get("LIVE_TO", ""), f"{u['ceo']} {'bought' if ev.get('code') == 'P' else 'sold'} {u['tk']}: the page is live", text)
-        lines.append(f"- {dt.datetime.now().strftime('%H:%M')} published · {text.replace(chr(10), ' · ')}{'  ← mailed' if sent else ''}")
+        sent = u.get("founder") and send_mail(os.environ.get("LIVE_TO", ""), f"{u['ceo']} {'bought' if ev.get('code') == 'P' else 'sold'} {u['tk']}: the page is live", text)
+        lines.append(f"- {dt.datetime.now().strftime('%H:%M')} published · {text.replace(chr(10), ' · ')}{'  ← mailed' if sent else '  (hired CEO: data only)' if not u.get('founder') else ''}")
     return lines, still
 
 
 def one_pass(client, uni, seen):
     filings = feed(client)
-    if filings and all(acc not in seen for acc in filings) and len(filings) >= 40:
+    if seen and filings and all(acc not in seen for acc in filings) and len(filings) >= 40:
         print(f"  {dt.datetime.now().strftime('%H:%M')} the feed overflowed since the last pass "
               f"({len(filings)} filings, all new): some may have fallen between; the nightly catches them")
     new = []
@@ -274,8 +280,8 @@ def one_pass(client, uni, seen):
             lines.append(line)
             if kind in ("bought", "discretionary"):
                 decisions.append((acc, cik))
-            else:
-                # a plan or compensation: written down and mailed as it is; no run
+            elif u.get("founder"):
+                # a founder's plan or compensation: written down and mailed as it is; no run
                 send_mail(os.environ.get("LIVE_TO", ""), f"{u['ceo']}: {kind} filing at {u['tk']}", line)
         seen.add(acc)
     return lines, decisions
