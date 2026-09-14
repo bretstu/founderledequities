@@ -52,7 +52,7 @@ def test_the_shared_code_is_extracted_whole_and_parses():
     # the shared block is declarations in source order; the renderers touch
     # the DOM by nature, the parsers and formatters never do
     import re as _re
-    renderers = {"paintSw", "wireSw", "renderTable", "exportTable", "lastTrades", "renderActivity", "setWin"}
+    renderers = {"paintSw", "wireSw", "renderTable", "exportTable", "lastTrades", "renderActivity", "setWin", "setScreen"}
     for m in _re.finditer(r"^function (\w+)\(", js, flags=_re.M):
         end = js.find("\nfunction ", m.end())
         body = js[m.start():end if end > 0 else len(js)]

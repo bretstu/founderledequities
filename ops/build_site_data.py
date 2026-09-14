@@ -440,6 +440,39 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
                         continue
                     n += 1
                 counts[f"m{m}f{f}h{h}"] = n
+    # THE NAMED SCREENS (PLAN.md section 7, step 6): four questions with a
+    # name and a URL each, counted the same way so a free reader's screen
+    # says how many more match in Pro.
+    last_move = {}
+    for r in all_rows:
+        if r.get("code") not in ("P", "S") or (r.get("label") or "") in UNCHANGED_LABELS:
+            continue
+        if (r.get("pre_ipo") or "") in ("1", "true", "True"):
+            continue
+        k = (r.get("traded") or r.get("filed") or "", r.get("filed") or "")
+        t = r.get("ticker")
+        if t not in last_move or k > last_move[t][0]:
+            last_move[t] = (k, r)
+    import datetime as _dt
+    year_ago = (_dt.date.today() - _dt.timedelta(days=365)).isoformat()
+    def bought_this_year(t):
+        lm = last_move.get(t)
+        return bool(lm) and lm[1].get("code") == "P" and (lm[1].get("traded") or lm[1].get("filed") or "") >= year_ago
+    screens = {
+        "never-sold": lambda t, pct: t not in sold and t in has_hist,
+        "over-10": lambda t, pct: pct >= 10,
+        "bought-this-year": lambda t, pct: bought_this_year(t),
+        "hired-under-1": lambda t, pct: t not in founder_yes and pct < 1,
+    }
+    for name, test in screens.items():
+        n = 0
+        for r in panel:
+            pct = _num(r.get("pct"))
+            if pct is None or (r.get("operating_partnership") or "").lower() == "true":
+                continue
+            if test(r["ticker"], pct):
+                n += 1
+        counts["s:" + name] = n
     with open(os.path.join(out_dir, "screen-counts.json"), "w", encoding="utf-8") as fh:
         json.dump(counts, fh)
 

@@ -72,7 +72,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setWin,actWindow,actRows,actSorted,actStats,tapeKind,tapeManner,soldTickers,lastTrades,exportTable,cleanHist,renderTable,fInfo,set TAPE_LIMIT(v){TAPE_LIMIT=v},get SCREEN_COUNTS(){return SCREEN_COUNTS},set SCREEN_COUNTS(v){SCREEN_COUNTS=v},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setWin,actWindow,actRows,actSorted,actStats,tapeKind,tapeManner,soldTickers,lastTrades,exportTable,cleanHist,renderTable,setScreen,fInfo,set TAPE_LIMIT(v){TAPE_LIMIT=v},get SCREEN_COUNTS(){return SCREEN_COUNTS},set SCREEN_COUNTS(v){SCREEN_COUNTS=v},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -188,6 +188,26 @@ const P=runPage();
     P.state.q="AAA";P.renderTable();
     assert(!(els["#tcount"]._html||"").includes("more match"),"under a search there is no count");
     P.state.q="";P.state.min=0;P.PANEL=savedP;P.SCREEN_COUNTS=savedC;P.renderTable();
+  }
+
+  // ---- the named screens: four questions, each a predicate the build also counts ----
+  {
+    const savedP=P.PANEL,savedC=P.SCREEN_COUNTS,savedL=P.state.screen;
+    P.PANEL=[{tk:"NS",co:"Never",ceo:"a",pct:12,val:1,masked:false,conf:"high",asof:"2026-09-01",fd:true},
+             {tk:"HI",co:"Hired",ceo:"b",pct:0.3,val:1,masked:false,conf:"high",asof:"2026-09-01",fd:false},
+             {tk:"SL",co:"Sealed",ceo:"c",pct:null,val:null,masked:true,conf:"",asof:"",fd:true,rp:1,rv:1}];
+    P.SCREEN_COUNTS={"s:over-10":3,"s:hired-under-1":2};
+    P.TABLE_LIMIT=0;P.state.pro=false;
+    P.setScreen("over-10");
+    const rowsOf=()=>[...els["#tbody"]._html.matchAll(/<tr onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);
+    let tks=rowsOf();
+    assert(tks.length===1&&tks[0]==="NS","over-10 keeps the one who owns more than a tenth; a sealed row cannot be judged: "+JSON.stringify(tks));
+    assert((els["#tcount"]._html||"").includes("2 more match in Pro"),"and the count says how many more match in Pro: "+els["#tcount"]._html);
+    P.setScreen("hired-under-1");
+    tks=rowsOf();
+    assert(tks.length===1&&tks[0]==="HI","hired under 1% keeps the hired CEO with the small stake");
+    assert(P.state.tbF===false&&P.state.min===0,"a screen is the whole question: the other filters reset");
+    P.setScreen("");P.PANEL=savedP;P.SCREEN_COUNTS=savedC;P.state.screen=savedL;P.TABLE_LIMIT=20;P.renderTable();
   }
 
   // ---- the screener: three-year change, last trade, never sold ----

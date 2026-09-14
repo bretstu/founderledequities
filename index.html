@@ -768,7 +768,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"pct",dir:-1},tbF:true,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,buys:false,nocomp:false},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
+const state={q:"",min:0,screen:"",sort:{key:"pct",dir:-1},tbF:true,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,buys:false,nocomp:false},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -1263,6 +1263,33 @@ function lastTrades(){
   }
   return {last,sold:soldTickers()};
 }
+/* THE NAMED SCREENS (PLAN.md step 6): four questions a reader brings, each
+   with a name and a URL (/companies/?screen=never-sold), so a letter can
+   link to one and a search can find it. Each is a predicate over the
+   table's rows; the build counts the same predicate over every company
+   so a free reader's screen says how many more match in Pro. */
+/*@shared*/
+const SCREENS={
+  "never-sold":{name:"Never sold",desc:"CEOs who have never sold a share of their company on the market",
+    test:r=>!!r.ns},
+  "over-10":{name:"Own more than 10%",desc:"CEOs who own more than a tenth of the company they run",
+    test:r=>r.pct!==null&&r.pct>=10},
+  "bought-this-year":{name:"Bought this year",desc:"CEOs whose most recent stake-moving trade was an open-market purchase in the last twelve months",
+    test:r=>r.ltk==="bought"&&!!r.ltd&&r.ltd>=new Date(Date.now()-365*86400e3).toISOString().slice(0,10)},
+  "hired-under-1":{name:"Hired, under 1%",desc:"CEOs the proxy does not name as founders, owning less than 1% of the company they run",
+    test:r=>!r.fd&&r.pct!==null&&r.pct<1},
+};
+/*@shared*/
+function setScreen(id){
+  state.screen=SCREENS[id]?id:"";
+  /* a screen is the whole question: the other filters reset so the
+     answer is the screen's, and the URL says which */
+  state.q="";state.min=0;state.tbF=false;state.tbH=false;
+  const q=typeof document!=="undefined"&&document.querySelector("#q");if(q)q.value="";
+  document.querySelectorAll("[data-min]").forEach(x=>x.classList.toggle("on",x.dataset.min==="0"));
+  if(typeof history!=="undefined"&&history.replaceState&&!(typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0))history.replaceState(null,"",state.screen?`?screen=${state.screen}`:location.pathname);
+  renderTable();
+}
 /*@shared*/
 function renderTable(){
   paintSw("fchip",state.tbF);
@@ -1286,8 +1313,14 @@ function renderTable(){
      figures, and the line beneath says how many more match in Pro.
      /companies/ shows every row with the blurs. */
   const homeOpen=typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0&&!state.pro;
+  const screen=state.screen&&SCREENS[state.screen];
+  document.querySelectorAll("[data-screen]").forEach(b=>b.classList.toggle("on",b.dataset.screen===(state.screen||"")));
+  const sd=$("#screendesc");if(sd)sd.textContent=screen?screen.desc.charAt(0).toUpperCase()+screen.desc.slice(1)+".":"";
   let rows=PANEL.filter(r=>{
     if(homeOpen&&r.masked)return false;
+    /* a sealed row's share is not in the file: a screen that asks about
+       it cannot be answered for that row, and the count beneath says so */
+    if(screen)return !r.masked&&screen.test(r);
     const q=state.q.toLowerCase();
     const fOK=fOnly(r.tk,state.tbF)&&(!state.tbH||r.ns);
     /* A SEALED COMPANY IS A ROW. Its name, its founder, its last trade's
@@ -1343,7 +1376,7 @@ function renderTable(){
      search there is no count (the build cannot know the search). */
   let more="";
   if((sealedN||homeOpen)&&SCREEN_COUNTS&&!state.q.trim()){
-    const key=`m${[0,1,5,10].includes(state.min)?state.min:0}f${state.tbF?1:0}h${state.tbH?1:0}`;
+    const key=screen?`s:${state.screen}`:`m${[0,1,5,10].includes(state.min)?state.min:0}f${state.tbF?1:0}h${state.tbH?1:0}`;
     const all=SCREEN_COUNTS[key];
     const openMatches=rows.filter(r=>!r.masked).length;
     if(typeof all==="number"&&all>openMatches)more=` · <a onclick="openPro()" style="cursor:pointer" title="the same filter over every company worth $1B or more">${(all-openMatches).toLocaleString()} more match in Pro</a>`;

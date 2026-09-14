@@ -37,7 +37,12 @@ async function boot(){
     renderTable();
   }));
   const ex=$("#export");if(ex)ex.addEventListener("click",()=>exportTable());
+  /* a screen named in the URL is the page's question */
+  const sc=new URLSearchParams(location.search).get("screen");
+  if(sc&&SCREENS[sc])state.screen=sc;
+  /* the filter chips and switches leave a screen: they are a different question */
+  document.querySelectorAll("[data-min],#fchip,#hchip,#q").forEach(el=>el.addEventListener(el.id==="q"?"input":"click",()=>{if(state.screen){state.screen="";history.replaceState(null,"",location.pathname);}},true));
   renderTable();
 }
-state.sort={key:"pct",dir:-1};state.q="";state.min=0;state.tbF=false;state.tbH=false;state.live={panel:false,hist:false,events:false,founders:false,prices:false};
+state.sort={key:"pct",dir:-1};state.q="";state.min=0;state.screen="";state.tbF=false;state.tbH=false;state.live={panel:false,hist:false,events:false,founders:false,prices:false};
 boot();

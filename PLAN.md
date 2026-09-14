@@ -275,7 +275,11 @@ writes a digest that nobody sends.
    build; the copy fix.
 5. Watch box with a cap of one; Pro watchlist; the nightly diff and
    sends.
-6. Named screens on the companies table.
+6. Named screens on the companies table: never sold, own more than
+   10%, bought this year, hired under 1%, each a chip and a URL on
+   /companies/ (?screen=never-sold), each counted over every company at
+   build so a free reader's screen says how many more match in Pro.
+   Built 2026-09-14.
 
 Out of scope for this pass: coverage below $1B, international issuers,
 an API, a second tier, recommendations, YouTube/Discord/podcast.
