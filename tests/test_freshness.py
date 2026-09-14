@@ -359,3 +359,24 @@ def test_no_url_means_no_ping_and_never_an_error(tmp_path, monkeypatch):
     said = []
     cli._heartbeat(said.append, 0, "x")      # the fake raises; the run must not
     assert said and "heartbeat failed" in said[0]
+
+
+def test_the_breaker_gives_up_after_an_hour_of_rest_even_with_successes_between(monkeypatch):
+    """The 2026-09-14 run: EDGAR's maintenance window answered some
+    requests and refused others; a give-up counter that reset on every
+    success never fired, and the run rested four hours until systemd
+    killed it. The budget of rest is per run and a success does not
+    refund it."""
+    from fle.edgar import RateLimiter
+    import time as _t
+    lim = RateLimiter()
+    clock = [1000.0]
+    monkeypatch.setattr(_t, "monotonic", lambda: clock[0])
+    rested = 0.0
+    for _ in range(6):
+        q = lim.trip()          # refused
+        rested += q
+        clock[0] += q + 1       # the nap ends
+        lim.clear()             # a request got through
+        assert not lim.exhausted or rested > 3600
+    assert rested > 3600 and lim.exhausted, "an hour of rest in total is the run's whole budget"

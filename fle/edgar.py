@@ -64,6 +64,7 @@ class RateLimiter:
         self._lock = threading.Lock()
         self._blocked_until = 0.0
         self._consecutive = 0
+        self._rested = 0.0            # seconds of rest this run has taken, never reset
 
     def wait(self) -> None:
         while True:
@@ -101,15 +102,23 @@ class RateLimiter:
             # early resets the entire window.
             quiet = max(retry_after, min(660.0 * 2 ** (self._consecutive - 1), 1320.0))
             self._blocked_until = now + quiet
+            self._rested += quiet
             return quiet
 
     def clear(self) -> None:
+        # a success ends the streak, not the run's budget of rest: during
+        # an EDGAR maintenance window some requests get through between
+        # refusals, and a counter that reset on each of them never gave up
+        # (the 2026-09-14 run rested four hours until systemd killed it)
         with self._lock:
             self._consecutive = 0
 
     @property
     def exhausted(self) -> bool:
-        return self._consecutive > 6
+        """The run has rested more than an hour in total, or been refused
+        seven times running: EDGAR is not open tonight. Give up cleanly so
+        the run finishes (the gate keeps stale data off the site)."""
+        return self._consecutive > 6 or self._rested > 3600.0
 
 
 
