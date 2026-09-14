@@ -64,6 +64,21 @@ FEED = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=4&owner=
 PAGES = 8   # 8 pages of 100 entries; about 20 Form 4s a page after the filter
 SITE = "https://founderledequities.com"
 SEEN = os.path.join(ROOT, "weekly", "live-seen.txt")
+WAITING = os.path.join(ROOT, "weekly", "live-waiting.json")   # accession -> passes spent waiting for EDGAR's index
+
+
+def _load_waiting():
+    try:
+        with open(WAITING, encoding="utf-8") as fh:
+            return json.load(fh)
+    except (OSError, ValueError):
+        return {}
+
+
+def _save_waiting(w):
+    os.makedirs(os.path.dirname(WAITING), exist_ok=True)
+    with open(WAITING, "w", encoding="utf-8") as fh:
+        json.dump(w, fh)
 OUT = os.path.join(ROOT, "drafts", "x-live.md")
 COMPENSATION = {"exercise and sell", "exercise, part sold", "vested and sold", "convert and sell",
                 "sale, position unchanged", "purchase, position unchanged"}
@@ -136,16 +151,30 @@ def feed(client, start=0):
     return filings
 
 
+class NotYetIndexed(Exception):
+    """EDGAR's per-filer index has not caught up with its live feed."""
+
+
 def describe(client, uni, cik, acc):
     """The filing as the site's parser reads it: (kind, amount, label,
-    traded date). No walk, no stake after (see the module note)."""
+    traded date). No walk, no stake after (see the module note).
+
+    THE PARSER READS TWO INDEXES, the company's and the person's, and keeps
+    the filings on both. Both must be fresh (their cached copies are
+    dropped) and both must list this accession; EDGAR's indexes lag its
+    live feed by minutes, so a filing not yet on one raises NotYetIndexed
+    and the pass leaves it for the next."""
     from fle.events import build_events
-    # the company's submissions feed must be fresh: drop the cached copy
-    try:
-        os.remove(client._cache_path(f"https://data.sec.gov/submissions/CIK{cik:010d}.json"))
-    except OSError:
-        pass
     u = uni[cik]
+    owner = int(str(u["owner"]).lstrip("0"))
+    for c in (cik, owner):
+        try:
+            os.remove(client._cache_path(f"https://data.sec.gov/submissions/CIK{c:010d}.json"))
+        except OSError:
+            pass
+    for c in (cik, owner):
+        if not any(f.get("accessionNumber") == acc for f in client.submissions(c).get("_filings", [])):
+            raise NotYetIndexed(f"CIK{c} does not list {acc} yet")
     since = (dt.date.today() - dt.timedelta(days=10)).isoformat()
     evs = build_events(client, cik, u["owner"], u["tk"], u["ceo"], since=since, max_filings=6, history=None)
     out = []
@@ -322,11 +351,27 @@ def one_pass(client, uni, seen):
     now = dt.datetime.now().strftime("%H:%M")
     for acc, cik in new:
         u = uni[cik]
+        filing_url = f"https://www.sec.gov/Archives/edgar/data/{cik}/{acc.replace('-', '')}/"
         try:
             parts = describe(client, uni, cik, acc)
+        except NotYetIndexed as e:
+            # not seen: the next pass tries again; after an hour of passes it is said out loud
+            waiting = _load_waiting()
+            waits = waiting.get(acc, 0) + 1
+            waiting[acc] = waits
+            _save_waiting(waiting)
+            print(f"  {now} {u['tk']} · {u['ceo']} filed {acc}; EDGAR's index has not listed it yet ({e}); waiting (pass {waits})")
+            if waits >= 12:
+                lines.append(f"- {now} {u['tk']} · {u['ceo']} filed a Form 4 an hour ago that EDGAR's index still does not list; the nightly will carry it · {filing_url}")
+                seen.add(acc)
+            continue
         except Exception as e:  # noqa: BLE001
             parts = []
-            lines.append(f"- {now} {u['tk']} · {u['ceo']} filed a Form 4 (could not read it: {str(e)[:60]}) · https://www.sec.gov/Archives/edgar/data/{cik}/{acc.replace('-', '')}/")
+            lines.append(f"- {now} {u['tk']} · {u['ceo']} filed a Form 4 (could not read it: {str(e)[:60]}) · {filing_url}")
+        if not parts:
+            # A FOUNDER'S FILING IS NEVER SILENT: no purchase or sale in it
+            # (an exercise held, a gift, a grant) is still a line
+            lines.append(f"- {now} {u['tk']} · {u['ceo']} filed a Form 4 with no purchase or sale in it (an exercise, a gift or a grant; the page carries it after the nightly) · {filing_url}")
         for kind, value, label, traded in parts:
             verb = {"bought": "bought", "discretionary": "sold at their own discretion",
                     "planned": "sold under a pre-set plan", "compensation": "compensation:"}[kind]
