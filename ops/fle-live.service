@@ -1,0 +1,10 @@
+[Unit]
+Description=Founder Led Equities: a CEO's Form 4 the minute it lands
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=bretstu
+WorkingDirectory=/home/bretstu/projects/founderledequities
+ExecStart=/usr/bin/python3 ops/live.py
