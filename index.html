@@ -2192,7 +2192,7 @@ const KIND_WORD={bought:"Bought",disc:"Discretionary",plan:"Planned",comp:"Compe
 function tapeManner(e){
   const k=tapeKind(e);
   if(k==="bought"||k==="disc")return "Open market";
-  if(k==="plan")return "10b5-1 plan";
+  if(k==="plan")return "Pre-set plan";
   return {"exercise and sell":"Options cashed","exercise, part sold":"Options cashed, part kept","vested and sold":"Vest, part sold",
           "convert and sell":"Units converted","sale, position unchanged":"Sale, stake unchanged","purchase, position unchanged":"Purchase, stake unchanged"}[e.lb]||"Compensation";
 }
@@ -2270,7 +2270,7 @@ function actRow(e){
   const stake=e.mk?LOCK("the stake after the trade is in Pro","0.00%"):(e.po!==null&&e.po!==undefined)?e.po.toFixed(e.po<1?3:2)+"%":`<span class="nopr">&mdash;</span>`;
   const amt=dim?"&mdash;":(e.fl?`<span class="nopr" title="${e.fl}">${evValCell(e)}</span>`:evValCell(e));
   return `<tr class="dayrow${dim?" dim":""}" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
-    <td class="kd"><span class="kind ${k}" title="${k==="bought"?"an open-market purchase that moved the stake":k==="disc"?"a sale the person chose the day of":k==="plan"?"a sale under a Rule 10b5-1 plan set up long before the trade":"compensation cashed; the stake did not move the way a purchase or sale does"}">${KIND_WORD[k]}</span></td>
+    <td class="kd"><span class="kind ${k}" title="${k==="bought"?"an open-market purchase that moved the stake":k==="disc"?"a sale the person chose the day of":k==="plan"?"planned: a sale under a pre-set plan (Rule 10b5-1), scheduled long before the trade date":"compensation cashed; the stake did not move the way a purchase or sale does"}">${KIND_WORD[k]}</span></td>
     <td class="co"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></td>
     <td class="ceo">${e.ceo||coOf(e.tk)}${fMark(e.tk)}${e.fb?`<span class="firstb" title="this person's first open-market purchase on record">first buy</span>`:""}</td>
     <td class="n v">${e.u&&!dim?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">${amt}</a>`:amt}</td>

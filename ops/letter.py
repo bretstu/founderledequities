@@ -111,7 +111,7 @@ def manner_of(e, k):
     if k in ("bought", "disc"):
         return "Open market"
     if k == "plan":
-        return "10b5-1 plan"
+        return "Pre-set plan"
     return {"exercise and sell": "Options cashed", "exercise, part sold": "Options cashed, part kept",
             "vested and sold": "Vest, part sold", "convert and sell": "Units converted",
             "sale, position unchanged": "Sale, stake unchanged",
@@ -470,10 +470,19 @@ def resend(path, payload, key):
         return 0, {"raw": f"no connection: {e.reason}"}
 
 
-def audience_id():
-    """RESEND_AUDIENCE_ID from .env, or nothing. A list send never guesses
-    which audience it is for; the id is on the Audience page's </> panel."""
-    return os.environ.get("RESEND_AUDIENCE_ID", "").strip()
+def list_target():
+    """Who a broadcast goes to, from .env: RESEND_SEGMENT_ID (a segment
+    defined as every subscribed contact, so a new signup joins it by
+    itself), or RESEND_AUDIENCE_ID. A list send never guesses. Resend's
+    legacy "General" audience is an empty segment now; the account's
+    contacts are addressed through a segment that means everyone."""
+    seg = os.environ.get("RESEND_SEGMENT_ID", "").strip()
+    if seg:
+        return {"segment_id": seg}
+    aud = os.environ.get("RESEND_AUDIENCE_ID", "").strip()
+    if aud:
+        return {"audience_id": aud}
+    return {}
 
 
 def paths(root, date):
@@ -543,12 +552,12 @@ def cmd_send(a):
         if not postal:
             print("refusing: POSTAL_ADDRESS is not set (.env); a list email must carry a postal line"); return 2
         h, t, meta = render(md, postal=postal)   # the unsubscribe placeholder Resend fills per recipient
-        aid = audience_id()
-        if not aid:
-            print("refusing: RESEND_AUDIENCE_ID is not set (.env); the id is on Resend's Audience page, the </> panel")
+        target = list_target()
+        if not target:
+            print("refusing: RESEND_SEGMENT_ID is not set (.env); create a segment meaning every subscribed contact on Resend's Audience page and put its id there")
             return 2
         payload = {"from": FROM, "subject": meta.get("subject", "This week's tape"), "html": h, "text": t,
-                   "name": f"Monday tape {a.date}", "audience_id": aid}
+                   "name": f"Monday tape {a.date}", **target}
         status, body = resend("/broadcasts", payload, key)
         print(f"  broadcast draft: {status} {body}")
         if status >= 300 or not body.get("id"):
