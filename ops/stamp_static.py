@@ -30,7 +30,7 @@ from og_image import money, numbers  # noqa: E402
 OPEN_TOP = 0    # keep equal to build_site_data.OPEN_TOP: the seal is the S&P and nothing else
 
 
-def top_rows(panel_p, sp_p, prices_p, founders_p, n=20):
+def top_rows(panel_p, sp_p, prices_p, founders_p, n=10):
     sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
     prices = {}
     for r in csv.DictReader(open(prices_p, encoding="utf-8-sig")):

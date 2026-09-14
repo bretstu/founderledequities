@@ -155,8 +155,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .herobtns{margin-top:18px}
 /* the tape excerpt on the home page: no controls; the full tape a click away */
 .excerpt .tapectl,.excerpt .pronote,.excerpt .actstats{display:none}
-.hometape{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
-.hometape .gopro{text-decoration:none;display:inline-block}
+.hometape{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
 .homesub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .homesub .hs-k{font-family:var(--disp);font-size:18px;font-weight:500;margin-right:4px}
 .homesub input{font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;width:220px}
@@ -295,7 +294,16 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .c-r1 .up{color:#0b7a4b}.c-r1 .down{color:#c22a2a}
 .tfoot{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 4px 0;font-size:12.5px;color:var(--mut);flex-wrap:wrap}
 .tablesec.home .controls{display:none}
-.tablesec:not(.home) .allco{display:none}
+/* the exit from a preview: title left, its full page right, the same on every block */
+.shead .exit{font-family:var(--ui);font-size:13.5px;font-weight:600;color:var(--ink);border:1px solid var(--ink);padding:8px 14px;text-decoration:none;white-space:nowrap;align-self:center}
+.shead .exit:hover{background:var(--ink);color:var(--bg)}
+.tablesec:not(.home) .shead .exit{display:none}
+/* THE PREVIEW IS COMPACT: one line per company, a tighter row, so ten
+   names and the week's tape share a laptop screen */
+.tablesec.home tbody td{padding:7px 10px;font-size:13.5px}
+.tablesec.home td .tk{display:inline;margin-right:8px}
+.tablesec.home td .nm{display:inline;font-size:12px}
+.tablesec.home td.rk{font-size:11px}
 /* THE HOME PAGE'S SIX COLUMNS: company, CEO, founder, ownership, value,
    the last move and its date. Market cap, the year's return and the
    amount are the screener's, on /companies/. */
@@ -605,8 +613,11 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
        filters and export. The controls are in the markup so the two pages
        share one script; on the home page they are hidden and the link at
        the foot opens the rest. -->
+  <!-- ONE MOVE TO LEARN: every preview block on this page is a heading on
+       the left and its full page on the right. -->
   <div class="shead">
     <h2>What they own now</h2>
+    <a class="exit" href="/companies/">All companies &rarr;</a>
 
   </div>
   <div class="sbody">
@@ -656,7 +667,6 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   </div>
   <div class="tfoot">
     <span id="tcount"></span>
-    <a class="gopro allco" href="/companies/" style="text-decoration:none">All companies &rarr;</a>
   </div>
   </div>
 </div></section>
@@ -667,6 +677,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
       <h2>This week's tape.</h2>
       <div class="tapesub" id="tapesub">Founders only · last 7 days · stake-moving trades first.</div>
     </div>
+    <a class="exit" href="/tape/">The full tape &rarr;</a>
   </div>
   <div class="sbody">
     <div class="actstats" id="actstats"></div>
@@ -693,7 +704,6 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     <!-- THE LETTER, ON THE PAGE THAT SHOWS ITS CONTENTS. One field, one
          button, the same signup /tape/ carries. -->
     <div class="hometape">
-      <div class="tapelink"><a class="gopro" href="/tape/">The full tape &rarr;</a></div>
       <form class="homesub" id="homesub" onsubmit="return subscribeHome(event)">
         <span class="hs-k">Monday tape, free.</span>
         <input type="email" id="homeemail" placeholder="you@example.com" required autocomplete="email">
@@ -1830,8 +1840,8 @@ function syncNav(){
 /* Go Pro is a page (PLAN.md section 5). The box stays for signing in. */
 function openPro(){location.href="/pro/";}
 function openSignIn(){$("#promodal").classList.add("on")}
-let TAPE_LIMIT=12;     /* the home page's tape is an excerpt; /tape/ has every row */
-let TABLE_LIMIT=20;    /* the home page's list is twenty rows; /companies/ has every row */
+let TAPE_LIMIT=8;      /* the home page's tape is an excerpt: the buys, the discretionary sales, a plan; /tape/ has every row */
+let TABLE_LIMIT=10;    /* the home page's list is ten rows: a preview whose job is recognition; /companies/ has every row */
 async function subscribeHome(ev){
   ev.preventDefault();
   const email=($("#homeemail").value||"").trim(),m=$("#homemsg"),btn=$("#homesub button");

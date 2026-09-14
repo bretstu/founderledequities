@@ -97,8 +97,8 @@ const P=runPage();
     "sections run hero, what they own now, the tape, footer");
   assert(!idxsrc.includes('id="board"')&&!idxsrc.includes('id="perfsec"')&&!idxsrc.includes('id="bars"')&&!idxsrc.includes("function renderBars(")&&!idxsrc.includes("function perfSeries("),
     "the bars and the index chart are gone from the page (the chart is a static image on Method)");
-  assert(idxsrc.includes('class="tablesec home"')&&idxsrc.includes("let TABLE_LIMIT=20;")&&idxsrc.includes('href="/companies/" style="text-decoration:none">All companies'),
-    "the home table is twenty rows with the rest a click away");
+  assert(idxsrc.includes('class="tablesec home"')&&idxsrc.includes("let TABLE_LIMIT=10;")&&idxsrc.includes('<a class="exit" href="/companies/">All companies'),
+    "the home table is a ten-row preview with the rest a click away");
   assert(idxsrc.includes('<h2>What they own now</h2>')&&!idxsrc.includes("The wealthiest CEOs"),"the heading is the question, not a rich list");
   assert(idxsrc.includes('<a href="/tape/">Tape</a>')&&idxsrc.includes('<a href="/companies/">Companies</a>')&&!idxsrc.includes('>Scoreboard<')&&!idxsrc.includes('>Performance<'),
     "the nav is Tape · Companies · Method · Pro");
@@ -113,9 +113,10 @@ const P=runPage();
     state.pro=true; setWin(365); state.ev.f=false; state.ev.buys=false; state.ev.nocomp=false; renderActivity();
     const rows=actSorted(actRows());
     // THE HOME PAGE IS AN EXCERPT: twelve rows, the full tape a click away
-    assert(idxsrc.includes("let TAPE_LIMIT=12;")&&idxsrc.includes('class="activitysec excerpt"'),"the home page's tape is a twelve-row excerpt");
-    assert((els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===12&&/^12 of [\d,]+ filings/.test(els["#actnote"]._html),"twelve rows, and the note says of how many: "+els["#actnote"]._html.slice(0,40));
-    assert(idxsrc.includes('href="/tape/">The full tape')&&idxsrc.includes('id="homesub"'),"the full tape and the letter's signup sit under the excerpt");
+    assert(idxsrc.includes("let TAPE_LIMIT=8;")&&idxsrc.includes('class="activitysec excerpt"'),"the home page's tape is an eight-row excerpt");
+    assert((els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===8&&/^8 of [\d,]+ filings/.test(els["#actnote"]._html),"eight rows, and the note says of how many: "+els["#actnote"]._html.slice(0,40));
+    assert(idxsrc.includes('<a class="exit" href="/tape/">The full tape &rarr;</a>')&&idxsrc.includes('<a class="exit" href="/companies/">All companies &rarr;</a>'),"both previews exit the same way: heading left, the full page right");
+    assert(idxsrc.includes('id="homesub"'),"the letter's signup sits under the tape excerpt");
     P.TAPE_LIMIT=0;
     assert(rows.length>50,"the window holds the year's filings: "+rows.length);
     // kind groups in order: bought, discretionary, plan, compensation

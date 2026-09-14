@@ -152,12 +152,14 @@ and "Go Pro" (or Account when signed in).
 - `/` in this order (revised 2026-09-14: one list, two depths): hero
   (headline "What the person running the company still owns.", subhead,
   three live stats, two buttons, the quiet line from the copy rule
-  above, the week in one line), **What they own now** (the screener's
-  own table at a depth of twenty rows: the S&P's founders for a free
-  reader, by stake value, the same order as /companies/ at a different
-  depth, the share one click on its header; "All companies" at the
-  foot), **This week's
-  tape** (twelve rows, the Monday-email field), footer. No bar board,
+  above, the week in one spoken sentence with "See what moved" as its
+  door), **What they own now** (a ten-row preview of the screener's
+  table, compact, no filters: the S&P's founders for a free reader, by
+  stake value, the same order as /companies/ at a different depth; its
+  exit "All companies" sits at the right of the heading), **This week's
+  tape** (eight rows, its exit "The full tape" at the right of the
+  heading, the Monday-email field beneath), footer. Every preview block
+  exits the same way: heading left, full page right. No bar board,
   no index chart, no second copy of the list: a block that cannot say
   which of the two jobs it serves does not ship.
 - `/companies/`: the same table in full, with search, thresholds,
