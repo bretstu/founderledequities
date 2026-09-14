@@ -185,13 +185,30 @@ def load_summaries(events_p, hist_p):
                 continue
             if (r.get("label") or "") in UNCHANGED or (r.get("pre_ipo") or "") in ("1", "true", "True"):
                 continue
-            d = ev.setdefault(tk, {"buys": 0, "sells": 0, "last": None})
+            d = ev.setdefault(tk, {"buys": 0, "sells": 0, "last": None, "older": 0, "first": ""})
             d["buys" if r["code"] == "P" else "sells"] += 1
+            fd = r.get("filed") or ""
+            if not d["first"] or fd < d["first"]:
+                d["first"] = fd
             key = (r.get("traded") or r.get("filed") or "", r.get("filed") or "")
             if d["last"] is None or key > d["last"][0]:
                 d["last"] = (key, r)
     except OSError:
         pass
+    # THE ARCHIVE (PLAN.md section 2): the trades filed more than a year
+    # before the newest filing are the Pro record; a free page shows the
+    # year and says how many older trades there are.
+    newest = max((d["last"][0][1] for d in ev.values() if d["last"]), default="")
+    if newest:
+        import datetime as _dt
+        year_ago = (_dt.date.fromisoformat(newest) - _dt.timedelta(days=366)).isoformat()
+        try:
+            for r in csv.DictReader(open(events_p, encoding="utf-8-sig")):
+                tk = (r.get("ticker") or "").upper()
+                if tk in ev and r.get("code") in ("P", "S") and (r.get("filed") or "") < year_ago:
+                    ev[tk]["older"] += 1
+        except OSError:
+            pass
     hist = {}
     try:
         for r in csv.DictReader(open(hist_p, encoding="utf-8-sig")):
@@ -389,17 +406,31 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
         parts.append(f'<section><h2 id="{letter}">{letter}</h2><ul>{"".join(items)}</ul></section>')
     nav = " ".join(f'<a href="#{l}">{l}</a>' for l in sorted(by))
     n = f"{len(rows):,}"
-    page = ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n"
-            "<title>Every company &mdash; Founder Led Equities</title>\n"
-            f"<meta name=\"description\" content=\"Every one of the {n} US public companies on Founder Led Equities, with its chief executive and a page for what they own.\">\n"
-            "<link rel=\"canonical\" href=\"https://founderledequities.com/companies/\">\n"
-            f"<link rel=\"stylesheet\" href=\"/site.css?v={css_v}\">\n"
-            f"<style>{INDEX_CSS}</style></head><body>\n{topnav}\n"
-            "<main class=\"cidx\"><div class=\"wrap\"><h1>Every company</h1>\n"
-            f"<div class=\"sub\">{n} US public companies worth $1B or more, each with a page for what its chief executive owns. S&amp;P 500 current stakes are open; the rest is Pro.</div>\n"
-            f"<div class=\"letters\">{nav}</div>\n{''.join(parts)}\n</div></main>\n"
-            "<footer class=\"foot\"><div class=\"wrap\"><span><b>Founder Led <i>Equities</i></b> &middot; Computed from SEC EDGAR. Not investment advice. &middot; <a href=\"/about.html\">About &amp; method</a></span></div></footer>\n"
-            "</body></html>")
+    index_html_block = (f"<div class=\"cidx\"><div class=\"wrap\"><h2 style=\"font-family:var(--disp);font-weight:500;font-size:24px;letter-spacing:-.01em;color:var(--ink);margin:40px 0 6px\">Every company, A to Z</h2>"
+                        f"<div class=\"sub\">{n} US public companies worth $1B or more, each with a page for what its chief executive owns. S&amp;P 500 current stakes are open; the rest is Pro.</div>"
+                        f"<div class=\"letters\">{nav}</div>{''.join(parts)}</div></div>")
+    # THE SCREENER IN FULL (PLAN.md section 5): the page is the template
+    # companies.html (the table with its controls, the same block the home
+    # page shows twenty rows of) with the A-Z index under it. Without the
+    # template, the index alone.
+    here = os.path.dirname(os.path.abspath(__file__))
+    tpl_p = os.path.join(os.path.dirname(here), "companies.html")
+    if os.path.exists(tpl_p):
+        page = (open(tpl_p, encoding="utf-8").read()
+                .replace("{{TOPNAV}}", topnav)
+                .replace("{{INDEX_CSS}}", INDEX_CSS)
+                .replace("{{INDEX}}", index_html_block)
+                .replace('href="/site.css"', f'href="/site.css?v={css_v}"'))
+        js_p = os.path.join(out_dir, "companies.js")
+        if os.path.exists(js_p):
+            import hashlib as _h
+            v = _h.sha256(open(js_p, "rb").read()).hexdigest()[:10]
+            page = page.replace('src="/companies.js"', f'src="/companies.js?v={v}"')
+    else:
+        page = ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n"
+                "<title>Every company &mdash; Founder Led Equities</title>\n"
+                f"<link rel=\"stylesheet\" href=\"/site.css?v={css_v}\"><style>{INDEX_CSS}</style></head><body>\n{topnav}\n"
+                f"{index_html_block}</body></html>")
     os.makedirs(os.path.join(out_dir, "companies"), exist_ok=True)
     with open(os.path.join(out_dir, "companies", "index.html"), "w", encoding="utf-8") as fh:
         fh.write(page)
@@ -466,6 +497,13 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         os.makedirs(os.path.join(out_dir, "tape"), exist_ok=True)
         with open(os.path.join(out_dir, "tape", "index.html"), "w", encoding="utf-8") as fh:
             fh.write(tape_html)
+    # THE COMPANIES PAGE'S SCRIPT (PLAN.md section 5): the shared block
+    # plus its own; the page itself is assembled in companies_index
+    co_js_p = os.path.join(root, "assets", "companies-page.js")
+    if os.path.exists(co_js_p):
+        co_js = header + shared + "\n\n" + open(co_js_p, encoding="utf-8").read()
+        with open(os.path.join(out_dir, "companies.js"), "w", encoding="utf-8") as fh:
+            fh.write(co_js)
     # THE PRO PAGE (PLAN.md section 5): static, the masthead from index.html
     pro_tpl_p = os.path.join(root, "pro.html")
     if os.path.exists(pro_tpl_p):
@@ -542,6 +580,10 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         title, desc = page_text(r, is_sp, price)
         payload = {"tk": tk, "co": r.get("company") or tk, "ceo": r.get("ceo") or "", "sp": is_sp,
                    "founder": founders.get(tk)}
+        e_sum = ev.get(tk) or {}
+        if e_sum.get("older"):
+            payload["older"] = e_sum["older"]        # trades before the free year: the archive, in Pro
+            payload["since"] = (e_sum.get("first") or "")[:4]
         if is_sp:
             row = {k: r.get(k, "") for k in ("ticker", "company", "ceo", "pct", "shares", "outstanding",
                                              "shares_as_of", "confidence", "cik", "form4_url",
