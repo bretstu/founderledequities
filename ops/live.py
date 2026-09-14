@@ -438,23 +438,10 @@ def main(argv):
                        f"{SITE}/tape/")
         print(f"  test mail to {to or '(LIVE_TO unset)'}: {'sent' if ok else 'FAILED: ' + LAST_MAIL_ERROR}")
         return 0 if ok else 1
-    # ONE PASS AT A TIME. The timer and a run by hand must never overlap:
-    # two passes reading the same memory would both report a filing and
-    # then overwrite each other's memory (2026-09-14, 17:04).
-    import fcntl
-    os.makedirs(os.path.join(ROOT, "weekly"), exist_ok=True)
-    guard = open(os.path.join(ROOT, "weekly", "live-pass.lock"), "w")
-    try:
-        fcntl.flock(guard, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except OSError:
-        print(f"  {dt.datetime.now().strftime('%H:%M')} another pass is running; this one steps aside")
-        return 0
-    client = EdgarClient()
-    uni = universe()
-    os.makedirs(os.path.dirname(SEEN), exist_ok=True)
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    seen = set(open(SEEN, encoding="utf-8").read().split()) if os.path.exists(SEEN) else set()
     if "--show" in argv:
+        client = EdgarClient()
+        uni = universe()
+        seen = set(open(SEEN, encoding="utf-8").read().split()) if os.path.exists(SEEN) else set()
         # THE PROOF: the feed as it stands, every entry, ours marked. A
         # founder's filing shows as "FOUNDER"; a filing by another insider at
         # a company in the universe as "other insider"; the rest as "-".
@@ -481,6 +468,23 @@ def main(argv):
             print(f"  {acc}  {tag:<13} {name[:70]}{'  (seen)' if acc in seen else ''}")
         print(f"  {ours} of them at companies in the universe")
         return 0
+
+    # ONE PASS AT A TIME. The timer and a run by hand must never overlap:
+    # two passes reading the same memory would both report a filing and
+    # then overwrite each other's memory (2026-09-14, 17:04).
+    import fcntl
+    os.makedirs(os.path.join(ROOT, "weekly"), exist_ok=True)
+    guard = open(os.path.join(ROOT, "weekly", "live-pass.lock"), "w")
+    try:
+        fcntl.flock(guard, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        print(f"  {dt.datetime.now().strftime('%H:%M')} another pass is running; this one steps aside")
+        return 0
+    client = EdgarClient()
+    uni = universe()
+    os.makedirs(os.path.dirname(SEEN), exist_ok=True)
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    seen = set(open(SEEN, encoding="utf-8").read().split()) if os.path.exists(SEEN) else set()
     loop = "--loop" in argv
     while True:
         stamp = dt.date.today().isoformat()
