@@ -15,8 +15,7 @@ let VIEW="all",BIG=false;   /* BIG: only rows that moved the stake by 1% or more
 function nav(me){
   /* one button, two lives, on this page too */
   const b=document.querySelector(".topnav .gopro");if(!b)return;
-  if(me&&me.pro){b.textContent="Account";b.setAttribute("href","/api/portal");b.title="Manage your subscription";
-    if(!document.querySelector("#navwatches")){const a=document.createElement("a");a.id="navwatches";a.href="/watches/";a.textContent="Watches";a.className="weekly";b.parentNode.insertBefore(a,b);}}
+  if(me&&me.pro){b.textContent="Account";b.setAttribute("href","/account/");b.title="Your letter, your watches, your billing";}
 }
 
 
@@ -450,7 +449,7 @@ function watchBlock(r){
       ${form}
     </div>`}
     <div class="wmsg" id="wmsg"></div>
-    <div class="wfine">${state.pro?`<a href="/watches/">Manage your watches &rarr;</a>`:`One founder watch is free. A list of names is <a href="/pro/">Pro</a>.`}</div>
+    <div class="wfine">${state.pro?`<a href="/account/">Your watches &rarr;</a>`:`One founder watch is free. A list of names is <a href="/pro/">Pro</a>.`}</div>
   </div>`;
 }
 async function unwatchThis(tk){

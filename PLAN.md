@@ -146,8 +146,13 @@ if it could sit beside a footnote in a quarterly letter, it is right.
 
 ## 5. Pages and nav
 
-Nav: Tape · Companies · Method · Pro; right side "Weekly tape, free"
-and "Go Pro" (or Account when signed in).
+Nav (2026-09-14): Tape · Companies · Method, and one button on the
+right: Go Pro, or Account when signed in. Nothing else in the header:
+the header is where you are, Account is what you get, and the signup
+fields live next to the thing they are about (the letter on / and
+/tape/, the watch on the company page). /account/ is the control
+panel: the letter on or off, the watches with a remove on each, the
+plan and billing, sign out.
 
 - `/` in this order (revised 2026-09-14: one list, two depths): hero
   (headline "What the person running the company still owns.", subhead,

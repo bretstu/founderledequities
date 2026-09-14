@@ -439,7 +439,12 @@ def test_the_watches_have_a_box_a_page_and_two_ways_to_stop(tmp_path):
     all; the free cap is one confirmed name."""
     panel, founders, prices, sp, out = _fixture(tmp_path)
     bcp.main(panel, founders, prices, sp, out)
-    assert os.path.exists(os.path.join(out, "watches", "index.html")) and os.path.exists(os.path.join(out, "watches.js"))
+    assert os.path.exists(os.path.join(out, "account", "index.html")) and os.path.exists(os.path.join(out, "account.js")), "the account page is the control panel"
+    assert "url=/account/" in open(os.path.join(out, "watches", "index.html"), encoding="utf-8").read(), "the old watches address lands on the account"
+    nav = bcp.extract_topnav(open(os.path.join(ROOT, "index.html"), encoding="utf-8").read())
+    assert "Weekly tape, free" not in nav and "navwatches" not in nav and 'class="gopro"' in nav, "the header is where you are: three pages and one button"
+    for f in ("functions/api/letter.js", "functions/api/logout.js"):
+        assert os.path.exists(os.path.join(ROOT, f)), f
     page_js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
     assert "function watchBlock(" in page_js and "band(r)+watchBlock(r)+recordBlock(r)" in page_js, "the box sits under the cards, before the chart, on every page"
     assert "Stopped. No more emails about" in page_js and "No more emails about anyone" in page_js, "the box says what a stop link did"

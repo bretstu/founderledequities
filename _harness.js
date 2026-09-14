@@ -130,7 +130,7 @@ const P=runPage();
     const html=els["#actwrap"]._html;
     renderActivity();
     assert(els["#actwrap"]._html.includes('class="tape"')&&(els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===rows.length,"one table row per filing, once the excerpt's limit is lifted");
-    assert(/<th>Kind<\/th><th>Company<\/th><th>CEO<\/th><th class="n">Amount<\/th><th class="n">New stake<\/th><th>Manner<\/th>/.test(html),"the six columns, in order");
+    assert(/<th>Kind<\/th><th>Company<\/th><th>CEO<\/th><th class="n">Amount<\/th><th class="n">New stake<\/th><th>Manner<\/th><th>Traded<\/th>/.test(html),"the seven columns, in order: the date is its own");
     assert(html.includes("openCompany(")&&html.includes("sec.gov"),"rows are doors and the amount links to the filing");
     assert(!html.includes("DISCRET."),"kinds are spelled out");
     const stats=els["#actstats"]._html;
@@ -409,8 +409,10 @@ const P=runPage();
   assert(!idx.includes("pro=1/.test"),"?pro=1 no longer grants anything");
   assert(idx.includes('"/api/me"')&&idx.includes('"/pro/events.csv"')&&idx.includes('"events-free.csv"'),
     "data loading is session-aware with free fallbacks");
-  assert(idx.includes("function signIn")&&idx.includes("/api/portal"),
-    "sign-in and the account portal are reachable");
+  assert(idx.includes("function signIn")&&idx.includes('location.href="/account/"'),
+    "sign-in is reachable and Account is the control panel (billing is a row on it)");
+  const acct=require("fs").readFileSync("assets/account-page.js","utf8");
+  assert(acct.includes("/api/portal")&&acct.includes("/api/letter")&&acct.includes("remove:true")&&acct.includes("/api/logout"),"the account page holds billing, the letter, the watches and sign out");
   assert(idx.includes('og:title')&&idx.includes('twitter:card')&&idx.includes('rel="canonical"'),
     "a pasted link unfurls as a card");
   {const head=idx.slice(0,idx.indexOf("</head>"));
@@ -431,7 +433,7 @@ const P=runPage();
    assert(idx.includes('<h1 id="thesis">What the person running the company still owns.</h1>'),"the hero says what the site is, the same for every reader");
    assert(idx.includes('href="/tape/">See what moved &rarr;</a>')&&idx.includes('href="/pro/">Go Pro &middot; $15/mo</a>'),"two doors under the headline: what moved, and the plan");
    assert(idx.includes('<p class="thisweek" id="thisweek"></p>')&&idx.includes("sold without a plan")&&idx.includes("already scheduled"),"the week in one spoken sentence above the doors");
-   assert(!idx.includes('<a href="/pro/">Pro</a>'),"one door to Pro: the button, not a nav entry");
+   assert(!idx.includes('<a href="/pro/">Pro</a>')&&!idx.includes("Weekly tape, free")&&!idx.includes("navwatches"),"the header is where you are: Tape · Companies · Method and one button");
    assert(idx.includes("Filings through ")&&!idx.includes("Latest filing read"),"the dates are the footer's, not the hero's");
    assert(idx.includes("the last twelve months are open. Everything else is Pro."),"the copy rule's one-line form under the doors");
    assert(idx.includes('id="thisweek"')&&idx.includes("function weekLine("),"the week in one line under the hero");

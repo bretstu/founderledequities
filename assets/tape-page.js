@@ -14,8 +14,7 @@ async function boot(){
   let me=null;
   try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)me=await q.json();}catch(e){}
   state.pro=!!(me&&me.pro);
-  {const b=document.querySelector(".topnav .gopro");if(b&&state.pro){b.textContent="Account";b.setAttribute("href","/api/portal");b.title="Manage your subscription";
-    if(!document.querySelector("#navwatches")){const a=document.createElement("a");a.id="navwatches";a.href="/watches/";a.textContent="Watches";a.className="weekly";b.parentNode.insertBefore(a,b);}}}
+  {const b=document.querySelector(".topnav .gopro");if(b&&state.pro){b.textContent="Account";b.setAttribute("href","/account/");b.title="Your letter, your watches, your billing";}}
   const [p,f,e]=await Promise.all([
     fetchText(state.pro?["/pro/universe.csv","/universe.csv","/panel.csv"]:["/universe.csv","/panel.csv"]),
     fetchText(["/founders.csv"]),

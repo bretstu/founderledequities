@@ -9,8 +9,7 @@ function hit(){}
 /* one masthead button, two lives, on this page too; a signed-in reader's watches beside it */
 function nav(me){
   const b=document.querySelector(".topnav .gopro");if(!b)return;
-  if(me&&me.pro){b.textContent="Account";b.setAttribute("href","/api/portal");b.title="Manage your subscription";
-    if(!document.querySelector("#navwatches")){const a=document.createElement("a");a.id="navwatches";a.href="/watches/";a.textContent="Watches";a.className="weekly";b.parentNode.insertBefore(a,b);}}
+  if(me&&me.pro){b.textContent="Account";b.setAttribute("href","/account/");b.title="Your letter, your watches, your billing";}
 }
 let SCREEN_COUNTS=null,TABLE_LIMIT=0;
 async function fetchText(paths){

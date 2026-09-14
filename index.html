@@ -107,9 +107,6 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .gopro{font-size:13.5px;font-weight:600;color:var(--bg);background:var(--ink);border-radius:0;padding:9px 18px;border:1px solid var(--ink)}
 .gopro:hover{background:#000}
 .top .gopro{padding:8px 17px}
-/* the second masthead button: the weekly, outlined */
-.top .weekly{font-size:13.5px;font-weight:600;color:var(--ink);background:transparent;border:1px solid var(--ink);border-radius:0;padding:8px 17px;margin-right:10px}
-.top .weekly:hover{background:var(--ink);color:var(--bg);text-decoration:none}
 
 /* ---------- sections ----------
    THE DIVIDER AND THE TITLE, AND NOTHING ELSE.
@@ -293,6 +290,8 @@ td.c-fd,td.c-man{font-size:12.5px;color:var(--mut);white-space:nowrap;overflow:h
 table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .c-r1 .up{color:#0b7a4b}.c-r1 .down{color:#c22a2a}
 .tfoot{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 4px 0;font-size:12.5px;color:var(--mut);flex-wrap:wrap}
+.tablesec.home .tfoot{padding:14px 0 0;font-family:var(--mono);font-size:11px;color:var(--faint)}   /* the same count line as the tape's */
+.tablesec.home .tfoot a{color:var(--faint)}
 .tablesec.home .controls{display:none}
 /* the exit from a preview: title left, its full page right, the same on every block */
 .shead .exit{font-family:var(--ui);font-size:13.5px;font-weight:600;color:var(--ink);border:1px solid var(--ink);padding:8px 14px;text-decoration:none;white-space:nowrap;align-self:center}
@@ -309,7 +308,8 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .tablesec.home .w-rk,.tablesec.home td.rk,.tablesec.home th:first-child,
 .tablesec.home .h-fd,.tablesec.home .c-fd,.tablesec.home .w-fd,
 .tablesec.home .h-ltd,.tablesec.home .c-ltd,.tablesec.home .w-ltd{display:none}
-.tablesec.home .w-co{width:34%}.tablesec.home .w-ceo{width:26%}.tablesec.home .w-own{width:11%}.tablesec.home .w-val{width:11%}.tablesec.home .w-lt{width:18%}
+.tablesec.home .w-co{width:21%}.tablesec.home .w-ceo{width:29%}.tablesec.home .w-own{width:11%}.tablesec.home .w-val{width:11%}.tablesec.home .w-lt{width:28%}
+.tablesec.home td.ceo .cn{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
 .tablesec.home td.c-lt .dt{display:inline}
 td.c-lt .dt{display:none;font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:8px}
 /* THE HOME PAGE'S SIX COLUMNS: company, CEO, founder, ownership, value,
@@ -387,6 +387,8 @@ td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .
 /* THE TAPE (PLAN.md section 5): a weather line, the controls, one table
    grouped by kind; no card grid. Tables are the site. */
 .tapehead{align-items:flex-start}
+.activitysec.excerpt{padding-top:56px}
+.activitysec.excerpt .shead .exit{margin-top:6px}
 .tapesub{font-size:17px;color:var(--mut);margin-top:10px}
 .actstats{font-size:15px;color:var(--mut);margin:18px 0 18px}
 .actstats b{color:var(--ink);font-weight:700}
@@ -400,23 +402,28 @@ td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .
 .pronote{font-family:var(--mono);font-size:11px;color:var(--faint);margin:10px 0 16px}
 .pronote a{color:var(--faint);text-decoration:underline;text-underline-offset:2px}
 .tapewrap{overflow:auto}
-table.tape{width:100%;border-collapse:collapse}
+table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
+/* ONE SHAPE FOR BOTH TABLES: the name columns take the left half, the
+   figures sit in narrow right-aligned columns near their labels, the
+   last two columns are the move and its date. The CEO cell truncates. */
+.tw-kd{width:12%}.tw-co{width:9%}.tw-ceo{width:29%}.tw-v{width:11%}.tw-st{width:11%}.tw-mn{width:16%}.tw-td{width:12%}
 table.tape th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
 table.tape th.n,table.tape td.n{text-align:right}
 table.tape td{padding:9px 10px 9px 0;border-top:1px solid var(--line2);font-size:14px;vertical-align:middle;white-space:nowrap}
 table.tape tr.dayrow{cursor:pointer}
 table.tape tr.dayrow:hover td{background:var(--line2)}
 table.tape tr.dim td{color:var(--faint)}
-table.tape td.kd{width:120px}
+table.tape td.kd{}
 table.tape .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
 table.tape .kind.bought{color:var(--buy)}table.tape .kind.disc{color:#B23428}table.tape .kind.plan{color:var(--mut)}table.tape .kind.comp{color:var(--faint)}
-table.tape td.co{width:90px;font-weight:600}
+table.tape td.co{font-weight:600}
 table.tape td.co a{color:inherit;text-decoration:none}table.tape td.co a:hover{text-decoration:underline}
-table.tape td.ceo{min-width:0;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+table.tape td.ceo{overflow:hidden;text-overflow:ellipsis}
+table.tape td.ceo .cn{display:inline-block;max-width:calc(100% - 40px);overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
 table.tape td.n{font-family:var(--mono);font-size:13px}
 table.tape td.v a{color:inherit;text-decoration:none}table.tape td.v a:hover{text-decoration:underline}
 table.tape td.mn{color:var(--mut);font-size:13px}
-table.tape td.mn .dt{color:var(--faint);font-family:var(--mono);font-size:11px}
+table.tape td.td .dt{color:var(--faint);font-family:var(--mono);font-size:11px;white-space:nowrap}
 .daylist.tall{height:auto;max-height:560px;margin:0;padding:0}
 .firstb{display:inline-block;margin-left:8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--buy);border:1px solid var(--buy);border-radius:999px;padding:1px 6px;vertical-align:middle}
 .actnote{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:14px}
@@ -471,8 +478,7 @@ table.tape td.mn .dt{color:var(--faint);font-family:var(--mono);font-size:11px}
    sentence for the whole section says how many were kept out, and the
    table holds every one -- the record stays complete, the page stops
    explaining. */
-.actnote{margin:10px 2px 0;font-size:12.5px;color:var(--mut);line-height:1.6}
-.actnote a{color:var(--mut);font-weight:600;text-decoration:none;cursor:pointer}
+
 .actnote a:hover{color:var(--blue)}
 /* THE CONTROLS ARE THE SALES COPY.
    A free reader sees the whole instrument panel -- every chip, the search,
@@ -587,7 +593,6 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     <a href="/companies/">Companies</a>
     <a href="about.html">Method</a>
     <button class="devtog" id="devtog" onclick="toggleDev()" title="Developer preview — see the site as a Pro subscriber">Preview: Free</button>
-    <a class="weekly" href="/tape/#subscribe">Weekly tape, free</a>
     <button class="gopro" onclick="openPro()">Go Pro</button>
   </div>
 </div></div>
@@ -1774,10 +1779,11 @@ function actRow(e){
   return `<tr class="dayrow${dim?" dim":""}" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
     <td class="kd"><span class="kind ${k}" title="${k==="bought"?"an open-market purchase that moved the stake":k==="disc"?"a sale the person chose the day of":k==="plan"?"planned: a sale under a pre-set plan (Rule 10b5-1), scheduled long before the trade date":"compensation cashed; the stake did not move the way a purchase or sale does"}">${KIND_WORD[k]}</span></td>
     <td class="co"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></td>
-    <td class="ceo">${e.ceo||coOf(e.tk)}${fMark(e.tk)}${e.fb?`<span class="firstb" title="this person's first open-market purchase on record">first buy</span>`:""}</td>
+    <td class="ceo"><span class="cn" title="${(e.ceo||coOf(e.tk)).replace(/"/g,"&quot;")}">${e.ceo||coOf(e.tk)}</span>${fMark(e.tk)}${e.fb?`<span class="firstb" title="this person's first open-market purchase on record">first buy</span>`:""}</td>
     <td class="n v">${e.u&&!dim?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">${amt}</a>`:amt}</td>
     <td class="n st">${stake}</td>
-    <td class="mn">${tapeManner(e)}<span class="dt" title="the transaction date${e.tf&&e.tf!==e.td?"s":""}; filed ${e.fd}${lagNote(e)}"> · ${spanDay(e,shortDay)}</span></td>
+    <td class="mn">${tapeManner(e)}</td>
+    <td class="td"><span class="dt" title="the transaction date${e.tf&&e.tf!==e.td?"s":""}; filed ${e.fd}${lagNote(e)}">${spanDay(e,shortDay)}</span></td>
   </tr>`;
 }
 /*@shared*/
@@ -1800,7 +1806,7 @@ function renderActivity(){
   const limit=typeof TAPE_LIMIT==="number"?TAPE_LIMIT:0;
   const shown=limit&&rows.length>limit?rows.slice(0,limit):rows;
   $("#actwrap").innerHTML=rows.length
-    ?`<table class="tape"><thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Manner</th></tr></thead><tbody>${shown.map(actRow).join("")}</tbody></table>`
+    ?`<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-st"><col class="tw-mn"><col class="tw-td"></colgroup><thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Manner</th><th>Traded</th></tr></thead><tbody>${shown.map(actRow).join("")}</tbody></table>`
     :`<div class="dayempty">No filings of this kind in this window.</div>`;
   $("#actnote").innerHTML=`${shown.length<rows.length?`${shown.length} of `:""}${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${sealedN?` · the stake after the trade is in <a onclick="openPro()" style="cursor:pointer">Pro</a> for the ${sealedN.toLocaleString()} from companies outside the S&P 500`:""}${compN?` · compensation listed last`:""}`;
   const tw=$("#thisweek");if(tw)tw.innerHTML=weekLine();
@@ -1839,10 +1845,8 @@ function syncNav(){
      /api/me has answered, the server-rendered label stands. */
   const b=document.querySelector(".gopro");
   if(!b||!state.meKnown)return;
-  if(state.pro){b.textContent="Account";b.onclick=()=>{location.href="/api/portal"};
-    b.title="Manage your subscription — cancel, change card, invoices";
-    /* a signed-in reader's watches, one click from anywhere */
-    if(!$("#navwatches")){const a=document.createElement("a");a.id="navwatches";a.href="/watches/";a.textContent="Watches";a.className="weekly";b.parentNode.insertBefore(a,b);}}
+  if(state.pro){b.textContent="Account";b.onclick=()=>{location.href="/account/"};
+    b.title="Your letter, your watches, your billing";}
   else{b.textContent="Go Pro";b.onclick=openPro;b.title="";}
 }
 /* Go Pro is a page (PLAN.md section 5). The box stays for signing in. */
