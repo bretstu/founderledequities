@@ -1490,12 +1490,15 @@ def _refresh(args, log) -> int:
     ppath = path("perf.csv", staged=False)
     page = (time.time() - os.path.getmtime(ppath)) / 86400 \
         if os.path.exists(ppath) else 999
-    if page >= 6:
+    if page >= 6 and os.environ.get("FLE_QUICK") != "1":
         run("perf", lambda: cmd_perf(ns(
             panel=path("panel.csv"), out=path("perf.csv"), store=PRICE_STORE)))
     else:
-        log(f"perf: {page:.1f} days old, skipping (weekly)")
-        shutil.copy2(ppath, path("perf.csv"))
+        # a quick run (ops/now.sh) leaves the weekly stage to the nightly:
+        # month-end closes do not change at noon
+        log(f"perf: {page:.1f} days old, skipping ({'quick run' if os.environ.get('FLE_QUICK') == '1' else 'weekly'})")
+        if os.path.exists(ppath):
+            shutil.copy2(ppath, path("perf.csv"))
 
     # 6.5 -- free variants. The paywall is only as real as the files behind
     # it: with everything at public URLs, a blur is an honour system. The

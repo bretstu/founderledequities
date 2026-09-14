@@ -2,8 +2,10 @@
 # THE SITE AS OF RIGHT NOW. The nightly, minus the price stage (closes do
 # not change intraday): every filing on EDGAR at this minute, the walk for
 # whoever filed, the events, the pages, the deploy, the alerts, the drafts.
-# About three minutes. For a weekday when a founder bought this morning
-# and the post should not wait until tomorrow.
+# About ten minutes (the scan of 2,135 filing feeds is the floor). Best run
+# around 6:30 p.m. Eastern on a weekday, after the day's filing wave
+# (EDGAR accepts until 10 p.m.; most Form 4s land after the close), when
+# a founder bought that day and the post should not wait until tomorrow.
 #
 #   ops/now.sh
 set -euo pipefail
