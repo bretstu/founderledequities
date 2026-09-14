@@ -15,6 +15,7 @@ SAMPLE = '''<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom">
 <entry><title>4 - Gu Paul (0001834231) (Reporting)</title><link rel="alternate" href="https://www.sec.gov/Archives/edgar/data/1834231/000164763926000123/0001647639-26-000123-index.htm"/></entry>
 <entry><title>4 - Upstart Holdings, Inc. (0001647639) (Issuer)</title><link rel="alternate" href="https://www.sec.gov/Archives/edgar/data/1647639/000164763926000124/0001647639-26-000124-index.htm"/></entry>
 <entry><title>4 - Some Director (0009999999) (Reporting)</title><link rel="alternate" href="https://www.sec.gov/Archives/edgar/data/9999999/000164763926000124/0001647639-26-000124-index.htm"/></entry>
+<entry><title>424B2 - JPMorgan Chase Financial Co. LLC (0001665650) (Filer)</title><link rel="alternate" href="https://www.sec.gov/Archives/edgar/data/1665650/000191870426027509/0001918704-26-027509-index.htm"/></entry>
 </feed>'''
 
 
@@ -36,7 +37,8 @@ def test_the_feed_is_narrowed_to_the_ceo(monkeypatch):
     assert len(lines) == 1 and "Paul Gu bought $1.3M" in lines[0] and "/company/UPST/" in lines[0]
     assert "Stake as of the 2026-06-01 filing: 1.38%; the new figure lands with ops/now.sh" in lines[0], "no second calculator: the site's own figure, labelled"
     assert "0001647639-26-000124" in seen, "a director's filing is remembered and never reported"
-    assert len(seen) == 2, "every filing on the feed is remembered, so the next pass knows its frontier"
+    assert len(seen) == 2, "every Form 4 on the feed is remembered (a prospectus is not a filing here), so the next pass knows its frontier"
+    assert "0001918704-26-027509" not in live.feed(Client()), "only Form 4 and 4/A"
     assert live.one_pass(Client(), uni, seen) == ([], []), "nothing is reported twice"
 
 

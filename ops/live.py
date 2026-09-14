@@ -61,7 +61,7 @@ from fle import config as _config  # noqa: E402  (loads .env)
 from fle.config import SETTINGS  # noqa: E402
 
 FEED = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=4&owner=include&count=100&output=atom&start={start}"
-PAGES = 6   # 6 x ~50 filings: about half an hour of the evening rush
+PAGES = 8   # 8 pages of 100 entries; about 20 Form 4s a page after the filter
 SITE = "https://founderledequities.com"
 SEEN = os.path.join(ROOT, "weekly", "live-seen.txt")
 OUT = os.path.join(ROOT, "drafts", "x-live.md")
@@ -119,6 +119,10 @@ def feed(client, start=0):
     filings = {}
     for e in root.findall("a:entry", ns):
         title = e.findtext("a:title", default="", namespaces=ns)
+        # EDGAR's type=4 matches any form with a 4 in it (424B2 prospectuses,
+        # fund filings); only Form 4 and its amendment are wanted
+        if not (title.startswith("4 - ") or title.startswith("4/A - ")):
+            continue
         link = (e.find("a:link", ns).get("href") if e.find("a:link", ns) is not None else "") or ""
         m = acc_of.search(link)
         if not m:
