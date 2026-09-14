@@ -2,7 +2,8 @@
 """THE WATCHER (distribution): a chief executive's Form 4, the minute it lands.
 
     python3 ops/live.py           # one pass: read EDGAR's latest Form 4s, report the new ones
-    python3 ops/live.py --loop    # every ten minutes until stopped
+    python3 ops/live.py --show    # what is on the feed right now, and which are ours (proof)
+    python3 ops/live.py --loop    # every five minutes until stopped
 
 Every pass reads EDGAR's feed of the most recent Form 4s (one request),
 keeps the filings whose issuer is a founder-led company in the universe
@@ -327,6 +328,33 @@ def main(argv):
     os.makedirs(os.path.dirname(SEEN), exist_ok=True)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     seen = set(open(SEEN, encoding="utf-8").read().split()) if os.path.exists(SEEN) else set()
+    if "--show" in argv:
+        # THE PROOF: the feed as it stands, every entry, ours marked. A
+        # founder's filing shows as "FOUNDER"; a filing by another insider at
+        # a company in the universe as "other insider"; the rest as "-".
+        filings = feed(client)
+        by_cik = {}
+        with open(os.path.join(ROOT, "panel.csv"), encoding="utf-8-sig", newline="") as fh:
+            for r in csv.DictReader(fh):
+                try:
+                    by_cik[int(r.get("cik") or 0)] = r["ticker"].upper()
+                except ValueError:
+                    pass
+        print(f"  {len(filings)} Form 4 filings on EDGAR's feed right now (the latest 100 accepted)")
+        ours = 0
+        for acc, d in sorted(filings.items(), key=lambda kv: kv[0], reverse=True):
+            iss = d["issuer"]
+            if iss in uni:
+                tag = "FOUNDER  " if uni[iss]["owner"] in d["reporters"] else "other insider"
+                name = f"{uni[iss]['tk']} · {uni[iss]['ceo'] if tag.startswith('FOUNDER') else d['title'][4:]}"
+                ours += 1
+            elif iss in by_cik:
+                tag, name, ours = "in universe", f"{by_cik[iss]} · {d['title'][4:]}", ours + 1
+            else:
+                tag, name = "-", d["title"][4:]
+            print(f"  {acc}  {tag:<13} {name[:70]}{'  (seen)' if acc in seen else ''}")
+        print(f"  {ours} of them at companies in the universe")
+        return 0
     loop = "--loop" in argv
     while True:
         stamp = dt.date.today().isoformat()
