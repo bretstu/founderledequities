@@ -1,11 +1,11 @@
 [Unit]
-Description=Every ten minutes through EDGAR's filing day (6 a.m. to 10:30 p.m. Eastern, weekdays)
+Description=Every five minutes through EDGAR's filing day (6 a.m. to 10:30 p.m. Eastern, weekdays)
 
 [Timer]
 # EDGAR takes filings 6 a.m. to 10 p.m. Eastern on business days; a filing
 # accepted after 5:30 p.m. is dated the next business day but is on the
 # feed at once, which is when a post is timely.
-OnCalendar=Mon..Fri *-*-* 06..22:00,10,20,30,40,50 America/New_York
+OnCalendar=Mon..Fri *-*-* 06..22:00/5 America/New_York
 Persistent=false
 
 [Install]

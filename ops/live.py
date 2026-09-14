@@ -5,19 +5,35 @@
     python3 ops/live.py --loop    # every ten minutes until stopped
 
 Every pass reads EDGAR's feed of the most recent Form 4s (one request),
-keeps the filings whose issuer is in the universe and whose reporting
-owner is that company's chief executive (both ids are in the panel), and
-for each one not seen before fetches the filing through the pipeline's
+keeps the filings whose issuer is a founder-led company in the universe
+and whose reporting owner is that founder (both ids are in the panel),
+and for each one not seen before reads the filing through the pipeline's
 own parser, so the kind is the site's kind: an open-market purchase, a
 discretionary sale, a sale under a pre-set plan, or compensation. Each
-becomes a line in drafts/x-live.md with the time it landed; a decision
-(a purchase or a discretionary sale) is also mailed to LIVE_TO from .env,
-the same minute. The stake after the trade needs the walk, so the line
-says the amount and the stake as of the previous filing; ops/now.sh (or
-the nightly) brings the page up to date. The company URL is right at once.
+becomes a line in drafts/live-<day>.md with the time it landed; a
+decision (a purchase or a discretionary sale) is also mailed to LIVE_TO
+from .env, the same minute.
 
-EDGAR takes filings 6 a.m. to 10 p.m. Eastern on business days; most Form
-4s land after the close. The pipeline suggests; a person posts.
+ONE CALCULATOR, RUN SOONER. The watcher does not compute ownership; the
+walk runs one way, in the nightly and in ops/now.sh, with its checkpoint,
+its exclusions and its verification. So when a founder's DECISION lands
+(a purchase or a discretionary sale) the watcher runs ops/now.sh itself,
+the whole pipeline, waits the ten minutes, reads the event the run
+published, and mails the finished sentence with the stake after the
+trade: the number the page now shows, because the page was just built
+from it. A plan or a compensation filing is written down and mailed
+without a run. One run at a time; decisions that land during a run are
+carried into the next.
+
+WHAT IT KEEPS: nothing worth keeping. The day's lines, deleted after
+seven days; the ids of filings already seen, trimmed to a month. Neither
+is in git. The nightly is the record and never depends on this.
+
+EDGAR's feed shows the latest 100 Form 4s; in the evening rush that can
+be less than five minutes of filings, so the timer runs every five and a
+pass in which every entry is new is logged as an overflow (the nightly
+catches whatever fell between). EDGAR takes filings 6 a.m. to 10 p.m.
+Eastern on business days. The pipeline suggests; a person posts.
 """
 import csv
 import datetime as dt
@@ -106,32 +122,17 @@ def feed(client):
 
 
 def describe(client, uni, cik, acc):
-    """The filing as the site sees it: (kind, amount, label, traded date,
-    stake after, change in the holding). THE SAME CALCULATOR AS THE
-    NIGHTLY: the company is walked with the pipeline's own `history`
-    command into a scratch file, and the event is built against that walk,
-    so the stake after the trade reported here is the number the nightly
-    will publish, not a second estimate. The scratch file is discarded;
-    the pipeline's own files are never touched."""
-    import subprocess
-    import tempfile
-    from fle.events import build_events, load_history
+    """The filing as the site's parser reads it: (kind, amount, label,
+    traded date). No walk, no stake after (see the module note)."""
+    from fle.events import build_events
     # the company's submissions feed must be fresh: drop the cached copy
     try:
         os.remove(client._cache_path(f"https://data.sec.gov/submissions/CIK{cik:010d}.json"))
     except OSError:
         pass
     u = uni[cik]
-    history = None
-    with tempfile.TemporaryDirectory() as td:
-        hpath = os.path.join(td, "history.csv")
-        r = subprocess.run([sys.executable, "-m", "fle.cli", "history", "--universe", os.path.join(ROOT, "panel.csv"),
-                            "--tickers", u["tk"], "--out", hpath, "--workers", "1"],
-                           cwd=ROOT, capture_output=True, text=True, timeout=600)
-        if r.returncode == 0 and os.path.exists(hpath):
-            history = load_history(hpath)
     since = (dt.date.today() - dt.timedelta(days=10)).isoformat()
-    evs = build_events(client, cik, u["owner"], u["tk"], u["ceo"], since=since, max_filings=6, history=history)
+    evs = build_events(client, cik, u["owner"], u["tk"], u["ceo"], since=since, max_filings=6, history=None)
     out = []
     for e in evs:
         if e.accession != acc or e.code not in ("P", "S"):
@@ -144,7 +145,7 @@ def describe(client, uni, cik, acc):
             kind = "planned"
         else:
             kind = "discretionary"
-        out.append((kind, e.value, e.label, e.traded, getattr(e, "pct_after", None), getattr(e, "pct_of_holding", None)))
+        out.append((kind, e.value, e.label, e.traded))
     return out
 
 
@@ -163,8 +164,86 @@ def send_mail(to, subject, text):
         return False
 
 
+def published_event(acc):
+    """The event as the run just published it, from events.csv."""
+    try:
+        with open(os.path.join(ROOT, "events.csv"), encoding="utf-8-sig", newline="") as fh:
+            for r in csv.DictReader(fh):
+                if r.get("accession") == acc and r.get("code") in ("P", "S"):
+                    return r
+    except OSError:
+        return None
+    return None
+
+
+def sentence(u, r):
+    """The finished line, in the Monday thread's words, from the published event."""
+    code = r.get("code")
+    v = None
+    try:
+        v = float(r.get("value") or 0) if not (r.get("price_flag") or "") else None
+    except ValueError:
+        v = None
+    amt = f" {money(v)}" if v else ""
+    how = ("on the open market" if code == "P" else
+           "under a pre-set plan" if (r.get("plan") or "") == "plan" else "at their own discretion")
+    verb = "bought" if code == "P" else "sold"
+    mv = ""
+    try:
+        ch = float(r.get("pct_of_holding") or "")
+        if abs(ch) >= 0.05:
+            mag = f"{abs(ch):.0f}%" if abs(ch) >= 10 else f"{abs(ch):.1f}%" if abs(ch) >= 1 else f"{abs(ch):.2f}%"
+            mv = f", {'added ' + mag + ' to' if ch > 0 else 'sold ' + mag + ' of'} their stake"
+    except ValueError:
+        pass
+    after = ""
+    try:
+        a = float(r.get("pct_after") or "")
+        after = f" Now owns {a:.3f}%." if a < 1 else f" Now owns {a:.2f}%."
+    except ValueError:
+        pass
+    return f"{u['ceo']} {verb}{amt} of {u['tk']} {how}{mv}.{after}\n{SITE}/company/{u['tk']}/"
+
+
+def publish_and_mail(pending, uni):
+    """ops/now.sh once for everything pending, then one mail per decision
+    with the published number. Returns the lines to log."""
+    import subprocess
+    lock = os.path.join(ROOT, "weekly", "live-run.lock")
+    if os.path.exists(lock) and time.time() - os.path.getmtime(lock) < 1800:
+        return [f"  a run is in progress; {len(pending)} decision(s) wait for the next pass"], pending
+    open(lock, "w").write(str(os.getpid()))
+    try:
+        r = subprocess.run(["bash", os.path.join(HERE, "now.sh")], cwd=ROOT, capture_output=True, text=True, timeout=1800)
+        ok = r.returncode == 0
+    except Exception as e:  # noqa: BLE001
+        ok = False
+        r = None
+    finally:
+        try:
+            os.remove(lock)
+        except OSError:
+            pass
+    lines = []
+    still = []
+    for acc, cik in pending:
+        u = uni[cik]
+        ev = published_event(acc) if ok else None
+        if ev is None:
+            still.append((acc, cik))
+            lines.append(f"  {u['tk']}: the run did not publish this filing yet; it waits for the next pass")
+            continue
+        text = sentence(u, ev)
+        sent = send_mail(os.environ.get("LIVE_TO", ""), f"{u['ceo']} {'bought' if ev.get('code') == 'P' else 'sold'} {u['tk']}: the page is live", text)
+        lines.append(f"- {dt.datetime.now().strftime('%H:%M')} published · {text.replace(chr(10), ' · ')}{'  ← mailed' if sent else ''}")
+    return lines, still
+
+
 def one_pass(client, uni, seen):
     filings = feed(client)
+    if filings and all(acc not in seen for acc in filings) and len(filings) >= 40:
+        print(f"  {dt.datetime.now().strftime('%H:%M')} the feed overflowed since the last pass "
+              f"({len(filings)} filings, all new): some may have fallen between; the nightly catches them")
     new = []
     for acc, d in filings.items():
         if acc in seen or d["issuer"] not in uni:
@@ -175,6 +254,7 @@ def one_pass(client, uni, seen):
             continue
         new.append((acc, d["issuer"]))
     lines = []
+    decisions = []
     now = dt.datetime.now().strftime("%H:%M")
     for acc, cik in new:
         u = uni[cik]
@@ -183,27 +263,22 @@ def one_pass(client, uni, seen):
         except Exception as e:  # noqa: BLE001
             parts = []
             lines.append(f"- {now} {u['tk']} · {u['ceo']} filed a Form 4 (could not read it: {str(e)[:60]}) · https://www.sec.gov/Archives/edgar/data/{cik}/{acc.replace('-', '')}/")
-        for kind, value, label, traded, after, change in parts:
+        for kind, value, label, traded in parts:
             verb = {"bought": "bought", "discretionary": "sold at their own discretion",
                     "planned": "sold under a pre-set plan", "compensation": "compensation:"}[kind]
             amt = f" {money(value)}" if value else ""
-            if after is not None:
-                mv = ""
-                if change is not None and abs(change) >= 0.05:
-                    mag = f"{abs(change):.0f}%" if abs(change) >= 10 else f"{abs(change):.1f}%" if abs(change) >= 1 else f"{abs(change):.2f}%"
-                    mv = f", {'added ' + mag + ' to' if change > 0 else 'sold ' + mag + ' of'} their stake"
-                stake = f"{mv}. Now owns {after:.3f}%." if after < 1 else f"{mv}. Now owns {after:.2f}%."
-            else:
-                stake = f". Stake as of the {u['asof']} filing: {float(u['pct']):.2f}%." if u["pct"] else "."
-            line = (f"- {now} {u['tk']} · {u['ceo']} {verb}{amt}{' (' + label + ')' if kind == 'compensation' else ''}, traded {traded}{stake}"
+            stake = (f" Stake as of the {u['asof']} filing: {float(u['pct']):.2f}%; the new figure lands with ops/now.sh."
+                     if u["pct"] else "")
+            line = (f"- {now} {u['tk']} · {u['ceo']} {verb}{amt}{' (' + label + ')' if kind == 'compensation' else ''}, traded {traded}.{stake}"
                     f"\n  {SITE}/company/{u['tk']}/ · filing https://www.sec.gov/Archives/edgar/data/{cik}/{acc.replace('-', '')}/")
             lines.append(line)
             if kind in ("bought", "discretionary"):
-                sent = send_mail(os.environ.get("LIVE_TO", ""), f"{u['ceo']} {'bought' if kind == 'bought' else 'sold'} {u['tk']} ({money(value) if value else 'amount unstated'})", line)
-                if sent:
-                    lines[-1] += "  ← mailed"
+                decisions.append((acc, cik))
+            else:
+                # a plan or compensation: written down and mailed as it is; no run
+                send_mail(os.environ.get("LIVE_TO", ""), f"{u['ceo']}: {kind} filing at {u['tk']}", line)
         seen.add(acc)
-    return lines
+    return lines, decisions
 
 
 def main(argv):
@@ -215,21 +290,46 @@ def main(argv):
     seen = set(open(SEEN, encoding="utf-8").read().split()) if os.path.exists(SEEN) else set()
     loop = "--loop" in argv
     while True:
-        lines = one_pass(client, uni, seen)
         stamp = dt.date.today().isoformat()
+        try:
+            lines, decisions = one_pass(client, uni, seen)
+        except Exception as e:  # noqa: BLE001 - EDGAR down, a torn feed: the next pass tries again
+            print(f"  {dt.datetime.now().strftime('%H:%M')} pass failed ({str(e)[:80]}); the next one tries again")
+            lines, decisions = [], []
+        # decisions from this pass and any left waiting by an earlier one
+        pend_p = os.path.join(ROOT, "weekly", "live-pending.txt")
+        pending = list(decisions)
+        if os.path.exists(pend_p):
+            for ln in open(pend_p, encoding="utf-8").read().split():
+                acc, cik = ln.split(":")
+                if (acc, int(cik)) not in pending:
+                    pending.append((acc, int(cik)))
+        if pending and "--no-publish" not in argv:
+            more, still = publish_and_mail(pending, uni)
+            lines += more
+            with open(pend_p, "w", encoding="utf-8") as fh:
+                fh.write("\n".join(f"{a}:{c}" for a, c in still) + ("\n" if still else ""))
+        out = os.path.join(os.path.dirname(OUT), f"live-{stamp}.md")
         if lines:
-            with open(OUT, "a", encoding="utf-8") as fh:
-                if os.path.getsize(OUT) == 0:
-                    fh.write("# Live: a CEO's Form 4 the minute it landed · the pipeline suggests, you post\n\n")
-                fh.write(f"## {stamp}\n" + "\n".join(lines) + "\n\n")
+            new_file = not os.path.exists(out)
+            with open(out, "a", encoding="utf-8") as fh:
+                if new_file:
+                    fh.write(f"# {stamp}: a founder's Form 4 the minute it landed · the pipeline suggests, you post\n\n")
+                fh.write("\n".join(lines) + "\n")
             print("\n".join(lines))
         else:
             print(f"  {dt.datetime.now().strftime('%H:%M')} nothing new among the latest Form 4s")
+        # what it keeps: a week of day files, a month of seen ids
+        for f in os.listdir(os.path.dirname(OUT)):
+            m = re.fullmatch(r"live-(\d{4}-\d{2}-\d{2})\.md", f)
+            if m and m.group(1) < (dt.date.today() - dt.timedelta(days=7)).isoformat():
+                os.remove(os.path.join(os.path.dirname(OUT), f))
+        # an accession's middle is the filing year; older than last year's is not on any live feed
         with open(SEEN, "w", encoding="utf-8") as fh:
-            fh.write("\n".join(sorted(seen)[-5000:]) + "\n")
+            fh.write("\n".join(sorted(seen)[-4000:]) + "\n")
         if not loop:
             return 0
-        time.sleep(600)
+        time.sleep(300)
 
 
 if __name__ == "__main__":

@@ -8,3 +8,4 @@ Type=oneshot
 User=bretstu
 WorkingDirectory=/home/bretstu/projects/founderledequities
 ExecStart=/usr/bin/python3 ops/live.py
+TimeoutStartSec=2400
