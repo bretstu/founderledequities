@@ -60,7 +60,8 @@ sys.path.insert(0, ROOT)
 from fle import config as _config  # noqa: E402  (loads .env)
 from fle.config import SETTINGS  # noqa: E402
 
-FEED = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=4&owner=include&count=100&output=atom"
+FEED = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=4&owner=include&count=100&output=atom&start={start}"
+PAGES = 6   # 6 x ~50 filings: about half an hour of the evening rush
 SITE = "https://founderledequities.com"
 SEEN = os.path.join(ROOT, "weekly", "live-seen.txt")
 OUT = os.path.join(ROOT, "drafts", "x-live.md")
@@ -106,11 +107,12 @@ def universe():
     return out
 
 
-def feed(client):
-    """The latest Form 4s: accession -> {issuer cik, reporter ciks}. EDGAR
-    lists each filing once per party, so the same accession appears for
-    the issuer and for each reporting owner."""
-    body = client.get(FEED, use_cache=False)
+def feed(client, start=0):
+    """One page of the latest Form 4s: accession -> {issuer cik, reporter
+    ciks}. EDGAR lists each filing once per party, so the same accession
+    appears for the issuer and for each reporting owner: 100 entries is
+    about 50 filings."""
+    body = client.get(FEED.format(start=start), use_cache=False)
     root = ET.fromstring(body)
     ns = {"a": "http://www.w3.org/2005/Atom"}
     acc_of = re.compile(r"/data/(\d+)/\d+/(\d{10}-\d{2}-\d{6})")
@@ -284,17 +286,31 @@ def publish_and_mail(pending, uni):
 
 
 def one_pass(client, uni, seen):
-    filings = feed(client)
-    if seen and filings and all(acc not in seen for acc in filings) and len(filings) >= 40:
+    # READ BACK TO THE LAST PASS'S FRONTIER. In the evening rush more than
+    # fifty Form 4s can land in five minutes, so one page is not enough:
+    # pages are read, newest first, until one holds a filing already seen
+    # (proof nothing fell between) or PAGES are exhausted (logged as an
+    # overflow; the nightly catches whatever fell between). Every filing is
+    # remembered, ours or not, so the frontier is real.
+    filings = {}
+    reached = not seen
+    for i in range(PAGES):
+        page = feed(client, start=i * 100)
+        if not page:
+            break
+        filings.update(page)
+        if any(acc in seen for acc in page):
+            reached = True
+            break
+    if not reached:
         print(f"  {dt.datetime.now().strftime('%H:%M')} the feed overflowed since the last pass "
-              f"({len(filings)} filings, all new): some may have fallen between; the nightly catches them")
+              f"({len(filings)} filings read, none seen before): some may have fallen between; the nightly catches them")
     new = []
     for acc, d in filings.items():
-        if acc in seen or d["issuer"] not in uni:
+        if acc in seen:
             continue
-        u = uni[d["issuer"]]
-        if u["owner"] not in d["reporters"]:
-            seen.add(acc)          # a director's or an officer's filing: not the CEO's
+        if d["issuer"] not in uni or uni[d["issuer"]]["owner"] not in d["reporters"]:
+            seen.add(acc)          # not a founder's own filing: remembered, never reported
             continue
         new.append((acc, d["issuer"]))
     lines = []
@@ -332,7 +348,7 @@ def main(argv):
         # THE PROOF: the feed as it stands, every entry, ours marked. A
         # founder's filing shows as "FOUNDER"; a filing by another insider at
         # a company in the universe as "other insider"; the rest as "-".
-        filings = feed(client)
+        filings = feed(client, 0)
         by_cik = {}
         with open(os.path.join(ROOT, "panel.csv"), encoding="utf-8-sig", newline="") as fh:
             for r in csv.DictReader(fh):
@@ -393,7 +409,7 @@ def main(argv):
                 os.remove(os.path.join(os.path.dirname(OUT), f))
         # an accession's middle is the filing year; older than last year's is not on any live feed
         with open(SEEN, "w", encoding="utf-8") as fh:
-            fh.write("\n".join(sorted(seen)[-4000:]) + "\n")
+            fh.write("\n".join(sorted(seen)[-8000:]) + "\n")
         if not loop:
             return 0
         time.sleep(300)

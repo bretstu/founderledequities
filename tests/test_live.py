@@ -20,7 +20,8 @@ SAMPLE = '''<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom">
 
 class Client:
     def get(self, url, use_cache=False):
-        return SAMPLE
+        # one page of filings, then an empty one
+        return SAMPLE if "start=0" in url else '<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"></feed>'
 
 
 def test_the_feed_is_narrowed_to_the_ceo(monkeypatch):
@@ -35,6 +36,7 @@ def test_the_feed_is_narrowed_to_the_ceo(monkeypatch):
     assert len(lines) == 1 and "Paul Gu bought $1.3M" in lines[0] and "/company/UPST/" in lines[0]
     assert "Stake as of the 2026-06-01 filing: 1.38%; the new figure lands with ops/now.sh" in lines[0], "no second calculator: the site's own figure, labelled"
     assert "0001647639-26-000124" in seen, "a director's filing is remembered and never reported"
+    assert len(seen) == 2, "every filing on the feed is remembered, so the next pass knows its frontier"
     assert live.one_pass(Client(), uni, seen) == ([], []), "nothing is reported twice"
 
 
