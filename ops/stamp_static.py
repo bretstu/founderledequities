@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from og_image import money, numbers  # noqa: E402
 
 
-OPEN_TOP = 25   # keep equal to build_site_data.OPEN_TOP
+OPEN_TOP = 0    # keep equal to build_site_data.OPEN_TOP: the seal is the S&P and nothing else
 
 
 def top_rows(panel_p, sp_p, prices_p, founders_p, n=20):
@@ -64,10 +64,12 @@ def top_rows(panel_p, sp_p, prices_p, founders_p, n=20):
     # the company, the order the live render draws; the dollar view is the
     # toggle. The top OPEN_TOP by share are everyone's, as build_site_data
     # ranks them.
+    # THE HOME PREVIEW (PLAN.md section 5, 2026-09-14): founders only, the
+    # open set, by share of the company; a free reader's first twenty rows
+    # carry full figures and the line beneath says how many more match in
+    # Pro. (OPEN_TOP is 0: the seal is the S&P and nothing else.)
+    rows = [r for r in rows if r["f"][0] == "yes" and not r["sealed"]]
     rows.sort(key=lambda x: -x["pct"])
-    for i, r in enumerate(rows):
-        if i < OPEN_TOP:
-            r["sealed"] = False
     return rows[:n]
 
 
@@ -119,8 +121,9 @@ def rows_html(rows, last, outstanding, prices):
             val = money(r["val"]) if r["val"] else ""
         if lt:
             code = lt.get("code")
-            kind = f'<span class="{"up" if code == "P" else "down"}">{"Bought" if code == "P" else "Sold"}</span>'
-            man = "Planned" if (lt.get("plan") or "") == "plan" else "Discretionary"
+            k = "bought" if code == "P" else ("plan" if (lt.get("plan") or "") == "plan" else "disc")
+            word = {"bought": "Bought", "plan": "Planned", "disc": "Discretionary"}[k]
+            kind = f'<span class="kind {k}">{word}</span>'
             try:
                 v = float(lt.get("value") or 0)
             except ValueError:
@@ -130,7 +133,7 @@ def rows_html(rows, last, outstanding, prices):
             when = html.escape(lt.get("traded") or lt.get("filed") or "")
             ltd = f'<span class="ltd">{when}</span>'
         else:
-            kind, man, amt, ltd = '<span class="nopr"></span>', "", '<span class="nopr"></span>', '<span class="nopr"></span>'
+            kind, amt, ltd = '<span class="nopr"></span>', '<span class="nopr"></span>', '<span class="nopr"></span>'
         out.append(
             f'<tr onclick="openCompany(\'{tk}\')" tabindex="0">'
             f'<td class="rk">{i + 1:02d}</td>'
@@ -141,7 +144,7 @@ def rows_html(rows, last, outstanding, prices):
             f'<td class="n num">{val}</td>'
             f'<td class="n num c-mc">{money(mcap) if mcap else ""}</td>'
             f'<td class="n num c-r1"><span class="nopr"></span></td>'
-            f'<td class="c-lt">{kind}</td><td class="c-man">{man}</td><td class="n num c-amt">{amt}</td><td class="c-ltd">{ltd}</td>'
+            f'<td class="c-lt">{kind}</td><td class="n num c-amt">{amt}</td><td class="c-ltd">{ltd}</td>'
             f'</tr>')
     return "".join(out)
 

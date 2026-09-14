@@ -59,7 +59,7 @@ RANK_COLS = ["rank_value", "rank_pct"]
 # and the stakes at its top are the least secret numbers on the site. The
 # top 25 by value and by share are open in the free file; the rest of a
 # sealed row's numbers stay behind the seal.
-OPEN_TOP = 25
+OPEN_TOP = 0    # THE SEAL IS THE S&P AND NOTHING ELSE (PLAN.md section 2). The top-25 exception of the free-tier week put the Pro catalog's front page on the home page once the list sorted by share (2026-09-14).
 # what a sealed row must not carry: anything that states or bounds the stake
 MASKED_COLS = ("pct", "shares", "form4_url", "cover_url",
                "excluded_shares", "excluded_detail", "shares_tabled")

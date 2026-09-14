@@ -142,7 +142,7 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     out = tmp_path / "index.html"
     src = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
     out.write_text(src, encoding="utf-8")
-    st.main(panel, founders, prices, sp, str(out))
+    st.main(panel, sp, prices, founders, str(out))
     page = out.read_text(encoding="utf-8")
     assert '<h1 id="thesis">What the person running the company still owns.</h1>' in page, \
         "the headline is the purpose, the same for every reader, and needs no stamp"
@@ -156,9 +156,11 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     assert "of them are sealed" not in page, "no second Go Pro: the nav button is the one call"
     assert 'data-pro="' not in page, "one strip, no second copy to swap in"
     assert '<tbody id="tbody"><tr' in page and 'href="/company/TSLA/"' in page and ">28.44%<" in page, "the table's first rows are real HTML, by share of the company"
-    # a sealed company is a row in its rank, named, its figures blurred
-    assert 'href="/company/SEALD/"' in page and 'class="sealed" data-shape="0.000%"' in page, \
-        "a sealed company is in the table with its name and a blurred placeholder"
+    # THE HOME PREVIEW IS THE OPEN SET: a sealed company is not in the free
+    # reader's twenty rows (it is on /companies/, named and blurred); the
+    # line beneath says how many more match in Pro
+    assert 'href="/company/SEALD/"' not in page[page.index('<tbody id="tbody">'):], \
+        "a sealed company is not in the home preview's rows"
     assert "41.2" not in page, "and none of its numbers"
     assert 'class="hstat"' in page and "Founder-led companies" in page, "and so is the stat strip"
     fn = open(os.path.join(ROOT, "functions", "_tier.js"), encoding="utf-8").read()

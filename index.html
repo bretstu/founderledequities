@@ -300,6 +300,13 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .tfoot{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 4px 0;font-size:12.5px;color:var(--mut);flex-wrap:wrap}
 .tablesec.home .controls{display:none}
 .tablesec:not(.home) .allco{display:none}
+/* THE HOME PAGE'S SIX COLUMNS: company, CEO, founder, ownership, value,
+   the last move and its date. Market cap, the year's return and the
+   amount are the screener's, on /companies/. */
+.tablesec.home .h-mc,.tablesec.home .c-mc,.tablesec.home .w-mc,.tablesec.home .h-r1,.tablesec.home .c-r1,.tablesec.home .w-r1,.tablesec.home .h-amt,.tablesec.home .c-amt,.tablesec.home .w-amt{display:none}
+.tablesec.home .w-co{width:22%}.tablesec.home .w-ceo{width:22%}.tablesec.home .w-lt{width:14%}
+td.c-lt .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
+td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .kind.plan{color:var(--mut)}
 .more{font-weight:700;font-size:13px;border:1px solid var(--ink);border-radius:0;padding:8px 16px}
 .more:hover{background:var(--ink);color:#fff}
 
@@ -629,7 +636,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <div class="tscroll">
   <table class="screen">
     <colgroup>
-      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-fd"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-r1"><col class="w-lt"><col class="w-man"><col class="w-amt"><col class="w-ltd">
+      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-fd"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-r1"><col class="w-lt"><col class="w-amt"><col class="w-ltd">
     </colgroup>
     <thead><tr>
       <th class="n">№</th>
@@ -640,8 +647,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
       <th class="sortable n" data-key="val" title="the stake's value: shares held at the latest close">Value<span class="arr"></span></th>
       <th class="sortable n h-mc" data-key="mcap" title="market capitalization: shares outstanding at the latest close">Mkt cap<span class="arr"></span></th>
       <th class="sortable n h-r1" data-key="r1" title="the stock's price return over the last twelve months">1Y return<span class="arr"></span></th>
-      <th class="sortable h-lt" data-key="ltk" title="the newest trade that moved the stake">Last trade<span class="arr"></span></th>
-      <th class="sortable h-man" data-key="man" title="discretionary, or under a pre-set Rule 10b5-1 plan">Type<span class="arr"></span></th>
+      <th class="sortable h-lt" data-key="ltk" title="the newest trade that moved the stake: bought on the open market, sold at discretion, or sold under a pre-set plan">Last move<span class="arr"></span></th>
       <th class="sortable n h-amt" data-key="lt" title="what that trade was worth">Amount<span class="arr"></span></th>
       <th class="sortable h-ltd" data-key="ltd" title="the day that trade happened">Traded<span class="arr"></span></th>
     </tr></thead>
@@ -762,7 +768,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"pct",dir:-1},tbF:false,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,buys:false,nocomp:false},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
+const state={q:"",min:0,sort:{key:"pct",dir:-1},tbF:true,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,buys:false,nocomp:false},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -1229,13 +1235,13 @@ function exportTable(){
      founder flag ride as their own columns because a spreadsheet cannot
      read a badge. */
   const rows=state._rows||[];
-  const cols=["#","Company","Ticker","CEO","Founder","Ownership %","Value","Market cap","1-yr return %","Last trade","Type","Amount","Traded"];
+  const cols=["#","Company","Ticker","CEO","Founder","Ownership %","Value","Market cap","1-yr return %","Last move","Amount","Traded"];
   const q=v=>{v=v===null||v===undefined?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
   const lines=[cols.join(",")];
   rows.forEach((r,i)=>{
     lines.push([i+1,r.co,r.tk,r.ceo,r.fd?"Yes":"",r.units?"units":(r.pct===null?"":r.pct.toFixed(4)),
       r.val?Math.round(r.val):"",r.mcap?Math.round(r.mcap):"",r.r1===null||r.r1===undefined?"":r.r1.toFixed(2),
-      r.ltev?(r.ltev.c==="P"?"Bought":"Sold"):"",r.man||"",r.ltev&&r.ltev.v&&!r.ltev.fl?Math.round(r.ltev.v):"",
+      r.man||"",r.ltev&&r.ltev.v&&!r.ltev.fl?Math.round(r.ltev.v):"",
       r.ltev?(r.ltev.td||r.ltev.fd):""].map(q).join(","));
   });
   const csv=lines.join("\n");
@@ -1266,12 +1272,22 @@ function renderTable(){
     const lt=last[r.tk];
     r.ltd=lt?(lt.td||lt.fd):"";r.ltev=lt||null;             /* Traded: sorts by the trade date */
     r.lt=lt?((lt.v&&!lt.fl)?lt.v:0):null;                      /* Amount: sorts by the trade's value */
-    r.ltk=lt?(lt.c==="P"?"bought":"sold"):"";                   /* Last trade: sorts bought before sold */
-    r.man=lt?(lt.pl==="plan"?"Planned":"Discretionary"):"";      /* Manner: named, so the export says it too */
+    /* THE LAST MOVE IS ITS KIND (never "Sold" in red on a pre-set plan):
+       bought on the open market, sold at discretion, or sold on a plan;
+       sorts bought, discretionary, planned */
+    r.ltk=lt?(lt.c==="P"?"bought":lt.pl==="plan"?"planned":"discretionary"):"";
+    r.man=lt?(lt.c==="P"?"Bought":lt.pl==="plan"?"Planned":"Discretionary"):"";
     r.fd=!!(fInfo(r.tk)&&fInfo(r.tk).f==="yes");                 /* Founder: its own column, its own sort */
     r.ns=!sold.has(r.tk)&&!!HIST[r.tk];        /* never sold, on a record that exists */
   }
+  /* THE HOME PREVIEW IS THE OPEN SET. Sorted by share, the top of the
+     whole list is almost entirely outside the S&P, which is the Pro
+     catalog; a free reader's twenty rows are the S&P's, with full
+     figures, and the line beneath says how many more match in Pro.
+     /companies/ shows every row with the blurs. */
+  const homeOpen=typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0&&!state.pro;
   let rows=PANEL.filter(r=>{
+    if(homeOpen&&r.masked)return false;
     const q=state.q.toLowerCase();
     const fOK=fOnly(r.tk,state.tbF)&&(!state.tbH||r.ns);
     /* A SEALED COMPANY IS A ROW. Its name, its founder, its last trade's
@@ -1315,8 +1331,7 @@ function renderTable(){
      <td class="n num">${r.masked?LOCK("in Pro","$00.0M"):r.val?money(r.val):""}</td>
      <td class="n num c-mc">${r.mcap?money(r.mcap):""}</td>
      <td class="n num c-r1">${r.r1===null||r.r1===undefined?`<span class="nopr"></span>`:`<span class="${r.r1>=0?"up":"down"}">${r.r1>=0?"+":""}${r.r1.toFixed(1)}%</span>`}</td>
-     <td class="c-lt">${r.ltev?`<span class="${r.ltev.c==="P"?"up":"down"}">${r.ltev.c==="P"?"Bought":"Sold"}</span>`:`<span class="nopr" title="no trade that moved the public-company stake on record"></span>`}</td>
-     <td class="c-man">${r.man||""}</td>
+     <td class="c-lt">${r.ltev?`<span class="kind ${r.ltk==="bought"?"bought":r.ltk==="planned"?"plan":"disc"}">${r.man}</span>`:`<span class="nopr" title="no trade that moved the public-company stake on record"></span>`}</td>
      <td class="n num c-amt">${r.ltev&&r.ltev.mk?LOCK("in Pro","$0.0M"):r.ltev&&r.ltev.v&&!r.ltev.fl?money(r.ltev.v):`<span class="nopr"></span>`}</td>
      <td class="c-ltd">${r.ltev?`<span class="ltd" title="traded ${r.ltev.td||r.ltev.fd}; filed ${r.ltev.fd}${lagNote(r.ltev)}">${r.ltev.td||r.ltev.fd}</span>`:`<span class="nopr"></span>`}</td>
     </tr>`}).join("");
@@ -1327,7 +1342,7 @@ function renderTable(){
      so the line reads "20 companies · 138 more match in Pro". Under a
      search there is no count (the build cannot know the search). */
   let more="";
-  if(sealedN&&SCREEN_COUNTS&&!state.q.trim()){
+  if((sealedN||homeOpen)&&SCREEN_COUNTS&&!state.q.trim()){
     const key=`m${[0,1,5,10].includes(state.min)?state.min:0}f${state.tbF?1:0}h${state.tbH?1:0}`;
     const all=SCREEN_COUNTS[key];
     const openMatches=rows.filter(r=>!r.masked).length;

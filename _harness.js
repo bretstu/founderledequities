@@ -222,9 +222,9 @@ const P=runPage();
   {P.state.tbH=true;P.renderTable();const on=els["#tbody"]._html;
    assert(on.includes("openCompany('UPX')")&&on.includes("openCompany('NOH')")&&!on.includes("openCompany('DNX')"),"the Never sold switch keeps the one who never reduced a stake and the short record, drops the seller -- options cashed don't count");
    P.state.tbH=false;P.renderTable();}
-  assert(rowOf("DNX").includes('c-amt">$1M')&&rowOf("DNX").includes('c-lt"><span class="down">Sold</span>'),"the last trade and its amount sit in their own columns");
+  assert(rowOf("DNX").includes('c-amt">$1M')&&/c-lt"><span class="kind (disc|plan)">(Discretionary|Planned)<\/span>/.test(rowOf("DNX")),"the last move is its kind (never Sold in red on a plan) and the amount sits in its own column: "+rowOf("DNX").slice(rowOf("DNX").indexOf("c-lt"),rowOf("DNX").indexOf("c-lt")+80));
   assert(!tb.includes('class="asof'),"as-of left the table for the company page and the export");
-  assert(rowOf("DNX").includes('c-lt"><span class="down">Sold')&&rowOf("UPX").includes('c-lt"><span class="up">Bought')&&rowOf("UPX").includes('c-fd">Yes'),"the last trade that moved the stake, in words; the founder flag its own column");
+  assert(/c-lt"><span class="kind (disc|plan)">/.test(rowOf("DNX"))&&rowOf("UPX").includes('c-lt"><span class="kind bought">Bought')&&rowOf("UPX").includes('c-fd">Yes'),"the last trade that moved the stake, in words; the founder flag its own column");
   assert(rowOf("NOH").includes("no trade that moved the public-company stake"),"and an honest dash where there is none");
   state.tbH=true;P.renderTable();
   const held=[...els["#tbody"]._html.matchAll(/onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);
@@ -232,7 +232,7 @@ const P=runPage();
   // the export: the rows as shown, every field, quoted where it must be
   const csv=P.exportTable();
   const hdr=csv.split("\n")[0];
-  assert(hdr==="#,Company,Ticker,CEO,Founder,Ownership %,Value,Market cap,1-yr return %,Last trade,Type,Amount,Traded","the CSV is the table as shown, plus ticker and the founder flag as columns: "+hdr.slice(0,60));
+  assert(hdr==="#,Company,Ticker,CEO,Founder,Ownership %,Value,Market cap,1-yr return %,Last move,Amount,Traded","the CSV is the table as shown, plus ticker and the founder flag as columns: "+hdr.slice(0,60));
   assert(csv.split("\n").length===3&&csv.includes("UPX")&&csv.includes("NOH")&&!csv.includes("DNX"),"and only the rows as filtered");
   assert(csv.split("\n")[1].split(",").length===hdr.split(",").length,"every row has every column");
   state.tbH=false;state.sort={key:"r1",dir:1};P.renderTable();
