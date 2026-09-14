@@ -253,7 +253,12 @@ td.ceo .fb{vertical-align:2px}
 @media(max-width:980px){.h-mc,.c-mc,.w-mc{display:none}.w-lt{width:16%}}
 @media(max-width:760px){.h-conf,.c-conf,.w-conf,.h-lt,.c-lt,.w-lt,.h-ltd,.c-ltd,.w-ltd,.h-d3,.c-d3,.w-d3,.h-mc,.c-mc,.w-mc{display:none}.w-co{width:34%}.w-ceo{width:26%}.w-own{width:20%}.w-val{width:14%}
   table.screen .tbar{display:none}table.screen .tpct{min-width:0}table.screen thead th,table.screen tbody td{padding-left:8px;padding-right:8px}}
-thead th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:sticky;top:0;background:var(--bg);z-index:1}
+thead th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink);white-space:nowrap;position:sticky;top:0;background:var(--bg);z-index:1}
+/* A NUMBER SITS AWAY FROM THE NEXT COLUMN'S WORDS. Right-aligned figures
+   end at their column's edge, where a left-aligned label begins; without
+   an inset the two touch (Value against Last move, New stake against
+   Manner). Every numeric column keeps a gutter on its right. */
+thead th.n,tbody td.n{padding-right:28px}
 thead th.sortable{cursor:pointer;user-select:none}
 thead th.sortable:hover{color:var(--ink)}
 thead th .arr{display:inline-block;width:1em;color:var(--blue)}
@@ -409,7 +414,7 @@ table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
    last two columns are the move and its date. The CEO cell truncates. */
 .tw-kd{width:14%}.tw-co{width:14%}.tw-ceo{width:22%}.tw-v{width:12%}.tw-st{width:12%}.tw-mn{width:14%}.tw-td{width:12%}
 table.tape th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
-table.tape th.n,table.tape td.n{text-align:right}
+table.tape th.n,table.tape td.n{text-align:right;padding-right:28px}
 table.tape td{padding:9px 10px 9px 0;border-top:1px solid var(--line2);font-size:14px;vertical-align:middle;white-space:nowrap}
 table.tape tr.dayrow{cursor:pointer}
 table.tape tr.dayrow:hover td{background:var(--line2)}
