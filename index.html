@@ -144,15 +144,15 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    headline. A row beneath uses the height the words already take. */
 .hero .wrap{display:block}
 .herostats{margin-top:30px;padding:22px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:row;flex-wrap:wrap;gap:20px 44px;align-items:flex-start}
-.herobtns{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap}
 .herobtns .gopro{padding:12px 22px;font-size:14.5px}
 .hbtn2{font-size:14.5px;font-weight:600;color:var(--ink);border:1px solid var(--ink);padding:11px 22px;text-decoration:none}
 .hbtn2:hover{background:var(--ink);color:var(--bg);text-decoration:none}
 .heroquiet{font-family:var(--ui);font-size:13.5px;font-style:italic;color:var(--mut);margin:16px 0 0;max-width:70ch}
-.thisweek{margin-top:26px;padding:12px 16px;border:1px solid var(--line);font-size:14px;color:var(--mut);display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.thisweek{margin:26px 0 0;font-size:clamp(16px,1.35vw,19px);line-height:1.45;color:var(--ink)}
 .thisweek:empty{display:none}
-.thisweek .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-right:4px}
-.thisweek b{color:var(--ink);font-weight:700}
+.thisweek b{font-weight:700}
+.herobtns{margin-top:18px}
 /* the tape excerpt on the home page: no controls; the full tape a click away */
 .excerpt .tapectl,.excerpt .pronote,.excerpt .actstats{display:none}
 .hometape{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
@@ -168,10 +168,6 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .hstat .n.hl{color:var(--ink)}
 .hstat .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
   text-transform:uppercase;color:var(--faint);margin-top:9px}
-.hstat.end{margin-left:auto;text-align:right}
-.hstat.end+.hstat.end{margin-left:28px}   /* the two dates sit together at the right */
-.hstat.end .n{font-family:var(--mono);font-size:12.5px;font-weight:500;color:var(--mut);letter-spacing:0}
-@media(max-width:640px){.hstat.end{margin-left:0;text-align:left}}
 .valstat{margin-top:14px;font-size:16px;color:var(--mut)}
 .valstat b{font-family:var(--mono);font-weight:600;color:var(--ink)}
 
@@ -574,7 +570,6 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     <a href="/tape/">Tape</a>
     <a href="/companies/">Companies</a>
     <a href="about.html">Method</a>
-    <a href="/pro/">Pro</a>
     <button class="devtog" id="devtog" onclick="toggleDev()" title="Developer preview — see the site as a Pro subscriber">Preview: Free</button>
     <a class="weekly" href="/tape/#subscribe">Weekly tape, free</a>
     <button class="gopro" onclick="openPro()">Go Pro</button>
@@ -589,12 +584,15 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   <h1 id="thesis">What the person running the company still owns.</h1>
   <p class="herosub" id="herosub">Economic ownership from the filings they signed. Not cap tables. Every US company worth $1B or more.</p>
   <div class="herostats" id="herostats"></div>
+  <!-- THE WEEK IN ONE SENTENCE A READER CAN SAY OUT LOUD, and the door to
+       it. Not a status bar of counts in the site's own vocabulary; "tape"
+       is taught on /tape/. -->
+  <p class="thisweek" id="thisweek"></p>
   <div class="herobtns">
-    <a class="gopro" href="/tape/">Read this week's tape</a>
+    <a class="gopro" href="/tape/">See what moved &rarr;</a>
     <a class="hbtn2" href="/pro/">Go Pro &middot; $15/mo</a>
   </div>
   <p class="heroquiet">S&amp;P 500 current stakes and the last twelve months are open. Everything else is Pro.</p>
-  <div class="thisweek" id="thisweek"></div>
 </div></section>
 
 
@@ -1143,10 +1141,7 @@ function renderStatus(){
   const asofs=PANEL.map(r=>r.asof).filter(Boolean).sort();
   // the stat strip owns this cell now, and only exists once the hero has
   // rendered -- so writing to it here is optional, never assumed
-  const ao=$("#asofline");
-  if(asofs.length&&ao)ao.textContent=EVENTS.reduce(
-    (m,e)=>e.fd>m?e.fd:m,asofs[asofs.length-1]);
-  $("#footstamp").textContent=(p?"live data":"sample data")+" · "+new Date().toISOString().slice(0,10);
+  /* the footer's dates are written by renderHero, which knows the feed */
 }
 let HERO_STAMP=null;
 let SCREEN_COUNTS=null;
@@ -1209,18 +1204,18 @@ function renderHero(){
      the truth: every filing read last night is an event with a filed date,
      whether or not it moved a number. That date is the honest answer to
      "how current is this?", so it is the one shown. */
+  /* THE DATES ARE TRUST, NOT NUMBERS (2026-09-14): they live in the
+     footer ("Filings through Sep 11 · Prices as of the Sep 14 close"),
+     not beside the three figures, where they read as debug. */
   const panelOn=asofs[asofs.length-1]||"";
   const filedOn=EVENTS.reduce((m,e)=>e.fd>m?e.fd:m,panelOn);
-  /* two dates, each with its own label: the newest Form 4 read, and the
-     close the prices are as of. One line with both under one label read as
-     one date qualifying the other. */
-  out+=`<div class="hstat end"><div class="n" id="asofline"
-        title="the most recent Form 4 read into the site${
-          panelOn&&panelOn!==filedOn?`; the newest filing that changed a headline stake was ${panelOn}`:""}">${filedOn}</div>`
-      +`<div class="k">Latest filing read</div></div>`;
-  if(state.live.prices)out+=`<div class="hstat end"><div class="n" title="the close every value and market cap on this page is priced at">${PRICES_ASOF}</div><div class="k">Prices as of</div></div>`;
-  /* a free reader: the stamped four, then the dates */
-  if(sealed&&HERO_STAMP){out=HERO_STAMP+out.replace(/^[\s\S]*?(?=<div class="hstat end")/,"");}
+  const dd=d=>{const t=Date.parse(d+"T00:00:00Z");return isNaN(t)?d:new Date(t).toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});};
+  const fs=$("#footstamp");
+  if(fs)fs.innerHTML=`<span title="the most recent Form 4 read into the site${panelOn&&panelOn!==filedOn?`; the newest filing that changed a headline stake was ${panelOn}`:""}">Filings through ${dd(filedOn)}</span>`
+    +(state.live.prices?` · <span title="the close every value and market cap on this page is priced at">Prices as of the ${dd(PRICES_ASOF)} close</span>`:"")
+    +(state.live.panel?"":" · sample data");
+  /* a free reader: the stamped three */
+  if(sealed&&HERO_STAMP)out=HERO_STAMP;
   if(state.live.panel)$("#herostats").innerHTML=out;
 }
 /* INSIDE WHEN IT FITS, MEASURED BY THE BROWSER. A fixed fifth of the track
@@ -1738,8 +1733,8 @@ function weekLine(){
   const w=EVENTS.filter(e=>(e.c==="P"||e.c==="S")&&e.fd>=cut&&fOnly(e.tk,true));
   if(!w.length)return "";
   const who=k=>new Set(w.filter(e=>tapeKind(e)===k).map(e=>e.tk+"|"+e.ceo)).size;
-  const comp=w.filter(e=>tapeKind(e)==="comp").length;
-  return `<span class="k">This week</span><b>${who("bought")}</b> founder${who("bought")===1?"":"s"} bought · <b>${who("disc")}</b> cut a stake · <b>${who("plan")}</b> sold on a plan · <b>${comp}</b> compensation filing${comp===1?"":"s"} did not move a stake`;
+  const b=who("bought"),d=who("disc"),p=who("plan");
+  return `<b>This week:</b> ${b} founder${b===1?"":"s"} bought. ${d} sold without a plan. ${p} sale${p===1?" was":"s were"} already scheduled.`;
 }
 /* the weather line: what the window held */
 /*@shared*/

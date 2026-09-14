@@ -119,7 +119,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
 def test_the_nav_on_a_page_points_home():
     idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
     nav = bcp.extract_topnav(idx)
-    assert 'href="/tape/"' in nav and 'href="/companies/"' in nav and 'href="/about.html"' in nav and 'href="/pro/"' in nav and "#board" not in nav and "#perfsec" not in nav
+    assert 'href="/tape/"' in nav and 'href="/companies/"' in nav and 'href="/about.html"' in nav and 'class="gopro" href="/pro/"' in nav and '<a href="/pro/">Pro</a>' not in nav and "#board" not in nav and "#perfsec" not in nav
     assert "devtog" not in nav and "openPro()" not in nav, "no modal, no dev toggle on a static page"
 
 
@@ -426,7 +426,7 @@ def test_the_pro_page_is_the_plan(tmp_path):
     assert 'href="/api/checkout?plan=monthly"' in page and 'href="/api/checkout?plan=yearly"' in page
     assert "the last twelve months are open" in page, "the copy rule, verbatim"
     idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
-    assert 'function openPro(){location.href="/pro/";}' in idx and 'href="/pro/">Pro</a>' in idx
+    assert 'function openPro(){location.href="/pro/";}' in idx and '<a href="/pro/">Pro</a>' not in idx
     for f in ("assets/company-page.js", "assets/tape-page.js"):
         assert 'location.href="/pro/"' in open(os.path.join(ROOT, f), encoding="utf-8").read(), f
     co = open(os.path.join(ROOT, "functions", "api", "checkout.js"), encoding="utf-8").read()

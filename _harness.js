@@ -428,7 +428,10 @@ const P=runPage();
    const labels=visible;
    assert(!/chief executive/i.test(labels),"no label on the page says chief executive: "+(labels.match(/.{0,40}chief executive.{0,40}/i)||[""])[0]);
    assert(idx.includes('<h1 id="thesis">What the person running the company still owns.</h1>'),"the hero says what the site is, the same for every reader");
-   assert(idx.includes('href="/tape/">Read this week\'s tape</a>')&&idx.includes('href="/pro/">Go Pro &middot; $15/mo</a>'),"two doors under the headline: the tape and the plan");
+   assert(idx.includes('href="/tape/">See what moved &rarr;</a>')&&idx.includes('href="/pro/">Go Pro &middot; $15/mo</a>'),"two doors under the headline: what moved, and the plan");
+   assert(idx.includes('<p class="thisweek" id="thisweek"></p>')&&idx.includes("sold without a plan")&&idx.includes("already scheduled"),"the week in one spoken sentence above the doors");
+   assert(!idx.includes('<a href="/pro/">Pro</a>'),"one door to Pro: the button, not a nav entry");
+   assert(idx.includes("Filings through ")&&!idx.includes("Latest filing read"),"the dates are the footer's, not the hero's");
    assert(idx.includes("the last twelve months are open. Everything else is Pro."),"the copy rule's one-line form under the doors");
    assert(idx.includes('id="thisweek"')&&idx.includes("function weekLine("),"the week in one line under the hero");
 
@@ -440,8 +443,8 @@ const P=runPage();
     "the page counts its own visitors, and the owner can switch it off");
   assert(!idx.includes("document.cookie"),"and sets no cookie to do it");
   assert(about.includes("without cookies"),"About says so");
-  assert(idx.includes("Latest filing")&&idx.includes("EVENTS.reduce"),
-    "the header dates the newest filing read, not the newest that moved a stake");
+  assert(idx.includes("Filings through")&&idx.includes("EVENTS.reduce"),
+    "the footer dates the newest filing read, not the newest that moved a stake");
   const terms=require("fs").readFileSync("terms.html","utf8");
   for(const t of ["$15 per month","$150 per year","14-day trial","7 days","hello@founderledequities.com","not investment advice"])
     assert(terms.toLowerCase().includes(t.toLowerCase()),"terms.html carries: "+t);
