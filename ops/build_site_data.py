@@ -213,10 +213,37 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
             pass
     rk = ranks(panel, closes)
 
+
+    def derived_facts():
+        # THE TABLE'S TWO DERIVED FACTS, COMPUTED ONCE (2026-09-14): the newest
+        # trade that moved each stake, and whether the person ever reduced one.
+        # The screener used to download the whole history and events files
+        # (12 MB and 69,000 rows for a Pro reader, four seconds) to derive
+        # these; now the list carries them and the page loads nothing else.
+        # Same rule as the page's lastTrades()/soldTickers(): codes P and S,
+        # labels that moved the stake, no pre-IPO catch-ups; newest by filing.
+        last_move = {}
+        ever_sold = set()
+        for r in all_rows:
+            if r.get("code") not in ("P", "S") or (r.get("label") or "") in UNCHANGED_LABELS:
+                continue
+            if (r.get("pre_ipo") or "") in ("1", "true", "True"):
+                continue
+            t = r.get("ticker")
+            if r["code"] == "S":
+                ever_sold.add(t)
+            k = (r.get("filed") or "", r.get("traded") or "")
+            if t not in last_move or k > last_move[t][0]:
+                last_move[t] = (k, r)
+        return last_move, ever_sold, set(hist_by_t)
+
+    LAST_COLS = ["lt_code", "lt_plan", "lt_value", "lt_flag", "lt_traded", "lt_filed", "never_sold"]
+
     def write_list(path, mask_new):
+        last_move, ever_sold, has_record = derived_facts()
         with open(path, "w", newline="", encoding="utf-8") as fh:
             w = csv.writer(fh)
-            w.writerow(LIST_COLS + ["ret_1y"] + RANK_COLS)
+            w.writerow(LIST_COLS + ["ret_1y"] + RANK_COLS + LAST_COLS)
             for r in panel:
                 rv, rp = rk.get(r["ticker"], ["", ""])
                 on_top = (rv != "" and rv <= OPEN_TOP) or (rp != "" and rp <= OPEN_TOP)
@@ -236,11 +263,18 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
                 rv = rets.get(r["ticker"])
                 row.append("" if rv is None else f"{rv:.2f}")
                 row.extend(rk.get(r["ticker"], ["", ""]))
+                lm = last_move.get(r["ticker"])
+                if lm:
+                    e = lm[1]
+                    # the amount is sealed with the rest outside the S&P
+                    row.extend([e.get("code") or "", e.get("plan") or "", "" if masked else (e.get("value") or ""),
+                                e.get("price_flag") or "", e.get("traded") or "", e.get("filed") or ""])
+                else:
+                    row.extend(["", "", "", "", "", ""])
+                row.append(1 if (r["ticker"] not in ever_sold and r["ticker"] in has_record) else 0)
                 w.writerow(row)
-    write_list(os.path.join(out_dir, "universe.csv"), mask_new=True)
     n_px = write_price_shards(prices_dir, out_dir)
     print(f"  prices/<T>.csv       {n_px} daily series (public; the company page's price chart)")
-    write_list(os.path.join(out_dir, "pro", "universe.csv"), mask_new=False)
 
     # ---- founders: fresh S&P labels over the snapshot ----
     f_rows = list(csv.DictReader(open(founders_p, encoding="utf-8-sig")))
@@ -390,6 +424,9 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     # rows, not ten. A masked column says which rows these are.
     cols = ev_cols + ["masked"]
     all_rows = ev_rows_shard
+    # the two list files, now that the trades and the record are in hand
+    write_list(os.path.join(out_dir, "universe.csv"), mask_new=True)
+    write_list(os.path.join(out_dir, "pro", "universe.csv"), mask_new=False)
     # THE FREE FEED IS A YEAR TOO, plus each S&P company's most recent
     # stake-moving trade whatever its date, so the screener's "last trade"
     # column is true for a free reader whose company last traded in 2019.

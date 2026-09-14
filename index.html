@@ -936,6 +936,11 @@ function mapPanel(recs){
     pct:num(r.pct), sh:num(r.shares), out:num(r.outstanding),
     asof:r.shares_as_of||"", oasof:r.outstanding_as_of||"", cover:r.cover_url||"", conf:(r.confidence||"").toLowerCase()||"medium",
     cik:num(r.cik)||0, form4:r.form4_url||"", r1:num(r.ret_1y),
+    /* the last move and never-sold, computed at build (build_site_data):
+       the screener needs no history or events file to draw its columns */
+    plt:r.lt_code?{c:r.lt_code,pl:r.lt_plan||"",v:num(r.lt_value),fl:!!(r.lt_flag),td:r.lt_traded||"",fd:r.lt_filed||"",
+                   mk:!!(String(r.masked||"")==="1"&&!r.lt_value&&r.lt_code)}:null,
+    pns:String(r.never_sold||"")==="1",
     excl:num(r.excluded_shares)||0, excld:r.excluded_detail||"",
     /* A CITED CORRECTION. When a filer states in a remark that shares
        held of record are left out of the tables (Musk's 1.30B restricted
@@ -1287,13 +1292,23 @@ function exportTable(){
 /*@shared*/
 function lastTrades(){
   /* ticker -> the newest trade that moved the stake, and the set of
-     tickers that ever reduced one; computed once per render from the feed */
+     tickers that ever reduced one. From the feed when a page has loaded
+     it (the home page does, for the tape); otherwise from the facts the
+     build wrote into the list, which say the same thing. */
   const last={};
-  for(const e of EVENTS){
-    if(unchangedKind(e)!==null||(e.c!=="P"&&e.c!=="S"))continue;
-    if(!last[e.tk]||e.fd>last[e.tk].fd)last[e.tk]=e;
+  if(EVENTS.length){
+    for(const e of EVENTS){
+      if(unchangedKind(e)!==null||(e.c!=="P"&&e.c!=="S"))continue;
+      if(!last[e.tk]||e.fd>last[e.tk].fd)last[e.tk]=e;
+    }
+    return {last,sold:soldTickers()};
   }
-  return {last,sold:soldTickers()};
+  const sold=new Set();
+  for(const r of PANEL){
+    if(r.plt)last[r.tk]=r.plt;
+    if(!r.pns)sold.add(r.tk);
+  }
+  return {last,sold,fromList:true};
 }
 /* THE NAMED SCREENS (PLAN.md step 6): four questions a reader brings, each
    with a name and a URL (/companies/?screen=never-sold), so a letter can
@@ -1326,7 +1341,7 @@ function setScreen(id){
 function renderTable(){
   paintSw("fchip",state.tbF);
   paintSw("hchip",state.tbH);
-  const {last,sold}=lastTrades();
+  const {last,sold,fromList}=lastTrades();
   for(const r of PANEL){
     const lt=last[r.tk];
     r.ltd=lt?(lt.td||lt.fd):"";r.ltev=lt||null;             /* Traded: sorts by the trade date */
@@ -1337,7 +1352,7 @@ function renderTable(){
     r.ltk=lt?(lt.c==="P"?"bought":lt.pl==="plan"?"planned":"discretionary"):"";
     r.man=lt?(lt.c==="P"?"Bought":lt.pl==="plan"?"Planned":"Discretionary"):"";
     r.fd=!!(fInfo(r.tk)&&fInfo(r.tk).f==="yes");                 /* Founder: its own column, its own sort */
-    r.ns=!sold.has(r.tk)&&!!HIST[r.tk];        /* never sold, on a record that exists */
+    r.ns=fromList?r.pns:(!sold.has(r.tk)&&!!HIST[r.tk]);   /* never sold, on a record that exists */
   }
   /* THE HOME PREVIEW IS THE OPEN SET. Sorted by share, the top of the
      whole list is almost entirely outside the S&P, which is the Pro

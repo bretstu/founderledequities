@@ -171,3 +171,17 @@ def test_the_free_record_is_a_year_and_the_screener_has_its_counts(tmp_path):
     # the named screens, counted over every company: SEAL never sold and owns 12%; OPEN is a founder who bought this year
     assert counts["s:never-sold"] == 1 and counts["s:over-10"] == 1 and counts["s:bought-this-year"] == 2 and counts["s:hired-under-1"] == 0, counts
     # never sold: OPEN sold in 2019, SEAL never did
+
+
+def test_the_list_carries_the_last_move_and_never_sold(tmp_path):
+    """The screener draws its Last move and Never sold columns from the list
+    itself, computed at build, so the page loads no history or events."""
+    import csv as _csv
+    test_the_free_record_is_a_year_and_the_screener_has_its_counts(tmp_path)   # builds the fixture site
+    out = tmp_path / "site-data"
+    rows = {r["ticker"]: r for r in _csv.DictReader(open(out / "pro" / "universe.csv", encoding="utf-8"))}
+    assert set(("lt_code", "lt_plan", "lt_value", "lt_traded", "lt_filed", "never_sold")) <= set(rows["OPEN"].keys())
+    assert rows["OPEN"]["lt_code"] in ("P", "S") and rows["OPEN"]["lt_traded"]
+    free = {r["ticker"]: r for r in _csv.DictReader(open(out / "universe.csv", encoding="utf-8"))}
+    sealed = next(r for r in free.values() if r["masked"] == "1")
+    assert sealed["lt_code"] and sealed["lt_value"] == "", "a sealed company's last move is named but its amount is sealed"

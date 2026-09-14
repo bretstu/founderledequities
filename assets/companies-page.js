@@ -21,23 +21,24 @@ async function boot(){
   try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)me=await q.json();}catch(e){}
   state.pro=!!(me&&me.pro);
   nav(me);
-  const [p,f,h,e,c,pr]=await Promise.all([
+  /* THE LIST IS ENOUGH (2026-09-14). The last move and never-sold are in
+     the list from the build, so this page loads no history and no events:
+     four files under a megabyte instead of the archive, and the table
+     draws in well under a second. */
+  const [p,f,c,pr]=await Promise.all([
     fetchText(state.pro?["/pro/universe.csv","/universe.csv","/panel.csv"]:["/universe.csv","/panel.csv"]),
     fetchText(["/founders.csv"]),
-    fetchText(state.pro?["/pro/history-lite.csv","/history-free-lite.csv"]:["/history-free-lite.csv"]),
-    fetchText(state.pro?["/pro/events.csv","/events-free.csv"]:["/events-free.csv"]),
     fetchText(["/screen-counts.json"]),
     fetchText(["/prices.csv"]),
   ]);
   if(p){PANEL=mapPanel(parseCSV(p));state.live.panel=true;}
+  state.live.events=true;   /* the never-sold switch reads the list's facts */
   /* THE PRICES MAKE THE VALUE AND THE MARKET CAP. Without them the two
      columns were blank on this page (2026-09-14). */
   if(pr){const m={};let asof="";for(const r of parseCSV(pr)){const c=num(r.close);if(r.ticker&&c){m[r.ticker.toUpperCase()]=c;asof=r.as_of||asof;}}
     if(Object.keys(m).length){PRICES=m;PRICES_ASOF=asof;state.live.prices=true;}}
   applyPrices();
   if(f)for(const r of parseCSV(f)){if(r.ticker)FOUNDERS[r.ticker.toUpperCase()]={f:(r.founder||"").toLowerCase(),ev:r.evidence||"",src:r.source||""};}
-  if(h){HIST=mapHistory(parseCSV(h));state.live.hist=true;}
-  if(e)EVENTS=mapEvents(parseCSV(e));
   if(c){try{SCREEN_COUNTS=JSON.parse(c);}catch(x){}}
   const q=$("#q");if(q)q.addEventListener("input",()=>{state.q=q.value;renderTable();});
   document.querySelectorAll("[data-min]").forEach(b=>b.addEventListener("click",()=>{state.min=+b.dataset.min;document.querySelectorAll("[data-min]").forEach(x=>x.classList.toggle("on",x===b));renderTable();}));
