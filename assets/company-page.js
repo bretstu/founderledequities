@@ -533,6 +533,7 @@ async function fetchText(paths){
 }
 
 (async function main(){
+  hit("view","page");   /* THE PAGE COUNTS ITS OWN VISITORS, like the home page: the same beacon, shared */
   let me=null;
   try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)me=await q.json();}catch(e){}
   nav(me);

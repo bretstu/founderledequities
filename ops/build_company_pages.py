@@ -534,7 +534,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     w_tpl_p = os.path.join(root, "account.html")
     w_js_p = os.path.join(root, "assets", "account-page.js")
     if os.path.exists(w_tpl_p) and os.path.exists(w_js_p):
-        w_js = open(w_js_p, encoding="utf-8").read()
+        # the shared block too: the account page counts its view with the same beacon
+        w_js = header + shared + "\n\n" + open(w_js_p, encoding="utf-8").read()
         with open(os.path.join(out_dir, "account.js"), "w", encoding="utf-8") as fh:
             fh.write(w_js)
         w_v = hashlib.sha256(w_js.encode("utf-8")).hexdigest()[:10]

@@ -5,7 +5,6 @@ const withV=p=>p+(p.includes("?")?"&":"?")+"v="+DATA_V;
 const $=s=>document.querySelector(s);
 function openPro(){location.href="/pro/";}
 function openCompany(tk){location.href="/company/"+tk+"/";}
-function hit(){}
 /* one masthead button, two lives, on this page too; a signed-in reader's watches beside it */
 function nav(me){
   const b=document.querySelector(".topnav .gopro");if(!b)return;
@@ -17,6 +16,7 @@ async function fetchText(paths){
   return null;
 }
 async function boot(){
+  hit("view","page");   /* THE PAGE COUNTS ITS OWN VISITORS, like the home page: the same beacon, shared */
   let me=null;
   try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)me=await q.json();}catch(e){}
   state.pro=!!(me&&me.pro);

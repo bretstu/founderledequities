@@ -11,6 +11,7 @@ async function fetchText(paths){
   return null;
 }
 async function boot(){
+  hit("view","page");   /* THE PAGE COUNTS ITS OWN VISITORS, like the home page: the same beacon, shared */
   let me=null;
   try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)me=await q.json();}catch(e){}
   state.pro=!!(me&&me.pro);

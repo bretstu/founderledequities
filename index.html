@@ -812,6 +812,7 @@ const state={q:"",min:0,screen:"",sort:{key:"val",dir:-1},tbF:true,tbH:false,pro
    keeps for itself, a session id per tab, and what was looked at and
    clicked, sent in small batches to /api/hit. ?nohit=1 once in the address
    bar switches the owner's own browser off. */
+/*@shared*/
 const HIT=(()=>{
   const ok=typeof navigator!=="undefined"&&typeof localStorage!=="undefined"&&typeof sessionStorage!=="undefined"
     &&typeof location!=="undefined"&&!/^(localhost|127\.)/.test(location.hostname||"")&&!!navigator.sendBeacon;
@@ -842,6 +843,7 @@ const HIT=(()=>{
   }
   return {hit,flush,get off(){return off}};
 })();
+/*@shared*/
 function hit(kind,name,detail){HIT.hit(kind,name,detail);}
 
 /* ---------------- embedded fallback (real pipeline output) ------ */
