@@ -25,7 +25,14 @@ async function boot(){
   for(const [id,key] of [["tg-f","f"],["tg-buys","buys"],["tg-nocomp","nocomp"]]){const el=$("#"+id);if(el)el.addEventListener("change",()=>{state.ev[key]=el.checked;renderActivity();});}
   document.querySelectorAll("#actwin .win").forEach(c=>c.addEventListener("click",()=>setWin(c.dataset.win)));
   renderActivity();
-  if(new URLSearchParams(location.search).get("subscribed")==="1"){const m=$("#submsg");if(m)m.textContent="You're on the list. The next tape goes out Monday.";}
+  /* THE CONFIRMATION IS THE BOX. After the click, the form gives way to a
+     statement a reader cannot miss: on the list, next Monday, this page
+     until then. */
+  if(new URLSearchParams(location.search).get("subscribed")==="1"){
+    const box=$("#subscribe");
+    if(box)box.innerHTML=`<h3>You're on the list.</h3><div class="rule"></div><p>The Monday tape goes out next Monday morning: who bought, who cut a stake, who sold on a plan, founders first.</p><p>Until then, this page is the tape.</p><div class="fine">Every letter carries an unsubscribe link.</div>`;
+    history.replaceState(null,"",location.pathname);
+  }
   if(new URLSearchParams(location.search).get("subscribed")==="check"){const m=$("#submsg");if(m)m.textContent="Check your inbox: one click confirms it.";}
   if(new URLSearchParams(location.search).get("subscribed")==="error"){const m=$("#submsg");if(m)m.textContent="The list refused the add; write to hello@founderledequities.com and I'll fix it.";}
   if(new URLSearchParams(location.search).get("subscribed")==="expired"){const m=$("#submsg");if(m)m.textContent="That link expired; enter your address again.";}
