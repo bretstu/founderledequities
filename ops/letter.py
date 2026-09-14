@@ -470,29 +470,10 @@ def resend(path, payload, key):
         return 0, {"raw": f"no connection: {e.reason}"}
 
 
-def audience_id(key):
-    """The account's audience id: RESEND_AUDIENCE_ID if set, else the first
-    audience the API lists (an account has one). A broadcast needs it."""
-    aid = os.environ.get("RESEND_AUDIENCE_ID")
-    if aid:
-        return aid
-    req = urllib.request.Request("https://api.resend.com/audiences",
-                                 headers={"Authorization": f"Bearer {key}", "User-Agent": "founderledequities-letter/1"})
-    try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            data = json.loads(r.read().decode() or "{}")
-    except (urllib.error.URLError, ValueError) as e:
-        print(f"  could not list audiences: {e}")
-        return ""
-    items = data.get("data") or []
-    if not items:
-        print("  Resend lists no audience; create one in the dashboard (Audience) and set RESEND_AUDIENCE_ID in .env")
-        return ""
-    if len(items) > 1:
-        print("  more than one audience; set RESEND_AUDIENCE_ID in .env to choose: " + ", ".join(f"{a.get('name')}={a.get('id')}" for a in items))
-        return ""
-    print(f"  audience: {items[0].get('name')} ({items[0].get('id')}); set RESEND_AUDIENCE_ID in .env to skip this lookup")
-    return items[0].get("id", "")
+def audience_id():
+    """RESEND_AUDIENCE_ID from .env, or nothing. A list send never guesses
+    which audience it is for; the id is on the Audience page's </> panel."""
+    return os.environ.get("RESEND_AUDIENCE_ID", "").strip()
 
 
 def paths(root, date):
@@ -562,8 +543,9 @@ def cmd_send(a):
         if not postal:
             print("refusing: POSTAL_ADDRESS is not set (.env); a list email must carry a postal line"); return 2
         h, t, meta = render(md, postal=postal)   # the unsubscribe placeholder Resend fills per recipient
-        aid = audience_id(key)
+        aid = audience_id()
         if not aid:
+            print("refusing: RESEND_AUDIENCE_ID is not set (.env); the id is on Resend's Audience page, the </> panel")
             return 2
         payload = {"from": FROM, "subject": meta.get("subject", "This week's tape"), "html": h, "text": t,
                    "name": f"Monday tape {a.date}", "audience_id": aid}

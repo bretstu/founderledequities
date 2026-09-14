@@ -90,3 +90,15 @@ def test_a_list_send_refuses_without_a_postal_line(tmp_path, monkeypatch):
     import argparse
     rc = letter.cmd_send(argparse.Namespace(root=root, date="2026-09-14", test=False, send=True, confirm=False, to=None))
     assert rc == 2, "refused: no postal line"
+
+
+def test_a_list_send_refuses_without_the_audience_id(tmp_path, monkeypatch):
+    root = _fixture(tmp_path)
+    md_p, _ = letter.paths(root, "2026-09-14")
+    open(md_p, "w").write(letter.draft_markdown(root, "2026-09-14"))
+    monkeypatch.setenv("RESEND_API_KEY", "re_test")
+    monkeypatch.setenv("POSTAL_ADDRESS", "PO Box 1")
+    monkeypatch.delenv("RESEND_AUDIENCE_ID", raising=False)
+    import argparse
+    rc = letter.cmd_send(argparse.Namespace(root=root, date="2026-09-14", test=False, send=True, confirm=False, to=None))
+    assert rc == 2, "a list send never guesses its audience"
