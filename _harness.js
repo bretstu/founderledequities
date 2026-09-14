@@ -133,9 +133,8 @@ const P=runPage();
     // a free reader: 7d only, the longer chips dimmed and gated, the Pro note under the chips
     state.pro=false; setWin(7); renderActivity();
     assert(state.ev.win==="7","7 days for a free reader");
-    el._last={};
-    setWin(30); assert(el._last["#promodal"]==="on"&&state.ev.win==="7","a longer window opens the Pro box and does not change the window");
-    el._last={};
+    // openPro is a page now (/pro/); in the harness location is a stub, so the gate is judged by the window not changing
+    setWin(30); assert(state.ev.win==="7","a longer window is gated for a free reader and does not change the window");
     assert((els["#pronote"]._html||"").includes("Pro"),"the Pro note sits under the chips");
     state.pro=true; setWin(365);
   }
@@ -471,8 +470,11 @@ const P=runPage();
     "the method comes before the fine print");
 
   // ---- payments wiring on the page ----
-  assert(idx.includes('href="/api/checkout"')&&idx.includes("$5 a month"),
-    "the Pro modal sells the real thing at the real price");
+  assert(idx.includes('href="/pro/"')&&idx.includes("$19 a month or $190 a year"),
+    "the Pro box points at the plan page at the real price");
+  const pro=require("fs").readFileSync("pro.html","utf8");
+  assert(pro.includes('href="/api/checkout?plan=monthly"')&&pro.includes('href="/api/checkout?plan=yearly"')&&pro.includes("14-day trial"),
+    "the plan page sells the real thing: two prices, a trial");
   assert(!idx.includes("Notify%20me%20when%20Pro%20opens"),"the waitlist CTA is gone");
   assert(!idx.includes("pro=1/.test"),"?pro=1 no longer grants anything");
   assert(idx.includes('"/api/me"')&&idx.includes('"/pro/events.csv"')&&idx.includes('"events-free.csv"'),
@@ -499,8 +501,8 @@ const P=runPage();
    assert(idx.includes('<h1 id="thesis">What every <b>CEO</b> owns of the company they run.</h1>'),"the hero says what the site is, the same for every reader");
    assert(idx.includes('"CEOs own more than 5%"')&&idx.includes('"S&P 500 CEOs own more than 5%"'),"the rarity is the strip's first cell: a known denominator or none");
    assert(head.includes("what every CEO owns")&&idx.includes("The wealthiest CEOs")&&idx.includes('data-key="ceo">CEO<'),"the title, the board and the screener say CEO");}
-  assert(idx.includes("mailto:hello@founderledequities.com?subject=Refund"),
-    "the refund promise carries its address");
+  assert(require("fs").readFileSync("pro.html","utf8").includes("mailto:hello@founderledequities.com?subject=Refund"),
+    "the refund promise carries its address, on the plan page");
   assert(idx.includes('"/api/hit"')&&idx.includes("fle_nohit")&&idx.includes('hit("view","page")'),
     "the page counts its own visitors, and the owner can switch it off");
   assert(!idx.includes("document.cookie"),"and sets no cookie to do it");
@@ -508,7 +510,7 @@ const P=runPage();
   assert(idx.includes("Latest filing")&&idx.includes("EVENTS.reduce"),
     "the header dates the newest filing read, not the newest that moved a stake");
   const terms=require("fs").readFileSync("terms.html","utf8");
-  for(const t of ["$5 per month","7 days","hello@founderledequities.com","not investment advice"])
+  for(const t of ["$19 per month","$190 per year","14-day trial","7 days","hello@founderledequities.com","not investment advice"])
     assert(terms.toLowerCase().includes(t.toLowerCase()),"terms.html carries: "+t);
 
   // ---- the free file: every S&P event, the seal is the only gate ----

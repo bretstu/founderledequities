@@ -5,7 +5,7 @@ const withV=p=>p+(p.includes("?")?"&":"?")+"v="+DATA_V;
 /* the tape page: loads the panel, the founders and the events for the
    reader's tier, then renders the same block the home page carries */
 const $=s=>document.querySelector(s);
-function openPro(){location.href="/#pro";}
+function openPro(){location.href="/pro/";}
 async function fetchText(paths){
   for(const p of paths){try{const q=await fetch(withV(p));if(q.ok)return await q.text();}catch(e){}}
   return null;

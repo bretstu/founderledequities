@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pro · Founder Led Equities</title>
+  <meta name="description" content="Founder Led Equities Pro: every US public company worth $1 billion or more, the full record of every stake since 2016, the tape at every window, export, and a watchlist. $19 a month or $190 a year, 14-day trial. S&P 500 current stakes stay free.">
+  <link rel="canonical" href="https://founderledequities.com/pro/">
+  <meta property="og:title" content="Founder Led Equities Pro">
+  <meta property="og:description" content="Full tape. Full history. Every name over $1B.">
+  <meta property="og:image" content="https://founderledequities.com/og.png">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/hanken.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/site.css">
+  <style>
+    /* THE PRO PAGE (PLAN.md sections 2 and 5): one plan, four lines, the
+       trial button, the quiet line. Not a SaaS pricing grid. */
+    .propage{max-width:640px;margin:0 auto;padding:56px clamp(20px,3.5vw,48px) 80px;text-align:center}
+    .propage .k{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+    .propage h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.06;font-size:clamp(36px,5vw,58px);margin:14px 0 14px}
+    .propage .sub{font-size:17px;line-height:1.5;color:var(--mut);max-width:44ch;margin:0 auto 32px}
+    .plan{border:1px solid var(--ink);padding:26px 28px 24px;text-align:left;background:var(--bg)}
+    .plan .name{font-family:var(--disp);font-weight:500;font-size:28px;text-align:center;letter-spacing:-.01em;padding-bottom:14px;border-bottom:1px solid var(--line)}
+    .plan .price{display:flex;flex-direction:column;align-items:center;padding:18px 0 14px;border-bottom:1px solid var(--line)}
+    .plan .price .big{font-family:var(--disp);font-weight:500;font-size:44px;letter-spacing:-.02em;line-height:1}
+    .plan .price .big small{font-family:var(--ui);font-size:16px;font-weight:400;color:var(--mut);letter-spacing:0;margin-left:4px}
+    .plan .price .alt{font-size:14px;color:var(--mut);margin-top:8px}
+    .plan ul{list-style:none;margin:0;padding:18px 0 14px;border-bottom:1px solid var(--line)}
+    .plan li{font-size:15px;line-height:1.45;padding:5px 0 5px 26px;position:relative}
+    .plan li::before{content:"\2713";position:absolute;left:2px;top:5px;font-weight:700}
+    .plan .trial{font-size:13.5px;color:var(--mut);text-align:center;margin:16px 0 12px}
+    .plan .btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+    .plan .btn{font:inherit;font-size:14px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:12px 22px;border:1px solid var(--ink);border-radius:0;cursor:pointer;text-decoration:none;display:inline-block}
+    .plan .btn.primary{background:var(--ink);color:var(--bg)}
+    .plan .btn.primary:hover{background:#000}
+    .plan .btn.secondary{background:transparent;color:var(--ink)}
+    .plan .btn.secondary:hover{background:var(--ink);color:var(--bg)}
+    .quiet{font-size:14px;color:var(--mut);margin:22px 0 0}
+    .rule{font-family:var(--mono);font-size:11px;color:var(--faint);line-height:1.6;margin:28px auto 0;max-width:60ch}
+    .signin{font-size:13px;color:var(--mut);margin-top:22px}
+    .signin a{color:var(--ink)}
+    .profoot{border-top:1px solid var(--line);margin:56px auto 0;padding:16px 0 0;font-size:12.5px;color:var(--mut);max-width:1120px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    .profoot a{color:var(--mut)}
+  </style>
+</head>
+<body>
+{{TOPNAV}}
+<main class="propage">
+  <div class="k">Founder Led Equities</div>
+  <h1>Full tape. Full history.<br>Every name over $1B.</h1>
+  <p class="sub">Other sites show the Form 4. This site shows whether the stake actually moved.</p>
+
+  <div class="plan">
+    <div class="name">Pro</div>
+    <div class="price">
+      <div class="big">$19<small>/month</small></div>
+      <div class="alt">or $190/year</div>
+    </div>
+    <ul>
+      <li>Every US public company worth $1B or more, not only the S&amp;P 500: the stake, the shares, what they are worth</li>
+      <li>The full record on every name: every trade since 2016, the stake over time, each filing linked</li>
+      <li>The tape at 30 days, 90 days and 12 months, and CSV export of the tape and the screener with the kind columns</li>
+      <li>A watchlist instead of one watch</li>
+    </ul>
+    <div class="trial">14-day trial &middot; cancel anytime, in one click</div>
+    <div class="btns">
+      <a class="btn primary" href="/api/checkout?plan=monthly">Start trial, $19/mo</a>
+      <a class="btn secondary" href="/api/checkout?plan=yearly">$190/year</a>
+    </div>
+  </div>
+
+  <p class="quiet">S&amp;P 500 current stakes stay free.</p>
+  <p class="rule">S&amp;P 500 current stakes and the last twelve months are open. The archive, every other $1B+ name, longer tape windows, and export are Pro. Nothing here is investment advice.</p>
+  <p class="signin">Already subscribed? <a href="/#signin">Sign in</a> &middot; Full refund within 7 days of any charge: <a href="mailto:hello@founderledequities.com?subject=Refund%20request">hello@founderledequities.com</a> &middot; <a href="/terms.html">Terms</a></p>
+</main>
+<div class="profoot"><span><a href="/about.html">Method</a> &middot; Nothing here is investment advice &middot; Every figure links to the filing</span><span style="font-family:var(--mono);font-size:11px;color:var(--faint)">founderledequities.com</span></div>
+</body>
+</html>

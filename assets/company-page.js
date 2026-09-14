@@ -8,7 +8,7 @@ const withV=p=>p+(p.includes("?")?"&":"?")+"v="+DATA_V;
 const C=window.COMPANY||{};
 const $=s=>document.querySelector(s);
 /* the Pro box lives on the home page; a click on a seal here lands on it */
-function openPro(){location.href="/#pro";}
+function openPro(){location.href="/pro/";}
 const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
 let VIEW="all",BIG=false;   /* BIG: only rows that moved the stake by 1% or more */
 

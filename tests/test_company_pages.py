@@ -99,7 +99,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert 'src="/company.js?v=' in tsla and 'href="/site.css?v=' in tsla, "a new script is a new address"
     assert os.path.exists(os.path.join(out, "site.css"))
     sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
-    assert sm.count("<loc>") == 6 and "/company/SEALD/" in sm and "/companies/" in sm and "/tape/" in sm, \
+    assert sm.count("<loc>") == 7 and "/company/SEALD/" in sm and "/companies/" in sm and "/tape/" in sm and "/pro/" in sm, \
         "every company is in the sitemap: the open ones with the answer, the sealed ones with the question"
     robots = open(os.path.join(out, "robots.txt"), encoding="utf-8").read()
     assert "Disallow: /pro/" in robots and "Sitemap:" in robots
@@ -384,3 +384,22 @@ def test_the_tape_is_a_page(tmp_path):
     fn_src = open(os.path.join(ROOT, "functions", "api", "subscribe.js"), encoding="utf-8").read()
     assert "/contacts" in fn_src and "/segments/${env.RESEND_SEGMENT_ID}" in fn_src and "sub:${token}" in fn_src and "expirationTtl: 86400" in fn_src, \
         "double opt-in through a one-day token: the contact is created, then added to the letter's segment"
+
+
+def test_the_pro_page_is_the_plan(tmp_path):
+    """/pro/: one plan, the two prices, the trial, the four lines, the quiet
+    line, the copy rule; the masthead from index.html; every Go Pro on the
+    site is a link to it, and the checkout takes the plan."""
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    page = open(os.path.join(out, "pro", "index.html"), encoding="utf-8").read()
+    assert "{{TOPNAV}}" not in page and 'class="topnav"' in page
+    assert "$19" in page and "$190" in page and "14-day trial" in page and "S&amp;P 500 current stakes stay free" in page
+    assert 'href="/api/checkout?plan=monthly"' in page and 'href="/api/checkout?plan=yearly"' in page
+    assert "the last twelve months are open" in page, "the copy rule, verbatim"
+    idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
+    assert 'function openPro(){location.href="/pro/";}' in idx and 'href="/pro/">Pro</a>' in idx
+    for f in ("assets/company-page.js", "assets/tape-page.js"):
+        assert 'location.href="/pro/"' in open(os.path.join(ROOT, f), encoding="utf-8").read(), f
+    co = open(os.path.join(ROOT, "functions", "api", "checkout.js"), encoding="utf-8").read()
+    assert "PRICE_ID_MONTHLY" in co and "PRICE_ID_YEARLY" in co and '"subscription_data[trial_period_days]": "14"' in co and 'payment_method_collection: "always"' in co

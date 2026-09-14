@@ -102,7 +102,7 @@ def extract_topnav(index_html: str) -> str:
     nav = nav.replace('href="#', 'href="/#').replace('href="about.html"', 'href="/about.html"')
     nav = re.sub(r'\s*<button class="devtog".*?</button>', "", nav, flags=re.S)
     nav = re.sub(r'<button class="gopro" onclick="openPro\(\)">Go Pro</button>',
-                 '<a class="gopro" href="/#pro" style="text-decoration:none">Go Pro</a>', nav)
+                 '<a class="gopro" href="/pro/" style="text-decoration:none">Go Pro</a>', nav)
     nav = nav.replace("onclick=\"window.scrollTo({top:0,behavior:'smooth'})\"", "onclick=\"location.href='/'\"")
     nav = nav.replace("onkeydown=\"if(event.key==='Enter')window.scrollTo({top:0,behavior:'smooth'})\"",
                       "onkeydown=\"if(event.key==='Enter')location.href='/'\"")
@@ -396,7 +396,7 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
             f"<link rel=\"stylesheet\" href=\"/site.css?v={css_v}\">\n"
             f"<style>{INDEX_CSS}</style></head><body>\n{topnav}\n"
             "<main class=\"cidx\"><div class=\"wrap\"><h1>Every company</h1>\n"
-            f"<div class=\"sub\">{n} US public companies worth $1B or more, each with a page for what its chief executive owns. The S&amp;P 500 is free; the rest is Pro.</div>\n"
+            f"<div class=\"sub\">{n} US public companies worth $1B or more, each with a page for what its chief executive owns. S&amp;P 500 current stakes are open; the rest is Pro.</div>\n"
             f"<div class=\"letters\">{nav}</div>\n{''.join(parts)}\n</div></main>\n"
             "<footer class=\"foot\"><div class=\"wrap\"><span><b>Founder Led <i>Equities</i></b> &middot; Computed from SEC EDGAR. Not investment advice. &middot; <a href=\"/about.html\">About &amp; method</a></span></div></footer>\n"
             "</body></html>")
@@ -466,6 +466,15 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         os.makedirs(os.path.join(out_dir, "tape"), exist_ok=True)
         with open(os.path.join(out_dir, "tape", "index.html"), "w", encoding="utf-8") as fh:
             fh.write(tape_html)
+    # THE PRO PAGE (PLAN.md section 5): static, the masthead from index.html
+    pro_tpl_p = os.path.join(root, "pro.html")
+    if os.path.exists(pro_tpl_p):
+        pro_html = (open(pro_tpl_p, encoding="utf-8").read()
+                    .replace("{{TOPNAV}}", extract_topnav(index_html))
+                    .replace('href="/site.css"', f'href="/site.css?v={css_v}"'))
+        os.makedirs(os.path.join(out_dir, "pro"), exist_ok=True)
+        with open(os.path.join(out_dir, "pro", "index.html"), "w", encoding="utf-8") as fh:
+            fh.write(pro_html)
     topnav = extract_topnav(index_html)
 
     sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
@@ -589,7 +598,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     with open(os.path.join(out_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
         fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
         today = datetime.date.today().isoformat()
-        for u in [f"{SITE}/", f"{SITE}/tape/", f"{SITE}/about.html"] + urls:
+        for u in [f"{SITE}/", f"{SITE}/tape/", f"{SITE}/pro/", f"{SITE}/about.html"] + urls:
             m = re.search(r"/company/([A-Z0-9.\-]+)/$", u)
             lm = (lastmods.get(m.group(1)) if m else "") or today
             fh.write(f"  <url><loc>{html.escape(u)}</loc><lastmod>{lm}</lastmod></url>\n")
