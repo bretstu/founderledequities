@@ -117,10 +117,6 @@ cp -r site-data/. public/
 if [ "$(date +%u)" = "6" ]; then
   python3 ops/weekly.py || echo "  weekly: briefing failed; the site is unaffected"
 fi
-# ---- 2d. THE WATCHES (PLAN.md 5a): the day's open-market buys and discretionary
-# sales go to /api/watch/run, which holds the watches and sends the alerts.
-# The high-water mark keeps a rerun from posting a filing twice.
-python3 ops/alerts.py || echo "  alerts: failed; the site is unaffected"
 # ---- 2c. THE MONDAY TAPE IS DRAFTED, NEVER SENT, BY THE PIPELINE (PLAN.md 5a) ----
 # On Mondays the letter for the week is drafted to weekly/letter-<date>.md
 # with a preview beside it; a person edits it and runs ops/send-tape.sh.
@@ -195,5 +191,11 @@ PYSEAL
 # anything else is a preview at https://<branch>.founderledequities.pages.dev
 BRANCH="${FLE_BRANCH:-production}"
 wrangler pages deploy public --project-name founderledequities --branch="$BRANCH" --commit-dirty=true
+# ---- last. THE WATCHES (PLAN.md 5a): once today's pages are live, the day's
+# open-market buys and discretionary sales go to /api/watch/run, which holds
+# the watches and sends the alerts; the links in them land on pages that
+# already carry the filing. The high-water mark keeps a rerun from posting
+# a filing twice.
+python3 ops/alerts.py || echo "  alerts: failed; the site is unaffected"
 [ "$BRANCH" != "production" ] && echo "preview: https://${BRANCH}.founderledequities.pages.dev"
 true
