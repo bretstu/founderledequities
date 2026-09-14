@@ -49,7 +49,7 @@ COPY_RULE = ("S&P 500 current stakes and the last twelve months are open. "
 POSTAL_PLACEHOLDER = "[postal address]"
 COMPENSATION = {"exercise and sell", "exercise, part sold", "vested and sold", "convert and sell",
                 "sale, position unchanged", "purchase, position unchanged"}
-KIND_WORD = {"bought": "Bought", "disc": "Discretionary", "plan": "Plan", "comp": "Compensation"}
+KIND_WORD = {"bought": "Bought", "disc": "Discretionary", "plan": "Planned", "comp": "Compensation"}
 KIND_ORDER = {"bought": 0, "disc": 1, "plan": 2, "comp": 3}
 KIND_COLOR = {"bought": "#1F6B3A", "disc": "#B23428", "plan": "#6E6A64", "comp": "#8C8880"}
 
@@ -367,7 +367,7 @@ def render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal=None):
                 f'<th align="{"right" if h in ("Amount","New stake") else "left"}" style="font-size:11px;font-weight:bold;letter-spacing:.06em;text-transform:uppercase;color:{INK};padding:0 6px 8px 0;border-bottom:1px solid {INK};white-space:nowrap;">{html.escape(h)}</th>'
                 for h in head) + "</tr>")
             for cells in body:
-                k = {"Bought": "bought", "Discretionary": "disc", "Plan": "plan", "Compensation": "comp"}.get(cells[0], "plan")
+                k = {"Bought": "bought", "Discretionary": "disc", "Planned": "plan", "Plan": "plan", "Compensation": "comp"}.get(cells[0], "plan")
                 dim = k == "comp"
                 col = FAINT if dim else INK
                 tds = []
@@ -418,7 +418,7 @@ def archive_page(md, topnav, css_href="/site.css"):
             head, rows = val[0], val[1:]
             body.append('<table class="tape"><thead><tr>' + "".join(f'<th{" class=\"n\"" if h in ("Amount","New stake") else ""}>{html.escape(h)}</th>' for h in head) + "</tr></thead><tbody>")
             for cells in rows:
-                k = {"Bought": "bought", "Discretionary": "disc", "Plan": "plan", "Compensation": "comp"}.get(cells[0], "plan")
+                k = {"Bought": "bought", "Discretionary": "disc", "Planned": "plan", "Plan": "plan", "Compensation": "comp"}.get(cells[0], "plan")
                 tds = []
                 for i, c in enumerate(cells):
                     h = head[i] if i < len(head) else ""
