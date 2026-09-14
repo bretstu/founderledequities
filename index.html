@@ -155,9 +155,9 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .herobtns{margin-top:18px}
 /* the tape excerpt on the home page: no controls; the full tape a click away */
 .excerpt .tapectl,.excerpt .pronote,.excerpt .actstats{display:none}
-.hometape{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.hometape{margin-top:12px}
 .homesub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.homesub .hs-k{font-family:var(--disp);font-size:18px;font-weight:500;margin-right:4px}
+.homesub .hs-k{font-size:14px;font-weight:600;margin-right:4px}
 .homesub input{font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;width:220px}
 .homesub button{font:inherit;font-size:14px;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:0;padding:9px 16px;cursor:pointer}
 .homesub button:disabled,.homesub input:disabled{opacity:.55;cursor:default}
@@ -256,12 +256,12 @@ td.ceo .fb{vertical-align:2px}
 @media(max-width:980px){.h-mc,.c-mc,.w-mc{display:none}.w-lt{width:16%}}
 @media(max-width:760px){.h-conf,.c-conf,.w-conf,.h-lt,.c-lt,.w-lt,.h-ltd,.c-ltd,.w-ltd,.h-d3,.c-d3,.w-d3,.h-mc,.c-mc,.w-mc{display:none}.w-co{width:34%}.w-ceo{width:26%}.w-own{width:20%}.w-val{width:14%}
   table.screen .tbar{display:none}table.screen .tpct{min-width:0}table.screen thead th,table.screen tbody td{padding-left:8px;padding-right:8px}}
-thead th{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-align:left;padding:10px 12px;border-bottom:1px solid var(--ink);white-space:nowrap}
+thead th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:sticky;top:0;background:var(--bg);z-index:1}
 thead th.sortable{cursor:pointer;user-select:none}
 thead th.sortable:hover{color:var(--ink)}
 thead th .arr{display:inline-block;width:1em;color:var(--blue)}
 thead th.n,td.n{text-align:right}
-tbody td{padding:12px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+tbody td{padding:9px 10px 9px 0;border-top:1px solid var(--line2);font-size:14px;vertical-align:middle}
 tbody tr{cursor:pointer}
 tbody tr:hover{background:var(--wash)}
 td.rk{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:right;width:44px}
@@ -298,12 +298,20 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .shead .exit{font-family:var(--ui);font-size:13.5px;font-weight:600;color:var(--ink);border:1px solid var(--ink);padding:8px 14px;text-decoration:none;white-space:nowrap;align-self:center}
 .shead .exit:hover{background:var(--ink);color:var(--bg)}
 .tablesec:not(.home) .shead .exit{display:none}
-/* THE PREVIEW IS COMPACT: one line per company, a tighter row, so ten
-   names and the week's tape share a laptop screen */
-.tablesec.home tbody td{padding:7px 10px;font-size:13.5px}
+/* TWO CUTS OF ONE INSTRUMENT (2026-09-14): the home preview shares the
+   tape's chrome: no outer box, the same header row, the same hairlines
+   and row rhythm; one line per company; the columns a stranger needs
+   (Company · CEO · Own · Value · Last move, the date inside Last move). */
+.tablesec.home .tscroll{border:0;background:transparent;border-radius:0;max-height:none;overflow:visible}
+.tablesec.home tbody td{font-size:14px}
 .tablesec.home td .tk{display:inline;margin-right:8px}
-.tablesec.home td .nm{display:inline;font-size:12px}
-.tablesec.home td.rk{font-size:11px}
+.tablesec.home td .nm{display:inline;font-size:12.5px}
+.tablesec.home .w-rk,.tablesec.home td.rk,.tablesec.home th:first-child,
+.tablesec.home .h-fd,.tablesec.home .c-fd,.tablesec.home .w-fd,
+.tablesec.home .h-ltd,.tablesec.home .c-ltd,.tablesec.home .w-ltd{display:none}
+.tablesec.home .w-co{width:34%}.tablesec.home .w-ceo{width:26%}.tablesec.home .w-own{width:11%}.tablesec.home .w-val{width:11%}.tablesec.home .w-lt{width:18%}
+.tablesec.home td.c-lt .dt{display:inline}
+td.c-lt .dt{display:none;font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:8px}
 /* THE HOME PAGE'S SIX COLUMNS: company, CEO, founder, ownership, value,
    the last move and its date. Market cap, the year's return and the
    amount are the screener's, on /companies/. */
@@ -654,7 +662,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
       <th class="sortable" data-key="co">Company<span class="arr"></span></th>
       <th class="sortable h-ceo" data-key="ceo">CEO<span class="arr"></span></th>
       <th class="sortable h-fd" data-key="fd" title="the proxy names this CEO a founder">Founder<span class="arr"></span></th>
-      <th class="sortable n" data-key="pct">Ownership<span class="arr"></span></th>
+      <th class="sortable n" data-key="pct">Own<span class="arr"></span></th>
       <th class="sortable n" data-key="val" title="the stake's value: shares held at the latest close">Value<span class="arr"></span></th>
       <th class="sortable n h-mc" data-key="mcap" title="market capitalization: shares outstanding at the latest close">Mkt cap<span class="arr"></span></th>
       <th class="sortable n h-r1" data-key="r1" title="the stock's price return over the last twelve months">1Y return<span class="arr"></span></th>
@@ -705,7 +713,7 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
          button, the same signup /tape/ carries. -->
     <div class="hometape">
       <form class="homesub" id="homesub" onsubmit="return subscribeHome(event)">
-        <span class="hs-k">Monday tape, free.</span>
+        <span class="hs-k">Monday letter, free.</span>
         <input type="email" id="homeemail" placeholder="you@example.com" required autocomplete="email">
         <button type="submit">Send it</button>
         <span class="hs-msg" id="homemsg"></span>
@@ -1372,7 +1380,7 @@ function renderTable(){
      <td class="n num">${r.masked?LOCK("in Pro","$00.0M"):r.val?money(r.val):""}</td>
      <td class="n num c-mc">${r.mcap?money(r.mcap):""}</td>
      <td class="n num c-r1">${r.r1===null||r.r1===undefined?`<span class="nopr"></span>`:`<span class="${r.r1>=0?"up":"down"}">${r.r1>=0?"+":""}${r.r1.toFixed(1)}%</span>`}</td>
-     <td class="c-lt">${r.ltev?`<span class="kind ${r.ltk==="bought"?"bought":r.ltk==="planned"?"plan":"disc"}">${r.man}</span>`:`<span class="nopr" title="no trade that moved the public-company stake on record"></span>`}</td>
+     <td class="c-lt">${r.ltev?`<span class="kind ${r.ltk==="bought"?"bought":r.ltk==="planned"?"plan":"disc"}">${r.man}</span><span class="dt">${shortDay(r.ltev.td||r.ltev.fd)}</span>`:`<span class="nopr" title="no trade that moved the public-company stake on record"></span>`}</td>
      <td class="n num c-amt">${r.ltev&&r.ltev.mk?LOCK("in Pro","$0.0M"):r.ltev&&r.ltev.v&&!r.ltev.fl?money(r.ltev.v):`<span class="nopr"></span>`}</td>
      <td class="c-ltd">${r.ltev?`<span class="ltd" title="traded ${r.ltev.td||r.ltev.fd}; filed ${r.ltev.fd}${lagNote(r.ltev)}">${r.ltev.td||r.ltev.fd}</span>`:`<span class="nopr"></span>`}</td>
     </tr>`}).join("");

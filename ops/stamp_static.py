@@ -125,14 +125,20 @@ def rows_html(rows, last, outstanding, prices):
             code = lt.get("code")
             k = "bought" if code == "P" else ("plan" if (lt.get("plan") or "") == "plan" else "disc")
             word = {"bought": "Bought", "plan": "Planned", "disc": "Discretionary"}[k]
-            kind = f'<span class="kind {k}">{word}</span>'
+            when = html.escape(lt.get("traded") or lt.get("filed") or "")
+            try:
+                import datetime as _dt
+                _d = _dt.date.fromisoformat(when)
+                short = f"{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][(_d.weekday() + 1) % 7]} {_d.month}/{_d.day}"
+            except ValueError:
+                short = when
+            kind = f'<span class="kind {k}">{word}</span><span class="dt">{short}</span>'
             try:
                 v = float(lt.get("value") or 0)
             except ValueError:
                 v = 0
             amt = ('<span class="sealed" data-shape="$0.0M" aria-label="in Pro"></span>' if r["sealed"]
                    else (money(v) if v and not (lt.get("price_flag") or "") else '<span class="nopr"></span>'))
-            when = html.escape(lt.get("traded") or lt.get("filed") or "")
             ltd = f'<span class="ltd">{when}</span>'
         else:
             kind, amt, ltd = '<span class="nopr"></span>', '<span class="nopr"></span>', '<span class="nopr"></span>'
