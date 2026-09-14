@@ -123,7 +123,11 @@ fi
 # An existing draft is never overwritten (an edit must survive a redeploy).
 if [ "$(date +%u)" = "1" ]; then
   python3 ops/letter.py draft || echo "  letter: draft failed; the site is unaffected"
+  python3 ops/fact.py --monday "$(date +%F)" || echo "  drafts: the Monday thread failed"
 fi
+# ---- 2e. THE DAY'S SENTENCES (distribution): drafts/x-today.md, one line per
+# decision filed today, for a person to pick from. Nothing is posted.
+python3 ops/fact.py --today || echo "  drafts: today's lines failed"
 
 # ---- 3. the HTML says what the page says ----
 # The hero, the stat strip and the top ten of the leaderboard are written

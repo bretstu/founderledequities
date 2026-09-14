@@ -305,3 +305,32 @@ an API, a second tier, recommendations, YouTube/Discord/podcast.
 - `/tape` and `/pro` exist as pages; `/pro` states $15 / $150.
 - The watch cap of one is enforced (at the request and at the confirming click).
 - The Method page still explains the number in full.
+
+## 9. Distribution (2026-09-14)
+
+The site's one marketing asset is a true, dated, specific sentence with
+a URL, about a person people already talk about. Every channel is a
+place to put that sentence where the question is being asked.
+
+- Search: 2,135 company pages with the query in the title; internal
+  links from the tape and the letter archive; a visible last-updated
+  date; Search Console requests for the biggest names. Slow, compounding.
+- The Monday letter: the habit. The list grows from the other channels.
+- X, as the footnote: replies with the number and the company URL when
+  a name is on the timeline; the Monday thread; three fact posts a week
+  from the queue the nightly writes. Company cards unfurl the link.
+- One launch, once the letter has gone out three times: Show HN, and a
+  monthly source-linked post in r/investing or r/ValueInvesting only
+  when there is a finding.
+- The footnote for writers: the number in a reporter's inbox with the
+  link when a founder trade is news.
+- Not: a blog, LinkedIn, a daily firehose, any bot. The pipeline
+  suggests; a person publishes.
+
+What the pipeline writes for it: `drafts/x-today.md` nightly (the day's
+open-market buys and discretionary sales, one line each with the amount,
+the stake after and the company URL, notable ones first), `drafts/x-monday.md`
+with the letter (the week as one thread), `ops/fact.py TICKER` for the
+reply sentence, and "Copy the sentence" on every company page. Next: a
+Monday dashboard line (list size, visitors, signups, watches, pages
+indexed) and the unfurl check.

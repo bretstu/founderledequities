@@ -449,7 +449,8 @@ function watchBlock(r){
       ${form}
     </div>`}
     <div class="wmsg" id="wmsg"></div>
-    <div class="wfine">${state.pro?`<a href="/account/">Your watches &rarr;</a>`:`One founder watch is free. A list of names is <a href="/pro/">Pro</a>.`}</div>
+    <div class="wfine">${state.pro?`<a href="/account/">Your watches &rarr;</a>`:`One founder watch is free. A list of names is <a href="/pro/">Pro</a>.`}
+      &middot; <a href="#" onclick="copyFact(PANEL[0]);return false" title="the stake, the record and this page's address, for wherever the name comes up">Copy the sentence</a> <span id="factmsg" class="factmsg"></span></div>
   </div>`;
 }
 async function unwatchThis(tk){
@@ -476,6 +477,23 @@ async function watchThis(tk,ev){
     else if(btn){btn.disabled=false;btn.textContent="Watch";}
   }catch(e){m.textContent="Something went wrong; write to hello@founderledequities.com.";if(btn){btn.disabled=false;btn.textContent="Watch";}}
   return false;
+}
+/* THE SENTENCE, COPYABLE (distribution): the stake as of the filing, the
+   record, the page's URL. A reader who pastes it into a group chat is
+   carrying the number and the address; that is the site's marketing. */
+function factSentence(r){
+  const evs=EVENTS.filter(e=>e.tk===r.tk&&(e.c==="P"||e.c==="S")&&unchangedKind(e)===null&&!e.pre);
+  const buys=evs.filter(e=>e.c==="P").length,sells=evs.length-buys;
+  const co=r.co||C.co||r.tk,ceo=r.ceo||C.ceo||"the CEO";
+  const who=(fInfo(r.tk)||{}).f==="yes"?"a founder":"hired";
+  const asof=r.asof?new Date(r.asof+"T00:00:00Z").toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"}):"";
+  const stake=r.masked?"a stake this site holds in Pro":`${r.pct!==null&&r.pct!==undefined?(r.pct<1?r.pct.toFixed(3):r.pct.toFixed(2))+"%":"an unstated share"} of ${co}`;
+  return `${ceo} owns ${stake} (${r.tk})${asof?` as of the ${asof} filing`:""}, ${who}. Since 2016: ${buys} open-market buy${buys===1?"":"s"}, ${sells} sale${sells===1?"":"s"} that moved the stake.\n${location.origin}/company/${r.tk}/`;
+}
+async function copyFact(r){
+  const t=factSentence(r),m=$("#factmsg");
+  try{await navigator.clipboard.writeText(t);if(m)m.textContent="Copied.";}
+  catch(e){if(m)m.textContent=t;}
 }
 function whyBlock(r){
   if(r.masked)return "";
