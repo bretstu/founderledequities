@@ -27,6 +27,8 @@ echo "  S&P list: $SP_LIST"
 # FLE_PERF_FORCE=1. A failure keeps what is on disk.
 if python3 - << 'PYGUARD'
 import csv, datetime, os, sys
+if os.environ.get("FLE_QUICK") == "1":
+    print("  perf: skipped (quick run); closes do not change intraday"); sys.exit(1)
 if os.environ.get("FLE_PERF_FORCE") == "1":
     print("  perf: forced"); sys.exit(0)
 if not os.path.isdir("price-history") or not os.listdir("price-history"):
@@ -74,8 +76,12 @@ fi
 # store, which is why this runs BEFORE the site build copies the store's
 # files into place. A failure keeps yesterday's file -- the deploy never
 # publishes an empty prices.csv over a good one.
-python3 -m fle.cli prices --panel panel.csv --store price-history --out prices.csv \
-  || echo "  prices: fetch failed; keeping the existing prices.csv"
+if [ "${FLE_QUICK:-0}" = "1" ]; then
+  echo "  prices: skipped (quick run); yesterday's close stands"
+else
+  python3 -m fle.cli prices --panel panel.csv --store price-history --out prices.csv \
+    || echo "  prices: fetch failed; keeping the existing prices.csv"
+fi
 
 # ---- 1b. the site's data, generated fresh ----
 python3 ops/build_site_data.py \
