@@ -223,7 +223,12 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
         page = page.replace('<p class="thisweek" id="thisweek"></p>',
                             f'<p class="thisweek" id="thisweek"><a href="/tape/">{sentence} <span class="arr">&rarr;</span></a></p>', 1)
         word = {"bought": "Bought", "disc": "Discretionary", "plan": "Planned", "comp": "Compensation"}
-        manner = {"bought": "Open market", "disc": "Open market", "plan": "Pre-set plan", "comp": "Compensation"}
+        co_of = {}
+        try:
+            for pr in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
+                co_of[(pr.get("ticker") or "").upper()] = pr.get("company") or ""
+        except OSError:
+            pass
         out = []
         shown = [r for r in wrows if r["kind"] != "comp"][:8]
         for r in shown:
@@ -232,12 +237,12 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
             stake = ('<span class="sealed" data-shape="0.00%" aria-label="in Pro"></span>' if r["sealed"]
                      else (_letter.pct(r["after"]) if r["after"] is not None else ""))
             out.append(f'<tr class="dayrow"><td class="kd"><span class="kind {k}">{word[k]}</span></td>'
-                       f'<td class="co"><a class="pglink" href="/company/{html.escape(r["tk"])}/">{html.escape(r["tk"])}</a></td>'
+                       f'<td class="co"><a class="pglink" href="/company/{html.escape(r["tk"])}/">{html.escape(r["tk"])}</a><span class="nm">{html.escape(co_of.get(r["tk"], ""))}</span></td>'
                        f'<td class="ceo"><span class="cn">{html.escape(r["ceo"])}</span></td>'
-                       f'<td class="n v">{amt}</td><td class="n st">{stake}</td><td class="mn">{manner[k]}</td>'
+                       f'<td class="n v">{amt}</td><td class="n st">{stake}</td>'
                        f'<td class="td"><span class="dt">{html.escape(r["traded"])}</span></td></tr>')
-        table = ('<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-st"><col class="tw-mn"><col class="tw-td"></colgroup>'
-                 '<thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Manner</th><th>Traded</th></tr></thead>'
+        table = ('<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-st"><col class="tw-td"></colgroup>'
+                 '<thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Traded</th></tr></thead>'
                  '<tbody>' + "".join(out) + '</tbody></table>')
         page = page.replace('<div class="tapewrap" id="actwrap"></div>', f'<div class="tapewrap" id="actwrap">{table}</div>', 1)
         page = page.replace('<div class="actnote" id="actnote"></div>',

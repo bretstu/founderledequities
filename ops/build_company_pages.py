@@ -560,7 +560,12 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         if not rows:
             return ""
         word = {"bought": "Bought", "disc": "Discretionary", "plan": "Planned", "comp": "Compensation"}
-        manner = {"bought": "Open market", "disc": "Open market", "plan": "Pre-set plan", "comp": "Compensation"}
+        co_of = {}
+        try:
+            for pr in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
+                co_of[(pr.get("ticker") or "").upper()] = pr.get("company") or ""
+        except OSError:
+            pass
         out = []
         for rr in rows[:60]:
             k = rr["kind"]
@@ -568,12 +573,12 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
             stake = ('<span class="sealed" data-shape="0.00%" aria-label="in Pro"></span>' if rr["sealed"]
                      else (_letter.pct(rr["after"]) if rr["after"] is not None else ""))
             out.append(f'<tr class="dayrow{" dim" if k == "comp" else ""}"><td class="kd"><span class="kind {k}">{word[k]}</span></td>'
-                       f'<td class="co"><a class="pglink" href="/company/{html.escape(rr["tk"])}/">{html.escape(rr["tk"])}</a></td>'
+                       f'<td class="co"><a class="pglink" href="/company/{html.escape(rr["tk"])}/">{html.escape(rr["tk"])}</a><span class="nm">{html.escape(co_of.get(rr["tk"], ""))}</span></td>'
                        f'<td class="ceo"><span class="cn">{html.escape(rr["ceo"])}</span></td>'
-                       f'<td class="n v">{amt}</td><td class="n st">{stake}</td><td class="mn">{manner[k]}</td>'
+                       f'<td class="n v">{amt}</td><td class="n st">{stake}</td>'
                        f'<td class="td"><span class="dt">{html.escape(rr["traded"])}</span></td></tr>')
-        return ('<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-st"><col class="tw-mn"><col class="tw-td"></colgroup>'
-                '<thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Manner</th><th>Traded</th></tr></thead>'
+        return ('<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-st"><col class="tw-td"></colgroup>'
+                '<thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Traded</th></tr></thead>'
                 '<tbody>' + "".join(out) + '</tbody></table>')
 
     if os.path.exists(tape_tpl_p) and os.path.exists(tape_js_p):

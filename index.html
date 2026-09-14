@@ -316,6 +316,7 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:0}
 .tablesec.home tbody td{font-size:14px}
 .tablesec.home td .tk{display:inline;margin-right:8px}
 .tablesec.home td .nm{display:inline;font-size:12.5px}
+.tablesec.home td.c-co{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* ONE GRID: the home preview is five columns whose widths sum to 100
    (Company 28 · CEO 24 · Own 12 · Value 12 · Last move 24). The columns
    it does not carry are removed from the DOM at first paint (pruneHome),
@@ -324,7 +325,6 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:0}
 .tablesec.home .w-co{width:26%}.tablesec.home .w-ceo{width:22%}.tablesec.home .w-own{width:12%}.tablesec.home .w-val{width:12%}.tablesec.home .w-lt{width:16%}.tablesec.home .w-ltd{width:12%}
 .tablesec.home td.c-lt .dt{display:none}   /* the date is its own column, as on the tape */
 .tablesec.home td.ceo .cn{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
-.tablesec.home td.c-lt .dt{display:inline}
 td.c-lt .dt{display:none;font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:8px}
 /* THE HOME PAGE'S SIX COLUMNS: company, CEO, founder, ownership, value,
    the last move and its date. Market cap, the year's return and the
@@ -419,7 +419,7 @@ table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
 /* ONE SHAPE FOR BOTH TABLES: the name columns take the left half, the
    figures sit in narrow right-aligned columns near their labels, the
    last two columns are the move and its date. The CEO cell truncates. */
-.tw-kd{width:14%}.tw-co{width:14%}.tw-ceo{width:22%}.tw-v{width:12%}.tw-st{width:12%}.tw-mn{width:14%}.tw-td{width:12%}
+.tw-kd{width:16%}.tw-co{width:26%}.tw-ceo{width:22%}.tw-v{width:12%}.tw-st{width:12%}.tw-td{width:12%}
 table.tape th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
 table.tape th.n,table.tape td.n{text-align:right;padding-right:28px}
 table.tape td{padding:9px 10px 9px 0;border-top:1px solid var(--line2);font-size:14px;vertical-align:middle;white-space:nowrap}
@@ -429,8 +429,11 @@ table.tape tr.dim td{color:var(--faint)}
 table.tape td.kd{}
 table.tape .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
 table.tape .kind.bought{color:var(--buy)}table.tape .kind.disc{color:#B23428}table.tape .kind.plan{color:var(--mut)}table.tape .kind.comp{color:var(--faint)}
-table.tape td.co{font-weight:600}
-table.tape td.co a{color:inherit;text-decoration:none}table.tape td.co a:hover{text-decoration:underline}
+/* THE COMPANY CELL IS THE SAME CELL IN BOTH TABLES: the ticker in mono, the
+   name in grey after it, the row truncating rather than spilling */
+table.tape td.co{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+table.tape td.co a{font-family:var(--mono);font-weight:600;font-size:13px;color:inherit;text-decoration:none;margin-right:8px}table.tape td.co a:hover{text-decoration:underline}
+table.tape td.co .nm{font-size:12.5px;color:var(--mut)}
 table.tape td.ceo{overflow:hidden;text-overflow:ellipsis}
 table.tape td.ceo .cn{display:inline-block;max-width:calc(100% - 40px);overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
 table.tape td.n{font-family:var(--mono);font-size:13px}
@@ -1816,12 +1819,11 @@ function actRow(e){
   const amt=dim?"&mdash;":(e.fl?`<span class="nopr" title="${e.fl}">${evValCell(e)}</span>`:evValCell(e));
   return `<tr class="dayrow${dim?" dim":""}" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
     <td class="kd"><span class="kind ${k}" title="${k==="bought"?"an open-market purchase that moved the stake":k==="disc"?"a sale the person chose the day of":k==="plan"?"planned: a sale under a pre-set plan (Rule 10b5-1), scheduled long before the trade date":"compensation cashed; the stake did not move the way a purchase or sale does"}">${KIND_WORD[k]}</span></td>
-    <td class="co"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></td>
+    <td class="co"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a><span class="nm">${coOf(e.tk)}</span></td>
     <td class="ceo"><span class="cn" title="${(e.ceo||coOf(e.tk)).replace(/"/g,"&quot;")}">${e.ceo||coOf(e.tk)}</span>${fMark(e.tk)}${e.fb?`<span class="firstb" title="this person's first open-market purchase on record">first buy</span>`:""}</td>
     <td class="n v">${e.u&&!dim?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">${amt}</a>`:amt}</td>
     <td class="n st">${stake}</td>
-    <td class="mn">${tapeManner(e)}</td>
-    <td class="td"><span class="dt" title="the transaction date${e.tf&&e.tf!==e.td?"s":""}; filed ${e.fd}${lagNote(e)}">${spanDay(e,shortDay)}</span></td>
+    <td class="td"><span class="dt" title="${tapeManner(e)}; the transaction date${e.tf&&e.tf!==e.td?"s":""}; filed ${e.fd}${lagNote(e)}">${spanDay(e,shortDay)}</span></td>
   </tr>`;
 }
 /*@shared*/
@@ -1847,7 +1849,7 @@ function renderActivity(){
   const limit=typeof TAPE_LIMIT==="number"?TAPE_LIMIT:0;
   const shown=limit&&rows.length>limit?rows.slice(0,limit):rows;
   $("#actwrap").innerHTML=rows.length
-    ?`<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-st"><col class="tw-mn"><col class="tw-td"></colgroup><thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Manner</th><th>Traded</th></tr></thead><tbody>${shown.map(actRow).join("")}</tbody></table>`
+    ?`<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-st"><col class="tw-td"></colgroup><thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Traded</th></tr></thead><tbody>${shown.map(actRow).join("")}</tbody></table>`
     :`<div class="dayempty">No filings of this kind in this window.</div>`;
   const excerpt=typeof TAPE_LIMIT==="number"&&TAPE_LIMIT>0;
   $("#actnote").innerHTML=`${shown.length<rows.length?`${shown.length} of `:""}${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${sealedN&&!excerpt?` · the stake after the trade is in <a onclick="openPro()" style="cursor:pointer">Pro</a> for the ${sealedN.toLocaleString()} from companies outside the S&P 500`:""}${compN?` · compensation listed last`:""}`;

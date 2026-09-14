@@ -130,7 +130,7 @@ const P=runPage();
     const html=els["#actwrap"]._html;
     renderActivity();
     assert(els["#actwrap"]._html.includes('class="tape"')&&(els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===rows.length,"one table row per filing, once the excerpt's limit is lifted");
-    assert(/<th>Kind<\/th><th>Company<\/th><th>CEO<\/th><th class="n">Amount<\/th><th class="n">New stake<\/th><th>Manner<\/th><th>Traded<\/th>/.test(html),"the seven columns, in order: the date is its own");
+    assert(/<th>Kind<\/th><th>Company<\/th><th>CEO<\/th><th class="n">Amount<\/th><th class="n">New stake<\/th><th>Traded<\/th>/.test(html),"six columns, the scoreboard's shape: the kind says the manner, the date is its own");
     assert(html.includes("openCompany(")&&html.includes("sec.gov"),"rows are doors and the amount links to the filing");
     assert(!html.includes("DISCRET."),"kinds are spelled out");
     const stats=els["#actstats"]._html;
