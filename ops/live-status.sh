@@ -16,9 +16,11 @@ if systemctl is-active --quiet fle-live.service; then
   echo "  a pass is running now (a run inside it takes about two minutes)"
 fi
 
-echo "== the last 12 passes =="
+echo "== the last 12 passes (a pass that found a filing shows the ticker instead of 'nothing new') =="
 journalctl -u fle-live.service --since "$DAY" --no-pager 2>/dev/null \
-  | grep -E "python3\[" | sed 's/.*python3\[[0-9]*\]: //' | grep -E "^\s+[0-9]{2}:[0-9]{2} " | tail -12
+  | grep -E "python3\[" | sed 's/.*python3\[[0-9]*\]: //' \
+  | grep -E "^\s+[0-9]{2}:[0-9]{2} |^- [0-9]{2}:[0-9]{2} [A-Z.-]+ ·" \
+  | sed -E 's/^- ([0-9:]+) ([A-Z.-]+) · (.*)$/  \1 FOUND \2: \3/' | cut -c1-120 | tail -12
 
 echo "== founder filings on $DAY =="
 F="drafts/live-$DAY.md"
