@@ -146,15 +146,24 @@ if it could sit beside a footnote in a quarterly letter, it is right.
 
 ## 5. Pages and nav
 
-Nav: Scoreboard · Tape · Companies · Performance · Method · Pro; right
-side "Weekly tape, free" and "Go Pro" (or Account when signed in).
+Nav: Tape · Companies · Method · Pro; right side "Weekly tape, free"
+and "Go Pro" (or Account when signed in).
 
-- `/` in this order: hero (headline "What the person running the
-  company still owns.", subhead, three live stats, two buttons, the
-  quiet line from the copy rule above), the this-week strip, the scoreboard "What they own now",
-  the tape excerpt `#tape` with the Monday-email field beside it, the
-  performance chart "Founders against the index" with "A portrait, not
-  a strategy."
+- `/` in this order (revised 2026-09-14: one list, two depths): hero
+  (headline "What the person running the company still owns.", subhead,
+  three live stats, two buttons, the quiet line from the copy rule
+  above, the week in one line), **What they own now** (the screener's
+  own table at a depth of twenty rows, by share of the company, the
+  dollar column beside it, "All companies" at the foot), **This week's
+  tape** (twelve rows, the Monday-email field), footer. No bar board,
+  no index chart, no second copy of the list: a block that cannot say
+  which of the two jobs it serves does not ship.
+- `/companies/`: the same table in full, with search, thresholds,
+  founders only, never sold, sort, export, and "N more match in Pro";
+  the A-Z index of every company page beneath it.
+- Founders against the index is evidence, not a product: a static SVG
+  drawn at deploy (ops/perf_svg.py) under "Why founder-led" on the
+  Method page, with the survivorship caveat. No /performance page.
 - No card grid on the tape, page or letter (decided 2026-09-13, after a
   four-card version was drawn: "largest buy" and "biggest add" were the
   same event split by S&P membership, and the cards existed to give the

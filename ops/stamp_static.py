@@ -30,7 +30,7 @@ from og_image import money, numbers  # noqa: E402
 OPEN_TOP = 25   # keep equal to build_site_data.OPEN_TOP
 
 
-def top_rows(panel_p, sp_p, prices_p, founders_p, n=10):
+def top_rows(panel_p, sp_p, prices_p, founders_p, n=20):
     sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
     prices = {}
     for r in csv.DictReader(open(prices_p, encoding="utf-8-sig")):
@@ -58,12 +58,13 @@ def top_rows(panel_p, sp_p, prices_p, founders_p, n=10):
         val = sh * prices[tk] if tk in prices else 0.0
         if not val:
             continue
-        rows.append({"tk": tk, "ceo": r.get("ceo") or "", "pct": pct, "val": val,
-                     "f": founders.get(tk, ("", "")), "sealed": tk not in sp})
-    rows.sort(key=lambda x: -x["val"])
-    # the top of the board is everyone's (the same OPEN_TOP as
-    # build_site_data); the stamped ten are inside it, so no stamped row
-    # is sealed unless the rule is
+        rows.append({"tk": tk, "ceo": r.get("ceo") or "", "co": r.get("company") or tk, "pct": pct, "val": val,
+                     "out": float(r.get("outstanding") or 0), "f": founders.get(tk, ("", "")), "sealed": tk not in sp})
+    # THE FRACTION FIRST (PLAN.md section 5): the board opens by share of
+    # the company, the order the live render draws; the dollar view is the
+    # toggle. The top OPEN_TOP by share are everyone's, as build_site_data
+    # ranks them.
+    rows.sort(key=lambda x: -x["pct"])
     for i, r in enumerate(rows):
         if i < OPEN_TOP:
             r["sealed"] = False
@@ -79,34 +80,73 @@ def badge(f):
     return ""
 
 
-def bars_html(rows):
-    if not rows:
-        return ""
-    mx = max((r["val"] for r in rows if not r["sealed"]), default=0) or 1
+def last_trades(events_p, tickers):
+    """Each company's most recent stake-moving trade, as the table shows it
+    (bought/sold, planned/discretionary, the amount, the trade date)."""
+    unchanged = {"exercise and sell", "exercise, part sold", "vested and sold", "convert and sell",
+                 "sale, position unchanged", "purchase, position unchanged"}
+    last = {}
+    try:
+        for r in csv.DictReader(open(events_p, encoding="utf-8-sig")):
+            tk = (r.get("ticker") or "").upper()
+            if tk not in tickers or r.get("code") not in ("P", "S") or (r.get("label") or "") in unchanged:
+                continue
+            if (r.get("pre_ipo") or "") in ("1", "true", "True"):
+                continue
+            key = (r.get("traded") or r.get("filed") or "", r.get("filed") or "")
+            if tk not in last or key > last[tk][0]:
+                last[tk] = (key, r)
+    except OSError:
+        pass
+    return {tk: v[1] for tk, v in last.items()}
+
+
+def rows_html(rows, last, outstanding, prices):
+    """The first twenty rows of the table, as renderTable draws them (one
+    list, two depths: this is the home page's depth). A sealed row keeps
+    its name and blurred placeholders."""
     out = []
-    for r in rows:
-        link0 = (f'<span class="tk"><a class="pglink" href="/company/{r["tk"]}/" onclick="event.stopPropagation()" '
-                 f'title="this company\'s own page">{r["tk"]}</a></span><span class="nm">{html.escape(r["ceo"])}</span>{badge(r["f"])}')
+    for i, r in enumerate(rows):
+        tk = r["tk"]
+        lt = last.get(tk)
+        mcap = outstanding.get(tk, 0) * prices.get(tk, 0)
+        fd = "Yes" if r["f"][0] == "yes" else ""
         if r["sealed"]:
-            out.append(
-                f'<div class="brow sealed" onclick="openDrawer(\'{r["tk"]}\')" role="button" tabindex="0">'
-                f'<div class="btrack"><div class="blab out" style="--w:0%">{link0}</div></div>'
-                f'<div class="bpct"><span class="sealed" data-shape="$0.0B" aria-label="in Pro" onclick="event.stopPropagation();openPro()" title="in Pro"></span></div></div>')
-            continue
-        w = max(2.0, r["val"] / mx * 100)
-        inside = w > 20
-        link = (f'<span class="tk"><a class="pglink" href="/company/{r["tk"]}/" onclick="event.stopPropagation()" '
-                f'title="this company\'s own page">{r["tk"]}</a></span><span class="nm">{html.escape(r["ceo"])}</span>{badge(r["f"])}')
-        lab_in = f'<div class="blab">{link}</div>' if inside else ""
-        lab_out = f'<div class="blab out" style="--w:{w:.1f}%">{link}</div>' if not inside else ""
+            own = '<span class="sealed" data-shape="0.000%" aria-label="in Pro" title="in Pro"></span>'
+            val = '<span class="sealed" data-shape="$00.0M" aria-label="in Pro" title="in Pro"></span>'
+        else:
+            own = f"{r['pct']:.3f}%" if r["pct"] < 1 else f"{r['pct']:.2f}%"
+            val = money(r["val"]) if r["val"] else ""
+        if lt:
+            code = lt.get("code")
+            kind = f'<span class="{"up" if code == "P" else "down"}">{"Bought" if code == "P" else "Sold"}</span>'
+            man = "Planned" if (lt.get("plan") or "") == "plan" else "Discretionary"
+            try:
+                v = float(lt.get("value") or 0)
+            except ValueError:
+                v = 0
+            amt = ('<span class="sealed" data-shape="$0.0M" aria-label="in Pro"></span>' if r["sealed"]
+                   else (money(v) if v and not (lt.get("price_flag") or "") else '<span class="nopr"></span>'))
+            when = html.escape(lt.get("traded") or lt.get("filed") or "")
+            ltd = f'<span class="ltd">{when}</span>'
+        else:
+            kind, man, amt, ltd = '<span class="nopr"></span>', "", '<span class="nopr"></span>', '<span class="nopr"></span>'
         out.append(
-            f'<div class="brow" onclick="openDrawer(\'{r["tk"]}\')" role="button" tabindex="0">'
-            f'<div class="btrack"><div class="bfill" style="width:{w:.1f}%">{lab_in}</div>{lab_out}</div>'
-            f'<div class="bpct">{money(r["val"])}<span class="b2">{r["pct"]:.2f}% of co.</span></div></div>')
+            f'<tr onclick="openCompany(\'{tk}\')" tabindex="0">'
+            f'<td class="rk">{i + 1:02d}</td>'
+            f'<td class="c-co"><div class="tk"><a href="/company/{tk}/" onclick="event.stopPropagation()">{tk}</a></div><div class="nm">{html.escape(r["co"])}</div></td>'
+            f'<td class="ceo h-ceo"><span class="ceow"><span class="cn">{html.escape(r["ceo"])}</span></span></td>'
+            f'<td class="c-fd">{fd}</td>'
+            f'<td class="n num c-own">{own}</td>'
+            f'<td class="n num">{val}</td>'
+            f'<td class="n num c-mc">{money(mcap) if mcap else ""}</td>'
+            f'<td class="n num c-r1"><span class="nopr"></span></td>'
+            f'<td class="c-lt">{kind}</td><td class="c-man">{man}</td><td class="n num c-amt">{amt}</td><td class="c-ltd">{ltd}</td>'
+            f'</tr>')
     return "".join(out)
 
 
-def main(panel_p, sp_p, prices_p, founders_p, index_out):
+def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
     n = numbers(panel_p, sp_p, prices_p, founders_p)
     # THE PRO NUMBERS RIDE ALONG. A subscriber's first paint used to be the
     # free hero (19 of 500), replaced seconds later by 199 of 2,135 once
@@ -131,21 +171,32 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out):
     # what the site covers. The "N of them are sealed · Go Pro" line is
     # gone; the nav button is the one call, and the locks on the sealed
     # rows sell in context.
+    # THREE NUMBERS (PLAN.md section 5): how many companies are still run
+    # by a founder, how many chief executives own more than 5%, what those
+    # founders hold. The share of all CEO wealth was a fourth that said the
+    # same thing as the third.
     def stats(m):
-        return (f'<div class="hstat"><div class="n hl">{m["above5"]:,}</div><div class="k">CEOs own more than 5%</div></div>'
-                f'<div class="hstat"><div class="n">{m["led"]}</div><div class="k">Founder-led companies</div></div>'
-                f'<div class="hstat"><div class="n">{money(m["led_value"])}</div><div class="k">Held by those founders</div></div>'
-                f'<div class="hstat"><div class="n">{m["share"]}%</div><div class="k">Of all CEO wealth</div></div>')
+        return (f'<div class="hstat"><div class="n hl">{m["led"]}</div><div class="k">Founder-led companies</div></div>'
+                f'<div class="hstat"><div class="n">{m["above5"]:,}</div><div class="k">CEOs own more than 5%</div></div>'
+                f'<div class="hstat"><div class="n">{money(m["led_value"])}</div><div class="k">Held by those founders</div></div>')
     page = page.replace('<div class="herostats" id="herostats"></div>',
                         f'<div class="herostats" id="herostats">{stats(p)}</div>', 1)
-    page = page.replace('<div class="bars" id="bars"></div>',
-                        f'<div class="bars" id="bars">{bars_html(rows)}</div>', 1)
+    prices = {}
+    try:
+        for r in csv.DictReader(open(prices_p, encoding="utf-8-sig")):
+            prices[(r.get("ticker") or "").upper()] = float(r.get("close") or 0)
+    except (OSError, ValueError):
+        pass
+    last = last_trades(events_p, {r["tk"] for r in rows})
+    outstanding = {r["tk"]: r["out"] for r in rows}
+    page = page.replace('<tbody id="tbody"></tbody>',
+                        f'<tbody id="tbody">{rows_html(rows, last, outstanding, prices)}</tbody>', 1)
     with open(index_out, "w", encoding="utf-8") as fh:
         fh.write(page)
-    print(f"  stamped: {n['above5']} of {n['open']} in the strip, {len(rows)} board rows, "
+    print(f"  stamped: {n['above5']} of {n['open']} in the strip, {len(rows)} table rows, "
           f"{n['led']} founder-led / {money(n['led_value'])}")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(*sys.argv[1:6]))
+    raise SystemExit(main(*sys.argv[1:7]))

@@ -26,6 +26,9 @@
 @font-face{font-family:"Hanken Grotesk";src:url("/fonts/hanken.woff2") format("woff2");font-weight:100 900;font-display:swap}
 @font-face{font-family:"IBM Plex Mono";src:url("/fonts/plexmono.woff2") format("woff2");font-weight:400;font-display:swap}
 @font-face{font-family:"IBM Plex Mono";src:url("/fonts/plexmono-medium.woff2") format("woff2");font-weight:500 600;font-display:swap}
+.perffig{margin:22px 0 18px;padding:14px 16px 10px;border:1px solid var(--line)}
+.perffig svg{width:100%;height:auto;display:block}
+.perffig figcaption{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:8px}
 </style>
 <style>
 :root{
@@ -175,17 +178,22 @@ footer .in{max-width:1120px;margin:0 auto;padding:26px clamp(20px,3.5vw,48px) 48
   </section>
 
   <section id="index">
-    <h2>Founders against the index</h2>
-    <p>An equal-weight basket of the founder-led companies, rebalanced monthly from
+    <h2>Why founder-led: founders against the index</h2>
+    <p>The chart is the reason the category is worth screening, and it is evidence, not a
+    product: nobody looks at it twice, so it lives here rather than on the home page. An
+    equal-weight basket of the S&amp;P 500's founder-led companies, rebalanced monthly from
     split-adjusted month-end closes with dividends excluded on every line, against the S&amp;P
     500 (SPY) and, because equal weight against cap weight mixes two effects, the equal-weight
-    S&amp;P 500 (RSP). Companies enter when their price history begins. You can view the S&amp;P
-    500's founders or every founder-led company worth $1B or more.</p>
+    S&amp;P 500 (RSP). Companies enter when their price history begins. Drawn at each
+    deploy from the same month-end closes the rest of the site prices with.</p>
+    <figure class="perffig">
+      <!--PERF_SVG-->
+      <figcaption>Growth of $10,000, equal-weighted, the founder-led members of the S&amp;P 500 against SPY and RSP.</figcaption>
+    </figure>
     <p><b>A portrait, not a strategy.</b> The basket is today's founder-led companies
     applied backward. Founders who left, companies acquired or delisted, and companies that
     fell below $1B are not in it, and they are disproportionately the losers. That flatters
-    the line, and the distribution beneath the chart shows how much of the result came from a
-    few large winners.</p>
+    the line. Nothing here is investment advice.</p>
   </section>
 
   <section id="marks">

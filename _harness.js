@@ -72,7 +72,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setWin,actWindow,actRows,actSorted,actStats,tapeKind,tapeManner,trajStats,soldTickers,sparkline,lastTrades,exportTable,cleanHist,renderBars,renderTable,fInfo,perfSeries,perfWindow,perfChart,renderPerf,perfReturns,perfBins,distChart,renderDist,distCrown,distPanel,get PERF(){return PERF},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setWin,actWindow,actRows,actSorted,actStats,tapeKind,tapeManner,soldTickers,lastTrades,exportTable,cleanHist,renderTable,fInfo,set TAPE_LIMIT(v){TAPE_LIMIT=v},get SCREEN_COUNTS(){return SCREEN_COUNTS},set SCREEN_COUNTS(v){SCREEN_COUNTS=v},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -90,10 +90,18 @@ const P=runPage();
     "no section gates its controls by tier");
   assert(!idxsrc.includes('id="tjgate"')&&!idxsrc.includes('id="trends"'),
     "the Trajectories section is gone");
-  // the product first (leaderboard, activity, screener); the argument last
-  assert(idxsrc.indexOf('id="activity"')<idxsrc.indexOf('id="table"')&&idxsrc.indexOf('id="table"')<idxsrc.indexOf('id="perfsec"'),
-    "sections run leaderboard, activity, table, performance");
-  assert(idxsrc.indexOf('href="#activity"')<idxsrc.indexOf('href="#perfsec"'),"and the nav follows the page");
+  // ONE LIST, TWO DEPTHS (PLAN.md section 5): the home page is the hero, what
+  // they own now (the screener's table at twenty rows), this week's tape,
+  // the footer. No board of bars, no index chart, no second copy of the list.
+  assert(idxsrc.indexOf('class="hero"')<idxsrc.indexOf('id="table"')&&idxsrc.indexOf('id="table"')<idxsrc.indexOf('id="activity"')&&idxsrc.indexOf('id="activity"')<idxsrc.indexOf('<footer>'),
+    "sections run hero, what they own now, the tape, footer");
+  assert(!idxsrc.includes('id="board"')&&!idxsrc.includes('id="perfsec"')&&!idxsrc.includes('id="bars"')&&!idxsrc.includes("function renderBars(")&&!idxsrc.includes("function perfSeries("),
+    "the bars and the index chart are gone from the page (the chart is a static image on Method)");
+  assert(idxsrc.includes('class="tablesec home"')&&idxsrc.includes("let TABLE_LIMIT=20;")&&idxsrc.includes('href="/companies/" style="text-decoration:none">All companies'),
+    "the home table is twenty rows with the rest a click away");
+  assert(idxsrc.includes('<h2>What they own now</h2>')&&!idxsrc.includes("The wealthiest CEOs"),"the heading is the question, not a rich list");
+  assert(idxsrc.includes('<a href="/tape/">Tape</a>')&&idxsrc.includes('<a href="/companies/">Companies</a>')&&!idxsrc.includes('>Scoreboard<')&&!idxsrc.includes('>Performance<'),
+    "the nav is Tape · Companies · Method · Pro");
   assert(!/class="blurred"/.test(els["#actwrap"]._html),"no blur class from the old gate anywhere: a sealed figure is a data-shape placeholder");
 
   // ---- THE TAPE: a weather line, the controls, one table grouped by kind ----
@@ -104,6 +112,11 @@ const P=runPage();
     assert(/id="tg-f" checked/.test(idxsrc),"founders only is on by default");
     state.pro=true; setWin(365); state.ev.f=false; state.ev.buys=false; state.ev.nocomp=false; renderActivity();
     const rows=actSorted(actRows());
+    // THE HOME PAGE IS AN EXCERPT: twelve rows, the full tape a click away
+    assert(idxsrc.includes("let TAPE_LIMIT=12;")&&idxsrc.includes('class="activitysec excerpt"'),"the home page's tape is a twelve-row excerpt");
+    assert((els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===12&&/^12 of [\d,]+ filings/.test(els["#actnote"]._html),"twelve rows, and the note says of how many: "+els["#actnote"]._html.slice(0,40));
+    assert(idxsrc.includes('href="/tape/">The full tape')&&idxsrc.includes('id="homesub"'),"the full tape and the letter's signup sit under the excerpt");
+    P.TAPE_LIMIT=0;
     assert(rows.length>50,"the window holds the year's filings: "+rows.length);
     // kind groups in order: bought, discretionary, plan, compensation
     const order={bought:0,disc:1,plan:2,comp:3};
@@ -114,7 +127,8 @@ const P=runPage();
     const mv=e=>{const p=P.pctOf(e);if(!p||e.mk)return null;return e.c==="P"?Math.max(0,p.v):Math.max(0,-p.v);};
     for(const k of [0,1,2]){const g=rows.filter(e=>order[tapeKind(e)]===k).map(mv).filter(x=>x!==null);assert(g.every((x,i)=>i===0||x<=g[i-1]),"ranked by the stake's move within kind "+k);}
     const html=els["#actwrap"]._html;
-    assert(html.includes('class="tape"')&&(html.match(/class="dayrow/g)||[]).length===rows.length,"one table row per filing");
+    renderActivity();
+    assert(els["#actwrap"]._html.includes('class="tape"')&&(els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===rows.length,"one table row per filing, once the excerpt's limit is lifted");
     assert(/<th>Kind<\/th><th>Company<\/th><th>CEO<\/th><th class="n">Amount<\/th><th class="n">New stake<\/th><th>Manner<\/th>/.test(html),"the six columns, in order");
     assert(html.includes("openCompany(")&&html.includes("sec.gov"),"rows are doors and the amount links to the filing");
     assert(!html.includes("DISCRET."),"kinds are spelled out");
@@ -161,6 +175,19 @@ const P=runPage();
     assert(els["#actstats"]._html.includes("<b>1</b> for the first time ever"),"the weather line counts first-ever purchases");
     assert(els["#actwrap"]._html.includes('class="firstb"'),"and the row carries the tag");
     P.EVENTS=savedE; setWin(365); renderActivity();
+  }
+
+  // ---- the free screener says how much of the answer is sealed ----
+  {
+    const savedP=P.PANEL, savedC=P.SCREEN_COUNTS;
+    P.PANEL=[{tk:"AAA",co:"A",ceo:"a",pct:12,val:1e9,masked:false,conf:"high",asof:"2026-09-01",rp:1,rv:1},
+             {tk:"BBB",co:"B",ceo:"b",pct:null,val:null,masked:true,conf:"",asof:"",rp:2,rv:2}];
+    P.SCREEN_COUNTS={m0f0h0:2,m10f0h0:2,m5f0h0:2,m1f0h0:2,m0f1h0:1,m10f1h0:1,m5f1h0:1,m1f1h0:1,m0f0h1:2,m10f0h1:2,m5f0h1:2,m1f0h1:2,m0f1h1:1,m10f1h1:1,m5f1h1:1,m1f1h1:1};
+    P.state.pro=false;P.state.min=10;P.state.q="";P.state.tbF=false;P.state.tbH=false;P.renderTable();
+    assert((els["#tcount"]._html||"").includes("1 more match in Pro"),"under >10% the sealed match is counted: "+els["#tcount"]._html);
+    P.state.q="AAA";P.renderTable();
+    assert(!(els["#tcount"]._html||"").includes("more match"),"under a search there is no count");
+    P.state.q="";P.state.min=0;P.PANEL=savedP;P.SCREEN_COUNTS=savedC;P.renderTable();
   }
 
   // ---- the screener: three-year change, last trade, never sold ----
@@ -239,8 +266,6 @@ const P=runPage();
   const ce=P.cleanHist("ECHO");
   assert(!ce.some(p=>p[1]===17.46),
     "the merger-day restated artifact is excluded (unexplained -98.4M mirrored by +99.2M)");
-  assert(P.trajStats("ECHO",null).atLow===true,
-    "and with the false floor gone, Ergen's true record low is finally visible");
   assert(P.cleanHist("HOODX")[0][1]===6.12,
     "a record that opens at 0% opens at its first real holding instead");
   assert(P.cleanHist("REALX").some(p=>p[1]===4.0),
@@ -255,8 +280,6 @@ const P=runPage();
                  ["2026-06-12",76.47,610e6,"",null,null,null,false]]};
   const sm=P.cleanHist("SMMTX");
   assert(sm.length===3&&!sm.some(p=>p[1]>100),"a point above 100% is a known lie and leaves the cleaned series");
-  assert(Math.abs(P.trajStats("SMMTX",1095).d-(76.47-78.81))<1e-9||P.trajStats("SMMTX",1095).base<=100,
-    "and the three-year change is measured from the next real point");
   P.HIST={COL:[["2020-01-01",2.0,2700000,"",null,null,null,false],
                ["2021-01-01",0.03,40000,"",null,null,-2660000,true],
                ["2021-01-05",0.031,42000,"",null,null,null,true],
@@ -272,118 +295,12 @@ const P=runPage();
   assert(P.cleanHist("ECHO").length===2&&P.cleanHist("ECHO")[0][1]===5,
     "replacing HIST invalidates the cleaned cache — no more sample ghosts");
 
-  // ---- founders against the index ----
+  // ---- founders against the index: a static image on Method, drawn at deploy ----
   {
-    // the cohort is perf INTERSECT live founder labels now; the fixture
-    // must pin its own labels or real founders.csv rows (some explicitly
-    // "no") evict fixture tickers and shift the >=5-names start
-    const savedF=P.FOUNDERS;
-    const pinned={};
-    for(const tk in P.PERF){if(tk!=="SPY"&&tk!=="RSP")pinned[tk]={f:"yes",ev:"",src:""};}
-    P.FOUNDERS=pinned;
-    P.state.pc="all";   /* the existing checks are about the whole cohort */
-    const full=P.perfSeries();
-    assert(full&&full.months.length===24,"perf chains all 24 months: "+(full&&full.months.length));
-    const endF=full.founders[full.founders.length-1],endS=full.spy[full.spy.length-1];
-    // five doubling founders alone would land at $200; the late entrant
-    // (a faster doubler joining at month 13) lifts the average above it --
-    // entering companies participate, exactly as the note says
-    assert(endF>20300&&endF<22500,"the late entrant lifts an otherwise-doubled index: $"+endF.toFixed(0));
-    // and remove the late entrant to prove the clean double
-    const late=P.PERF.LATE;delete P.PERF.LATE;
-    const bare=P.perfSeries();
-    assert(Math.abs(bare.founders[bare.founders.length-1]-20000)<200,
-      "without it, five identical doublers double $10,000 to $"+bare.founders[bare.founders.length-1].toFixed(0));
-    P.PERF.LATE=late;
-    assert(Math.abs(endS-12000)<150,"and SPY grows its 20%: $"+endS.toFixed(0));
-    const w=P.perfWindow(full,"12");
-    assert(w.months.length===13&&Math.abs(w.founders[0]-10000)<1e-6,
-      "a window rebases both lines to $10,000 at its own start");
-    P.renderPerf();
-    const svg=els["#perfchart"]._html;
-    assert((svg.match(/<path /g)||[]).length===3,"three lines drawn: founders, SPY, RSP");
-    assert(svg.includes("Founders index")&&svg.includes("S&amp;P 500 (SPY)"),
-      "end labels name the lines, not a dollar figure first");
-    assert(P.state.pw==="60","a five-year record defaults to the 5-year preset, max chip hidden");
-    // ---- inside the index: the distribution behind the line ----
-    {const d=P.perfWindow(full,"12");
-     const dist=P.perfReturns(d);
-     assert(dist.items.length>=5&&dist.items.every(i=>typeof i.ret==="number"),"a return per constituent with a close at both ends of the window");
-     assert(Math.abs(dist.spy-10)<1,"and the benchmark's own return over the same window (half its two-year 20%): "+dist.spy);
-     assert(Math.abs(P.perfReturns(full).spy-20)<1,"over the whole record, the benchmark's full 20%");
-     {const late=dist.items.find(i=>i.tk==="LATE");
-      assert(late&&late.since&&late.since>dist.from,"the late entrant is placed, measured from the month it joined: since "+(late&&late.since));
-      assert(typeof late.spyOwn==="number","and judged against the S&P over the same months");
-      assert(dist.joined===1&&dist.skipped===0,"nothing that fed the line is missing from the bins");
-      assert(dist.items.filter(i=>!i.since).every(i=>i.spyOwn===null||Math.abs(i.spyOwn-dist.spy)<1e-9),"a full-window company is judged against the full-window S&P");}
-     const {svg,bins,tint}=P.distChart(dist,P.perfBins("12"));
-     assert((svg.match(/rx="2" fill="rgba/g)||[]).length===dist.items.length,"one tile per company (hit areas and axis boxes are not tiles)");
-     {const crownedN=bins.reduce((n,b)=>n+Math.min(3,b.items.length),0);
-      assert((svg.match(/<a href="\/company\//g)||[]).length===crownedN,"only a named tile is a link; a block is part of the column");}
-     assert(svg.includes("S&amp;P 500 +10%"),"the benchmark is marked where it lands");
-     assert(svg.includes(">below<")&&svg.includes(">above<")&&svg.includes(">-40% to<")&&svg.includes(">0% to<")&&svg.includes(">+40%<"),"a labelled box under every column says its range");
-     {const boxes=(svg.match(/<rect x="[^"]+" y="[^"]+" width="[^"]+" height="34" rx="3" fill="(rgba[^"]+)"/g)||[]);
-      assert(boxes.length===13,"one box per column");
-      const tiles=[...svg.matchAll(/<rect x="([^"]+)" y="[^"]+" width="[^"]+" height="[^"]+" rx="2" fill="(rgba[^"]+)"/g)];
-      const byX={};for(const m of tiles)byX[m[1]]=m[2];
-      const boxX=[...svg.matchAll(/<rect x="([^"]+)" y="[^"]+" width="[^"]+" height="34" rx="3" fill="(rgba[^"]+)"/g)];
-      assert(boxX.every(m=>!(m[1] in byX)||byX[m[1]]===m[2]),"each box wears exactly its column's tint");}
-     assert((svg.match(/class="hit"/g)||[]).length===P.perfBins("12").length+1,"every column is a door, not just the number above it");
-     // the crowns: up to three named tiles at the top of every column, chosen by stake
-     {const crowned=(svg.match(/class="crown"/g)||[]).length;
-      const expect=bins.reduce((n,b)=>n+Math.min(3,b.items.length),0);
-      assert(crowned===expect,"three crowned tiles per column, or all of a small bin: "+crowned+" vs "+expect);
-      const many={items:[],spy:10,from:dist.from,end:dist.end,skipped:0};
-      for(let k=0;k<120;k++)many.items.push({tk:"T"+k,ret:1+k*0.05});   /* all in the 0..+10% bin */
-      const big=P.distChart(many,P.perfBins("12"));
-      assert((big.svg.match(/class="crown"/g)||[]).length===3,"a hundred-deep bin still shows exactly three names");
-      assert((big.svg.match(/rx="2" fill="rgba/g)||[]).length===120&&(big.svg.match(/<a href="\/company\//g)||[]).length===3,"every one of the hundred is a tile; only the three named ones are links");
-      // the panel: the bucket by name, sorted by return, every one a door
-      const full=big.bins.find(b=>b.items.length===120);
-      const panel=P.distPanel(full,big.bins.indexOf(full),big.tint);
-      assert((panel.match(/class="dtile"/g)||[]).length===120,"the panel names everyone in the bucket");
-      assert(panel.includes("120 companies")&&!panel.includes("Open these in the screener"),"with the count; the panel is the drill-down, there is no hand-off");
-      const order=[...panel.matchAll(/<b>(T\d+)<\/b>/g)].map(m=>m[1]);
-      assert(order[0]==="T0"&&order[119]==="T119","sorted by return, lowest first");
-      // a bin that ends at zero is a loss: red, not green
-      const z=P.perfBins("12").indexOf(0);
-      const tints=[...svg.matchAll(/height="34" rx="3" fill="(rgba\((\d+)[^)]*\))"/g)].map(m=>m[2]);
-      assert(tints[z]==="194"&&tints[z+1]==="11","the -10% to 0% box is red and the 0% to +10% box is green");}
-     els["#perfdist"]=els["#perfdist"]||el("#perfdist");
-     P.renderDist(d);
-     {const h=els["#perfdist"]._html;
-      assert(h.includes('class="disth"')&&h.indexOf('class="disth"')<h.indexOf("<svg"),"a title above the histogram");
-      assert(h.includes("beat the S&amp;P 500 over the same months")&&h.indexOf("distsub")<h.indexOf("<svg"),"one line of context above it");
-      assert(h.includes('class="distkey"')&&h.indexOf("distkey")>h.indexOf("</svg>"),"legend and notes below it");
-      assert(h.includes("joined the index during the window")&&h.includes('class="dot"'),"the legend explains the dot");
-      assert(!h.includes("too recently"),"no 'too recently' bucket: every constituent is in a bin");
-      assert(/<circle /.test(h),"an entrant's tile is marked with a dot");}
-     // the bins scale with the window
-     assert([P.perfBins("12"),P.perfBins("36"),P.perfBins("60")].every(e=>e.length===12),"thirteen columns on every window");
-     assert(P.perfBins("12").slice(-1)[0]===100&&P.perfBins("36").slice(-1)[0]===300&&P.perfBins("60").slice(-1)[0]===500,"each window's edges spaced for its moves");
-     P.state.sort={key:"pct",dir:-1};}
-    // ---- the cohort toggle: a choice, the same for every reader ----
-    {const savedPanel3=P.PANEL;
-     /* the five long-lived founders are S&P members; the late entrant is not */
-     /* injected rows go FIRST: a real panel may already hold FE (FirstEnergy), and find() must hit the test row */
-     P.PANEL=[...["FA","FB","FC","FD","FE"].map(tk=>({tk,co:tk,ceo:"a",pct:5,sh:1,out:1,val:1,conf:"high",sp:true})),...savedPanel3];
-     P.state.pc="sp";const sp=P.perfSeries();
-     assert(sp&&sp.count===5,"S&P 500 founders: only the cohort's S&P members: "+(sp&&sp.count));
-     P.state.pc="all";const al=P.perfSeries();
-     assert(al.count>sp.count,"All founder-led: the whole cohort: "+al.count);
-     assert(al.rsp&&Math.abs(al.rsp[al.rsp.length-1]-11000)<150,"the equal-weight S&P rides along as a third line: $"+al.rsp[al.rsp.length-1].toFixed(0));
-     const svg3=P.perfChart(al);
-     assert(svg3.includes("S&amp;P equal weight (RSP)")&&svg3.includes("stroke-dasharray"),"drawn dashed and labelled");
-     P.renderPerf();
-     assert(/Founders -?[\d.]+%\/yr/.test(els["#perfnote"]._html)&&els["#perfnote"]._html.includes("S&amp;P 500 equal weight")&&els["#perfnote"]._html.includes('href="about.html"'),"the note under the chart is the returns, the caveat, and the method linkly and names both benchmarks");
-     assert(els["#perfsub"]._html.includes("all ")||els["#perfsub"].textContent.includes("all "),"the subtitle names the cohort");
-     P.state.pc="sp";P.renderPerf();
-     assert((els["#perfsub"].textContent||els["#perfsub"]._html).includes("in the S&P 500"),"and says S&P 500 when that is the cohort");
-     assert(P.state._perfFull&&P.state._perfFull.count===al.count,"but the screener's return column still covers the whole cohort: "+P.state._perfFull.count);
-     P.state.pc="all";P.PANEL=savedPanel3;P.renderPerf();}
-    assert(String(els["#perfsub"]._text||els["#perfsub"]._html||"").includes("survivors only"),
-      "the caveat ships with the chart, in its caption");
-    P.FOUNDERS=savedF;
+    const about=require("fs").readFileSync("about.html","utf8");
+    assert(about.includes("<!--PERF_SVG-->")&&about.includes("Why founder-led")&&about.includes("A portrait, not a strategy."),
+      "the chart's place is Method, with its caveat");
+    assert(require("fs").existsSync("ops/perf_svg.py"),"and ops/perf_svg.py draws it");
   }
 
   // ---- founders-only, per section, independently ----
@@ -391,18 +308,14 @@ const P=runPage();
     P.PANEL=[{tk:"TSLA",ceo:"Elon Musk",co:"Tesla",pct:29.9,val:9e11},
              {tk:"AAPL",ceo:"Tim Cook",co:"Apple",pct:0.02,val:1e9},
              {tk:"NVDA",ceo:"Jensen Huang",co:"NVIDIA",pct:3.5,val:1e11}];
-    P.state.lbF=true;P.renderBars();
-    const bars=els["#bars"]._html;
-    const shown=[...bars.matchAll(/openCompany\('([A-Z.]+)'\)/g)].map(m=>m[1]);
+    P.state.tbF=true;P.state.q="";P.state.min=0;P.renderTable();
+    const shown=[...els["#tbody"]._html.matchAll(/openCompany\('([A-Z.]+)'\)/g)].map(m=>m[1]);
     const allF=shown.length&&shown.every(tk=>{const i=P.fInfo(tk);return i&&i.f==="yes";});
-    assert(allF,"founders-only leaderboard shows only proxy-named founders: "+shown.join(","));
-    assert(els["#boardtitle"]._text&&els["#boardtitle"]._text.includes("founder"),
-      "and the heading says so: "+els["#boardtitle"]._text);
-    P.state.lbF=false;P.renderBars();
-    const again=[...els["#bars"]._html.matchAll(/openCompany\('([A-Z.]+)'\)/g)].map(m=>m[1]);
-    assert(again.length>shown.length,"toggling off restores the full board");
-    assert(P.state.ev.f===false&&P.state.tbF===false&&P.state.tbH===false,
-      "the leaderboard switch moved no other section's");
+    assert(allF,"founders-only shows only proxy-named founders: "+shown.join(","));
+    P.state.tbF=false;P.renderTable();
+    const again=[...els["#tbody"]._html.matchAll(/openCompany\('([A-Z.]+)'\)/g)].map(m=>m[1]);
+    assert(again.length>shown.length,"toggling off restores the full list");
+    assert(P.state.ev.f===false&&P.state.tbH===false,"the table's switch moved no other section's");
   }
 
   // ---- buys have manners; units-structured stakes never read as zero ----
@@ -422,10 +335,6 @@ const P=runPage();
     const bx={tk:"BX",co:"Blackstone",ceo:"S. Schwarzman",pct:0.0,sh:0,val:1,units:true};
     const real={tk:"KKR",co:"KKR",ceo:"J. Bae",pct:2.1,sh:1e6,val:2e9,units:false};
     P.PANEL=[bx,real];
-    P.renderBars();
-    const board=els["#bars"]._html;
-    assert(!board.includes("'BX'")&&board.includes("'KKR'"),
-      "a units-structured stake does not rank on the common-stock board");
     P.renderTable();
     const table=els["#tbody"]._html;
     assert(table.includes("units")&&table.includes("partnership units"),
@@ -498,9 +407,13 @@ const P=runPage();
    const visible=idx.replace(/<!--[\s\S]*?-->/g,"").replace(/\/\*[\s\S]*?\*\//g,"").replace(/^\s*\/\/.*$/gm,"");
    const labels=visible;
    assert(!/chief executive/i.test(labels),"no label on the page says chief executive: "+(labels.match(/.{0,40}chief executive.{0,40}/i)||[""])[0]);
-   assert(idx.includes('<h1 id="thesis">What every <b>CEO</b> owns of the company they run.</h1>'),"the hero says what the site is, the same for every reader");
+   assert(idx.includes('<h1 id="thesis">What the person running the company still owns.</h1>'),"the hero says what the site is, the same for every reader");
+   assert(idx.includes('href="/tape/">Read this week\'s tape</a>')&&idx.includes('href="/pro/">Go Pro &middot; $15/mo</a>'),"two doors under the headline: the tape and the plan");
+   assert(idx.includes("the last twelve months are open. The archive, every other $1B+ name, longer tape windows, and export are Pro."),"the copy rule, verbatim, under the doors");
+   assert(idx.includes('id="thisweek"')&&idx.includes("function weekLine("),"the week in one line under the hero");
+
    assert(idx.includes('"CEOs own more than 5%"')&&idx.includes('"S&P 500 CEOs own more than 5%"'),"the rarity is the strip's first cell: a known denominator or none");
-   assert(head.includes("what every CEO owns")&&idx.includes("The wealthiest CEOs")&&idx.includes('data-key="ceo">CEO<'),"the title, the board and the screener say CEO");}
+   assert(head.includes("what every CEO owns")&&idx.includes("CEOs own more than 5%")&&idx.includes('data-key="ceo">CEO<'),"the title, the strip and the screener say CEO");}
   assert(require("fs").readFileSync("pro.html","utf8").includes("mailto:hello@founderledequities.com?subject=Refund"),
     "the refund promise carries its address, on the plan page");
   assert(idx.includes('"/api/hit"')&&idx.includes("fle_nohit")&&idx.includes('hit("view","page")'),

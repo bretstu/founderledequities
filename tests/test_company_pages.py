@@ -39,18 +39,27 @@ def test_the_shared_code_is_extracted_whole_and_parses():
     idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
     js = bcp.extract_shared(idx)
     for name in ("function parseCSV(", "function mapPanel(", "function mapHistory(", "function mapEvents(",
-                 "function cleanHist(", "function trajStats(", "function evBadge(",
+                 "function cleanHist(", "function evBadge(",
                  "function unchangedKind(", "function pctOf(", "function lagNote(", "const money=",
                  "const SEAL=", "let _cleanCache="):
         assert name in js, f"{name} is not marked @shared"
     # the parsers and formatters never touch the DOM; the tape's renderer is
     # shared on purpose (the home page and /tape/ draw the same block) and
     # is the one declaration allowed to
-    dom_free = js[:js.index("function renderActivity(")]
-    assert "document.querySelector" not in dom_free, "shared code before the renderer must not touch the DOM"
-    assert js.count("document.querySelector") <= 2, "only the renderer touches the DOM"
-    assert "state.pro" not in dom_free.split("function setWin(")[0] and "state.live" not in js, \
-        "shared parsers and formatters must not read app state (the tape's gate and renderer may: both pages carry the same state shape)"
+    # the parsers and formatters (everything before the first renderer, the
+    # switch painter) never touch the DOM; the renderers shared by the home
+    # page, /companies/ and /tape/ do, by nature
+    # the shared block is declarations in source order; the renderers touch
+    # the DOM by nature, the parsers and formatters never do
+    import re as _re
+    renderers = {"paintSw", "wireSw", "renderTable", "exportTable", "lastTrades", "renderActivity", "setWin"}
+    for m in _re.finditer(r"^function (\w+)\(", js, flags=_re.M):
+        end = js.find("\nfunction ", m.end())
+        body = js[m.start():end if end > 0 else len(js)]
+        if m.group(1) not in renderers:
+            assert "document.querySelector" not in body and "state.pro" not in body and "state.live" not in body, \
+                m.group(1) + " is shared as a parser or formatter and must not touch the DOM or app state"
+
     if shutil.which("node"):
         r = subprocess.run(["node", "-e", "new Function(process.argv[1])", "--", js],
                            capture_output=True, text=True)
@@ -110,7 +119,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
 def test_the_nav_on_a_page_points_home():
     idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
     nav = bcp.extract_topnav(idx)
-    assert 'href="/#board"' in nav and 'href="/about.html"' in nav
+    assert 'href="/tape/"' in nav and 'href="/companies/"' in nav and 'href="/about.html"' in nav and 'href="/pro/"' in nav and "#board" not in nav and "#perfsec" not in nav
     assert "devtog" not in nav and "openPro()" not in nav, "no modal, no dev toggle on a static page"
 
 
@@ -128,24 +137,28 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     """A fetch without scripts must read tonight's hero and top ten, not
     the placeholder '20 of 500' and an empty board."""
     import stamp_static as st
-    st.OPEN_TOP = 1   # the fixture has two rows; keep the sealed one sealed
+    st.OPEN_TOP = 0   # the fixture has two rows; keep the sealed one sealed (by share it would lead)
     panel, founders, prices, sp, _ = _fixture(tmp_path)
     out = tmp_path / "index.html"
     src = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
     out.write_text(src, encoding="utf-8")
     st.main(panel, founders, prices, sp, str(out))
     page = out.read_text(encoding="utf-8")
-    assert '<h1 id="thesis">What every <b>CEO</b> owns of the company they run.</h1>' in page, \
+    assert '<h1 id="thesis">What the person running the company still owns.</h1>' in page, \
         "the headline is the purpose, the same for every reader, and needs no stamp"
-    # ONE STRIP FOR EVERYONE: the universe's aggregates, no company's stake
-    assert '<div class="n hl">2</div><div class="k">CEOs own more than 5%</div>' in page, \
-        "the strip leads with the count over every company, the sealed one included"
+    # ONE STRIP FOR EVERYONE: three aggregates over every company, no company's stake
+    assert '<div class="n">2</div><div class="k">CEOs own more than 5%</div>' in page, \
+        "the strip counts over every company, the sealed one included"
+    strip = page[page.index('id="herostats"'):page.index('class="herobtns"')]
+    assert strip.index("Founder-led companies") < strip.index("CEOs own more than 5%") < strip.index("Held by those founders"), \
+        "three numbers in the plan's order"
+    assert "Of all CEO wealth" not in page, "the fourth number said the same thing as the third"
     assert "of them are sealed" not in page, "no second Go Pro: the nav button is the one call"
     assert 'data-pro="' not in page, "one strip, no second copy to swap in"
-    assert 'class="brow"' in page and 'href="/company/TSLA/"' in page and "28.44% of co." in page, "the board's rows are real HTML"
-    # a sealed company is a row in its rank, named, locked, without a bar
-    assert 'class="brow sealed"' in page and 'href="/company/SEALD/"' in page and 'class="sealed"' in page, \
-        "a sealed company is on the board with its name and a blurred placeholder"
+    assert '<tbody id="tbody"><tr' in page and 'href="/company/TSLA/"' in page and ">28.44%<" in page, "the table's first rows are real HTML, by share of the company"
+    # a sealed company is a row in its rank, named, its figures blurred
+    assert 'href="/company/SEALD/"' in page and 'class="sealed" data-shape="0.000%"' in page, \
+        "a sealed company is in the table with its name and a blurred placeholder"
     assert "41.2" not in page, "and none of its numbers"
     assert 'class="hstat"' in page and "Founder-led companies" in page, "and so is the stat strip"
     fn = open(os.path.join(ROOT, "functions", "_tier.js"), encoding="utf-8").read()
@@ -155,22 +168,34 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     assert "document.cookie" not in src
 
 
-def test_the_published_perf_file_is_the_chart_cohort(tmp_path):
-    """perf.csv on the site is founders plus the two benchmarks; whatever
-    else is on disk stays on disk."""
-    import build_site_data as bsd
-    perf = tmp_path / "perf.csv"
-    with open(perf, "w", newline="") as fh:
-        w = csv.writer(fh); w.writerow(["ticker", "month", "close"])
-        for tk in ("SPY", "RSP", "TSLA", "MSFT"):
-            w.writerow([tk, "2026-08", 100])
-    founders = tmp_path / "founders.csv"
-    founders.write_text("ticker,founder,evidence,source\nTSLA,yes,co-founded,x\nMSFT,no,,x\n", encoding="utf-8")
-    out = tmp_path / "out"; out.mkdir()
-    n = bsd.write_perf_for_chart(str(perf), str(founders), str(out))
-    kept = {row["ticker"] for row in csv.DictReader(open(out / "perf.csv", encoding="utf-8"))}
-    assert kept == {"SPY", "RSP", "TSLA"} and n == 3
-
+def test_the_index_chart_is_drawn_once_for_method(tmp_path):
+    """Founders against the index is a static SVG (ops/perf_svg.py) drawn at
+    deploy from perf.csv for the Method page: the S&P founders' equal-weight
+    line against SPY and RSP, growth of $10,000, with the caveat in the
+    page. Nothing on the home page loads perf.csv any more."""
+    import importlib.util, pathlib
+    spec = importlib.util.spec_from_file_location("perf_svg", pathlib.Path(ROOT) / "ops" / "perf_svg.py")
+    ps = importlib.util.module_from_spec(spec); spec.loader.exec_module(ps)
+    (tmp_path / "sp.csv").write_text("ticker\nAAA\nBBB\n")
+    (tmp_path / "founders.csv").write_text("ticker,founder\nAAA,yes\nBBB,yes\nCCC,yes\nDDD,yes\nEEE,yes\nFFF,yes\n")
+    months = [f"2024-{m:02d}" for m in range(1, 13)]
+    rows = ["ticker,month,close"]
+    for tk, start, step in (("SPY", 100, 1), ("RSP", 100, 0.5), ("AAA", 10, 1), ("BBB", 20, 1), ("CCC", 5, 1), ("DDD", 5, 1), ("EEE", 5, 1), ("FFF", 5, 1)):
+        for i, m in enumerate(months):
+            rows.append(f"{tk},{m},{start + step * i}")
+    (tmp_path / "perf.csv").write_text("\n".join(rows) + "\n")
+    # only the S&P founders (AAA, BBB) are the cohort; fewer than five founders means no line
+    assert ps.series(str(tmp_path / "perf.csv"), str(tmp_path / "founders.csv"), str(tmp_path / "sp.csv")) is None
+    (tmp_path / "sp.csv").write_text("ticker\nAAA\nBBB\nCCC\nDDD\nEEE\nFFF\n")
+    d = ps.series(str(tmp_path / "perf.csv"), str(tmp_path / "founders.csv"), str(tmp_path / "sp.csv"))
+    assert d and d["count"] == 6 and d["months"][0] == "2024-01" and len(d["founders"]) == 12
+    assert d["founders"][-1] > d["spy"][-1] > d["rsp"][-1], "the fixture's founders outgrow SPY, SPY outgrows RSP"
+    svg = ps.svg(d)
+    assert svg.startswith("<svg") and "Founders index" in svg and "S&amp;P 500 (SPY)" in svg and "$10,000" in svg
+    idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
+    assert "perf.csv" not in idx and "function perfSeries(" not in idx, "the home page no longer draws the chart"
+    about = open(os.path.join(ROOT, "about.html"), encoding="utf-8").read()
+    assert "<!--PERF_SVG-->" in about and "A portrait, not a strategy." in about
 
 def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path):
     """A fetch without scripts must read the stake, the value, the record

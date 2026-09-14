@@ -122,13 +122,11 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    to say a section has started and no more: it was near 80px, which read
    as a gap rather than as a join. */
 .hero{padding:clamp(36px,4.5vw,60px) 0 clamp(28px,3vw,40px)}
-.board,.activitysec,.tablesec,.trends,.perfs{padding:clamp(30px,3.4vw,46px) 0 clamp(28px,3.2vw,42px);
-  border-top:2px solid var(--rule)}
 
 /* ---------- hero ---------- */
 .hero h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(34px,4.6vw,72px);max-width:22ch}
 .hero h1 b{font-weight:500}
-.herosub{margin:18px 0 0;font-size:clamp(15px,1.25vw,18px);line-height:1.5;color:var(--mut);white-space:nowrap}
+.herosub{margin:18px 0 0;font-size:clamp(15px,1.25vw,18px);line-height:1.5;color:var(--mut);max-width:62ch}
 @media(max-width:900px){.herosub{white-space:normal;max-width:52ch}}
 .herosub .sealnote{display:block;margin-top:8px;color:var(--faint)}
 .herosub .sealnote .gopro{font-size:12.5px;padding:7px 14px;margin-left:10px;vertical-align:middle}
@@ -146,6 +144,25 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    headline. A row beneath uses the height the words already take. */
 .hero .wrap{display:block}
 .herostats{margin-top:30px;padding:22px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:row;flex-wrap:wrap;gap:20px 44px;align-items:flex-start}
+.herobtns{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.herobtns .gopro{padding:12px 22px;font-size:14.5px}
+.hbtn2{font-size:14.5px;font-weight:600;color:var(--ink);border:1px solid var(--ink);padding:11px 22px;text-decoration:none}
+.hbtn2:hover{background:var(--ink);color:var(--bg);text-decoration:none}
+.heroquiet{font-family:var(--ui);font-size:13.5px;font-style:italic;color:var(--mut);margin:16px 0 0;max-width:70ch}
+.thisweek{margin-top:26px;padding:12px 16px;border:1px solid var(--line);font-size:14px;color:var(--mut);display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.thisweek:empty{display:none}
+.thisweek .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-right:4px}
+.thisweek b{color:var(--ink);font-weight:700}
+/* the tape excerpt on the home page: no controls; the full tape a click away */
+.excerpt .tapectl,.excerpt .pronote{display:none}
+.hometape{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.hometape .gopro{text-decoration:none;display:inline-block}
+.homesub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.homesub .hs-k{font-family:var(--disp);font-size:18px;font-weight:500;margin-right:4px}
+.homesub input{font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;width:220px}
+.homesub button{font:inherit;font-size:14px;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:0;padding:9px 16px;cursor:pointer}
+.homesub button:disabled,.homesub input:disabled{opacity:.55;cursor:default}
+.homesub .hs-msg{font-size:12.5px;color:var(--mut);flex-basis:100%}
 .hstat .n{font-family:var(--disp);font-size:clamp(28px,2.8vw,38px);font-weight:500;
   letter-spacing:-.022em;line-height:1;white-space:nowrap}
 .hstat .n.hl{color:var(--ink)}
@@ -176,14 +193,9 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    no scrollbar (a scrolling list reads as cut off); "show all" expands. */
 .sbody{background:transparent;border:0;border-radius:0;padding:6px 0 0;margin-top:14px;box-shadow:none}
 .sbody .bsub{margin-top:0}
-.bcap2{font-size:13px;color:var(--mut);margin:0 0 16px}
 /* THE LIST SCROLLS INSIDE THE CARD. Ten rows show; the rest are a scroll
    away, in the same card, with no button that unrolls two thousand rows
    onto the page. */
-.bars{display:flex;flex-direction:column;gap:8px;max-height:512px;overflow-y:auto;overscroll-behavior:contain;padding-right:10px}
-.brow{display:grid;grid-template-columns:24px minmax(0,1fr) 104px;gap:14px;align-items:center;cursor:pointer}
-.brank{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:right}
-.btrack{position:relative;height:44px;background:var(--line2);border-radius:2px;overflow:hidden}
 /* STONE: A BAR THAT ONLY MEASURES. Green would say "bought" and red
    "sold"; a leaderboard bar says neither, so it takes the one colour on
    the site that means nothing, a warm stone a step below the paper. Light
@@ -191,16 +203,6 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    they sit on the track beside it, so a name inside the bar and one past
    its edge are set the same way; a screenshot is done without a cursor on
    it. Hover deepens the tone. */
-.bfill{position:absolute;inset:0 auto 0 0;background:var(--stone);border-radius:2px;display:flex;align-items:center;min-width:0;transition:background .12s}
-.brow:hover .bfill{background:var(--stone-d)}
-.brow:hover .btrack{box-shadow:inset 0 0 0 1px var(--ink)}
-.blab{display:flex;align-items:baseline;gap:10px;padding:0 12px;white-space:nowrap;overflow:hidden;color:var(--ink)}
-.blab .tk{font-family:var(--mono);font-weight:600;font-size:13px}
-.blab .nm{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis}
-.blab .fb{vertical-align:1px}
-.blab.out{color:var(--ink);position:absolute;left:var(--w);top:0;bottom:0;padding-left:12px;align-items:center;display:flex;gap:10px;overflow:visible}
-.blab.out .tk{color:var(--ink)}.blab.out .nm{color:var(--ink)}
-.bpct{font-family:var(--disp);font-weight:500;font-size:21px;letter-spacing:-.01em;text-align:right;line-height:1}
 /* THE SEAL PILL: a small ink-outlined pill where a sealed company's number
    would be. One shape everywhere (board, table, strip); it opens the Pro
    box. The number is not in the file, so there is nothing to un-blur.
@@ -212,11 +214,6 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .sealed{filter:blur(3.5px);opacity:.5;user-select:none;cursor:pointer;color:var(--ink)}
 .sealed::before{content:attr(data-shape)}
 .sealed:hover{opacity:.8}
-.brow.sealed .btrack{background:transparent}
-.bpct .b2{display:block;font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--faint);margin-top:5px;letter-spacing:0}
-.bfoot{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:16px}
-.bmore{font-family:var(--ui);font-size:12.5px;font-weight:600;color:var(--blue);background:none;border:0;padding:0;cursor:pointer}
-.bsrc{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 .bsub{margin:-10px 0 18px;font-size:13px;color:var(--mut)}
 
 /* ---------- table ---------- */
@@ -301,6 +298,8 @@ td.c-fd,td.c-man{font-size:12.5px;color:var(--mut);white-space:nowrap;overflow:h
 table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .c-r1 .up{color:#0b7a4b}.c-r1 .down{color:#c22a2a}
 .tfoot{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 4px 0;font-size:12.5px;color:var(--mut);flex-wrap:wrap}
+.tablesec.home .controls{display:none}
+.tablesec:not(.home) .allco{display:none}
 .more{font-weight:700;font-size:13px;border:1px solid var(--ink);border-radius:0;padding:8px 16px}
 .more:hover{background:var(--ink);color:#fff}
 
@@ -315,7 +314,6 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .c-lt .ns{display:inline-block;font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);background:var(--wash);border-radius:4px;padding:2px 6px;margin-top:4px}
 .c-lt .lt{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .chip.export{margin-left:auto}
-.cohort{display:inline-flex;gap:6px;margin-right:14px;padding-right:14px;border-right:1px solid var(--line)}
 .c-lt .ltd{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 
 /* ---------- trends ---------- */
@@ -472,14 +470,7 @@ table.tape td.mn .dt{color:var(--faint);font-family:var(--mono);font-size:11px}
 .chipdiv{width:2px;align-self:stretch;background:var(--rule);border-radius:1px;margin:2px 5px}
 .chip[data-kind]{background:var(--panel)}
 .chip[data-kind].on{background:var(--ink)}
-.perfctl{display:flex;gap:8px;flex-wrap:wrap}
 #perfchart svg{width:100%;height:auto;display:block}
-.distbox{margin-top:26px}
-.distbox svg{width:100%;height:auto;display:block}
-.distbox .dbin:hover .hit{stroke:var(--line2);stroke-width:1.2}
-.distbox .dbin.open .hit{stroke:var(--ink);stroke-width:1.2}
-.distcap .hint{color:var(--faint)}
-.dpanel{margin-top:14px;border:1px solid var(--line);border-radius:2px;padding:14px 16px 16px;background:#fff}
 .dph{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--mut);margin-bottom:12px}
 .dph b{color:var(--ink);font-family:var(--mono)}
 .dpx{border:0;background:transparent;font-size:18px;line-height:1;color:var(--faint);cursor:pointer;padding:0 2px}
@@ -490,11 +481,6 @@ table.tape td.mn .dt{color:var(--faint);font-family:var(--mono);font-size:11px}
 .dtile.joined{}
 
 .dtile:hover{filter:brightness(0.9)}
-.disth{font-family:var(--disp);font-size:20px;font-weight:500;letter-spacing:-.01em;margin:30px 0 3px}
-.distsub{font-size:14px;color:var(--mut);margin-bottom:12px}
-.distsub b{color:var(--ink)}
-.distkey{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:12.5px;color:var(--mut);margin-top:10px}
-.distkey .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ink);margin-right:7px;vertical-align:1px}
 .fsw{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
   font-family:var(--mono);font-size:11.5px;letter-spacing:.02em;color:var(--faint)}
 .fsw .tr{width:34px;height:19px;border-radius:999px;background:var(--line);position:relative;
@@ -578,10 +564,8 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
     onclick="window.scrollTo({top:0,behavior:'smooth'})"
     onkeydown="if(event.key==='Enter')window.scrollTo({top:0,behavior:'smooth'})">Founder Led <i>Equities</i></div>
   <div class="topnav">
-    <a href="#board">Scoreboard</a>
     <a href="/tape/">Tape</a>
-    <a href="#table">Companies</a>
-    <a href="#perfsec">Performance</a>
+    <a href="/companies/">Companies</a>
     <a href="about.html">Method</a>
     <a href="/pro/">Pro</a>
     <button class="devtog" id="devtog" onclick="toggleDev()" title="Developer preview — see the site as a Pro subscriber">Preview: Free</button>
@@ -591,89 +575,31 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
 </div></div>
 
 <section class="hero"><div class="wrap">
-  <h1 id="thesis">What every <b>CEO</b> owns of the company they run.</h1>
-  <p class="herosub" id="herosub">Computed from their SEC filings, never estimated. Every US public company worth $1B or more.</p>
+  <!-- THE HOME PAGE (PLAN.md section 5): the purpose, three live numbers,
+       two doors (the tape, the plan), the copy rule, and the week in one
+       line. Then what they own now, this week's tape, every company, and
+       founders against the index. -->
+  <h1 id="thesis">What the person running the company still owns.</h1>
+  <p class="herosub" id="herosub">Economic ownership, computed from the filings they signed. Not cap tables. Not estimates. Every US public company worth $1B or more.</p>
   <div class="herostats" id="herostats"></div>
+  <div class="herobtns">
+    <a class="gopro" href="/tape/">Read this week's tape</a>
+    <a class="hbtn2" href="/pro/">Go Pro &middot; $15/mo</a>
+  </div>
+  <p class="heroquiet">S&amp;P 500 current stakes and the last twelve months are open. The archive, every other $1B+ name, longer tape windows, and export are Pro.</p>
+  <div class="thisweek" id="thisweek"></div>
 </div></section>
 
-<section class="board" id="board"><div class="wrap">
+
+<section class="tablesec home" id="table"><div class="wrap">
+  <!-- ONE LIST, TWO DEPTHS (PLAN.md section 5; decided 2026-09-14). This is
+       the screener's table at a depth of twenty: what they own now, by
+       share of the company, the dollar column beside it. /companies/ is
+       the same table in full, with its search, filters and export. The
+       controls are in the markup so the two pages share one script; on the
+       home page they are hidden and the link at the foot opens the rest. -->
   <div class="shead">
-    <h2 id="boardtitle">The wealthiest CEOs</h2>
-    <div class="bmodes" id="bmodes">
-      <button class="chip bmode on" data-mode="val">Stake value</button>
-      <button class="chip bmode" data-mode="pct">% of company</button>
-<span class="fsw" id="lbf" role="switch" aria-checked="false" tabindex="0"
-        title="only companies still run by a person the proxy names as a founder">Founders only<span class="tr"><i></i></span></span>
-    </div>
-  </div>
-  <div class="sbody">
-  <div class="bcap2" id="bcap2"></div>
-  <div class="r bsub" id="bsub"></div>
-  <div class="bars" id="bars"></div>
-  <div class="bfoot"><div></div><button class="bmore" id="bmore" onclick="state.lbAll=!state.lbAll;renderBars()"></button></div>
-  <div class="bsrc" id="bsrc"></div>
-  </div>
-</div></section>
-
-<!-- RECENT ACTIVITY SITS SECOND, NOT LAST.
-     Everything else on this site moves at the speed of proxies and cover
-     pages; this is the one thing that is different every day, so it sits
-     directly under the ranking a reader came for.
-
-     THREE ALTITUDES, ONE SECTION. The day strip is the newest filing day,
-     every filing on it, because that is what a reader who comes back
-     tomorrow wants to see first. The two columns are the window (30 days
-     by default) seen as PEOPLE: one bar per chief executive, buys on the
-     left and stake reductions on the right, so the imbalance between the
-     two -- a short buy column beside a long sell column, most of it
-     hatched as scheduled -- is the finding before a chip is touched. The
-     table underneath is every filing, and it opens only when asked. -->
-<section class="activitysec" id="activity"><div class="wrap">
-  <div class="shead tapehead">
-    <div>
-      <h2>This week's tape.</h2>
-      <div class="tapesub" id="tapesub">Founders only · last 7 days · stake-moving trades first.</div>
-    </div>
-  </div>
-  <div class="sbody">
-    <div class="actstats" id="actstats"></div>
-    <!-- THE TAPE'S CONTROLS: a window (7 days free; the longer ones open the
-         Pro box for a free reader and are drawn dimmed so they never look
-         free), and three toggles. The Pro note sits under them, never in
-         their row. -->
-    <div class="tapectl">
-      <span class="chips" id="actwin" role="group" aria-label="window">
-        <button class="chip win" data-win="7" title="filings that reached EDGAR in the last 7 days">7d</button>
-        <button class="chip win" data-win="30">30d</button>
-        <button class="chip win" data-win="90">90d</button>
-        <button class="chip win" data-win="365">12m</button>
-      </span>
-      <span class="toggles">
-        <label class="tg"><input type="checkbox" id="tg-f" checked> Founders only</label>
-        <label class="tg"><input type="checkbox" id="tg-buys"> Open-market buys</label>
-        <label class="tg"><input type="checkbox" id="tg-nocomp"> Hide compensation</label>
-      </span>
-    </div>
-    <div class="pronote" id="pronote"></div>
-    <div class="tapewrap" id="actwrap"></div>
-    <div class="actnote" id="actnote"></div>
-  </div>
-</div></section>
-
-<!-- PERFORMANCE SITS THIRD: after who, after what happened, before the
-     long tail. It answers "has it mattered?" -- one equal-weight line for
-     the founder cohort, one for the market, the honest caveat in plain
-     sight. Free, deliberately: it is the thesis. A first visit still meets
-     it before the table; a return visit meets the strip first. -->
-<section class="tablesec" id="table"><div class="wrap">
-  <!-- THE SCREENER. Trajectories used to be a section of nine charts,
-       chosen by a lens the reader had not asked for. Its question -- where
-       is each stake heading, and did the person ever sell -- is a question
-       about ONE company, so it lives here as columns: sort by three-year
-       change, read the last trade, filter to those who never sold, and open
-       the row for the full record. -->
-  <div class="shead">
-    <h2>Every company</h2>
+    <h2>What they own now</h2>
 
   </div>
   <div class="sbody">
@@ -724,30 +650,54 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   </div>
   <div class="tfoot">
     <span id="tcount"></span>
+    <a class="gopro allco" href="/companies/" style="text-decoration:none">All companies &rarr;</a>
   </div>
   </div>
 </div></section>
-<section id="perfsec" class="perfs hide"><div class="wrap">
-  <div class="shead">
-    <h2>Founders against the index</h2>
-    <div class="perfctl">
-      <span class="cohort">
-        <button class="chip pc on" data-pc="sp" title="the founder-led companies in the S&amp;P 500">S&amp;P 500 founders</button>
-        <button class="chip pc" data-pc="all" title="every founder-led US company worth $1B or more">All founder-led</button>
-      </span>
-      <button class="chip pw on" data-pw="" id="pwmax">Since 2016</button>
-      <button class="chip pw" data-pw="60">5 years</button>
-      <button class="chip pw" data-pw="36">3 years</button>
-      <button class="chip pw" data-pw="12">1 year</button>
+
+<section class="activitysec excerpt" id="activity"><div class="wrap">
+  <div class="shead tapehead">
+    <div>
+      <h2>This week's tape.</h2>
+      <div class="tapesub" id="tapesub">Founders only · last 7 days · stake-moving trades first.</div>
     </div>
   </div>
   <div class="sbody">
-  <div class="r bsub" id="perfsub"></div>
-  <div class="chartbox" id="perfchart"></div>
-  <div class="distbox" id="perfdist"></div>
-  <div class="tnote" id="perfnote"></div>
+    <div class="actstats" id="actstats"></div>
+    <!-- THE TAPE'S CONTROLS: a window (7 days free; the longer ones open the
+         Pro box for a free reader and are drawn dimmed so they never look
+         free), and three toggles. The Pro note sits under them, never in
+         their row. -->
+    <div class="tapectl">
+      <span class="chips" id="actwin" role="group" aria-label="window">
+        <button class="chip win" data-win="7" title="filings that reached EDGAR in the last 7 days">7d</button>
+        <button class="chip win" data-win="30">30d</button>
+        <button class="chip win" data-win="90">90d</button>
+        <button class="chip win" data-win="365">12m</button>
+      </span>
+      <span class="toggles">
+        <label class="tg"><input type="checkbox" id="tg-f" checked> Founders only</label>
+        <label class="tg"><input type="checkbox" id="tg-buys"> Open-market buys</label>
+        <label class="tg"><input type="checkbox" id="tg-nocomp"> Hide compensation</label>
+      </span>
+    </div>
+    <div class="pronote" id="pronote"></div>
+    <div class="tapewrap" id="actwrap"></div>
+    <div class="actnote" id="actnote"></div>
+    <!-- THE LETTER, ON THE PAGE THAT SHOWS ITS CONTENTS. One field, one
+         button, the same signup /tape/ carries. -->
+    <div class="hometape">
+      <div class="tapelink"><a class="gopro" href="/tape/">The full tape &rarr;</a></div>
+      <form class="homesub" id="homesub" onsubmit="return subscribeHome(event)">
+        <span class="hs-k">Monday tape, free.</span>
+        <input type="email" id="homeemail" placeholder="you@example.com" required autocomplete="email">
+        <button type="submit">Send it</button>
+        <span class="hs-msg" id="homemsg"></span>
+      </form>
+    </div>
   </div>
 </div></section>
+
 
 <footer><div class="wrap row">
   <div><b style="color:var(--ink);font-family:var(--disp)">Founder Led <i style="color:var(--blue);font-style:normal">Equities</i></b>
@@ -812,7 +762,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,sort:{key:"mcap",dir:-1},bmode:"val",lbF:false,pw:"",tbF:false,tbH:false,distOpen:null,pc:"sp",pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,buys:false,nocomp:false},live:{panel:false,hist:false,prices:false,founders:false,events:false,perf:false}};
+const state={q:"",min:0,sort:{key:"pct",dir:-1},tbF:false,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,buys:false,nocomp:false},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -896,7 +846,7 @@ const SAMPLE_HIST={
 /* the activity feed's fallback: real events, so it reads true from disk */
 const EVSAMPLE=[{"tk":"SLB","ceo":"Olivier Le Peuch","fd":"2026-08-27","td":"2026-08-27","c":"S","lb":"scheduled sale","sh":5000.0,"v":275000.0,"ap":55.0,"pc":0.3728,"nc":-5000.0,"ha":1336328.0,"rs":0.0,"pl":"plan","u":"https://www.sec.gov/Archives/edgar/data/87347/000008734726000118/form4.xml","fl":""},{"tk":"CRWD","ceo":"George Kurtz","fd":"2026-08-27","td":"2026-08-26","c":"S","lb":"scheduled sale","sh":10000.0,"v":1885230.52,"ap":188.5231,"pc":0.1207,"nc":-20000.0,"ha":8276019.0,"rs":null,"pl":"plan","u":"https://www.sec.gov/Archives/edgar/data/1535527/000095010326013019/ownership.xml","fl":""},{"tk":"FIX","ceo":"Brian E. Lane","fd":"2026-08-27","td":"2026-08-26","c":"S","lb":"discretionary sale","sh":16024.0,"v":25769923.39,"ap":1608.2079,"pc":9.9473,"nc":-16024.0,"ha":145065.0,"rs":0.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1035983/000144824026000019/form4-08272026_040803.xml","fl":""},{"tk":"LITE","ceo":"Michael Hurlston","fd":"2026-08-27","td":"2026-08-27","c":"S","lb":"discretionary sale","sh":548.0,"v":525345.68,"ap":958.66,"pc":0.2923,"nc":74157.0,"ha":186951.0,"rs":null,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1633978/000157333826000017/form4-08282026_010801.xml","fl":""},{"tk":"ABT","ceo":"Robert B. Ford","fd":"2026-08-27","td":"2026-08-25","c":"S","lb":"exercise and sell","sh":398832.0,"v":46204798.38,"ap":115.8503,"pc":null,"nc":0.0,"ha":522664.0,"rs":0.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1800/000161257126000011/form4-08272026_090838.xml","fl":""},{"tk":"ANET","ceo":"Jayshree Ullal","fd":"2026-08-27","td":"2026-08-25","c":"S","lb":"scheduled sale","sh":13809.0,"v":2648491.23,"ap":191.7946,"pc":0.0535,"nc":-13809.0,"ha":25820337.0,"rs":0.0,"pl":"plan","u":"https://www.sec.gov/Archives/edgar/data/1596532/000159653226000216/edgardoc.xml","fl":""},{"tk":"VRSN","ceo":"D. James Bidzos","fd":"2026-08-26","td":"2026-08-25","c":"S","lb":"scheduled sale","sh":3300.0,"v":960812.03,"ap":291.1552,"pc":0.8221,"nc":-3300.0,"ha":398088.0,"rs":0.0,"pl":"plan","u":"https://www.sec.gov/Archives/edgar/data/1014473/000120481626000038/wk-form4_1787777452.xml","fl":""},{"tk":"MU","ceo":"Sanjay Mehrotra","fd":"2026-08-25","td":"2026-08-21","c":"S","lb":"scheduled sale","sh":40000.0,"v":38756162.13,"ap":968.9041,"pc":4.388,"nc":-40000.0,"ha":871578.0,"rs":0.0,"pl":"plan","u":"https://www.sec.gov/Archives/edgar/data/723125/000124265426000015/primarydocument.xml","fl":""},{"tk":"INTC","ceo":"Lip-Bu Tan","fd":"2026-08-14","td":"2026-08-11","c":"P","lb":"open-market purchase","sh":105263.0,"v":9999985.0,"ap":95.0,"pc":null,"nc":105824.0,"ha":1331640.0,"rs":561.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/50863/000005086326000177/form4.xml","fl":""},{"tk":"PFE","ceo":"Albert Bourla","fd":"2026-08-12","td":"2026-08-12","c":"P","lb":"open-market purchase","sh":38000.0,"v":1000920.0,"ap":26.34,"pc":null,"nc":40881.0,"ha":435555.0,"rs":2881.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/78003/000122520826007083/doc4.xml","fl":""},{"tk":"APTV","ceo":"Kevin P. Clark","fd":"2026-08-11","td":"2026-08-10","c":"P","lb":"open-market purchase","sh":51190.0,"v":2502684.22,"ap":48.8901,"pc":3.8575,"nc":51190.0,"ha":1378226.0,"rs":0.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1521332/000119312526344586/ownership.xml","fl":""},{"tk":"BSX","ceo":"Michael F. Mahoney","fd":"2026-08-05","td":"2026-08-03","c":"P","lb":"open-market purchase","sh":186240.0,"v":9001407.55,"ap":48.3323,"pc":13.0612,"nc":208359.0,"ha":1612143.0,"rs":0.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/885725/000122520826006950/doc4.xml","fl":""},{"tk":"CSGP","ceo":"Andrew C. Florance","fd":"2026-08-05","td":"2026-08-04","c":"P","lb":"open-market purchase","sh":83300.0,"v":2489837.0,"ap":29.89,"pc":4.835,"nc":83300.0,"ha":1806165.0,"rs":0.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1057352/000162828026052968/wk-form4_1785936417.xml","fl":""},{"tk":"TTD","ceo":"Jeff T. Green","fd":"2026-03-04","td":"2026-03-04","c":"P","lb":"open-market purchase","sh":2314304.0,"v":58042744.32,"ap":25.08,"pc":4.886,"nc":6398089.0,"ha":49680426.0,"rs":null,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1671933/000167144526000004/wk-form4_1772674051.xml","fl":""},{"tk":"TSLA","ceo":"Elon Musk","fd":"2025-09-15","td":"2025-09-12","c":"P","lb":"open-market purchase","sh":2568732.0,"v":999959042.37,"ap":389.2812,"pc":0.5069,"nc":2568732.0,"ha":509362808.0,"rs":0.0,"pl":"discretionary","u":"https://www.sec.gov/Archives/edgar/data/1318605/000110465925089693/tm2526050-1_4seq1.xml","fl":""}];
 
-let PANEL=[],HIST={},PRICES={},PRICES_ASOF="",FOUNDERS={},EVENTS=[],PERF={},TRENDS={};
+let PANEL=[],HIST={},PRICES={},PRICES_ASOF="",FOUNDERS={},EVENTS=[];
 /* THE DATA'S VERSION. Stamped by deploy.sh; every data fetch carries it as
    ?v=, so a deploy's files are cached by the browser and the edge until the
    next deploy changes the key. Before this every CSV was fetched no-store
@@ -1064,26 +1014,15 @@ async function loadData(){
           {f:(r.founder||"").toLowerCase(),ev:r.evidence||"",src:r.source||""};
         if(!Object.keys(m).length)return false;
         FOUNDERS=m;state.live.founders=true;return true;});
-  const loadTrends=fetchFirst(state.pro?["/pro/trends.csv","trends.csv"]:["trends.csv"],
-    t=>{const m={};
-        for(const r of parseCSV(t))if(r.ticker&&r.direction)m[r.ticker.toUpperCase()]=r.direction;
-        if(!Object.keys(m).length)return false;
-        TRENDS=m;return true;});
-  const loadPerf=(async()=>{try{const t=await (await fetch(withV("perf.csv"))).text();
-    const m={};
-    for(const r of parseCSV(t)){
-      if(!r.ticker||!r.month)continue;
-      const c=num(r.close);if(c===null)continue;
-      (m[r.ticker.toUpperCase()]=m[r.ticker.toUpperCase()]||[]).push([r.month,c]);
-    }
-    for(const tk in m)m[tk].sort((x,y)=>x[0]<y[0]?-1:1);
-    if(m.SPY&&Object.keys(m).length>1){PERF=m;state.live.perf=true;}}catch(e){}})();
+  /* THE SCREENER'S COUNTS OVER EVERY COMPANY (build_site_data): what a
+     free reader's filter would return in Pro, per filter combination */
+  const loadCounts=(async()=>{try{const q=await fetch(withV("screen-counts.json"));if(q.ok){SCREEN_COUNTS=await q.json();return true;}}catch(e){}return false;})();
   const loadPrices=(async()=>{try{const t=await (await fetch(withV("prices.csv"))).text();
       const m={};let asof="";
       for(const r of parseCSV(t)){const c=num(r.close);
         if(r.ticker&&c){m[r.ticker.toUpperCase()]=c;asof=r.as_of||asof;}}
       if(Object.keys(m).length){PRICES=m;PRICES_ASOF=asof;state.live.prices=true;}}catch(e){}})();
-  await Promise.all([loadPanel,loadFounders,loadTrends,loadPerf,loadPrices]);
+  await Promise.all([loadPanel,loadFounders,loadPrices,loadCounts]);
   applyPrices();
   // THE RE-RENDER MUST NOT MOVE THE READER.
   //
@@ -1134,6 +1073,7 @@ function fOnly(tk,on){
   const i=fInfo(tk);
   return !!(i&&i.f==="yes");
 }
+/*@shared*/
 function paintSw(id,on){
   const el=document.querySelector("#"+id);if(!el)return;
   /* a founders switch needs the founders file; the never-sold switch
@@ -1142,6 +1082,7 @@ function paintSw(id,on){
   el.classList.toggle("on",!!on);
   el.setAttribute("aria-checked",on?"true":"false");
 }
+/*@shared*/
 function wireSw(id,flip){
   const el=document.querySelector("#"+id);if(!el)return;
   el.addEventListener("click",flip);
@@ -1172,9 +1113,7 @@ function applyPrices(){
 }
 
 /* ---------------- render ---------------- */
-let _bars_rsz=null;
-if(typeof window!=="undefined"&&window.addEventListener)window.addEventListener("resize",()=>{clearTimeout(_bars_rsz);_bars_rsz=setTimeout(()=>{if(state.live.panel)renderBars();},150);});
-function renderAll(){syncNav();renderStatus();renderHero();renderBars();renderTable();renderActivity();renderPerf();
+function renderAll(){syncNav();renderStatus();renderHero();renderTable();renderActivity();
   if(/[?&]welcome=1/.test(location.search)&&!state._welcomed){
     state._welcomed=true;
     const t=document.createElement("div");
@@ -1184,330 +1123,6 @@ function renderAll(){syncNav();renderStatus();renderHero();renderBars();renderTa
     history.replaceState(null,"",location.pathname);
   }}
 
-/* ============ Founders against the index ============ */
-const PERF_BASE=10000;   /* growth-of-$10,000, the convention for these charts */
-function perfSeries(){
-  /* Two chained growth lines from raw monthly closes.
-
-     EQUAL WEIGHT, REBALANCED MONTHLY. Each month's founder return is the
-     plain average of the monthly returns of every founder-led company with
-     a close this month and last. Cap-weighting would make the line a
-     portrait of its three largest members; equal weight asks the question
-     the section poses -- has the COHORT mattered?
-
-     COMPANIES ENTER WHEN THEIR PRICES DO. An IPO joins the average at its
-     first full month. The line starts when at least five founders and the
-     benchmark all have data, so no single early listing masquerades as
-     "the founders".  */
-  if(!state.live.perf)return null;
-  const spy=PERF.SPY;if(!spy||spy.length<2)return null;
-  const months=spy.map(p=>p[0]);
-  const byTk={};
-  for(const tk in PERF){if(tk==="SPY"||tk==="RSP")continue;
-    /* perf.csv keeps every month ever fetched (merge_history), so a
-       company later reclassified founder->no would linger as a ghost in
-       the average. The live founder labels are the cohort's source of
-       truth; the file is just its price memory. */
-    if(state.live.founders&&FOUNDERS[tk]&&FOUNDERS[tk].f&&FOUNDERS[tk].f!=="yes")continue;
-    /* THE COHORT IS A CHOICE, THE SAME FOR EVERY READER. "S&P 500
-       founders" is the founder-led members of the S&P; "All founder-led"
-       is every founder-led company worth $1B or more. Monthly closes are
-       public and the index is an aggregate, so nothing here waits on the
-       seal; what Pro buys is the stakes, not the chart. (An earlier
-       version cut the cohort to the S&P for free readers by skipping
-       masked rows, and a comment here still said so long after the
-       one-list rebuild; membership is now an explicit flag.) */
-    const _pr=PANEL.find(p=>p.tk===tk);
-    if(state.pc==="sp"&&!(_pr&&_pr.sp))continue;
-    byTk[tk]=Object.fromEntries(PERF[tk]);}
-  const fRet=[],names=Object.keys(byTk);
-  for(let i=1;i<months.length;i++){
-    const a=months[i-1],b=months[i];let sum=0,n=0;
-    for(const tk of names){
-      const ca=byTk[tk][a],cb=byTk[tk][b];
-      if(ca&&cb){sum+=cb/ca-1;n++;}
-    }
-    fRet.push({m:months[i],r:n?sum/n:null,n});
-  }
-  let s0=0;while(s0<fRet.length&&(fRet[s0].r===null||fRet[s0].n<5))s0++;
-  if(fRet.length-s0<2)return null;
-  const rsp=PERF.RSP&&PERF.RSP.length>1?Object.fromEntries(PERF.RSP):null;
-  const out={months:[months[s0]],founders:[PERF_BASE],spy:[PERF_BASE],rsp:rsp?[PERF_BASE]:null,from:months[s0],
-             count:names.length,byTk,spyMap:Object.fromEntries(spy),rspMap:rsp};
-  for(let i=s0;i<fRet.length;i++){
-    out.months.push(fRet[i].m);
-    out.founders.push(out.founders[out.founders.length-1]*(1+(fRet[i].r||0)));
-    /* spy month i of fRet is the move from close i to close i+1 */
-    out.spy.push(out.spy[out.spy.length-1]*(spy[i+1]?spy[i+1][1]/spy[i][1]:1));
-    if(out.rsp){const a=rsp[months[i]],b=rsp[months[i+1]];out.rsp.push(out.rsp[out.rsp.length-1]*(a&&b?b/a:1));}
-  }
-  return out;
-}
-function perfWindow(full,monthsBack){
-  if(!monthsBack)return full;
-  const k=Math.max(0,full.months.length-1-(+monthsBack));
-  const rb=(arr)=>arr.slice(k).map(v=>v/arr[k]*PERF_BASE);
-  return {months:full.months.slice(k),founders:rb(full.founders),
-          spy:rb(full.spy),rsp:full.rsp?rb(full.rsp):null,from:full.months[k],count:full.count,byTk:full.byTk,spyMap:full.spyMap,rspMap:full.rspMap};
-}
-function perfChart(d,{w=940,h=300}={}){
-  const pad={l:52,r:172,t:16,b:26};
-  const n=d.months.length;
-  const all=[...d.founders,...d.spy,...(d.rsp||[])];
-  let y0=Math.min(...all),y1=Math.max(...all);
-  const yr=(y1-y0)||1;y0=Math.max(0,y0-yr*.08);y1+=yr*.08;
-  const X=i=>pad.l+i/((n-1)||1)*(w-pad.l-pad.r);
-  const Y=v=>h-pad.b-(v-y0)/(y1-y0)*(h-pad.t-pad.b);
-  const line=a=>a.map((v,i)=>`${i?"L":"M"} ${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(" ");
-  const yrs=[...new Set(d.months.map(m=>m.slice(0,4)))];
-  const step=Math.ceil(yrs.length/7);
-  const money=v=>"$"+(v>=1000?Math.round(v).toLocaleString():v.toFixed(0));
-  const endF=d.founders[n-1],endS=d.spy[n-1];
-  /* the label names the line first -- "$24,400 Founders" read like the
-     founders own $24,400. Name on top, value beneath, pushed apart when
-     the lines finish close together. */
-  const endR=d.rsp?d.rsp[d.rsp.length-1]:null;
-  /* three labels, spread apart when the lines finish close together */
-  const labs=[{k:"F",y:Y(endF)},{k:"S",y:Y(endS)}];if(endR!==null)labs.push({k:"R",y:Y(endR)});
-  labs.sort((a,b)=>a.y-b.y);const minGap=30;
-  for(let i=1;i<labs.length;i++)if(labs[i].y-labs[i-1].y<minGap)labs[i].y=labs[i-1].y+minGap;
-  for(let i=labs.length-2;i>=0;i--)if(labs[i+1].y-labs[i].y<minGap)labs[i].y=labs[i+1].y-minGap;
-  const yF=labs.find(l=>l.k==="F").y,yS=labs.find(l=>l.k==="S").y,yR=endR!==null?labs.find(l=>l.k==="R").y:null;
-  return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Founders index against SPY">
-   ${[y0+(y1-y0)*.1,(y0+y1)/2,y1-(y1-y0)*.1].map(v=>`<line x1="${pad.l}" x2="${w-pad.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#F0F0EB"/><text x="${pad.l-8}" y="${Y(v)+3.5}" text-anchor="end" font-family="IBM Plex Mono" font-size="10" fill="#7A7E84">${money(v)}</text>`).join("")}
-   ${yrs.filter((_,i)=>i%step===0).map(y=>{const i=d.months.findIndex(m=>m.slice(0,4)===y);
-     if(i<0)return"";return `<text x="${X(i)}" y="${h-8}" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7A7E84">${y}</text>`}).join("")}
-   ${d.rsp?`<path d="${line(d.rsp)}" fill="none" stroke="#A9ADB3" stroke-width="1.5" stroke-dasharray="4 3" stroke-linejoin="round"/>`:""}
-   <path d="${line(d.spy)}" fill="none" stroke="#7A7E84" stroke-width="1.7" stroke-linejoin="round"/>
-   <path d="${line(d.founders)}" fill="none" stroke="var(--ink)" stroke-width="2.1" stroke-linejoin="round"/>
-   <text x="${w-pad.r+8}" y="${yF-2}" font-family="IBM Plex Mono" font-size="11.5" font-weight="600" fill="var(--ink)">Founders index</text>
-   <text x="${w-pad.r+8}" y="${yF+11}" font-family="IBM Plex Mono" font-size="10.5" fill="var(--ink)">${money(endF)}</text>
-   <text x="${w-pad.r+8}" y="${yS-2}" font-family="IBM Plex Mono" font-size="11.5" fill="#55585E">S&amp;P 500 (SPY)</text>
-   <text x="${w-pad.r+8}" y="${yS+11}" font-family="IBM Plex Mono" font-size="10.5" fill="#7A7E84">${money(endS)}</text>
-   ${d.rsp?`<text x="${w-pad.r+8}" y="${yR-2}" font-family="IBM Plex Mono" font-size="11.5" fill="#8B8F95">S&amp;P equal weight (RSP)</text>
-   <text x="${w-pad.r+8}" y="${yR+11}" font-family="IBM Plex Mono" font-size="10.5" fill="#A9ADB3">${money(endR)}</text>`:""}
-  </svg>`;
-}
-/* INSIDE THE INDEX. The line says "beat the market"; it cannot say whether
-   the cohort did it broadly or on the back of ten names. This can: every
-   constituent's return over the chart's window, one tile per company,
-   stacked into bins from deep red to deep green, the S&P 500's own return
-   marked where it lands. When the cohort is small enough the tiles carry
-   their tickers; when it is the whole universe they become blocks and the
-   bins carry counts, so the picture stays a picture. Each tile is a door
-   to its company page; a bin is a door to the screener, sorted by return. */
-function perfReturns(d){
-  /* THE HISTOGRAM EXPLAINS THE LINE, SO IT COUNTS WHAT THE LINE COUNTED.
-     The index takes a company from the month after it lists; a company
-     that joined during the window is measured from the month it joined
-     (`since`), against the S&P over the same months (`spyOwn`), and the
-     tile is marked so a three-month move is never mistaken for a
-     five-year one. Nothing that fed the line is missing from the bins. */
-  const end=d.months[d.months.length-1],from=d.from,out=[];
-  const spyAt=m=>d.spyMap[m];
-  for(const tk in d.byTk){
-    const cl=d.byTk[tk];const c1=cl[end];if(!c1)continue;
-    let start=from;
-    if(!cl[start]){start=d.months.find(m=>m>from&&cl[m]);if(!start||start===end)continue;}
-    const c0=cl[start];
-    const s0=spyAt(start),s1=spyAt(end);
-    out.push({tk,ret:(c1/c0-1)*100,since:start===from?null:start,
-              spyOwn:(s0&&s1)?(s1/s0-1)*100:null});
-  }
-  const s0=d.spyMap[from],s1=d.spyMap[end];
-  return {items:out,spy:(s0&&s1)?(s1/s0-1)*100:null,from,end,
-          joined:out.filter(i=>i.since).length,
-          skipped:Object.keys(d.byTk).length-out.length};
-}
-function perfBins(monthsBack){
-  /* bin edges scale with the window: a year moves in tens, five years in hundreds */
-  const m=+monthsBack||60;
-  /* THIRTEEN COLUMNS ON EVERY WINDOW, so the chart's shape is the data's
-     and not the bin count's; each window's edges are spaced for the
-     moves that window produces. */
-  if(m<=12)return [-60,-40,-30,-20,-10,0,10,20,30,40,60,100];
-  if(m<=36)return [-60,-40,-20,0,20,40,60,80,100,150,200,300];
-  return [-75,-50,-25,0,25,50,75,100,150,200,300,500];
-}
-function binLabel(lo,hi){
-  const f=v=>(v>0?"+":"")+v+"%";
-  if(lo===null)return `below ${f(hi)}`;
-  if(hi===null)return `above ${f(lo)}`;
-  return `${f(lo)} to ${f(hi)}`;
-}
-function distCrown(items){
-  /* THE COLUMN'S FACE. Up to three tiles at the top of every column, tall
-     enough to carry their tickers, for the three largest stakes in the bin
-     -- the names a visitor knows -- and the rest of the bin beneath them
-     as the blocks it is. Chosen by stake, not return: the bin already says
-     the return. */
-  const val=tk=>{const p=PANEL.find(r=>r.tk===tk);return p&&p.val?p.val:0;};
-  const crown=[...items].sort((a,b)=>val(b.tk)-val(a.tk)).slice(0,3).map(i=>i.tk);
-  return new Set(crown);
-}
-function distChart(dist,edges,{w=940}={}){
-  const bins=[];
-  for(let i=0;i<=edges.length;i++)bins.push({lo:i?edges[i-1]:null,hi:i<edges.length?edges[i]:null,items:[]});
-  const place=r=>{let i=0;while(i<edges.length&&r>=edges[i])i++;return i;};
-  for(const it of dist.items)bins[place(it.ret)].items.push(it);
-  const val=tk=>{const p=PANEL.find(r=>r.tk===tk);return p&&p.val?p.val:0;};
-  for(const b of bins){
-    b.crown=distCrown(b.items);
-    /* crowned first, then by return, so the column reads top-down: the names, then the mass */
-    b.items.sort((a,c)=>(b.crown.has(c.tk)-b.crown.has(a.tk))||(val(c.tk)-val(a.tk))||(c.ret-a.ret));
-  }
-  const CH=20;                                    /* a crowned tile */
-  const maxRest=Math.max(0,...bins.map(b=>b.items.length-Math.min(3,b.items.length)));
-  const cols=bins.length,gap=6,pad={l:8,r:8,t:30,b:44};
-  const cw=(w-pad.l-pad.r-gap*(cols-1))/cols;
-  const restH=Math.min(300,Math.max(60,maxRest*12));
-  const th=maxRest?Math.min(12,restH/maxRest):12;   /* a block */
-  const chartH=3*CH+restH;
-  const h=pad.t+chartH+pad.b;
-  /* bin i ends at edges[i]; a bin ending AT zero is a loss, not a gain */
-  const zero=edges.indexOf(0);
-  const negBins=zero+1,posBins=cols-negBins;
-  const isNeg=i=>i<=zero;
-  const tint=(i)=>{
-    const neg=isNeg(i);const k=neg?(zero-i+1):(i-zero);const steps=neg?negBins:posBins;
-    const a=0.22+0.78*Math.min(1,k/steps);
-    return neg?`rgba(194,42,42,${a.toFixed(2)})`:`rgba(11,122,75,${a.toFixed(2)})`;
-  };
-  const ink=(i)=>isNeg(i)?(i<=zero-2?"#fff":"#5a1414"):(i>=zero+3?"#fff":"#0c3d27");
-  let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="distribution of returns across the founder-led companies">`;
-  const baseY=pad.t+chartH;
-  const fx=v=>{const i=place(v);const b=bins[i];const x=pad.l+i*(cw+gap);
-    const frac=(b.lo===null||b.hi===null)?0.5:(v-b.lo)/(b.hi-b.lo);return x+cw*Math.min(0.94,Math.max(0.06,frac));};
-  if(dist.spy!==null){
-    const x=fx(dist.spy);
-    out+=`<line x1="${x.toFixed(1)}" y1="${pad.t-10}" x2="${x.toFixed(1)}" y2="${baseY+3}" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.7"/>`;
-    out+=`<text x="${x.toFixed(1)}" y="${pad.t-16}" text-anchor="middle" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">S&amp;P 500 ${(dist.spy>=0?"+":"")+dist.spy.toFixed(0)}%</text>`;
-  }
-  /* THE AXIS IS A ROW OF LABELLED BOXES, one under each column, in the
-     column's own tint, so the range and the colour are read together. */
-  const f=v=>(v>0?"+":"")+v+"%";
-  bins.forEach((b,i)=>{
-    const x=pad.l+i*(cw+gap);
-    const l1=b.lo===null?"below":b.hi===null?"above":`${f(b.lo)} to`;
-    const l2=b.lo===null?f(b.hi):b.hi===null?f(b.lo):f(b.hi);
-    out+=`<rect x="${x.toFixed(1)}" y="${baseY+4}" width="${cw.toFixed(1)}" height="34" rx="3" fill="${tint(i)}"/>`;
-    out+=`<text x="${(x+cw/2).toFixed(1)}" y="${baseY+18}" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="${ink(i)}" pointer-events="none">${l1}</text>`;
-    out+=`<text x="${(x+cw/2).toFixed(1)}" y="${baseY+31}" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="${ink(i)}" pointer-events="none">${l2}</text>`;
-  });
-  bins.forEach((b,i)=>{
-    const x=pad.l+i*(cw+gap);
-    const lab=binLabel(b.lo,b.hi);
-    const n=b.items.length,nc=Math.min(3,n),nr=n-nc;
-    const colH=nc*CH+nr*th;
-    out+=`<g class="dbin" data-i="${i}" data-lo="${b.lo===null?"":b.lo}" data-hi="${b.hi===null?"":b.hi}" style="cursor:pointer">`;
-    /* the whole column is the door */
-    out+=`<rect class="hit" x="${(x-gap/2).toFixed(1)}" y="${pad.t-24}" width="${(cw+gap).toFixed(1)}" height="${(chartH+24+42).toFixed(1)}" rx="4" fill="transparent"><title>${lab}: ${n} — click to see everyone in it</title></rect>`;
-    let y=baseY-colH;
-    b.items.forEach((it,j)=>{
-      const crowned=j<nc;const hh=crowned?CH:th;
-      /* ONLY A NAMED TILE IS A LINK. A block you cannot read is part of the
-         column: hovering names it, clicking opens the bucket. Otherwise a
-         click meant for the column sometimes left the page. */
-      const sinceTxt=it.since?` · since ${it.since} (joined during the window)`:"";
-      const tile=`<rect x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}" width="${cw.toFixed(1)}" height="${Math.max(1,hh-2).toFixed(1)}" rx="2" fill="${tint(i)}"><title>${it.tk} · ${(it.ret>=0?"+":"")+it.ret.toFixed(0)}%${sinceTxt} · ${(PANEL.find(p=>p.tk===it.tk)||{}).ceo||""} · ${lab}${crowned?"":" — click for everyone in it"}</title></rect>`
-        +(it.since?`<circle cx="${(x+cw-6).toFixed(1)}" cy="${(y+hh/2).toFixed(1)}" r="2.2" fill="var(--ink)" pointer-events="none"/>`:"");
-      if(crowned)out+=`<a href="/company/${it.tk}/">${tile}<text class="crown" x="${(x+cw/2).toFixed(1)}" y="${(y+CH/2+3.5).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="${ink(i)}" pointer-events="none">${it.tk}</text></a>`;
-      else out+=tile;
-      y+=hh;
-    });
-    if(n)out+=`<text x="${(x+cw/2).toFixed(1)}" y="${(baseY-colH-6).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--mut)">${n}</text>`;
-    out+=`</g>`;
-  });
-  out+=`</svg>`;
-  return {svg:out,bins,tint};
-}
-function distPanel(bin,i,tint){
-  /* THE BUCKET, BY NAME. Opens in place beneath the chart: every company
-     in the bin as a readable tile, sorted by return, each a door to its
-     page. A × closes it; a small link hands the same set to the screener. */
-  const lab=binLabel(bin.lo,bin.hi);
-  const items=[...bin.items].sort((a,b)=>a.ret-b.ret);   /* lowest to highest */
-  const tiles=items.map(it=>{const p=PANEL.find(r=>r.tk===it.tk)||{};
-    return `<a class="dtile${it.since?" joined":""}" href="/company/${it.tk}/" style="background:${tint(i)}" title="${(p.ceo||"")} · ${(p.co||"")}${it.since?" · joined the index "+it.since+"; measured from then":""}"><b>${it.tk}</b><span>${(it.ret>=0?"+":"")+it.ret.toFixed(0)}%</span>${it.since?`<small>since ${it.since.slice(0,4)}</small>`:""}</a>`;}).join("");
-  return `<div class="dpanel" data-i="${i}">
-    <div class="dph"><b>${lab}</b> · ${items.length} compan${items.length===1?"y":"ies"}
-      <button class="dpx" onclick="closeDistPanel()" title="close" style="margin-left:auto">×</button></div>
-    <div class="dtiles">${tiles}</div></div>`;
-}
-function closeDistPanel(){const p=$("#distpanel");if(p)p.innerHTML="";state.distOpen=null;
-  document.querySelectorAll("#perfdist .dbin").forEach(g=>g.classList.remove("open"));}
-function renderDist(d){
-  const box=$("#perfdist");if(!box)return;
-  const dist=perfReturns(d);
-  if(dist.items.length<5){box.innerHTML="";return;}
-  const edges=perfBins(state.pw);
-  const n=dist.items.length;
-  const beat=dist.items.filter(i=>{const b=i.since?i.spyOwn:dist.spy;return b!==null&&i.ret>b;}).length;
-  /* TITLE AND ONE LINE OF CONTEXT ABOVE; LEGEND AND NOTES BELOW -- the
-     same shape as the line chart, so a reader always knows which chart a
-     line of text belongs to. */
-  const head=`<h3 class="disth">Where each of the ${n} landed</h3>
-    <div class="distsub">${dist.from} to ${dist.end} · <b>${beat}</b> of ${n} beat the S&amp;P 500 over the same months</div>`;
-  const key=`<div class="distkey">
-    ${dist.joined?`<span><i class="dot"></i>joined the index during the window (${dist.joined}), measured from that month</span>`:""}
-    <span>click a column to see everyone in it</span></div>`;
-  const {svg,bins,tint}=distChart(dist,edges);
-  box.innerHTML=head+svg+key+`<div id="distpanel"></div>`;
-  const open=i=>{
-    const g=box.querySelector(`.dbin[data-i="${i}"]`);
-    box.querySelectorAll(".dbin").forEach(x=>x.classList.remove("open"));
-    if(state.distOpen===i){closeDistPanel();return;}
-    state.distOpen=i;if(g)g.classList.add("open");
-    $("#distpanel").innerHTML=distPanel(bins[i],i,tint);
-    hit("click","distbin",binLabel(bins[i].lo,bins[i].hi));
-  };
-  box.querySelectorAll(".dbin").forEach(g=>g.addEventListener("click",e=>{
-    if(e.target.closest("a"))return;            /* a tile goes to its page; the column opens the bucket */
-    open(+g.dataset.i);
-  }));
-  if(state.distOpen!==null&&state.distOpen!==undefined&&bins[state.distOpen])open(state.distOpen);
-}
-function renderPerf(){
-  const sec=document.querySelector("#perfsec");
-  if(!sec)return;
-  const full=perfSeries();
-  sec.classList.toggle("hide",!full);
-  if(!full)return;
-  /* while the record spans ~five years, "Since 2021" and "5 years" are
-     the same window twice; the widest chip hides until the preserved
-     history outgrows the five-year preset, then returns with its year */
-  const dup=full.months.length<=63;
-  if(dup&&state.pw==="")state.pw="60";
-  const pwmax=$("#pwmax");
-  if(pwmax){pwmax.classList.toggle("hide",dup);
-    pwmax.textContent="Since "+full.from.slice(0,4);}
-  document.querySelectorAll(".chip.pw").forEach(c=>c.classList.toggle("on",c.dataset.pw===state.pw));
-  const d=perfWindow(full,state.pw);
-  const n=d.months.length;
-  const yrsSpan=(n-1)/12;
-  const cagr=a=>((Math.pow(a[a.length-1]/PERF_BASE,1/Math.max(yrsSpan,1/12))-1)*100);
-  document.querySelectorAll(".chip.pc").forEach(c=>c.classList.toggle("on",c.dataset.pc===state.pc));
-  const who=state.pc==="sp"?`the ${d.count} founder-led companies in the S&P 500`:`all ${d.count} founder-led US companies worth $1B or more`;
-  /* the caveat lives in the caption: this is today's founder cohort
-     applied backward, so a founder who lost the job is not in it and one
-     who took it last year is counted from the start. It is the thesis
-     drawn, and it says what it is. */
-  $("#perfsub").textContent=`Growth of $10,000 since ${d.from}, equal-weighted: ${who}, against the S&P 500. Today's founder cohort applied backward, so survivors only.`;
-  $("#perfchart").innerHTML=perfChart(d);
-  renderDist(d);
-  /* THE SCREENER'S RETURN COLUMN FOLLOWS THE WINDOW, NOT THE COHORT CHIP.
-     A founder-led company with five years of prices has a return whether
-     or not the chart is currently showing the S&P subset; the column and
-     the Founders index chip always use the whole cohort. */
-  const pc=state.pc;state.pc="all";state._perfFull=perfSeries();state.pc=pc;
-  renderTable();
-  /* the result, the one caveat that keeps it honest, and where the method
-     lives; the method itself (equal weight, monthly rebalance, split-
-     adjusted closes, no dividends) is on About, once */
-  $("#perfnote").innerHTML=`Founders ${cagr(d.founders).toFixed(1)}%/yr · S&amp;P 500 ${cagr(d.spy).toFixed(1)}%/yr`
-    +(d.rsp?` · S&amp;P 500 equal weight ${cagr(d.rsp).toFixed(1)}%/yr`:"")
-    +`. <a href="about.html">Method</a>.`;
-}
 function renderStatus(){
   // WHICH FILES ARE LIVE IS NOT THE READER'S PROBLEM.
   //
@@ -1525,6 +1140,7 @@ function renderStatus(){
   $("#footstamp").textContent=(p?"live data":"sample data")+" · "+new Date().toISOString().slice(0,10);
 }
 let HERO_STAMP=null;
+let SCREEN_COUNTS=null;
 function renderHero(){
   /* THE STRIP IS THE SAME FOR EVERYONE. Its four numbers are aggregates
      over every company (how many own more than 5%, how many are founder-
@@ -1548,7 +1164,7 @@ function renderHero(){
      and the rarity is the first cell of the strip, where a denominator a
      reader knows (the S&P 500) or none at all (the count) does the work. */
   /* the free hero adds one stated fact about the seal, never a statistic */
-  if(state.live.panel){const hs=$("#herosub");if(hs)hs.innerHTML="Computed from their SEC filings, never estimated. Every US public company worth $1B or more.";}
+
   // WHAT THE SITE IS ACTUALLY ABOUT, said with the numbers we have.
   //
   // The old line claimed every figure came from Form 4 and a cover page,
@@ -1566,16 +1182,15 @@ function renderHero(){
   let out="";
   /* THE RARITY, FIRST. Free: "19 of 500" against a denominator everyone
      knows. Pro: the count alone; "of 2,100" only ever raised a question. */
-  out+=sealed?stat(`${above5} of ${open.toLocaleString()}`,"S&P 500 CEOs own more than 5%",true)
-             :stat(above5.toLocaleString(),"CEOs own more than 5%",true);
-  if(led.length)out+=stat(led.length,"Founder-led companies");
+  /* THREE NUMBERS (PLAN.md section 5), the same three the stamp wrote:
+     founder-led companies first, the rarity second (a free reader's file
+     can only count the S&P, so "19 of 500"), what those founders hold. */
+  if(led.length)out+=stat(led.length,"Founder-led companies",true);
+  out+=sealed?stat(`${above5} of ${open.toLocaleString()}`,"S&P 500 CEOs own more than 5%")
+             :stat(above5.toLocaleString(),"CEOs own more than 5%");
   if(state.live.prices){
-    if(led.length){
-      /* the deploy prices the whole universe now (one grouped Polygon
-         call), so these sums are universe-true and say so plainly */
-      out+=stat(money(ledVal),"Held by those founders");
-      out+=stat(Math.round(ledVal/(allVal||1)*100)+"%","Of all CEO wealth");
-    }else out+=stat(money(allVal),"Held by all CEOs");
+    if(led.length)out+=stat(money(ledVal),"Held by those founders");
+    else out+=stat(money(allVal),"Held by all CEOs");
   }
   /* THE NEWEST FILING WE READ, NOT THE NEWEST ONE THAT MOVED SOMEBODY.
      The panel's as_of only advances when a filing changes a headline share
@@ -1604,106 +1219,9 @@ function renderHero(){
    yardstick, Dell at 17% sat outside a bar that had room for him. Every
    label is drawn inside, then the ones the layout engine reports as
    overflowing their bar are moved out beside it. Re-run on resize. */
-function fitLabels(){
-  if(typeof document==="undefined")return;
-  /* READ EVERYTHING, THEN WRITE EVERYTHING. Moving a label inside the
-     same loop that measures the next one forces a fresh layout of two
-     thousand rows per row: thirteen seconds. Two passes cost one layout. */
-  const move=[];
-  document.querySelectorAll("#bars .brow .bfill").forEach(fill=>{
-    const lab=fill.querySelector(".blab"),nm=lab&&lab.querySelector(".nm");
-    if(!lab||!lab.clientWidth)return;              /* no layout (a harness): leave it */
-    /* the name shrinks to an ellipsis before the label overflows, so the
-       name's own overflow is the earlier and truer signal */
-    if(lab.scrollWidth>lab.clientWidth+1||(nm&&nm.scrollWidth>nm.clientWidth+1))move.push([fill,lab]);
-  });
-  for(const [fill,lab] of move){
-    lab.classList.add("out");lab.style.setProperty("--w",fill.style.width);
-    fill.parentElement.appendChild(lab);           /* beside the bar, in the same track */
-  }
-}
-function renderBars(){
-  const useVal=state.bmode==="val"&&state.live.prices;
-  /* the mode strip stays visible without prices: it still holds the
-     founders chip, and only the value/percent buttons depend on a close */
-  $("#bmodes").classList.toggle("hide",!state.live.prices&&!state.live.founders);
-  document.querySelectorAll(".bmode").forEach(b=>{
-    b.classList.toggle("hide",!state.live.prices);
-    b.classList.toggle("on",b.dataset.mode===(useVal?"val":"pct"));});
-  paintSw("lbf",state.lbF);
-  /* units-structured stakes cannot rank on a common-stock board -- their
-     honest reading lives in the table and the company page, not at the bottom
-     of a list implying "owns nothing". A MASKED stake cannot rank
-     either: there is no number to sort, and r.pct.toFixed on its null
-     once aborted the whole render chain mid-flight. */
-  /* EVERY COMPANY IN ITS PLACE. A sealed row (a free reader's file has
-     its name and its rank, not its number) is drawn where the build ranked
-     it, with a lock where the figure would be and no bar, since a bar's
-     length is the number. The ranking is the same for everyone. */
-  const pool=PANEL.filter(r=>!r.units&&(r.masked?(useVal?r.rv!==null:r.rp!==null):r.pct!==null)&&fOnly(r.tk,state.lbF));
-  $("#boardtitle").textContent=useVal
-    ?(state.lbF?"The wealthiest founders":"The wealthiest CEOs")
-    :(state.lbF?"The largest founder stakes":"The largest ownership stakes");
-  /* no caption: the chip says the measure, the column says the number,
-     the scrollbar says there is more. A count here needed a footnote
-     (the value board can only rank companies with a close). */
-  $("#bsub").textContent="";
-  const metric=r=>useVal?(r.val||0):r.pct;
-  const rank=r=>useVal?r.rv:r.rp;
-  const top=[...pool].sort((a,b)=>(rank(a)!==null&&rank(b)!==null)?rank(a)-rank(b):metric(b)-metric(a));
-  if(!top.length){$("#bars").innerHTML=
-    '<div class="tnote">No companies match — the founders list may still be loading.</div>';return;}
-  const max=Math.max(...top.filter(r=>!r.masked).map(metric),0)||1;
-  const cap2=$("#bcap2");if(cap2)cap2.textContent=(useVal?`Stake value at the ${PRICES_ASOF||"latest"} close`:"Share of the company's common stock")+" · every US public company worth $1B or more";
-  const src=$("#bsrc");if(src)src.textContent="founderledequities.com · computed from SEC filings, never estimated";
-  const shown=top;
-  const more=$("#bmore");if(more){more.textContent=top.length>10?`${top.length.toLocaleString()} companies · scroll for the rest`:"";more.disabled=true;more.style.cursor="default";more.style.color="var(--faint)";}
-  $("#bars").innerHTML=shown.map((r,i)=>{
-    const fi=fInfo(r.tk);const isF=!!(fi&&fi.f==="yes");
-    if(r.masked)return `<div class="brow sealed${isF?" fdr":""}" onclick="openCompany('${r.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${r.tk}')">
-      <div class="brank">${i+1}</div>
-      <div class="btrack"><div class="blab out" style="--w:0%"><span class="tk" style="color:var(--ink)"><a class="pglink" href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></span><span class="nm" style="color:var(--mut)">${r.ceo}</span>${fBadge(r.tk)}</div></div>
-      <div class="bpct">${LOCK("in Pro",useVal?"$0.0B":"0.00%")}</div>
-    </div>`;
-    const w=Math.max(2,metric(r)/max*100);
-    /* every label is drawn inside first; the pass after the render moves
-       out the ones the browser says overflow (see fitLabels) */
-    const inside=true;
-    const main=useVal?money(r.val||0):r.pct.toFixed(2)+"%";
-    const sub=useVal?r.pct.toFixed(2)+"% of co.":(r.val?money(r.val):"");
-    return `<div class="brow${isF?" fdr":""}" onclick="openCompany('${r.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${r.tk}')">
-      <div class="brank">${i+1}</div>
-      <div class="btrack">
-        <div class="bfill" style="width:${w}%">${inside?`<div class="blab"><span class="tk"><a class="pglink" href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></span><span class="nm">${r.ceo}</span>${fBadge(r.tk)}</div>`:""}</div>
-        ${/* THE BADGE BELONGS TO THE PERSON, NOT TO THE WIDTH OF THEIR BAR.
-              Only the label drawn INSIDE a wide bar carried it, so Musk,
-              Zuckerberg, Huang and Dell were marked founders and Chesky,
-              Ergen, Foroughi, Karp and Xie -- all founders too -- were not.
-              The badge said more about stake size than about founding. */""}
-        ${!inside?`<div class="blab out" style="--w:${w}%"><span class="tk" style="color:var(--ink)"><a class="pglink" href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></span><span class="nm" style="color:var(--mut)">${r.ceo}</span>${fBadge(r.tk)}</div>`:""}
-      </div>
-      <div class="bpct">${main}${sub?`<span class="b2">${sub}</span>`:""}</div>
-    </div>`}).join("");
-  fitLabels();
-}
-/* THE LOCK. Wherever a sealed company's number would be, this: a small
-   pill that opens the Pro box. The number is not in the file; there is
-   nothing behind the pill to reveal. */
-/* THE PLACEHOLDER IS A BLURRED FIGURE. A fixed string the shape of the
-   number, blurred: it reads as a number not yet visible, which is what it
-   is. The real number is not in the file, so there is nothing behind the
-   blur; hovering says where it is and clicking opens the box. */
 /*@shared*/
 const LOCK=(what,shape)=>`<span class="sealed" data-shape="${shape||"$0.0B"}" aria-label="in Pro" onclick="event.stopPropagation();openPro()" title="${what||"in Pro"}"></span>`;
-function trendArrow(tk){
-  /* the year-over-year direction, from trends.csv. Deliberately present
-     on SEALED rows too: "this founder is accumulating" without the
-     number is honest, public, and the best reason to open the seal. */
-  const d=TRENDS[tk];if(!d)return"";
-  const g=d==="up"?"\u25b2":d==="down"?"\u25bc":"\u2192";
-  const t=d==="up"?"stake higher than a year ago":d==="down"?"stake lower than a year ago":"stake roughly flat over a year";
-  return `<span class="tarr ${d}" title="${t}">${g}</span>`;
-}
+/*@shared*/
 function exportTable(){
   /* THE TABLE, AS FILTERED AND SORTED, EXACTLY AS SHOWN. The file is the
      screen: the same columns in the same order with the same labels, so
@@ -1728,22 +1246,7 @@ function exportTable(){
   document.body.appendChild(a);a.click();a.remove();
   return csv;
 }
-function sparkline(tk,days){
-  /* THE RECORD, AT A GLANCE. Sixty pixels of the cleaned history over the
-     horizon, no axes: enough to see a climb, a cliff or a flat line, and
-     the row is the door to the real chart. */
-  const pts=cleanHist(tk);if(pts.length<2)return"";
-  const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
-  let win=pts.filter(p=>p[0]>=cut);
-  const base=[...pts].reverse().find(p=>p[0]<cut);
-  if(base)win=[base,...win];
-  if(win.length<2)return"";
-  const t0=Date.parse(win[0][0]),t1=Date.parse(win[win.length-1][0])||t0+1;
-  let lo=Infinity,hi=-Infinity;for(const p of win){if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];}
-  const W=64,H=18,span=(hi-lo)||1;
-  const d=win.map(p=>`${(W*(Date.parse(p[0])-t0)/((t1-t0)||1)).toFixed(1)},${(H-2-(H-4)*(p[1]-lo)/span).toFixed(1)}`).join(" ");
-  return `<svg class="spark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true"><polyline points="${d}" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>`;
-}
+/*@shared*/
 function lastTrades(){
   /* ticker -> the newest trade that moved the stake, and the set of
      tickers that ever reduced one; computed once per render from the feed */
@@ -1754,6 +1257,7 @@ function lastTrades(){
   }
   return {last,sold:soldTickers()};
 }
+/*@shared*/
 function renderTable(){
   paintSw("fchip",state.tbF);
   paintSw("hchip",state.tbH);
@@ -1798,8 +1302,10 @@ function renderTable(){
   });
   const total=rows.length;
   state._rows=rows;
-
-  $("#tbody").innerHTML=rows.map((r,i)=>{
+  /* the home page shows the first twenty; /companies/ shows them all */
+  const lim=typeof TABLE_LIMIT==="number"?TABLE_LIMIT:0;
+  const shownRows=lim&&rows.length>lim?rows.slice(0,lim):rows;
+  $("#tbody").innerHTML=shownRows.map((r,i)=>{
     return `<tr onclick="openCompany('${r.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${r.tk}')">
      <td class="rk">${String(i+1).padStart(2,"0")}</td>
      <td class="c-co"><div class="tk"><a href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></div><div class="nm" title="${r.co.replace(/"/g,"&quot;")}">${r.co}</div></td>
@@ -1815,8 +1321,20 @@ function renderTable(){
      <td class="c-ltd">${r.ltev?`<span class="ltd" title="traded ${r.ltev.td||r.ltev.fd}; filed ${r.ltev.fd}${lagNote(r.ltev)}">${r.ltev.td||r.ltev.fd}</span>`:`<span class="nopr"></span>`}</td>
     </tr>`}).join("");
   const sealedN=PANEL.filter(r=>r.masked).length;
-  $("#tcount").textContent=
-    `${total.toLocaleString()} compan${total===1?"y":"ies"}${state.live.panel?"":" · embedded sample — serve universe.csv beside this file to load all 500"}`;
+  /* THE FREE SCREEN SAYS HOW MUCH OF THE ANSWER IS SEALED. Under a share
+     threshold or never-sold, a sealed row cannot be evaluated and is not
+     shown; the build's count over every company says how many would be,
+     so the line reads "20 companies · 138 more match in Pro". Under a
+     search there is no count (the build cannot know the search). */
+  let more="";
+  if(sealedN&&SCREEN_COUNTS&&!state.q.trim()){
+    const key=`m${[0,1,5,10].includes(state.min)?state.min:0}f${state.tbF?1:0}h${state.tbH?1:0}`;
+    const all=SCREEN_COUNTS[key];
+    const openMatches=rows.filter(r=>!r.masked).length;
+    if(typeof all==="number"&&all>openMatches)more=` · <a onclick="openPro()" style="cursor:pointer" title="the same filter over every company worth $1B or more">${(all-openMatches).toLocaleString()} more match in Pro</a>`;
+  }
+  $("#tcount").innerHTML=
+    `${shownRows.length<total?`${shownRows.length} of `:""}${total.toLocaleString()} compan${total===1?"y":"ies"}${more}${state.live.panel?"":" · embedded sample — serve universe.csv beside this file to load all 500"}`;
   document.querySelectorAll("th.sortable").forEach(th=>{
     const on=th.dataset.key===state.sort.key;
     th.querySelector(".arr").textContent=on?(state.sort.dir<0?" ↓":" ↑"):"";
@@ -1911,33 +1429,6 @@ function cleanHist(tk){
   return _cleanCache[tk]=kept;
 }
 /*@shared*/
-function trajStats(tk,days){
-  /* the numbers one company's history yields: where it is, where it was at
-     the horizon, and whether the latest filing set a record low */
-  const pts=cleanHist(tk);
-  if(pts.length<2)return null;
-  const last=pts[pts.length-1];
-  let base;
-  if(days){
-    const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
-    base=null;
-    for(const p of pts){if(p[0]<=cut)base=p;else break;}
-    if(!base)base=pts[0];        /* the record starts inside the horizon */
-  }else{
-    base=pts.find(p=>p[1]>0)||pts[0];
-  }
-  let prevMin=Infinity,peak=0;
-  for(let i=0;i<pts.length;i++){
-    if(pts[i][1]>peak)peak=pts[i][1];
-    if(i<pts.length-1&&pts[i][1]<prevMin)prevMin=pts[i][1];
-  }
-  return {cur:last[1],curDate:last[0],base:base[1],baseDate:base[0],
-          d:last[1]-base[1],peak,
-          atLow:last[1]<=prevMin+1e-9,
-          spanDays:(Date.parse(last[0])-Date.parse(pts[0][0]))/86400e3,
-          ageDays:Math.round((Date.now()-Date.parse(last[0]))/86400e3)};
-}
-/*@shared*/
 function soldTickers(){
   /* who has EVER reduced a stake by selling, from the filed trades --
      exercise-and-sell doesn't count against anyone, because the stake did
@@ -1945,70 +1436,6 @@ function soldTickers(){
   const out=new Set();
   for(const e of EVENTS)if(e.c==="S"&&unchangedKind(e)===null)out.add(e.tk);
   return out;
-}
-/* ---------------- activity ---------------- */
-function classify(codes,d){
-  codes=codes||"";
-  if(d>0&&codes.includes("P"))return{t:"BOUGHT",k:"up",n:"open-market purchase — their own money"};
-  if(d<0&&codes.includes("S"))return{t:"SOLD",k:"down",n:"open-market sale"};
-  if(d>0&&codes.includes("M"))return{t:"EXERCISED",k:"soft",n:"options or units exercised"};
-  if(d>0&&(codes.includes("A")||codes.includes("J")))return{t:"AWARDED",k:"soft",n:"granted by the company"};
-  if(d<0&&codes.includes("F"))return{t:"WITHHELD",k:"dsoft",n:"shares withheld for tax — routine, not a sale decision"};
-  if(d<0&&codes.includes("G"))return{t:"GIFTED",k:"neu",n:"gifted away, typically philanthropy"};
-  if(codes==="C")return{t:"CONVERTED",k:"neu",n:"converted between share classes"};
-  return d>0?{t:"ACQUIRED",k:"soft",n:"net increase, codes "+(codes||"?")}
-            :{t:"REDUCED",k:"dsoft",n:"net decrease, codes "+(codes||"?")};
-}
-function buildActivity(){
-  const ev=[];
-  for(const tk in HIST){
-    const pts=HIST[tk];
-    const r=PANEL.find(p=>p.tk===tk);
-    for(let i=1;i<pts.length;i++){
-      const d=pts[i][2]-pts[i-1][2];
-      if(!isFinite(d)||Math.abs(d)<1)continue;
-      ev.push({tk,ceo:r?r.ceo:"",date:pts[i][0],codes:pts[i][3]||"",
-               d,pct:pts[i][1],sh:pts[i][2],
-               val:pts[i][4],                  /* what the filing says it fetched */
-               traded:pts[i][5],
-               /* A PARTIAL FILING IS NOT ACTIVITY.
-                  A Form 4 states balances only for the vehicles it names.
-                  When the balance moves and the transaction rows do not
-                  account for it, the document is silent about the rest of
-                  the position -- Huang's 6 January 2021 filing lists three
-                  trusts, reports no transaction, and drops 81% of his
-                  holding. Reported as a trade it would be a fabricated
-                  17-million-share sale followed by a fabricated buy-back. */
-               // THE FLOOR MUST SCALE WITH THE POSITION.
-               //
-               // A flat 1,000 shares was written before splits were carried.
-               // Nvidia's 38-share rounding of June 2020, restated through a
-               // 4:1 and then a 10:1, arrives here as 1,520 -- over the floor,
-               // so the real sale filed that day would be withheld as an
-               // artifact. Half a basis point of the holding is the same
-               // judgement at every scale.
-               artifact:Math.abs(pts[i][6]||0)>
-                        Math.max(1000,(pts[i][2]||0)*0.0005,Math.abs(d)*0.5)});
-    }
-  }
-  ev.sort((a,b)=>a.date<b.date?1:-1);
-  return ev;
-}
-function valTitle(e){
-  if(e.val)return "$"+fmt(e.val)+" — at the price the Form 4 reports";
-  return "no price on this filing: grants and gifts report none, "
-        +"because nothing changed hands";
-}
-/* THE TAPE READS events.csv, NOT CONSECUTIVE SNAPSHOTS.
-   The old feed subtracted one day's history total from the last and called
-   the difference a trade, which is why it needed an artifact filter at all.
-   Here the rows ARE the filings: the filer said "I sold 2,900 at 185.46",
-   and that is what shows. buildActivity() survives below only as the
-   drawer's fallback for tickers the events file does not cover. */
-function lockedBlock(inner,msg,cls){
-  return `<div class="locked tall ${cls||""}"><div class="under">${inner}</div>
-   <div class="lock"><div class="seal">${SEAL}</div><p>${msg}</p>
-   <button class="lockbtn" onclick="openPro()">Unlock</button></div></div>`;
 }
 /*@shared*/
 function coOf(tk){const r=PANEL.find(p=>p.tk===tk);return r?r.co:"";}
@@ -2252,6 +1679,17 @@ function niceDay(d){
   const t=Date.parse(d+"T00:00:00Z");if(isNaN(t))return d;
   return new Date(t).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:"UTC"});
 }
+/* THE WEEK IN ONE LINE, for the hero: founders, seven days, regardless of
+   the tape's toggles and window */
+/*@shared*/
+function weekLine(){
+  const cut=new Date(Date.now()-7*86400e3).toISOString().slice(0,10);
+  const w=EVENTS.filter(e=>(e.c==="P"||e.c==="S")&&e.fd>=cut&&fOnly(e.tk,true));
+  if(!w.length)return "";
+  const who=k=>new Set(w.filter(e=>tapeKind(e)===k).map(e=>e.tk+"|"+e.ceo)).size;
+  const comp=w.filter(e=>tapeKind(e)==="comp").length;
+  return `<span class="k">This week</span><b>${who("bought")}</b> founder${who("bought")===1?"":"s"} bought · <b>${who("disc")}</b> cut a stake · <b>${who("plan")}</b> sold on a plan · <b>${comp}</b> compensation filing${comp===1?"":"s"} did not move a stake`;
+}
 /* the weather line: what the window held */
 /*@shared*/
 function actStats(){
@@ -2293,10 +1731,15 @@ function renderActivity(){
   const pn=$("#pronote");if(pn)pn.innerHTML=state.pro?"":`30d, 90d, 12m and export are <a onclick="openPro()" style="cursor:pointer">Pro</a>.`;
   const rows=actSorted(actRows());
   const sealedN=rows.filter(e=>e.mk).length,compN=rows.filter(e=>tapeKind(e)==="comp").length;
+  /* THE HOME PAGE CARRIES AN EXCERPT (the first rows, the full tape a
+     click away); /tape/ carries every row. Same block, one limit. */
+  const limit=typeof TAPE_LIMIT==="number"?TAPE_LIMIT:0;
+  const shown=limit&&rows.length>limit?rows.slice(0,limit):rows;
   $("#actwrap").innerHTML=rows.length
-    ?`<table class="tape"><thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Manner</th></tr></thead><tbody>${rows.map(actRow).join("")}</tbody></table>`
+    ?`<table class="tape"><thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Manner</th></tr></thead><tbody>${shown.map(actRow).join("")}</tbody></table>`
     :`<div class="dayempty">No filings of this kind in this window.</div>`;
-  $("#actnote").innerHTML=`${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${sealedN?` · the stake after the trade is in <a onclick="openPro()" style="cursor:pointer">Pro</a> for the ${sealedN.toLocaleString()} from companies outside the S&P 500`:""}${compN?` · compensation listed last`:""}`;
+  $("#actnote").innerHTML=`${shown.length<rows.length?`${shown.length} of `:""}${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${sealedN?` · the stake after the trade is in <a onclick="openPro()" style="cursor:pointer">Pro</a> for the ${sealedN.toLocaleString()} from companies outside the S&P 500`:""}${compN?` · compensation listed last`:""}`;
+  const tw=$("#thisweek");if(tw)tw.innerHTML=weekLine();
 }
 
 
@@ -2339,6 +1782,21 @@ function syncNav(){
 /* Go Pro is a page (PLAN.md section 5). The box stays for signing in. */
 function openPro(){location.href="/pro/";}
 function openSignIn(){$("#promodal").classList.add("on")}
+let TAPE_LIMIT=12;     /* the home page's tape is an excerpt; /tape/ has every row */
+let TABLE_LIMIT=20;    /* the home page's list is twenty rows; /companies/ has every row */
+async function subscribeHome(ev){
+  ev.preventDefault();
+  const email=($("#homeemail").value||"").trim(),m=$("#homemsg"),btn=$("#homesub button");
+  if(!email||btn.disabled)return false;
+  btn.disabled=true;btn.textContent="Sending…";
+  try{
+    const q=await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
+    const j=await q.json();
+    m.textContent=j.message||"Check your inbox: one click confirms it.";
+    if(j.ok){$("#homeemail").disabled=true;btn.textContent="Sent";}else{btn.disabled=false;btn.textContent="Send it";}
+  }catch(e){m.textContent="Something went wrong; write to hello@founderledequities.com.";btn.disabled=false;btn.textContent="Send it";}
+  return false;
+}
 function closePro(){$("#promodal").classList.remove("on")}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closePro();});
 
@@ -2355,17 +1813,7 @@ $("#q").addEventListener("keydown",e=>{
   if(tk){hit("open","page",tk);location.href=`/company/${tk}/`;}
 });
 wireSw("hchip",()=>{state.tbH=!state.tbH;renderTable();});
-document.querySelectorAll(".chip.pc").forEach(c=>c.addEventListener("click",()=>{
-  if(state.pc===c.dataset.pc)return;state.pc=c.dataset.pc;state.distOpen=null;
-  renderPerf();hit("switch","cohort",state.pc);}));
 wireSw("fchip",()=>{state.tbF=!state.tbF;renderTable();});
-document.querySelectorAll(".bmode").forEach(b=>b.addEventListener("click",()=>{
-  state.bmode=b.dataset.mode;renderBars();
-}));
-wireSw("lbf",()=>{state.lbF=!state.lbF;renderBars();});
-document.querySelectorAll(".chip.pw").forEach(c=>c.addEventListener("click",()=>{
-  state.pw=c.dataset.pw;renderPerf();
-}));
 document.querySelectorAll("th.sortable").forEach(th=>th.addEventListener("click",()=>{
   const key=th.dataset.key;
   const textish=key==="co"||key==="ceo";
