@@ -10,9 +10,18 @@ and whose reporting owner is that founder (both ids are in the panel),
 and for each one not seen before reads the filing through the pipeline's
 own parser, so the kind is the site's kind: an open-market purchase, a
 discretionary sale, a sale under a pre-set plan, or compensation. Each
-becomes a line in drafts/live-<day>.md with the time it landed; a
-decision (a purchase or a discretionary sale) is also mailed to LIVE_TO
-from .env, the same minute.
+becomes a line in drafts/live-<day>.md with the time it landed, and
+every one runs the targeted refresh so the page carries it within
+minutes. WHAT IS MAILED to LIVE_TO from .env, once the run has published
+the number, is what is worth a post:
+  - a founder's open-market purchase or discretionary sale, any size;
+  - a founder's plan or compensation filing that moved their holding by
+    LIVE_MIN_MOVE percent or more (2, of the holding, not of the company)
+    or was worth LIVE_MIN_AMOUNT or more (10,000,000: the name and the
+    amount are the post when the percentage is not);
+  - a hired chief executive's open-market purchase of LIVE_MIN_HIRED_BUY
+    or more (1,000,000: skin in the game bought with their own money).
+Everything else is written down and left for the tape.
 
 ONE CALCULATOR, RUN SOONER. The watcher does not compute ownership; the
 walk runs one way, in the nightly and in ops/now.sh, with its checkpoint,
@@ -206,6 +215,36 @@ def sentence(u, r):
     return f"{u['ceo']} {verb}{amt} of {u['tk']} {how}{mv}.{after}\n{SITE}/company/{u['tk']}/"
 
 
+def worth_a_post(u, r):
+    """The mail rule, from the published event. Returns the reason, or ''."""
+    code = r.get("code")
+    plan = (r.get("plan") or "") == "plan"
+    comp = (r.get("label") or "") in COMPENSATION or (r.get("pre_ipo") or "") in ("1", "true", "True")
+    try:
+        v = float(r.get("value") or 0) if not (r.get("price_flag") or "") else 0.0
+    except ValueError:
+        v = 0.0
+    try:
+        ch = abs(float(r.get("pct_of_holding") or 0))
+    except ValueError:
+        ch = 0.0
+    min_move = float(os.environ.get("LIVE_MIN_MOVE", "2"))
+    min_amt = float(os.environ.get("LIVE_MIN_AMOUNT", "10000000"))
+    min_hired = float(os.environ.get("LIVE_MIN_HIRED_BUY", "1000000"))
+    decision = code in ("P", "S") and not plan and not comp
+    if u.get("founder"):
+        if decision:
+            return "founder's open-market buy" if code == "P" else "founder's discretionary sale"
+        if ch >= min_move:
+            return f"{'plan' if plan else 'compensation'} that moved the holding {ch:.1f}%"
+        if v >= min_amt:
+            return f"{'plan' if plan else 'compensation'} worth {money(v)}"
+        return ""
+    if code == "P" and decision and v >= min_hired:
+        return f"hired CEO's open-market buy of {money(v)}"
+    return ""
+
+
 def publish_and_mail(pending, uni):
     """ops/now.sh once for everything pending, then one mail per decision
     with the published number. Returns the lines to log."""
@@ -240,8 +279,11 @@ def publish_and_mail(pending, uni):
             lines.append(f"  {u['tk']}: the run did not publish this filing yet; it waits for the next pass")
             continue
         text = sentence(u, ev)
-        sent = u.get("founder") and send_mail(os.environ.get("LIVE_TO", ""), f"{u['ceo']} {'bought' if ev.get('code') == 'P' else 'sold'} {u['tk']}: the page is live", text)
-        lines.append(f"- {dt.datetime.now().strftime('%H:%M')} published · {text.replace(chr(10), ' · ')}{'  ← mailed' if sent else '  (hired CEO: data only)' if not u.get('founder') else ''}")
+        why = worth_a_post(u, ev)
+        sent = bool(why) and send_mail(os.environ.get("LIVE_TO", ""),
+                                       f"{u['ceo']} {'bought' if ev.get('code') == 'P' else 'sold'} {u['tk']}: the page is live ({why})", text)
+        lines.append(f"- {dt.datetime.now().strftime('%H:%M')} published · {text.replace(chr(10), ' · ')}"
+                     + (f"  ← mailed: {why}" if sent else f"  (not a post: {'hired CEO' if not u.get('founder') else 'small plan or compensation'})"))
     return lines, still
 
 
@@ -278,11 +320,7 @@ def one_pass(client, uni, seen):
             line = (f"- {now} {u['tk']} · {u['ceo']} {verb}{amt}{' (' + label + ')' if kind == 'compensation' else ''}, traded {traded}.{stake}"
                     f"\n  {SITE}/company/{u['tk']}/ · filing https://www.sec.gov/Archives/edgar/data/{cik}/{acc.replace('-', '')}/")
             lines.append(line)
-            if kind in ("bought", "discretionary"):
-                decisions.append((acc, cik))
-            elif u.get("founder"):
-                # a founder's plan or compensation: written down and mailed as it is; no run
-                send_mail(os.environ.get("LIVE_TO", ""), f"{u['ceo']}: {kind} filing at {u['tk']}", line)
+            decisions.append((acc, cik))    # every CEO filing runs the data; the mail rule comes after
         seen.add(acc)
     return lines, decisions
 

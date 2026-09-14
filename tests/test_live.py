@@ -44,3 +44,19 @@ def test_the_published_sentence_is_the_threads_wording():
     assert live.sentence(u, r) == "Paul Gu bought $1.3M of UPST on the open market, added 3.9% to their stake. Now owns 1.38%.\nhttps://founderledequities.com/company/UPST/"
     r = {"code": "S", "value": "7100000", "plan": "plan", "pct_of_holding": "-23.2", "pct_after": "0.888", "price_flag": ""}
     assert "sold $7.1M of UPST under a pre-set plan, sold 23% of their stake. Now owns 0.888%." in live.sentence(u, r)
+
+
+def test_what_is_worth_a_post():
+    f = {"founder": True}
+    h = {"founder": False}
+    buy = {"code": "P", "value": "50000", "plan": "discretionary", "label": "open-market purchase", "pct_of_holding": "0.1", "price_flag": ""}
+    assert live.worth_a_post(f, buy) == "founder's open-market buy", "any size"
+    assert live.worth_a_post(h, buy) == "", "a hired CEO's small buy is not a post"
+    assert live.worth_a_post(h, dict(buy, value="2500000")) == "hired CEO's open-market buy of $2.5M"
+    plan_small = {"code": "S", "value": "800000", "plan": "plan", "label": "scheduled sale", "pct_of_holding": "-0.3", "price_flag": ""}
+    assert live.worth_a_post(f, plan_small) == ""
+    assert live.worth_a_post(f, dict(plan_small, pct_of_holding="-23.2")) == "plan that moved the holding 23.2%"
+    assert live.worth_a_post(f, dict(plan_small, value="38400000")) == "plan worth $38.4M", "the name and the amount are the post"
+    comp = {"code": "S", "value": "5000000", "plan": "plan", "label": "exercise and sell", "pct_of_holding": "0", "price_flag": ""}
+    assert live.worth_a_post(f, comp) == ""
+    assert live.worth_a_post(h, {"code": "S", "value": "90000000", "plan": "discretionary", "label": "discretionary sale", "pct_of_holding": "-40", "price_flag": ""}) == "", "a hired CEO's sale is the ordinary state of the world"
