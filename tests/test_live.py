@@ -64,3 +64,16 @@ def test_what_is_worth_a_post():
     comp = {"code": "S", "value": "5000000", "plan": "plan", "label": "exercise and sell", "pct_of_holding": "0", "price_flag": ""}
     assert live.worth_a_post(f, comp) == ""
     assert live.worth_a_post(h, {"code": "S", "value": "90000000", "plan": "discretionary", "label": "discretionary sale", "pct_of_holding": "-40", "price_flag": ""}) == "", "a hired CEO's sale is the ordinary state of the world"
+
+
+def test_a_blank_move_is_judged_by_the_stakes_before_and_after():
+    """AMPL, 2026-09-14: a $2.3M planned sale, the per-filing move blank, the
+    stake 5.72% before and 4.58% after. A fifth of a founder's stake is a
+    post, said with the caveat that the filing alone does not explain it."""
+    u = {"tk": "AMPL", "ceo": "Spenser Skates", "founder": True, "pct": "5.72"}
+    r = {"code": "S", "value": "2275611", "plan": "plan", "label": "scheduled sale", "pct_of_holding": "", "pct_after": "4.5825", "price_flag": ""}
+    assert live.worth_a_post(u, r).startswith("plan that moved the holding 19.")
+    t = live.sentence(u, r)
+    assert "Now owns 4.58%." in t and "Stake 5.72% before this filing, 4.58% after: more than the sale alone explains; read the record before posting." in t
+    small = dict(r, pct_after="5.70")
+    assert live.worth_a_post(u, small) == "", "a blank move with the stake barely changed is not a post"

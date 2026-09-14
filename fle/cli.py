@@ -1024,9 +1024,9 @@ def edge_confidence(panel_path: str, history_path: str,
     except OSError:
         return 0
 
-    note = ("the newest filing reports a balance far below the last with no "
-            "transaction to explain it -- filings like this are usually "
-            "partial, naming only some vehicles; shown as filed")
+    note = ("the newest filing names fewer lines than the one before it, with "
+            "no transaction to explain the difference; the stake shown is as "
+            "filed and may be understated until the next complete filing")
     hit = 0
     for row in rows:
         if row.get("ticker") not in flagged:

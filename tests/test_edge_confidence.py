@@ -45,7 +45,7 @@ def test_an_unreconciled_newest_filing_caps_confidence(tmp_path):
     assert edge_confidence(panel, hist) == 1
     got = _read(panel)
     assert got["AAA"]["confidence"] == "medium"
-    assert "partial" in got["AAA"]["cautions"]
+    assert "understated" in got["AAA"]["cautions"]
     assert got["BBB"]["confidence"] == "high"
     assert got["BBB"]["cautions"] == ""
 

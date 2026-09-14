@@ -241,12 +241,26 @@ def sentence(u, r):
     except ValueError:
         pass
     after = ""
+    a = None
     try:
         a = float(r.get("pct_after") or "")
         after = f" Now owns {a:.3f}%." if a < 1 else f" Now owns {a:.2f}%."
     except ValueError:
         pass
-    return f"{u['ceo']} {verb}{amt} of {u['tk']} {how}{mv}.{after}\n{SITE}/company/{u['tk']}/"
+    # THE FILING DOES NOT EXPLAIN THE WHOLE CHANGE: the per-filing move is
+    # blank when the walk could not attribute the day to this sale alone
+    # (a share-count restatement, a vehicle change). Then the stakes before
+    # and after are said, with the caveat, so the post is checked first.
+    caveat = ""
+    if not mv and a is not None and u.get("pct"):
+        try:
+            b = float(u["pct"])
+            if b > 0 and abs(a - b) / b >= 0.02:
+                caveat = (f" Stake {b:.2f}% before this filing, {a:.2f}% after: more than the "
+                          f"{'sale' if code == 'S' else 'purchase'} alone explains; read the record before posting.")
+        except ValueError:
+            pass
+    return f"{u['ceo']} {verb}{amt} of {u['tk']} {how}{mv}.{after}{caveat}\n{SITE}/company/{u['tk']}/"
 
 
 def worth_a_post(u, r):
@@ -262,6 +276,14 @@ def worth_a_post(u, r):
         ch = abs(float(r.get("pct_of_holding") or 0))
     except ValueError:
         ch = 0.0
+    if not (r.get("pct_of_holding") or "").strip():
+        # the walk left the move blank: judge by the stake before and after
+        try:
+            b, a = float(u.get("pct") or 0), float(r.get("pct_after") or 0)
+            if b > 0 and a > 0:
+                ch = abs(a - b) / b * 100
+        except ValueError:
+            pass
     min_move = float(os.environ.get("LIVE_MIN_MOVE", "2"))
     min_amt = float(os.environ.get("LIVE_MIN_AMOUNT", "10000000"))
     decision = code in ("P", "S") and not plan and not comp
@@ -404,6 +426,15 @@ def main(argv):
     os.makedirs(os.path.dirname(SEEN), exist_ok=True)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     seen = set(open(SEEN, encoding="utf-8").read().split()) if os.path.exists(SEEN) else set()
+    if "--test-mail" in argv:
+        # THE MAIL PATH, PROVED: one sample through the same function and
+        # address the real alerts use. Nothing else runs.
+        to = os.environ.get("LIVE_TO", "")
+        ok = send_mail(to, "Founder Led Equities: the watcher's mail path works",
+                       "This is the watcher's test. A founder's decision arrives here the same way, with the sentence and the page's address.\n"
+                       f"{SITE}/tape/")
+        print(f"  test mail to {to or '(LIVE_TO unset)'}: {'sent' if ok else 'FAILED (RESEND_API_KEY or LIVE_TO missing, or Resend refused)'}")
+        return 0 if ok else 1
     if "--show" in argv:
         # THE PROOF: the feed as it stands, every entry, ours marked. A
         # founder's filing shows as "FOUNDER"; a filing by another insider at
