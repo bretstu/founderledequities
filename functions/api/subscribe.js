@@ -15,6 +15,11 @@ export async function onRequestPost({ request, env }) {
   if (!env.RESEND_API_KEY) {
     return json({ ok: false, message: "The list isn't open yet; write to hello@founderledequities.com and I'll add you." }, 503);
   }
+  // ONE CONFIRMATION PER ADDRESS PER TEN MINUTES. Five clicks, a reload, a
+  // second tab: the first sends, the rest get the same reply and no mail.
+  const seen = `subreq:${email}`;
+  if (await env.SUBS.get(seen)) return generic;
+  await env.SUBS.put(seen, "1", { expirationTtl: 600 });
   const token = [...crypto.getRandomValues(new Uint8Array(24))].map((b) => b.toString(16).padStart(2, "0")).join("");
   await env.SUBS.put(`sub:${token}`, email, { expirationTtl: 86400 });
   const link = `${site(env)}/api/subscribe?token=${token}`;

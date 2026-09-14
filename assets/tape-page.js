@@ -32,14 +32,17 @@ async function boot(){
 }
 async function subscribe(ev){
   ev.preventDefault();
-  const email=($("#subemail").value||"").trim(),m=$("#submsg");
-  if(!email)return false;
-  m.textContent="Sending…";
+  const email=($("#subemail").value||"").trim(),m=$("#submsg"),btn=$("#subform button");
+  if(!email||btn.disabled)return false;
+  /* one submission per address: the button and the field lock once sent */
+  btn.disabled=true;btn.textContent="Sending…";
   try{
     const q=await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
     const j=await q.json();
     m.textContent=j.message||"Check your inbox: one click confirms it.";
-  }catch(e){m.textContent="Something went wrong; write to hello@founderledequities.com.";}
+    if(j.ok){$("#subemail").disabled=true;btn.textContent="Sent";}
+    else{btn.disabled=false;btn.textContent="Send it";}
+  }catch(e){m.textContent="Something went wrong; write to hello@founderledequities.com.";btn.disabled=false;btn.textContent="Send it";}
   return false;
 }
 function openCompany(tk){location.href="/company/"+tk+"/";}
