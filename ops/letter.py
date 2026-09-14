@@ -452,13 +452,24 @@ def archive_page(md, topnav, css_href="/site.css"):
 
 # ---------------------------------------------------------------- send
 def resend(path, payload, key):
+    """-> (status, body). The body is parsed as JSON when it is JSON, and
+    returned as text otherwise, so an error is shown rather than swallowed."""
     req = urllib.request.Request(f"https://api.resend.com{path}", data=json.dumps(payload).encode(),
-                                 headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"}, method="POST")
+                                 headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json",
+                                          "User-Agent": "founderledequities-letter/1"}, method="POST")
+    def body_of(raw):
+        txt = raw.decode(errors="replace")
+        try:
+            return json.loads(txt) if txt.strip() else {}
+        except ValueError:
+            return {"raw": txt[:600]}
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
-            return r.status, json.loads(r.read().decode() or "{}")
+            return r.status, body_of(r.read())
     except urllib.error.HTTPError as e:
-        return e.code, json.loads(e.read().decode() or "{}")
+        return e.code, body_of(e.read())
+    except urllib.error.URLError as e:
+        return 0, {"raw": f"no connection: {e.reason}"}
 
 
 def paths(root, date):
