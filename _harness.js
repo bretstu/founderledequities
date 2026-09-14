@@ -470,7 +470,7 @@ const P=runPage();
     "the method comes before the fine print");
 
   // ---- payments wiring on the page ----
-  assert(idx.includes('href="/pro/"')&&idx.includes("$19 a month or $190 a year"),
+  assert(idx.includes('href="/pro/"')&&idx.includes("$15 a month or $150 a year"),
     "the Pro box points at the plan page at the real price");
   const pro=require("fs").readFileSync("pro.html","utf8");
   assert(pro.includes('href="/api/checkout?plan=monthly"')&&pro.includes('href="/api/checkout?plan=yearly"')&&pro.includes("14-day trial"),
@@ -510,7 +510,7 @@ const P=runPage();
   assert(idx.includes("Latest filing")&&idx.includes("EVENTS.reduce"),
     "the header dates the newest filing read, not the newest that moved a stake");
   const terms=require("fs").readFileSync("terms.html","utf8");
-  for(const t of ["$19 per month","$190 per year","14-day trial","7 days","hello@founderledequities.com","not investment advice"])
+  for(const t of ["$15 per month","$150 per year","14-day trial","7 days","hello@founderledequities.com","not investment advice"])
     assert(terms.toLowerCase().includes(t.toLowerCase()),"terms.html carries: "+t);
 
   // ---- the free file: every S&P event, the seal is the only gate ----

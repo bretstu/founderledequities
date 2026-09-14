@@ -394,7 +394,7 @@ def test_the_pro_page_is_the_plan(tmp_path):
     bcp.main(panel, founders, prices, sp, out)
     page = open(os.path.join(out, "pro", "index.html"), encoding="utf-8").read()
     assert "{{TOPNAV}}" not in page and 'class="topnav"' in page
-    assert "$19" in page and "$190" in page and "14-day trial" in page and "S&amp;P 500 current stakes stay free" in page
+    assert "$15" in page and "$150" in page and "14-day trial" in page and "S&amp;P 500 current stakes stay free" in page
     assert 'href="/api/checkout?plan=monthly"' in page and 'href="/api/checkout?plan=yearly"' in page
     assert "the last twelve months are open" in page, "the copy rule, verbatim"
     idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
@@ -402,4 +402,4 @@ def test_the_pro_page_is_the_plan(tmp_path):
     for f in ("assets/company-page.js", "assets/tape-page.js"):
         assert 'location.href="/pro/"' in open(os.path.join(ROOT, f), encoding="utf-8").read(), f
     co = open(os.path.join(ROOT, "functions", "api", "checkout.js"), encoding="utf-8").read()
-    assert "PRICE_ID_MONTHLY" in co and "PRICE_ID_YEARLY" in co and '"subscription_data[trial_period_days]": "14"' in co and 'payment_method_collection: "always"' in co
+    assert "PRICE_ID_MONTHLY" in co and "PRICE_ID_YEARLY" in co and "env.PRICE_ID " not in co and "|| env.PRICE_ID" not in co and '"subscription_data[trial_period_days]": "14"' in co and 'payment_method_collection: "always"' in co

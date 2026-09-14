@@ -3,12 +3,12 @@
 import { stripe, site, redirect, json } from "../_shared.js";
 
 export async function onRequestGet({ request, env }) {
-  // THE PLAN (PLAN.md section 2): $19 a month or $190 a year, a card-backed
+  // THE PLAN (PLAN.md section 2): $15 a month or $150 a year, a card-backed
   // 14-day trial. ?plan=yearly picks the yearly price; anything else is
-  // monthly. PRICE_ID (the original) remains the fallback so a deploy
-  // before the new prices are set still sells something.
+  // monthly. No fallback: a missing price is refused, not replaced.
   const plan = new URL(request.url).searchParams.get("plan") === "yearly" ? "yearly" : "monthly";
-  const price = (plan === "yearly" ? env.PRICE_ID_YEARLY : env.PRICE_ID_MONTHLY) || env.PRICE_ID;
+  const price = plan === "yearly" ? env.PRICE_ID_YEARLY : env.PRICE_ID_MONTHLY;
+  if (!price) return json({ error: `the ${plan} price is not configured` }, 503);
   try {
     const session = await stripe(env, "POST", "/v1/checkout/sessions", {
       mode: "subscription",

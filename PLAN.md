@@ -63,7 +63,7 @@ different lens.
   blurred placeholders drawn by CSS (the numbers are not in the free
   files; there is nothing to un-blur).
 
-### Pro: $19 a month or $190 a year, card-backed 14-day trial, cancel in one click
+### Pro: $15 a month or $150 a year, card-backed 14-day trial, cancel in one click (set 2026-09-14; the brief's $19/$190 was the starting point)
 
 - The figures for the ~1,600 companies outside the S&P: stake, shares,
   value, and the size of every trade, current and past.
@@ -155,20 +155,38 @@ side "Weekly tape, free" and "Go Pro" (or Account when signed in).
   the tape excerpt `#tape` with the Monday-email field beside it, the
   performance chart "Founders against the index" with "A portrait, not
   a strategy."
+- No card grid on the tape, page or letter (decided 2026-09-13, after a
+  four-card version was drawn: "largest buy" and "biggest add" were the
+  same event split by S&P membership, and the cards existed to give the
+  seal a box). The weather line is the summary; the table, grouped by
+  kind and ranked by size within each, is the tape; its first rows are
+  the largest buy and the largest discretionary sale. The letter may
+  carry a two-line kicker (largest open-market buy; largest
+  discretionary sale) as a lede. A 10b5-1 sale or a compensation filing
+  is never featured anywhere: "the sale of the week was a plan set
+  months ago" is the Form 4 site's sentence.
 - `/tape`: the full tape with windows 7d/30d/90d/12m (free: 7d;
   longer windows Pro) and toggles (founders only, on by default;
   open-market buys; hide compensation). Columns: Kind · Company · CEO ·
   Amount · New stake · Manner; the amount on every row, the new stake
   blurred outside the S&P. Kind groups in the brief's order, ranked by
-  stake change within each. The archive of past tapes
-  (`/tape/2026-09-14/`) is Pro beyond the current week.
+  stake change within each. The subhead names the week's dates. For a
+  free reader the 30d/90d/12m chips are dimmed and open the Pro box; the
+  Pro note sits under the chips, never in their row. The signup box is
+  the letter only; watches live on company pages. The archive of past
+  tapes (`/tape/2026-09-14/`) is Pro beyond the current week.
+- The letter: the weather line, the optional two-line kicker, the same
+  six columns with kinds as full words, the largest of each kind (about
+  a dozen rows, one compensation row), a small outlined "Pro" tag where
+  a stake is sealed, one button to `/tape`, the copy rule verbatim,
+  unsubscribe and the postal line.
 - `/company/:ticker`: the current shape (name, ticker, market cap; the
   four cards; the chart with Stake default and Price toggle; the trades
   table with its kinds). Free S&P: last twelve months; Pro: the archive.
   Sealed pages as built: the question, one line, blurred cards, the
   price line, a year of blurred trades. Watch box under the chart.
-- `/pro`: the one plan card, the four bullets, the trial button, the
-  quiet line.
+- `/pro`: the one plan card ($15/month or $150/year), the four bullets,
+  the trial buttons, the quiet line, the copy rule.
 - `/about` (Method): the essay, unchanged, plus the one-person line at
   the top; pricing moved out to /pro.
 
@@ -232,7 +250,7 @@ writes a digest that nobody sends.
    image attached. This is the cadence and the only item that changes
    the visitor count. Both the /tape page and the email are shown as
    rendered mocks in the new design before either is built.
-2. `/pro` page, price change to $19 / $190, card-backed Stripe trial.
+2. `/pro` page, price change to $15 / $150, card-backed Stripe trial.
 3. Homepage restructure and the design system across the site.
 4. Sealing rule on S&P company pages (archive behind Pro, last twelve
    months free); the screener's "N more match in Pro" counts from the
@@ -253,6 +271,6 @@ an API, a second tier, recommendations, YouTube/Discord/podcast.
   the amount; the stake after the trade is blurred outside the S&P;
   nothing is invented.
 - Compensation never counts as "cut a stake."
-- `/tape` and `/pro` exist as pages; `/pro` states $19 / $190.
+- `/tape` and `/pro` exist as pages; `/pro` states $15 / $150.
 - The watch cap of one is enforced.
 - The Method page still explains the number in full.
