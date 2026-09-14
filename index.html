@@ -305,18 +305,19 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:26px}
 .tablesec.home tbody td{font-size:14px}
 .tablesec.home td .tk{display:inline;margin-right:8px}
 .tablesec.home td .nm{display:inline;font-size:12.5px}
-.tablesec.home .w-rk,.tablesec.home td.rk,.tablesec.home th:first-child,
-.tablesec.home .h-fd,.tablesec.home .c-fd,.tablesec.home .w-fd,
-.tablesec.home .h-ltd,.tablesec.home .c-ltd,.tablesec.home .w-ltd{display:none}
-.tablesec.home .w-co{width:21%}.tablesec.home .w-ceo{width:29%}.tablesec.home .w-own{width:11%}.tablesec.home .w-val{width:11%}.tablesec.home .w-lt{width:28%}
+/* ONE GRID: the home preview is five columns whose widths sum to 100
+   (Company 28 · CEO 24 · Own 12 · Value 12 · Last move 24). The columns
+   it does not carry are removed from the DOM at first paint (pruneHome),
+   not hidden: a fixed-layout grid counts a hidden <col> inconsistently. */
+.tablesec.home td.rk,.tablesec.home .c-fd,.tablesec.home .c-ltd,.tablesec.home .c-mc,.tablesec.home .c-r1,.tablesec.home .c-amt{display:none}
+.tablesec.home .w-co{width:28%}.tablesec.home .w-ceo{width:24%}.tablesec.home .w-own{width:12%}.tablesec.home .w-val{width:12%}.tablesec.home .w-lt{width:24%}
 .tablesec.home td.ceo .cn{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
 .tablesec.home td.c-lt .dt{display:inline}
 td.c-lt .dt{display:none;font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:8px}
 /* THE HOME PAGE'S SIX COLUMNS: company, CEO, founder, ownership, value,
    the last move and its date. Market cap, the year's return and the
    amount are the screener's, on /companies/. */
-.tablesec.home .h-mc,.tablesec.home .c-mc,.tablesec.home .w-mc,.tablesec.home .h-r1,.tablesec.home .c-r1,.tablesec.home .w-r1,.tablesec.home .h-amt,.tablesec.home .c-amt,.tablesec.home .w-amt{display:none}
-.tablesec.home .w-co{width:22%}.tablesec.home .w-ceo{width:22%}.tablesec.home .w-lt{width:14%}
+
 td.c-lt .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
 td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .kind.plan{color:var(--mut)}
 .more{font-weight:700;font-size:13px;border:1px solid var(--ink);border-radius:0;padding:8px 16px}
@@ -406,7 +407,7 @@ table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
 /* ONE SHAPE FOR BOTH TABLES: the name columns take the left half, the
    figures sit in narrow right-aligned columns near their labels, the
    last two columns are the move and its date. The CEO cell truncates. */
-.tw-kd{width:12%}.tw-co{width:9%}.tw-ceo{width:29%}.tw-v{width:11%}.tw-st{width:11%}.tw-mn{width:16%}.tw-td{width:12%}
+.tw-kd{width:14%}.tw-co{width:14%}.tw-ceo{width:22%}.tw-v{width:12%}.tw-st{width:12%}.tw-mn{width:14%}.tw-td{width:12%}
 table.tape th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
 table.tape th.n,table.tape td.n{text-align:right}
 table.tape td{padding:9px 10px 9px 0;border-top:1px solid var(--line2);font-size:14px;vertical-align:middle;white-space:nowrap}
@@ -1854,6 +1855,16 @@ function openPro(){location.href="/pro/";}
 function openSignIn(){$("#promodal").classList.add("on")}
 let TAPE_LIMIT=8;      /* the home page's tape is an excerpt: the buys, the discretionary sales, a plan; /tape/ has every row */
 let TABLE_LIMIT=10;    /* the home page's list is ten rows: a preview whose job is recognition; /companies/ has every row */
+/* THE HOME PREVIEW'S GRID IS FIVE COLUMNS. The markup is the screener's
+   (one definition for both pages); on the home page the other columns'
+   <col> and <th> leave the DOM before anything is measured, so the fixed
+   layout has exactly the five it draws. */
+(function pruneHome(){
+  const t=document.querySelector(".tablesec.home table.screen");if(!t)return;
+  for(const sel of [".w-rk",".w-fd",".w-mc",".w-r1",".w-amt",".w-ltd","th:first-child",".h-fd",".h-mc",".h-r1",".h-amt",".h-ltd"]){
+    t.querySelectorAll(sel).forEach(el=>{if(el.tagName==="COL"||el.tagName==="TH")el.remove();});
+  }
+})();
 async function subscribeHome(ev){
   ev.preventDefault();
   const email=($("#homeemail").value||"").trim(),m=$("#homemsg"),btn=$("#homesub button");
