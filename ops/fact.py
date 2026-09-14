@@ -164,12 +164,16 @@ def monday_thread(date, tease=False):
     lines = [f"This week: {b} founder{'s' if b != 1 else ''} bought. {d} sold without a plan. "
              f"{p} sale{' was' if p == 1 else 's were'} already scheduled.", ""]
     def move(r):
+        """THE MOVE IS A SHARE OF THE HOLDING, said in words so it cannot be
+        read as points of the company or as the stock's move: 'sold 23% of
+        the stake', 'added 3.9% to the stake', 'the stake ×2.4'."""
         ch = r.get("change")
         if ch is None or abs(ch) < 0.05:
             return ""                      # a move too small to say is not said
-        if abs(ch) >= 100:
-            return f"stake ×{1 + ch/100:.1f}"
-        return f"stake {ch:+.2f}%" if abs(ch) < 10 else f"stake {ch:+.1f}%"
+        if ch >= 100:
+            return f"the stake ×{1 + ch/100:.1f}"
+        mag = f"{abs(ch):.1f}%" if abs(ch) >= 10 else f"{abs(ch):.2f}%"
+        return f"added {mag} to the stake" if ch > 0 else f"sold {mag} of the stake"
     def stake_after(r):
         if r["after"] is None:
             return ""
@@ -186,7 +190,7 @@ def monday_thread(date, tease=False):
         else:
             what = f"sold{' ' + v if v else ''} of {r['tk']} at their own discretion{n}"
         mv = move(r)
-        return f"{r['ceo']} {what}{' (' + mv + ')' if mv else ''}.{stake_after(r)}\n{SITE}/company/{r['tk']}/"
+        return f"{r['ceo']} {what}{', ' + mv if mv else ''}.{stake_after(r)}\n{SITE}/company/{r['tk']}/"
     for r in [x for x in c if x["kind"] == "bought"]:
         lines += [line_for(r), ""]
     for r in [x for x in c if x["kind"] == "disc"]:
