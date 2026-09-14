@@ -585,9 +585,12 @@ td.c-co .tk a:hover{text-decoration:underline}
 .mlater{display:block;text-align:center;margin-top:10px;font-size:12.5px;color:var(--faint)}
 .mclose{position:absolute;top:14px;right:14px;width:30px;height:30px;color:var(--faint)}
 
-footer{padding:26px 0 48px;font-size:12.5px;color:var(--faint);border-top:2px solid var(--rule)}
-footer .row{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
-footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+footer{padding:26px 0 48px;font-size:13px;color:var(--mut);border-top:1px solid var(--ink)}
+footer .row{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+footer .fname{font-family:var(--disp);font-size:16px;font-weight:500;color:var(--ink)}
+footer .fline{font-family:var(--ui);font-size:13px;color:var(--mut)}
+footer .fline a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+footer .fline a:hover{border-bottom-color:var(--ink)}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Founder Led Equities","url":"https://founderledequities.com/","logo":"https://founderledequities.com/og.png","sameAs":["https://x.com/FounderLedEq"]},{"@type":"WebSite","name":"Founder Led Equities","url":"https://founderledequities.com/","description":"What every CEO owns of the company they run, computed from SEC filings."}]}</script>
 </head>
@@ -739,17 +742,13 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
 </div></section>
 
 
+<!-- THE FOOTER: the name in the serif, then one line in one face: what the
+     site is, the two links, the two dates. The confidence legend that stood
+     here (high · medium · low) explained marks this page never shows; the
+     marks live on the company pages, with their meaning beside them. -->
 <footer><div class="wrap row">
-  <div><b style="color:var(--ink);font-family:var(--disp)">Founder Led <i style="color:var(--blue);font-style:normal">Equities</i></b>
-   &nbsp;·&nbsp; Computed from SEC EDGAR. Not investment advice.
-   &nbsp;·&nbsp; <a href="about.html">About &amp; method</a>
-   &nbsp;·&nbsp; <a href="/companies/" title="one page per company, every company">Every company page</a></div>
-  <div class="legend">
-    <span class="conf" title="the filings reconcile cleanly, often checked against an outside source such as the company's own proxy"><span class="dot high"></span>high</span>
-    <span class="conf" title="the filings reconcile, with small residue the record cannot fully explain — usually an old split"><span class="dot medium"></span>medium</span>
-    <span class="conf" title="a known complication in this company's record — open its page for the specifics"><span class="dot low"></span>low</span>
-    <span class="mono" id="footstamp"></span>
-  </div>
+  <div class="fname">Founder Led Equities</div>
+  <div class="fline">Computed from SEC EDGAR. Not investment advice. &middot; <a href="about.html">Method</a> &middot; <a href="/companies/">Every company</a> &middot; <span id="footstamp"></span></div>
 </div></footer>
 
 <div class="modal" id="promodal" role="dialog" aria-modal="true">
