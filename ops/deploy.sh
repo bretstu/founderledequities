@@ -102,6 +102,7 @@ cp index.html about.html public/
 # text while a font is on its way (font-display: swap).
 mkdir -p public/fonts && cp fonts/*.woff2 public/fonts/
 [ -f terms.html ] && cp terms.html public/
+[ -f llms.txt ] && cp llms.txt public/    # what the site is, for the models that cite it
 # the universe page: every member, the snapshot date, the rules. The About
 # page has linked to it since the promotion; it deploys now.
 [ -f universe.html ] && cp universe.html public/

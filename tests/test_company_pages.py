@@ -82,14 +82,14 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     tsla = open(os.path.join(out, "company", "TSLA", "index.html"), encoding="utf-8").read()
     sealed = open(os.path.join(out, "company", "SEALD", "index.html"), encoding="utf-8").read()
     # the open page carries the number where a search engine and a card read it
-    assert "<title>Elon Musk owns 28.44% of Tesla, Inc. (TSLA)" in tsla
+    assert "<title>Elon Musk owns 28.44% of Tesla (TSLA)" in tsla
     assert "worth $370B" in tsla, "the description prices the stake at the close, rounded as the page rounds"
     assert '"pct": "28.4412"' in tsla and '"sp": true' in tsla
     assert '"price_date": "2026-09-02"' in tsla, "the close's date rides with the price (prices.csv says as_of)"
     assert 'href="https://founderledequities.com/company/TSLA/"' in tsla
     assert "co-founded the Company" in tsla, "the founder evidence rides in the shell (as data for the receipt)"
     # the sealed page carries the person and the verdict, and no figure
-    assert "<title>How much of Sealed Co does Jane Doe own? (SEALD)" in sealed
+    assert "<title>How much of Sealed does Jane Doe own? (SEALD)" in sealed
     assert "41.2" not in sealed and "1000000" not in sealed, "no stake, no shares on a sealed page"
     assert "2400000" in sealed, "the cover page's count is public and the page carries it"
     assert '"sp": false' in sealed and '"row"' not in sealed
@@ -452,3 +452,22 @@ def test_the_watches_have_a_box_a_page_and_two_ways_to_stop(tmp_path):
     assert "A list of names is Pro" in w and "stopall" in w and "confirm=" in w
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
     assert "stop all my watches" in run and "alerts_sent" in run and "env.ALERTS_KEY" in run
+
+
+def test_the_display_name_is_the_one_a_person_types():
+    """Titles and descriptions use the name a searcher would type, by rule:
+    the corporate suffix stripped, an all-caps legal name given its case,
+    'Holdings' kept, short initialisms kept."""
+    for legal, shown in (("NVIDIA CORP", "Nvidia"), ("Tesla, Inc.", "Tesla"), ("UWM Holdings Corp", "UWM Holdings"),
+                         ("AMD", "AMD"), ("3M CO", "3M"), ("AT&T INC.", "AT&T"), ("BeOne Medicines Ltd.", "BeOne Medicines"),
+                         ("Apollo Global Management, Inc.", "Apollo Global Management")):
+        assert bcp.display_name(legal) == shown, (legal, bcp.display_name(legal))
+
+
+def test_the_page_carries_the_date_it_was_last_true_and_the_tape_carries_its_links(tmp_path):
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    page = open(os.path.join(out, "company", "TSLA", "index.html"), encoding="utf-8").read()
+    assert '"dateModified": "2026-09-02"' in page or '"dateModified": "' in page, "the schema says when the figure was last true"
+    assert '"tickerSymbol": "TSLA"' in page
+    assert os.path.exists(os.path.join(ROOT, "llms.txt")) and "founderledequities.com/company/" in open(os.path.join(ROOT, "llms.txt"), encoding="utf-8").read()

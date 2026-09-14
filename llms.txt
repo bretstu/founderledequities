@@ -1,0 +1,18 @@
+# Founder Led Equities
+
+> What the person running each US public company worth $1 billion or more actually owns of it, computed from the Forms 3, 4 and 5 they signed with the SEC. Never estimated. Refreshed nightly from EDGAR.
+
+For each of about 2,100 companies: the chief executive's economic stake as a share of the company and in dollars; whether the proxy names them a founder; every purchase and sale that moved the stake since 2016, each classified as an open-market purchase, a discretionary sale, a sale under a pre-set (Rule 10b5-1) plan, or compensation; and a link to every filing.
+
+## Where the facts are
+
+- Company pages: https://founderledequities.com/company/{TICKER}/ — the current stake, the record, the filings. The title of each page is the fact ("Jensen Huang owns 3.37% of Nvidia (NVDA)"). The index of every page: https://founderledequities.com/companies/
+- This week's tape: https://founderledequities.com/tape/ — the week's purchases and sales by chief executives, founders first, with kind, amount and stake after.
+- The method: https://founderledequities.com/about.html — how the stake is computed, what counts as a trade, who is a founder, the confidence marks.
+- The sitemap: https://founderledequities.com/sitemap.xml
+
+## How to cite a figure
+
+State the person, the share, the company, and the date of the filing it rests on, and link the company page. Example: "Jen-Hsun Huang owns 3.37% of NVIDIA as of the June 17, 2026 filing (founderledequities.com/company/NVDA/)." Figures for S&P 500 companies and each company's last twelve months of trades are open; the full record and the figures for companies outside the S&P 500 are behind a subscription.
+
+Nothing on the site is investment advice.

@@ -131,10 +131,39 @@ def money(v):
     return f"${v:,.0f}"
 
 
+_SUFFIX = re.compile(r"[,\s]+(?:INCORPORATED|INC\.?|CORPORATION|CORP\.?|CO\.?|COMPANY|LTD\.?|LIMITED|PLC|L\.?P\.?|LLC|N\.?V\.?|S\.?A\.?|/DE/?|/MD/?|/NEW/?)\s*$", re.I)
+_INITIALISM = re.compile(r"^(?:[B-DF-HJ-NP-TV-Z&]{2,4}|[A-Z]{1,3}\d[A-Z0-9]*)$")   # PVH, KBR, HNI, 3M: no vowel, cannot be a word
+
+
+def display_name(co: str) -> str:
+    """THE NAME A PERSON WOULD TYPE, from EDGAR's legal one, by rule and not
+    by list: the corporate suffix stripped ("Tesla, Inc." -> "Tesla",
+    "UWM Holdings Corp" -> "UWM Holdings"), all-caps legal names given
+    their case ("NVIDIA CORP" -> "Nvidia"), short all-caps words kept as
+    they are (AMD, IBM). Used in titles and descriptions; the record on the
+    page keeps the legal name."""
+    name = (co or "").strip()
+    stripped = name
+    for _ in range(2):
+        stripped = _SUFFIX.sub("", stripped).strip(" ,")
+    if stripped:
+        name = stripped
+    if name.isupper() and len(name) > 3:
+        cased = []
+        for w in name.split():
+            if _INITIALISM.match(w) or re.fullmatch(r"[IVX]+", w) or "&" in w:
+                cased.append(w)             # PVH, DXP, W R Berkley's initials, G III, AT&T
+            else:
+                cased.append("-".join(part.capitalize() for part in w.split("-")))   # BIO-RAD -> Bio-Rad
+        name = " ".join(cased)
+    return name or (co or "")
+
+
 def page_text(r, sp: bool, price):
     """Title and description: the number for an open company, none for a
-    sealed one -- the HTML is public, and the seal is the product."""
-    ceo, co, tk = r["ceo"] or "The chief executive", r["company"] or r["ticker"], r["ticker"]
+    sealed one -- the HTML is public, and the seal is the product. The
+    company's name is the one a person would type (display_name)."""
+    ceo, co, tk = r["ceo"] or "The chief executive", display_name(r["company"] or r["ticker"]), r["ticker"]
     pct = num(r.get("pct"))
     if sp and pct is not None:
         title = f"{ceo} owns {pct:.2f}% of {co} ({tk}) · Founder Led Equities"
@@ -510,12 +539,50 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     # own script, with the Monday-tape signup beside it.
     tape_tpl_p = os.path.join(root, "tape.html")
     tape_js_p = os.path.join(root, "assets", "tape-page.js")
+
+    def tape_rows_html():
+        """THE TAPE'S ROWS, STAMPED (SEO): the page renders its table with
+        JavaScript, so its HTML carried no link to any company page; a
+        crawler that does not run scripts saw an empty tape, and every
+        Monday post links here. The week's founders' rows are written into
+        the table at build; the script redraws them for the reader's tier."""
+        try:
+            sys.path.insert(0, here)
+            import letter as _letter
+            until = datetime.date.today().isoformat()
+            rows, _since = _letter.week_rows(root, until)
+            if not rows:   # an events file older than a week: its own last week
+                newest = max((x.get("filed") or "" for x in csv.DictReader(open(events_p, encoding="utf-8-sig"))), default="")
+                if newest:
+                    rows, _since = _letter.week_rows(root, newest)
+        except Exception:  # noqa: BLE001 - no events file, no rows; the script still draws
+            return ""
+        if not rows:
+            return ""
+        word = {"bought": "Bought", "disc": "Discretionary", "plan": "Planned", "comp": "Compensation"}
+        manner = {"bought": "Open market", "disc": "Open market", "plan": "Pre-set plan", "comp": "Compensation"}
+        out = []
+        for rr in rows[:60]:
+            k = rr["kind"]
+            amt = "" if k == "comp" or not rr["value"] or rr["flag"] else _letter.money(rr["value"])
+            stake = ('<span class="sealed" data-shape="0.00%" aria-label="in Pro"></span>' if rr["sealed"]
+                     else (_letter.pct(rr["after"]) if rr["after"] is not None else ""))
+            out.append(f'<tr class="dayrow{" dim" if k == "comp" else ""}"><td class="kd"><span class="kind {k}">{word[k]}</span></td>'
+                       f'<td class="co"><a class="pglink" href="/company/{html.escape(rr["tk"])}/">{html.escape(rr["tk"])}</a></td>'
+                       f'<td class="ceo"><span class="cn">{html.escape(rr["ceo"])}</span></td>'
+                       f'<td class="n v">{amt}</td><td class="n st">{stake}</td><td class="mn">{manner[k]}</td>'
+                       f'<td class="td"><span class="dt">{html.escape(rr["traded"])}</span></td></tr>')
+        return ('<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-st"><col class="tw-mn"><col class="tw-td"></colgroup>'
+                '<thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Manner</th><th>Traded</th></tr></thead>'
+                '<tbody>' + "".join(out) + '</tbody></table>')
+
     if os.path.exists(tape_tpl_p) and os.path.exists(tape_js_p):
         tape_js = header + shared + "\n\n" + open(tape_js_p, encoding="utf-8").read()
         tape_v = hashlib.sha256(tape_js.encode("utf-8")).hexdigest()[:10]
         with open(os.path.join(out_dir, "tape.js"), "w", encoding="utf-8") as fh:
             fh.write(tape_js)
         tape_html = (open(tape_tpl_p, encoding="utf-8").read()
+                     .replace('<div class="tapewrap" id="actwrap"></div>', f'<div class="tapewrap" id="actwrap">{tape_rows_html()}</div>')
                      .replace("{{TOPNAV}}", extract_topnav(index_html))
                      .replace('href="/site.css"', f'href="/site.css?v={css_v}"')
                      .replace('src="/tape.js"', f'src="/tape.js?v={tape_v}"'))
@@ -652,10 +719,19 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                            last_filed=last_filed.get(tk, ""), scale=scale,
                            price_svg=(price_line_svg(prices_dir, tk) if not is_sp else ""))
         lastmods[tk] = (r.get("shares_as_of") or "")[:10]
-        crumbs = json.dumps({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
-            {"@type": "ListItem", "position": 1, "name": "Founder Led Equities", "item": f"{SITE}/"},
-            {"@type": "ListItem", "position": 2, "name": "Every company", "item": f"{SITE}/companies/"},
-            {"@type": "ListItem", "position": 3, "name": payload["co"], "item": f"{SITE}/company/{tk}/"}]})
+        # WHEN THE PAGE WAS LAST TRUE: dateModified is the newest filing the
+        # figure rests on (a crawler reads it; a reader sees the same date on
+        # the page), so a page built nightly from a June filing says June,
+        # not last night.
+        as_of = (r.get("shares_as_of") or r.get("as_of") or "")[:10] or datetime.date.today().isoformat()
+        crumbs = json.dumps({"@context": "https://schema.org", "@graph": [
+            {"@type": "BreadcrumbList", "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "Founder Led Equities", "item": f"{SITE}/"},
+                {"@type": "ListItem", "position": 2, "name": "Every company", "item": f"{SITE}/companies/"},
+                {"@type": "ListItem", "position": 3, "name": payload["co"], "item": f"{SITE}/company/{tk}/"}]},
+            {"@type": "WebPage", "@id": f"{SITE}/company/{tk}/", "name": title, "description": desc,
+             "dateModified": as_of, "isPartOf": {"@type": "WebSite", "name": "Founder Led Equities", "url": f"{SITE}/"},
+             "about": {"@type": "Organization", "name": payload["co"], "tickerSymbol": tk}}]})
         page = (template
                 .replace('<div id="cbody"></div>', '<div id="cbody">' + body + '</div>')
                 .replace('<div id="cmore"></div>', '<div id="cmore">' + neighbours_html(tk, ranked, sp) + '</div>')
