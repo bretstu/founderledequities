@@ -410,6 +410,15 @@ def one_pass(client, uni, seen):
 
 def main(argv):
     from fle.edgar import EdgarClient
+    if "--test-mail" in argv:
+        # THE MAIL PATH, PROVED: one sample through the same function and
+        # address the real alerts use. Nothing else runs.
+        to = os.environ.get("LIVE_TO", "")
+        ok = send_mail(to, "Founder Led Equities: the watcher's mail path works",
+                       "This is the watcher's test. A founder's decision arrives here the same way, with the sentence and the page's address.\n"
+                       f"{SITE}/tape/")
+        print(f"  test mail to {to or '(LIVE_TO unset)'}: {'sent' if ok else 'FAILED (RESEND_API_KEY or LIVE_TO missing, or Resend refused)'}")
+        return 0 if ok else 1
     # ONE PASS AT A TIME. The timer and a run by hand must never overlap:
     # two passes reading the same memory would both report a filing and
     # then overwrite each other's memory (2026-09-14, 17:04).
@@ -426,15 +435,6 @@ def main(argv):
     os.makedirs(os.path.dirname(SEEN), exist_ok=True)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     seen = set(open(SEEN, encoding="utf-8").read().split()) if os.path.exists(SEEN) else set()
-    if "--test-mail" in argv:
-        # THE MAIL PATH, PROVED: one sample through the same function and
-        # address the real alerts use. Nothing else runs.
-        to = os.environ.get("LIVE_TO", "")
-        ok = send_mail(to, "Founder Led Equities: the watcher's mail path works",
-                       "This is the watcher's test. A founder's decision arrives here the same way, with the sentence and the page's address.\n"
-                       f"{SITE}/tape/")
-        print(f"  test mail to {to or '(LIVE_TO unset)'}: {'sent' if ok else 'FAILED (RESEND_API_KEY or LIVE_TO missing, or Resend refused)'}")
-        return 0 if ok else 1
     if "--show" in argv:
         # THE PROOF: the feed as it stands, every entry, ours marked. A
         # founder's filing shows as "FOUNDER"; a filing by another insider at
