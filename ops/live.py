@@ -193,19 +193,36 @@ def describe(client, uni, cik, acc):
     return out
 
 
+LAST_MAIL_ERROR = ""
+
+
 def send_mail(to, subject, text):
+    """One email through Resend. On failure the reason is kept in
+    LAST_MAIL_ERROR and printed, never swallowed (2026-09-14: a silent
+    False hid whatever Resend said)."""
+    global LAST_MAIL_ERROR
     key = os.environ.get("RESEND_API_KEY")
-    if not key or not to:
+    if not key:
+        LAST_MAIL_ERROR = "RESEND_API_KEY is not set in .env"
+        return False
+    if not to:
+        LAST_MAIL_ERROR = "LIVE_TO is not set in .env"
         return False
     req = urllib.request.Request("https://api.resend.com/emails",
-                                 data=json.dumps({"from": "Founder Led Equities <tape@founderledequities.com>", "to": [to],
-                                                  "subject": subject, "text": text}).encode(),
-                                 headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"}, method="POST")
+                                 data=json.dumps({"from": os.environ.get("LIVE_FROM", "Founder Led Equities <tape@founderledequities.com>"),
+                                                  "to": [to], "subject": subject, "text": text}).encode(),
+                                 headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json",
+                                          "User-Agent": "founderledequities-live/1"}, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
+            LAST_MAIL_ERROR = ""
             return r.status < 300
-    except Exception:  # noqa: BLE001
-        return False
+    except urllib.error.HTTPError as e:
+        LAST_MAIL_ERROR = f"Resend answered {e.code}: {e.read().decode(errors='replace')[:200]}"
+    except Exception as e:  # noqa: BLE001
+        LAST_MAIL_ERROR = f"{e.__class__.__name__}: {str(e)[:120]}"
+    print(f"  mail failed: {LAST_MAIL_ERROR}")
+    return False
 
 
 def published_event(acc):
@@ -417,7 +434,7 @@ def main(argv):
         ok = send_mail(to, "Founder Led Equities: the watcher's mail path works",
                        "This is the watcher's test. A founder's decision arrives here the same way, with the sentence and the page's address.\n"
                        f"{SITE}/tape/")
-        print(f"  test mail to {to or '(LIVE_TO unset)'}: {'sent' if ok else 'FAILED (RESEND_API_KEY or LIVE_TO missing, or Resend refused)'}")
+        print(f"  test mail to {to or '(LIVE_TO unset)'}: {'sent' if ok else 'FAILED: ' + LAST_MAIL_ERROR}")
         return 0 if ok else 1
     # ONE PASS AT A TIME. The timer and a run by hand must never overlap:
     # two passes reading the same memory would both report a filing and
