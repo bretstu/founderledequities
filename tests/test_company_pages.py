@@ -382,4 +382,5 @@ def test_the_tape_is_a_page(tmp_path):
     sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
     assert "/tape/</loc>" in sm
     fn_src = open(os.path.join(ROOT, "functions", "api", "subscribe.js"), encoding="utf-8").read()
-    assert '"/contacts"' in fn_src and "sub:${token}" in fn_src and "expirationTtl: 86400" in fn_src, "double opt-in through a one-day token, into the account's audience"
+    assert "/contacts" in fn_src and "/segments/${env.RESEND_SEGMENT_ID}" in fn_src and "sub:${token}" in fn_src and "expirationTtl: 86400" in fn_src, \
+        "double opt-in through a one-day token: the contact is created, then added to the letter's segment"

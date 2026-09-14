@@ -41,7 +41,7 @@ export async function onRequestPost({ request, env }) {
     body: JSON.stringify({
       from: "Founder Led Equities <tape@founderledequities.com>",
       to: [email],
-      subject: "Confirm: the Monday tape",
+      subject: `Confirm: the Monday tape (${new Date().toISOString().slice(0, 10)})`,
       text: `One click and you're on the list for the Monday tape: who bought, who cut a stake, who sold on a plan, founders first.\n\n${link}\n\nThe link works once and expires in a day. If you didn't ask for this, ignore it and nothing happens.`,
       html: confirmHtml(link),
     }),
@@ -55,19 +55,24 @@ export async function onRequestGet({ request, env }) {
   const email = await env.SUBS.get(`sub:${token}`);
   if (!email) return redirect(`${site(env)}/tape/?subscribed=expired`);
   await env.SUBS.delete(`sub:${token}`);
-  // Resend's audience is account-level now: one list, no audience id.
-  // (RESEND_AUDIENCE_ID, if ever set, selects the older per-audience path.)
-  const path = env.RESEND_AUDIENCE_ID ? `/audiences/${env.RESEND_AUDIENCE_ID}/contacts` : "/contacts";
-  const r = await fetch(`${RESEND(env)}${path}`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ email, unsubscribed: false }),
+  // TWO CALLS (Resend's contacts model of 2025): the contact is created at
+  // the account level, then added to the segment the letter is sent to
+  // (RESEND_SEGMENT_ID: the "Monday tape" segment; segments are static,
+  // so a contact not added to one is not on the list). A refused call is
+  // not a success: the page says so, and the token is kept for a day so
+  // a fixed setting can retry the click.
+  const headers = { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" };
+  const created = await fetch(`${RESEND(env)}/contacts`, {
+    method: "POST", headers, body: JSON.stringify({ email, unsubscribed: false }),
   });
-  // A REFUSED ADD IS NOT A SUCCESS. A sending-access key can mail the
-  // confirmation and still be refused by the contacts endpoint; saying
-  // "you're on the list" then would be false. The page says so instead,
-  // and the token is kept for a day so a fixed key can retry the click.
-  if (!r.ok) {
+  let ok = created.ok || created.status === 409;   // already a contact is fine
+  if (ok && env.RESEND_SEGMENT_ID) {
+    const seg = await fetch(`${RESEND(env)}/contacts/${encodeURIComponent(email)}/segments/${env.RESEND_SEGMENT_ID}`, {
+      method: "POST", headers,
+    });
+    ok = seg.ok;
+  }
+  if (!ok) {
     await env.SUBS.put(`sub:${token}`, email, { expirationTtl: 86400 });
     return redirect(`${site(env)}/tape/?subscribed=error`);
   }
