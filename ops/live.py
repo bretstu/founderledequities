@@ -388,6 +388,17 @@ def one_pass(client, uni, seen):
 
 def main(argv):
     from fle.edgar import EdgarClient
+    # ONE PASS AT A TIME. The timer and a run by hand must never overlap:
+    # two passes reading the same memory would both report a filing and
+    # then overwrite each other's memory (2026-09-14, 17:04).
+    import fcntl
+    os.makedirs(os.path.join(ROOT, "weekly"), exist_ok=True)
+    guard = open(os.path.join(ROOT, "weekly", "live-pass.lock"), "w")
+    try:
+        fcntl.flock(guard, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        print(f"  {dt.datetime.now().strftime('%H:%M')} another pass is running; this one steps aside")
+        return 0
     client = EdgarClient()
     uni = universe()
     os.makedirs(os.path.dirname(SEEN), exist_ok=True)
