@@ -1534,7 +1534,20 @@ def _refresh(args, log) -> int:
     # pushes it to a CDN, so the site stays up when the box does not. The
     # command lives in the environment rather than here, because it names
     # accounts and projects this code should not know about.
+    # THE FOREGROUND RUN AND THE NIGHTLY DO THE SAME THING. The service
+    # names the deploy command in its environment; a person's run at the
+    # terminal did not, stopped at "published", and left the site and the
+    # Monday letter undone (2026-09-14). The repo's own ops/deploy.sh is the
+    # default wherever it exists; --no-deploy is the way to rebuild without
+    # publishing.
     deploy = os.environ.get("FLE_DEPLOY_CMD")
+    if not deploy and not getattr(args, "no_deploy", False):
+        candidate = os.path.join(os.path.abspath(args.dir), "ops", "deploy.sh")
+        if os.path.exists(candidate):
+            deploy = candidate
+    if getattr(args, "no_deploy", False):
+        deploy = None
+        log("not deployed (--no-deploy)")
     if deploy:
         code = os.system(deploy)  # noqa: S605 - operator-configured, by design
         if code:
@@ -2338,6 +2351,8 @@ def main(argv=None) -> int:
     rf = sub.add_parser("refresh",
                         help="the nightly job: rebuild, check the anchors, "
                              "publish only if they hold")
+    rf.add_argument("--no-deploy", action="store_true",
+                    help="rebuild and publish the files, do not run ops/deploy.sh")
     rf.add_argument("--dir", default=".",
                     help="the folder the site is served from")
     rf.add_argument("--universe", default="universe/sp500-2026-08-25.csv")
