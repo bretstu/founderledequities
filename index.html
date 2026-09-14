@@ -281,7 +281,10 @@ td.ceo .fb{flex:none;margin-left:0}
 .tbar i{display:block;height:100%;background:var(--stone-d)}
 .tpct{font-family:var(--mono);font-weight:600;font-size:13.5px;min-width:64px;text-align:right}
 .tarr{font-size:10px;margin-left:6px;vertical-align:1px}.tarr.up{color:#0B8A3E}.tarr.down{color:#C23B3B}.tarr.flat{color:var(--faint)}
-td.num{font-family:var(--mono);font-size:13px;color:var(--ink)}   /* a figure looks the same in every table */
+/* A FIGURE IS THE SAME FIGURE IN EVERY TABLE (2026-09-14: the home table's
+   cell rule at 14px outranked this at 13px; now one rule names both tables
+   at a specificity nothing else reaches) */
+td.num,.tablesec.home tbody td.num,table.tape tbody td.n{font-family:var(--mono);font-size:13px;color:var(--ink)}
 td.asof{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap}
 .conf{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)}
 .dot{width:8px;height:8px;border-radius:50%;flex:none}
@@ -400,7 +403,7 @@ td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .
 /* THE TAPE (PLAN.md section 5): a weather line, the controls, one table
    grouped by kind; no card grid. Tables are the site. */
 .tapehead{align-items:flex-start}
-.activitysec.excerpt{padding-top:56px}
+.activitysec.excerpt{padding-top:56px;padding-bottom:56px}
 .activitysec.excerpt .shead .exit{margin-top:6px}
 .tapesub{font-family:var(--ui);font-size:13.5px;color:var(--mut);margin-top:8px}   /* a caption: who · when · order, one size on both tables */
 .actstats{font-size:15px;color:var(--mut);margin:18px 0 18px}
@@ -592,11 +595,11 @@ td.c-co .tk a:hover{text-decoration:underline}
 .mlater{display:block;text-align:center;margin-top:10px;font-size:12.5px;color:var(--faint)}
 .mclose{position:absolute;top:14px;right:14px;width:30px;height:30px;color:var(--faint)}
 
-footer{padding:26px 0 48px;font-size:12.5px;color:var(--faint);border-top:2px solid var(--rule)}
-footer .row{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+footer{padding:22px 0 44px;font-family:var(--ui);font-size:12.5px;color:var(--faint);border-top:2px solid var(--rule)}
+footer .row{display:flex;justify-content:space-between;align-items:baseline;gap:4px 20px;flex-wrap:wrap}
 footer .fname{font-family:var(--disp);font-weight:500;color:var(--ink)}
-footer a{color:var(--faint)}
-footer .mono{font-size:11.5px}
+footer a{color:var(--mut)}
+footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the footer's own face */
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Founder Led Equities","url":"https://founderledequities.com/","logo":"https://founderledequities.com/og.png","sameAs":["https://x.com/FounderLedEq"]},{"@type":"WebSite","name":"Founder Led Equities","url":"https://founderledequities.com/","description":"What every CEO owns of the company they run, computed from SEC filings."}]}</script>
 </head>
