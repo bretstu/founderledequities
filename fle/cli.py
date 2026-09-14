@@ -1035,7 +1035,10 @@ def edge_confidence(panel_path: str, history_path: str,
         if row.get("confidence") == "high":
             row["confidence"] = "medium"
         cautions = row.get("cautions") or ""
-        row["cautions"] = f"{cautions}|{note}" if cautions else note
+        # once: a targeted run carries rows over, and a note appended on
+        # every run would grow a copy each time (SPSC, 2026-09-14)
+        if note not in (cautions or "").split("|"):
+            row["cautions"] = f"{cautions}|{note}" if cautions else note
     if hit:
         tmp = panel_path + ".tmp"
         with open(tmp, "w", newline="", encoding="utf-8-sig") as fh:

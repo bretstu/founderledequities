@@ -40,3 +40,18 @@ def test_only_the_targeted_state_entries_move(tmp_path):
     scratch.write_text(json.dumps({"AAA": "scratch-a", "UPST": "new-u", "NEWC": "new-n"}))
     _merge_state(str(live), str(scratch), ["UPST", "NEWC"])
     assert json.loads(live.read_text()) == {"AAA": "old-a", "UPST": "new-u", "NEWC": "new-n"}
+
+
+def test_the_confidence_cap_writes_its_note_once(tmp_path):
+    """A targeted run carries rows over; the cap must not grow a copy of its
+    note on every run (SPSC, the first targeted run)."""
+    from fle.cli import edge_confidence
+    panel = tmp_path / "panel.csv"
+    panel.write_text("cik,ticker,pct,shares,confidence,cautions\n1,SPSC,0.48,174238,high,an earlier caution\n")
+    hist = tmp_path / "history.csv"
+    hist.write_text("ticker,date,shares,codes,restated,matches_panel\nSPSC,2026-01-01,5381717,,,\nSPSC,2026-02-20,174238,,,\n")
+    n1 = edge_confidence(str(panel), str(hist))
+    first = panel.read_text()
+    n2 = edge_confidence(str(panel), str(hist))
+    assert panel.read_text() == first, "a second cap changes nothing"
+    assert first.count("balance far below") <= 1
