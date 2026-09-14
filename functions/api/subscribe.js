@@ -40,10 +40,18 @@ export async function onRequestGet({ request, env }) {
   // Resend's audience is account-level now: one list, no audience id.
   // (RESEND_AUDIENCE_ID, if ever set, selects the older per-audience path.)
   const path = env.RESEND_AUDIENCE_ID ? `/audiences/${env.RESEND_AUDIENCE_ID}/contacts` : "/contacts";
-  await fetch(`${RESEND(env)}${path}`, {
+  const r = await fetch(`${RESEND(env)}${path}`, {
     method: "POST",
     headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({ email, unsubscribed: false }),
   });
+  // A REFUSED ADD IS NOT A SUCCESS. A sending-access key can mail the
+  // confirmation and still be refused by the contacts endpoint; saying
+  // "you're on the list" then would be false. The page says so instead,
+  // and the token is kept for a day so a fixed key can retry the click.
+  if (!r.ok) {
+    await env.SUBS.put(`sub:${token}`, email, { expirationTtl: 86400 });
+    return redirect(`${site(env)}/tape/?subscribed=error`);
+  }
   return redirect(`${site(env)}/tape/?subscribed=1`);
 }

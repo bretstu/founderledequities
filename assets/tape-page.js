@@ -27,6 +27,8 @@ async function boot(){
   renderActivity();
   if(new URLSearchParams(location.search).get("subscribed")==="1"){const m=$("#submsg");if(m)m.textContent="You're on the list. The next tape goes out Monday.";}
   if(new URLSearchParams(location.search).get("subscribed")==="check"){const m=$("#submsg");if(m)m.textContent="Check your inbox: one click confirms it.";}
+  if(new URLSearchParams(location.search).get("subscribed")==="error"){const m=$("#submsg");if(m)m.textContent="The list refused the add; write to hello@founderledequities.com and I'll fix it.";}
+  if(new URLSearchParams(location.search).get("subscribed")==="expired"){const m=$("#submsg");if(m)m.textContent="That link expired; enter your address again.";}
 }
 async function subscribe(ev){
   ev.preventDefault();
