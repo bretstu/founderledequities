@@ -216,6 +216,13 @@ class EdgarClient:
                 resp = self._session.get(url, timeout=30)
                 if resp.status_code == 404:
                     raise FileNotFoundError(f"404 for {url}")
+                if resp.status_code in (403, 429) and "sec.gov" not in url:
+                    # NOT THE SEC. Polygon's reference endpoint refusing a
+                    # ticker is a refusal for that ticker, not a fair-access
+                    # block, and resting eleven minutes for it (as the SEC's
+                    # rule requires of an SEC refusal) turned one refusal per
+                    # ticker into a four-hour night on 2026-09-14.
+                    raise RuntimeError(f"{resp.status_code} for {url}")
                 if resp.status_code in (403, 429):
                     # FAIR-ACCESS BLOCK. Trip the SHARED breaker: every
                     # worker rests, one request tests the door afterwards.

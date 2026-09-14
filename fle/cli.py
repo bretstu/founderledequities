@@ -1090,7 +1090,7 @@ def cmd_perf(args) -> int:
     client = _client(args)
     stored = read_store(store)
     todo = ["SPY", "RSP"] + tickers
-    fresh, missing, seams, by_events = {}, [], [], set()
+    fresh, missing, seams, by_events, refused = {}, [], [], set(), []
     for i, tk in enumerate(todo, 1):
         sys.stdout.write(f"\r  prices {i}/{len(todo)} {tk}...      ")
         sys.stdout.flush()
@@ -1098,10 +1098,19 @@ def cmd_perf(args) -> int:
         # This replaced a hand-kept table of former tickers (XYZ was SQ)
         # and, for entities the feed knows, the list_date floor below: the
         # symbol events say both what to fetch and from when.
-        pts, note = fetch_history(client, tk, SETTINGS.polygon_api_key)
+        # A REFUSAL IS A MISSING DAY, NOT A STOPPED RUN. Polygon refusing a
+        # ticker (a rate cap, a plan limit, an outage) keeps yesterday's
+        # series for it and moves on; the count of refusals is printed so
+        # a vendor problem is seen the next morning, not felt as a hang.
+        try:
+            pts, note = fetch_history(client, tk, SETTINGS.polygon_api_key)
+            has_ev = bool(pts) and _has_events(client, tk)
+        except Exception as e:  # noqa: BLE001 -- the vendor's refusal, not ours
+            refused.append(f"{tk}: {str(e)[:60]}")
+            pts, note, has_ev = None, "", False
         if note:
             seams.append(note)
-        if pts and _has_events(client, tk):
+        if has_ev:
             by_events.add(tk)
         if pts:
             # a series rebuilt from the entity's own symbols replaces what
@@ -1111,6 +1120,9 @@ def cmd_perf(args) -> int:
         else:
             missing.append(tk)
     _clear()
+    if refused:
+        print(f"  VENDOR REFUSED {len(refused)} of {len(todo)} tickers (yesterday's series kept): "
+              + "; ".join(refused[:3]) + (" ..." if len(refused) > 3 else ""))
     if seams:
         print("  seams to look at: " + "; ".join(seams[:6]))
     # NO PRICE BEFORE THIS SECURITY TRADED UNDER THE SYMBOL. For an entity
