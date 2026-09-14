@@ -52,7 +52,7 @@ def test_what_is_worth_a_post():
     buy = {"code": "P", "value": "50000", "plan": "discretionary", "label": "open-market purchase", "pct_of_holding": "0.1", "price_flag": ""}
     assert live.worth_a_post(f, buy) == "founder's open-market buy", "any size"
     assert live.worth_a_post(h, buy) == "", "a hired CEO's small buy is not a post"
-    assert live.worth_a_post(h, dict(buy, value="2500000")) == "hired CEO's open-market buy of $2.5M"
+    assert live.worth_a_post(h, dict(buy, value="2500000")) == "", "hired CEOs are not watched"
     plan_small = {"code": "S", "value": "800000", "plan": "plan", "label": "scheduled sale", "pct_of_holding": "-0.3", "price_flag": ""}
     assert live.worth_a_post(f, plan_small) == ""
     assert live.worth_a_post(f, dict(plan_small, pct_of_holding="-23.2")) == "plan that moved the holding 23.2%"

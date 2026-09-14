@@ -19,9 +19,8 @@ the number, is what is worth a post:
     LIVE_MIN_MOVE percent or more (2, of the holding, not of the company)
     or was worth LIVE_MIN_AMOUNT or more (10,000,000: the name and the
     amount are the post when the percentage is not);
-  - a hired chief executive's open-market purchase of LIVE_MIN_HIRED_BUY
-    or more (1,000,000: skin in the game bought with their own money).
-Everything else is written down and left for the tape.
+Everything else is written down and left for the tape. Hired chief
+executives are not watched; the nightly carries their filings.
 
 ONE CALCULATOR, RUN SOONER. The watcher does not compute ownership; the
 walk runs one way, in the nightly and in ops/now.sh, with its checkpoint,
@@ -82,11 +81,10 @@ def money(v):
 
 
 def universe():
-    """issuer cik -> the CEO's reporting cik, name, company, stake now, and
-    whether the proxy names them a founder (founders.csv, the same file the
-    site uses). EVERY CEO's filing runs the data, so a reader watching a
-    hired chief executive is served the same minute; only a FOUNDER's
-    decision reaches the owner's inbox and the X drafts."""
+    """issuer cik -> the founder-CEO's reporting cik, name, company, stake
+    now. FOUNDERS ONLY (founders.csv, the same file the site uses): a
+    hired chief executive's filing waits for the nightly. The watcher's job
+    is timely posts, and those are about founders."""
     founders = set()
     with open(os.path.join(ROOT, "founders.csv"), encoding="utf-8-sig", newline="") as fh:
         for r in csv.DictReader(fh):
@@ -101,9 +99,9 @@ def universe():
                 continue
             oc = (r.get("owner_cik") or "").strip().lstrip("0")
             tk = (r.get("ticker") or "").upper()
-            if cik and oc:
+            if cik and oc and tk in founders:
                 out[cik] = {"tk": tk, "owner": oc, "ceo": r.get("ceo") or "", "co": r.get("company") or "",
-                            "pct": r.get("pct") or "", "asof": r.get("shares_as_of") or "", "founder": tk in founders}
+                            "pct": r.get("pct") or "", "asof": r.get("shares_as_of") or "", "founder": True}
     return out
 
 
@@ -230,18 +228,15 @@ def worth_a_post(u, r):
         ch = 0.0
     min_move = float(os.environ.get("LIVE_MIN_MOVE", "2"))
     min_amt = float(os.environ.get("LIVE_MIN_AMOUNT", "10000000"))
-    min_hired = float(os.environ.get("LIVE_MIN_HIRED_BUY", "1000000"))
     decision = code in ("P", "S") and not plan and not comp
-    if u.get("founder"):
-        if decision:
-            return "founder's open-market buy" if code == "P" else "founder's discretionary sale"
-        if ch >= min_move:
-            return f"{'plan' if plan else 'compensation'} that moved the holding {ch:.1f}%"
-        if v >= min_amt:
-            return f"{'plan' if plan else 'compensation'} worth {money(v)}"
+    if not u.get("founder"):
         return ""
-    if code == "P" and decision and v >= min_hired:
-        return f"hired CEO's open-market buy of {money(v)}"
+    if decision:
+        return "founder's open-market buy" if code == "P" else "founder's discretionary sale"
+    if ch >= min_move:
+        return f"{'plan' if plan else 'compensation'} that moved the holding {ch:.1f}%"
+    if v >= min_amt:
+        return f"{'plan' if plan else 'compensation'} worth {money(v)}"
     return ""
 
 
@@ -283,7 +278,7 @@ def publish_and_mail(pending, uni):
         sent = bool(why) and send_mail(os.environ.get("LIVE_TO", ""),
                                        f"{u['ceo']} {'bought' if ev.get('code') == 'P' else 'sold'} {u['tk']}: the page is live ({why})", text)
         lines.append(f"- {dt.datetime.now().strftime('%H:%M')} published · {text.replace(chr(10), ' · ')}"
-                     + (f"  ← mailed: {why}" if sent else f"  (not a post: {'hired CEO' if not u.get('founder') else 'small plan or compensation'})"))
+                     + (f"  ← mailed: {why}" if sent else "  (not a post: a small plan or compensation)"))
     return lines, still
 
 
