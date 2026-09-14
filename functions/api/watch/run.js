@@ -61,7 +61,9 @@ export async function onRequestPost({ request, env }) {
     const subject = b.items.length === 1
       ? `${first.ceo} ${first.code === "P" ? "bought" : "sold"} ${first.tk}`
       : `${first.ceo} ${first.code === "P" ? "bought" : "sold"} ${first.tk}, and ${b.items.length - 1} more`;
-    const stopLinks = [...b.watches.values()].map((w) => `<a href="${site(env)}/api/watch?stop=${w.token}" style="color:#8C8880;">stop watching ${esc(w.ceo || w.tk)}</a>`).join(" &middot; ");
+    const anyToken = [...b.watches.values()][0].token;
+    const stopLinks = [...b.watches.values()].map((w) => `<a href="${site(env)}/api/watch?stop=${w.token}" style="color:#8C8880;">stop watching ${esc(w.ceo || w.tk)}</a>`).join(" &middot; ")
+      + ` &middot; <a href="${site(env)}/api/watch?stopall=${anyToken}" style="color:#8C8880;">stop all my watches</a>`;
     const paras = b.items.map(({ e }) => `<p style="font-size:15px;line-height:1.5;margin:0 0 12px;">${esc(line(e))}${e.url ? ` <a href="${esc(e.url)}" style="color:#1A1A1A;">The filing.</a>` : ""} <a href="${site(env)}/company/${esc(e.tk)}/" style="color:#1A1A1A;">The record.</a></p>`).join("");
     const html = `<!doctype html><html><body style="margin:0;padding:0;background:#ECE9E2;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ECE9E2;"><tr><td align="center" style="padding:20px 10px;">
@@ -75,7 +77,8 @@ ${paras}
 </td></tr></table></td></tr></table></body></html>`;
     const text = b.items.map(({ e }) => line(e) + (e.url ? ` ${e.url}` : "") + ` ${site(env)}/company/${e.tk}/`).join("\n\n")
       + `\n\nYou asked to be told when this person buys on the open market or sells at discretion. Stop watching: `
-      + [...b.watches.values()].map((w) => `${site(env)}/api/watch?stop=${w.token}`).join(" ");
+      + [...b.watches.values()].map((w) => `${site(env)}/api/watch?stop=${w.token}`).join(" ")
+      + `\nStop all my watches: ${site(env)}/api/watch?stopall=${anyToken}`;
     const r = await fetch(`${RESEND(env)}/emails`, {
       method: "POST",
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },

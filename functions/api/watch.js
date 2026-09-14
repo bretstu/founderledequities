@@ -56,6 +56,14 @@ export async function onRequestPost({ request, env }) {
   let body = {};
   try { body = await request.json(); } catch {}
   const tk = clean(body.tk, 12).toUpperCase().replace(/[^A-Z0-9.\-]/g, "");
+  // a signed-in reader stops a watch from the box or from /watches/
+  if (body.remove) {
+    const who = await readCookie(env, request);
+    if (!who) return json({ ok: false, message: "Sign in first." }, 401);
+    if (tk === "*") await env.HITS.prepare("DELETE FROM watches WHERE email = ?1").bind(who.toLowerCase()).run();
+    else await env.HITS.prepare("DELETE FROM watches WHERE email = ?1 AND tk = ?2").bind(who.toLowerCase(), tk).run();
+    return json({ ok: true, watching: false, message: tk === "*" ? "All watches stopped." : "Stopped." });
+  }
   const ceo = clean(body.ceo, 80);
   if (!tk) return json({ ok: false, message: "Which company?" }, 400);
   const s = await isPro(env, request);
@@ -115,6 +123,14 @@ export async function onRequestGet({ request, env }) {
     const w = await env.HITS.prepare("SELECT id, tk FROM watches WHERE token = ?1").bind(stop).first();
     if (w) await env.HITS.prepare("DELETE FROM watches WHERE id = ?1").bind(w.id).run();
     return redirect(`${site(env)}/company/${w ? w.tk : ""}${w ? "/" : ""}?watch=off`);
+  }
+  // STOP EVERYTHING, one click from any alert, no sign-in: the token names
+  // the person; every watch of theirs goes
+  const stopall = u.searchParams.get("stopall");
+  if (stopall && /^[0-9a-f]{48}$/.test(stopall)) {
+    const w = await env.HITS.prepare("SELECT email, tk FROM watches WHERE token = ?1").bind(stopall).first();
+    if (w) await env.HITS.prepare("DELETE FROM watches WHERE email = ?1").bind(w.email).run();
+    return redirect(`${site(env)}/company/${w ? w.tk : ""}${w ? "/" : ""}?watch=alloff`);
   }
   // the signed-in reader's watches (the box says "Watching" without asking)
   const email = await readCookie(env, request);

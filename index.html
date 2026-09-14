@@ -1791,7 +1791,9 @@ function syncNav(){
   const b=document.querySelector(".gopro");
   if(!b||!state.meKnown)return;
   if(state.pro){b.textContent="Account";b.onclick=()=>{location.href="/api/portal"};
-    b.title="Manage your subscription — cancel, change card, invoices";}
+    b.title="Manage your subscription — cancel, change card, invoices";
+    /* a signed-in reader's watches, one click from anywhere */
+    if(!$("#navwatches")){const a=document.createElement("a");a.id="navwatches";a.href="/watches/";a.textContent="Watches";a.className="weekly";b.parentNode.insertBefore(a,b);}}
   else{b.textContent="Go Pro";b.onclick=openPro;b.title="";}
 }
 /* Go Pro is a page (PLAN.md section 5). The box stays for signing in. */

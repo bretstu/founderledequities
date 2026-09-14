@@ -430,3 +430,19 @@ def test_the_pro_page_is_the_plan(tmp_path):
         assert 'location.href="/pro/"' in open(os.path.join(ROOT, f), encoding="utf-8").read(), f
     co = open(os.path.join(ROOT, "functions", "api", "checkout.js"), encoding="utf-8").read()
     assert "PRICE_ID_MONTHLY" in co and "PRICE_ID_YEARLY" in co and "env.PRICE_ID " not in co and "|| env.PRICE_ID" not in co and '"subscription_data[trial_period_days]": "14"' in co and 'payment_method_collection: "always"' in co
+
+
+def test_the_watches_have_a_box_a_page_and_two_ways_to_stop(tmp_path):
+    """Every company page carries the watch box; /watches/ lists a signed-in
+    reader's names; every alert carries a stop link per name and one for
+    all; the free cap is one confirmed name."""
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    assert os.path.exists(os.path.join(out, "watches", "index.html")) and os.path.exists(os.path.join(out, "watches.js"))
+    page_js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
+    assert "function watchBlock(" in page_js and "watchBlock(r)+whyBlock(r)" in page_js, "the box sits under the record on every page"
+    assert "Stopped. No more emails about" in page_js and "No more emails about anyone" in page_js, "the box says what a stop link did"
+    w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
+    assert "A list of names is Pro" in w and "stopall" in w and "confirm=" in w
+    run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
+    assert "stop all my watches" in run and "alerts_sent" in run and "env.ALERTS_KEY" in run

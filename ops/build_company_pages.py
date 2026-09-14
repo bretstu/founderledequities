@@ -504,6 +504,21 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         co_js = header + shared + "\n\n" + open(co_js_p, encoding="utf-8").read()
         with open(os.path.join(out_dir, "companies.js"), "w", encoding="utf-8") as fh:
             fh.write(co_js)
+    # THE WATCHES PAGE: static shell, its own small script, the masthead
+    w_tpl_p = os.path.join(root, "watches.html")
+    w_js_p = os.path.join(root, "assets", "watches-page.js")
+    if os.path.exists(w_tpl_p) and os.path.exists(w_js_p):
+        w_js = open(w_js_p, encoding="utf-8").read()
+        with open(os.path.join(out_dir, "watches.js"), "w", encoding="utf-8") as fh:
+            fh.write(w_js)
+        w_v = hashlib.sha256(w_js.encode("utf-8")).hexdigest()[:10]
+        w_html = (open(w_tpl_p, encoding="utf-8").read()
+                  .replace("{{TOPNAV}}", extract_topnav(index_html))
+                  .replace('href="/site.css"', f'href="/site.css?v={css_v}"')
+                  .replace('src="/watches.js"', f'src="/watches.js?v={w_v}"'))
+        os.makedirs(os.path.join(out_dir, "watches"), exist_ok=True)
+        with open(os.path.join(out_dir, "watches", "index.html"), "w", encoding="utf-8") as fh:
+            fh.write(w_html)
     # THE PRO PAGE (PLAN.md section 5): static, the masthead from index.html
     pro_tpl_p = os.path.join(root, "pro.html")
     if os.path.exists(pro_tpl_p):

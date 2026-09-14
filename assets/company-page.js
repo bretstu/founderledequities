@@ -15,7 +15,8 @@ let VIEW="all",BIG=false;   /* BIG: only rows that moved the stake by 1% or more
 function nav(me){
   /* one button, two lives, on this page too */
   const b=document.querySelector(".topnav .gopro");if(!b)return;
-  if(me&&me.pro){b.textContent="Account";b.setAttribute("href","/api/portal");b.title="Manage your subscription";}
+  if(me&&me.pro){b.textContent="Account";b.setAttribute("href","/api/portal");b.title="Manage your subscription";
+    if(!document.querySelector("#navwatches")){const a=document.createElement("a");a.id="navwatches";a.href="/watches/";a.textContent="Watches";a.className="weekly";b.parentNode.insertBefore(a,b);}}
 }
 
 
@@ -429,18 +430,36 @@ function watchBlock(r){
   const who=r.ceo||C.ceo||"this chief executive";
   const on=WATCHING&&WATCHING.tk===r.tk;
   const q=new URLSearchParams(location.search).get("watch");
-  const note=q==="on"?"You're watching. An email when they buy on the open market or sell at discretion.":q==="off"?"Stopped.":q==="expired"?"That link expired; ask again.":"";
-  return `<div class="csec cwatch" id="cwatch">
-    <div class="wk">Watch this ${(fInfo(r.tk)||{}).f==="yes"?"founder":"chief executive"}</div>
-    <div class="wrow">
-      <div class="wtext">Email me if <b>${who}</b> buys on the open market or makes a discretionary sale. Never for a plan or compensation.</div>
-      ${on?`<div class="wstate">Watching</div>`:state.pro
+  const role=(fInfo(r.tk)||{}).f==="yes"?"founder":"chief executive";
+  /* THE STATE IS THE BOX. After a click from an email the box says what
+     happened, in the serif, where a reader cannot miss it; then how to
+     undo it. */
+  const said={on:`You're watching ${who}.`,off:`Stopped. No more emails about ${who}.`,alloff:"Stopped. No more emails about anyone.",expired:"That link expired."}[q];
+  const under={on:"An email when they buy on the open market or sell at discretion. Never for a plan or compensation.",
+               off:`Change your mind? Watch ${who} again below.`,alloff:"Every watch is off. Any name can be watched again from its page.",expired:"Ask again below."}[q];
+  const banner=said?`<div class="wsaid"><div class="wsaid-h">${said}</div><div class="wsaid-p">${under}</div></div>`:"";
+  const form=on?`<div class="wstate">Watching <button class="wlink" onclick="unwatchThis('${r.tk}')">stop</button></div>`:state.pro
         ?`<button class="wbtn" onclick="watchThis('${r.tk}')">Watch</button>`
-        :`<form class="wform" onsubmit="return watchThis('${r.tk}',event)"><input type="email" id="wemail" placeholder="you@example.com" required autocomplete="email"><button class="wbtn" type="submit">Watch</button></form>`}
-    </div>
-    <div class="wmsg" id="wmsg">${note}</div>
-    <div class="wfine">One founder watch is free. A list of names is <a href="/pro/">Pro</a>.</div>
+        :`<form class="wform" onsubmit="return watchThis('${r.tk}',event)"><input type="email" id="wemail" placeholder="you@example.com" required autocomplete="email"><button class="wbtn" type="submit">Watch</button></form>`;
+  return `<div class="csec cwatch" id="cwatch">
+    <div class="wk">Watch this ${role}</div>
+    ${banner}
+    ${q==="on"&&!on?"":`<div class="wrow">
+      <div class="wtext">Email me if <b>${who}</b> buys on the open market or makes a discretionary sale. Never for a plan or compensation.</div>
+      ${form}
+    </div>`}
+    <div class="wmsg" id="wmsg"></div>
+    <div class="wfine">${state.pro?`<a href="/watches/">Manage your watches &rarr;</a>`:`One founder watch is free. A list of names is <a href="/pro/">Pro</a>.`}</div>
   </div>`;
+}
+async function unwatchThis(tk){
+  const m=$("#wmsg");
+  try{
+    const q=await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk,remove:true})});
+    const j=await q.json();
+    if(j.ok){WATCHING=null;history.replaceState(null,"",location.pathname+"?watch=off");renderOpen(PANEL[0],{animate:false});}
+    else m.textContent=j.message||"";
+  }catch(e){m.textContent="Something went wrong; write to hello@founderledequities.com.";}
 }
 async function watchThis(tk,ev){
   if(ev)ev.preventDefault();
