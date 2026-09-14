@@ -353,7 +353,9 @@ def publish_and_mail(pending, uni):
         sent = bool(why) and send_mail(os.environ.get("LIVE_TO", ""),
                                        f"{u['ceo']} {'bought' if ev.get('code') == 'P' else 'sold'} {u['tk']}: the page is live ({why})", text)
         lines.append(f"- {dt.datetime.now().strftime('%H:%M')} published · {text.replace(chr(10), ' · ')}"
-                     + (f"  ← mailed: {why}" if sent else "  (not a post: a small plan or compensation)"))
+                     + (f"  ← mailed: {why}" if sent
+                        else f"  ← WORTH A POST ({why}) BUT THE MAIL FAILED: {LAST_MAIL_ERROR}" if why
+                        else "  (not a post: a small plan or compensation)"))
     return lines, still
 
 
