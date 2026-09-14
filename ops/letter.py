@@ -255,9 +255,7 @@ def draft_markdown(root, date, days=7):
         "",
     ]
     for k in kicker(rows):
-        lines.append(k)
-    if kicker(rows):
-        lines.append("")
+        lines += [k, ""]          # each kicker line is its own paragraph
     lines += ["| Kind | Company | CEO | Amount | New stake | Manner |", "|---|---|---|---|---|---|"]
     for r in shown:
         amount = "—" if r["kind"] == "comp" else (money(r["value"]) if r["value"] else "—")
@@ -366,7 +364,7 @@ def render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal=None):
             head, body = val[0], val[1:]
             H.append('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:6px 0 10px;">')
             H.append("<tr>" + "".join(
-                f'<th align="{"right" if h in ("Amount","New stake") else "left"}" style="font-size:11px;font-weight:bold;letter-spacing:.06em;text-transform:uppercase;color:{INK};padding:0 6px 8px 0;border-bottom:1px solid {INK};">{html.escape(h)}</th>'
+                f'<th align="{"right" if h in ("Amount","New stake") else "left"}" style="font-size:11px;font-weight:bold;letter-spacing:.06em;text-transform:uppercase;color:{INK};padding:0 6px 8px 0;border-bottom:1px solid {INK};white-space:nowrap;">{html.escape(h)}</th>'
                 for h in head) + "</tr>")
             for cells in body:
                 k = {"Bought": "bought", "Discretionary": "disc", "Plan": "plan", "Compensation": "comp"}.get(cells[0], "plan")
@@ -386,7 +384,7 @@ def render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal=None):
                     elif h == "Manner":
                         tds.append(f'<td style="padding:8px 0 8px 0;border-top:1px solid {LINE2};font-size:12px;color:{MUT};white-space:nowrap;">{html.escape(c)}</td>')
                     else:
-                        tds.append(f'<td style="padding:8px 6px 8px 0;border-top:1px solid {LINE2};font-size:13px;color:{col};">{html.escape(c)}</td>')
+                        tds.append(f'<td style="padding:8px 6px 8px 0;border-top:1px solid {LINE2};font-size:13px;color:{col};white-space:nowrap;">{html.escape(c)}</td>')
                 H.append("<tr>" + "".join(tds) + "</tr>")
             H.append("</table>")
             widths = [max(len(r[i]) for r in val) for i in range(len(head))]

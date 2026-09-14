@@ -58,6 +58,8 @@ def test_the_kicker_never_features_a_plan_or_compensation(tmp_path):
     k = letter.kicker(rows)
     assert k[0].startswith("Largest open-market buy: Elon Musk, TSLA, $1B (stake +0.51%)")
     assert k[1].startswith("Largest discretionary sale: René Lacerte, BILL, $10.4M (stake in Pro)")
+    md = letter.draft_markdown(root, "2026-09-14")
+    assert "(stake +0.51%).\n\nLargest discretionary sale" in md, "each kicker line is its own paragraph"
     assert "38.4M" not in " ".join(k), "Musk's $38.4M plan is not the sale of the week"
 
 
