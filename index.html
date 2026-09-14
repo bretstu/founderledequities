@@ -600,11 +600,13 @@ footer .legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
 
 <section class="tablesec home" id="table"><div class="wrap">
   <!-- ONE LIST, TWO DEPTHS (PLAN.md section 5; decided 2026-09-14). This is
-       the screener's table at a depth of twenty: what they own now, by
-       share of the company, the dollar column beside it. /companies/ is
-       the same table in full, with its search, filters and export. The
-       controls are in the markup so the two pages share one script; on the
-       home page they are hidden and the link at the foot opens the rest. -->
+       the screener's table at a depth of twenty: what they own now, the
+       S&P's founders for a free reader, by stake value (the same order as
+       /companies/, a different depth; the share is one click on its
+       header). /companies/ is the same table in full, with its search,
+       filters and export. The controls are in the markup so the two pages
+       share one script; on the home page they are hidden and the link at
+       the foot opens the rest. -->
   <div class="shead">
     <h2>What they own now</h2>
 
@@ -768,7 +770,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,screen:"",sort:{key:"pct",dir:-1},tbF:true,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,buys:false,nocomp:false},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
+const state={q:"",min:0,screen:"",sort:{key:"val",dir:-1},tbF:true,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,buys:false,nocomp:false},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
 
 
 /* ---------------- what real people do here ----------------

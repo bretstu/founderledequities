@@ -65,11 +65,13 @@ def top_rows(panel_p, sp_p, prices_p, founders_p, n=20):
     # toggle. The top OPEN_TOP by share are everyone's, as build_site_data
     # ranks them.
     # THE HOME PREVIEW (PLAN.md section 5, 2026-09-14): founders only, the
-    # open set, by share of the company; a free reader's first twenty rows
-    # carry full figures and the line beneath says how many more match in
-    # Pro. (OPEN_TOP is 0: the seal is the S&P and nothing else.)
+    # open set, by stake value, the same order as /companies/ at a
+    # different depth (the share is one click on its header); a free
+    # reader's first twenty rows carry full figures and the line beneath
+    # says how many more match in Pro. (OPEN_TOP is 0: the seal is the S&P
+    # and nothing else.)
     rows = [r for r in rows if r["f"][0] == "yes" and not r["sealed"]]
-    rows.sort(key=lambda x: -x["pct"])
+    rows.sort(key=lambda x: -x["val"])
     return rows[:n]
 
 

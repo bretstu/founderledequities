@@ -57,5 +57,5 @@ async function boot(){
   document.querySelectorAll("[data-min],#fchip,#hchip,#q").forEach(el=>el.addEventListener(el.id==="q"?"input":"click",()=>{if(state.screen){state.screen="";history.replaceState(null,"",location.pathname);}},true));
   renderTable();
 }
-state.sort={key:"pct",dir:-1};state.q="";state.min=0;state.screen="";state.tbF=false;state.tbH=false;state.live={panel:false,hist:false,events:false,founders:false,prices:false};
+state.sort={key:"val",dir:-1};state.q="";state.min=0;state.screen="";state.tbF=false;state.tbH=false;state.live={panel:false,hist:false,events:false,founders:false,prices:false};
 boot();
