@@ -285,10 +285,9 @@ function recordBlock(r){
   const raw=HIST[r.tk];
   const px=PRICES_DAILY;
   const havePx=!!(px&&px.length>1),haveRec=!!(raw&&raw.length);
-  /* THE STAKE IS THE CHART (PLAN.md section 5): the share over time opens
-     the page; the price with the trades on it is the toggle. A first visit
-     is not a trading page. */
-  let mode=window._chartMode||"pct";
+  /* the price with the trades on it opens the page (the view that shows
+     whether a purchase caught a low); the stake over time is the toggle */
+  let mode=window._chartMode||"price";
   if(mode==="price"&&!havePx)mode="pct";
   if(mode!=="price"&&!haveRec&&havePx)mode="price";
   /* the chips carry the only words: what each line is, on hover */

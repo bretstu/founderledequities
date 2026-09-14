@@ -38,78 +38,7 @@
 <body>
 {{TOPNAV}}
 <div class="cpage">
-<section class="tablesec" id="table"><div class="wrap">
-  <!-- ONE LIST, TWO DEPTHS (PLAN.md section 5; decided 2026-09-14). This is
-       the screener's table at a depth of twenty: what they own now, by
-       share of the company, the dollar column beside it. /companies/ is
-       the same table in full, with its search, filters and export. The
-       controls are in the markup so the two pages share one script; on the
-       home page they are hidden and the link at the foot opens the rest. -->
-  <div class="shead" style="align-items:flex-start">
-    <h1 style="font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">Every company</h1>
-
-  </div>
-  <div class="sbody">
-  <!-- THE NAMED SCREENS: four questions, each a link -->
-  <div class="screens" id="screens">
-    <a class="chip" data-screen="never-sold" href="?screen=never-sold" onclick="setScreen('never-sold');return false">Never sold</a>
-    <a class="chip" data-screen="over-10" href="?screen=over-10" onclick="setScreen('over-10');return false">Own more than 10%</a>
-    <a class="chip" data-screen="bought-this-year" href="?screen=bought-this-year" onclick="setScreen('bought-this-year');return false">Bought this year</a>
-    <a class="chip" data-screen="hired-under-1" href="?screen=hired-under-1" onclick="setScreen('hired-under-1');return false">Hired, under 1%</a>
-    <a class="chip" data-screen="" href="/companies/" onclick="setScreen('');return false">Everyone</a>
-    <span class="screendesc" id="screendesc"></span>
-  </div>
-  <div class="controls">
-    <label class="search">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input id="q" type="search" placeholder="Search company, ticker, or CEO" aria-label="Search">
-    </label>
-    <button class="chip on" data-min="0">All</button>
-    <button class="chip" data-min="1">&gt; 1%</button>
-    <button class="chip" data-min="5">&gt; 5%</button>
-    <button class="chip" data-min="10">&gt; 10%</button>
-    <span class="fsw" id="fchip" role="switch" aria-checked="false" tabindex="0"
-        title="only companies still run by a person the proxy names as a founder">Founders only<span class="tr"><i></i></span></span>
-    <span class="fsw" id="hchip" role="switch" aria-checked="false" tabindex="0"
-        title="not one stake-reducing sale on record since the company was public — options cashed and units converted the same day don't count against anyone">Never sold<span class="tr"><i></i></span></span>
-    <button class="chip export" onclick="exportTable()" title="the rows as filtered and sorted, every field, as a CSV">Export CSV ↓</button>
-  </div>
-  <!-- NO HORIZONTAL SCROLL. Ten columns, fixed widths that add up to the
-       page, the two text columns truncating rather than the table growing.
-       Shares held and shares outstanding left the page for the company page and
-       the export -- a screen reads size as value and market cap, not as
-       share counts. The chart preview left too: a sixty-pixel line of a
-       record the walk has not finished repairing looked wrong more often
-       than it looked informative, and the number beside it said the same
-       thing. -->
-  <div class="tscroll">
-  <table class="screen">
-    <colgroup>
-      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-fd"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-r1"><col class="w-lt"><col class="w-man"><col class="w-amt"><col class="w-ltd">
-    </colgroup>
-    <thead><tr>
-      <th class="n">№</th>
-      <th class="sortable" data-key="co">Company<span class="arr"></span></th>
-      <th class="sortable h-ceo" data-key="ceo">CEO<span class="arr"></span></th>
-      <th class="sortable h-fd" data-key="fd" title="the proxy names this CEO a founder">Founder<span class="arr"></span></th>
-      <th class="sortable n" data-key="pct">Ownership<span class="arr"></span></th>
-      <th class="sortable n" data-key="val" title="the stake's value: shares held at the latest close">Value<span class="arr"></span></th>
-      <th class="sortable n h-mc" data-key="mcap" title="market capitalization: shares outstanding at the latest close">Mkt cap<span class="arr"></span></th>
-      <th class="sortable n h-r1" data-key="r1" title="the stock's price return over the last twelve months">1Y return<span class="arr"></span></th>
-      <th class="sortable h-lt" data-key="ltk" title="the newest trade that moved the stake">Last trade<span class="arr"></span></th>
-      <th class="sortable h-man" data-key="man" title="discretionary, or under a pre-set Rule 10b5-1 plan">Type<span class="arr"></span></th>
-      <th class="sortable n h-amt" data-key="lt" title="what that trade was worth">Amount<span class="arr"></span></th>
-      <th class="sortable h-ltd" data-key="ltd" title="the day that trade happened">Traded<span class="arr"></span></th>
-    </tr></thead>
-    <tbody id="tbody"></tbody>
-  </table>
-  </div>
-  <div class="tfoot">
-    <span id="tcount"></span>
-    <a class="gopro allco" href="/companies/" style="text-decoration:none">All companies &rarr;</a>
-  </div>
-  </div>
-</div></section>
+{{TABLE}}
 </div>
 {{INDEX}}
 <script src="/companies.js"></script>

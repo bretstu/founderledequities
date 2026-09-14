@@ -416,7 +416,32 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
     here = os.path.dirname(os.path.abspath(__file__))
     tpl_p = os.path.join(os.path.dirname(here), "companies.html")
     if os.path.exists(tpl_p):
+        # THE TABLE IS INDEX.HTML'S, TAKEN AT BUILD. A copy pasted into the
+        # template drifted (a column removed from the home table's header
+        # and rows stayed in the template's header, and the page's last two
+        # columns sat one cell to the left, 2026-09-14). The section is
+        # lifted from index.html here, with the home page's heading and
+        # class swapped for this page's.
+        idx = open(os.path.join(os.path.dirname(here), "index.html"), encoding="utf-8").read()
+        a = idx.index('<section class="tablesec home" id="table">')
+        b = idx.index("</div></section>", a) + len("</div></section>")
+        table = (idx[a:b]
+                 .replace('<section class="tablesec home" id="table">', '<section class="tablesec" id="table">')
+                 .replace("<h2>What they own now</h2>",
+                          '<h1 style="font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">Every company</h1>')
+                 .replace('<div class="shead">', '<div class="shead" style="align-items:flex-start">')
+                 # THE NAMED SCREENS (step 6): four questions, each a link, above the controls
+                 .replace('<div class="controls">',
+                          '<div class="screens" id="screens">'
+                          '<a class="chip" data-screen="never-sold" href="?screen=never-sold" onclick="setScreen(\'never-sold\');return false">Never sold</a>'
+                          '<a class="chip" data-screen="over-10" href="?screen=over-10" onclick="setScreen(\'over-10\');return false">Own more than 10%</a>'
+                          '<a class="chip" data-screen="bought-this-year" href="?screen=bought-this-year" onclick="setScreen(\'bought-this-year\');return false">Bought this year</a>'
+                          '<a class="chip" data-screen="hired-under-1" href="?screen=hired-under-1" onclick="setScreen(\'hired-under-1\');return false">Hired, under 1%</a>'
+                          '<a class="chip" data-screen="" href="/companies/" onclick="setScreen(\'\');return false">Everyone</a>'
+                          '<span class="screendesc" id="screendesc"></span></div>'
+                          '<div class="controls">', 1))
         page = (open(tpl_p, encoding="utf-8").read()
+                .replace("{{TABLE}}", table)
                 .replace("{{TOPNAV}}", topnav)
                 .replace("{{INDEX_CSS}}", INDEX_CSS)
                 .replace("{{INDEX}}", index_html_block)
