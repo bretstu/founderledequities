@@ -163,6 +163,16 @@ svg = open("public/perf.svg", encoding="utf-8").read()
 if "<!--PERF_SVG-->" in s:
     open(p, "w", encoding="utf-8").write(s.replace("<!--PERF_SVG-->", svg, 1))
 PY
+# ---- 4a2. THE TAPE'S CARD: this week's sentence, drawn now, at an address
+# that changes with the picture (unfurlers cache by URL for days) ----
+mkdir -p public/og
+if $OGPY ops/tape_card.py public/og/tape.png; then
+  TCV=$(sha256sum public/og/tape.png | cut -c1-10)
+  sed -i "s|founderledequities.com/og/tape.png\"|founderledequities.com/og/tape.png?v=$TCV\"|g" public/tape/index.html
+else
+  echo "  tape card: not drawn; the page keeps the site's card"
+  sed -i "s|founderledequities.com/og/tape.png\"|founderledequities.com/og.png\"|g" public/tape/index.html
+fi
 # ---- 4b. the archive of letters: every letter ever drafted is a page, /tape/<date>/ ----
 for f in weekly/letter-*.md; do
   [ -f "$f" ] || continue
