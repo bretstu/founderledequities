@@ -432,11 +432,11 @@ const P=runPage();
    assert(!/chief executive/i.test(labels),"no label on the page says chief executive: "+(labels.match(/.{0,40}chief executive.{0,40}/i)||[""])[0]);
    assert(idx.includes('<h1 id="thesis">What the person running the company still owns.</h1>'),"the hero says what the site is, the same for every reader");
    assert(!idx.includes('See what moved')&&!idx.includes('Go Pro &middot; $15/mo</a>')&&!idx.includes("herobtns"),"no buttons on the fold: the sentence is the door, Pro is the header's");
-   assert(idx.includes('<p class="thisweek" id="thisweek"></p>')&&idx.includes('<a href="/tape/">${weekLine()}')&&idx.includes("sold without a plan"),"the week in one spoken sentence, and it is the link to the tape");
+   assert(!idx.includes('id="thisweek"'),"the fold is headline, method line, three numbers, the table: the week's sentence lives on /tape/ and in the letter");
    assert(!idx.includes('<a href="/pro/">Pro</a>')&&!idx.includes("Weekly tape, free")&&!idx.includes("navwatches"),"the header is where you are: Tape · Companies · Method and one button");
    assert(idx.includes("Filings through ")&&!idx.includes("Latest filing read"),"the dates are the footer's, not the hero's");
    assert(!idx.includes("Everything else is Pro."),"no pricing line on the fold: the one Pro hint on / is the scoreboard's count line");
-   assert(idx.includes('id="thisweek"')&&idx.includes("function weekLine("),"the week in one line under the hero");
+
 
    assert(idx.includes('"CEOs own more than 5%"')&&idx.includes('"S&P 500 CEOs own more than 5%"'),"the rarity is the strip's first cell: a known denominator or none");
    assert(head.includes("what every CEO owns")&&idx.includes("CEOs own more than 5%")&&idx.includes('data-key="ceo">CEO<'),"the title, the strip and the screener say CEO");}

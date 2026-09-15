@@ -220,8 +220,7 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
         b, d, pl = who("bought"), who("disc"), who("plan")
         sentence = (f'<b>Past seven days:</b> {b} founder{"" if b == 1 else "s"} bought. {d} sold without a plan. '
                     f'{pl} sale{" was" if pl == 1 else "s were"} already scheduled.')
-        page = page.replace('<p class="thisweek" id="thisweek"></p>',
-                            f'<p class="thisweek" id="thisweek"><a href="/tape/">{sentence} <span class="arr">&rarr;</span></a></p>', 1)
+        # (the week's sentence left the fold on 2026-09-14; the tape excerpt below carries the week)
         word = {"bought": "Bought", "disc": "Discretionary", "plan": "Planned", "comp": "Compensation"}
         co_of = {}
         try:

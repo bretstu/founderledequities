@@ -149,7 +149,7 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     # ONE STRIP FOR EVERYONE: three aggregates over every company, no company's stake
     assert '<div class="n">2</div><div class="k">CEOs own more than 5%</div>' in page, \
         "the strip counts over every company, the sealed one included"
-    strip = page[page.index('id="herostats"'):page.index('class="thisweek"')]
+    strip = page[page.index('id="herostats"'):page.index('id="table"')]
     assert strip.index("Founder-led companies") < strip.index("CEOs own more than 5%") < strip.index("Held by those founders"), \
         "three numbers in the plan's order"
     assert "Of all CEO wealth" not in page, "the fourth number said the same thing as the third"
