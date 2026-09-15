@@ -47,11 +47,14 @@ FROM = "Founder Led Equities <tape@founderledequities.com>"
 COPY_RULE = ("S&P 500 current stakes and the last twelve months are open. "
              "The archive, every other $1B+ name, longer tape windows, and export are Pro.")
 POSTAL_PLACEHOLDER = "[postal address]"
-COMPENSATION = {"exercise and sell", "exercise, part sold", "vested and sold", "convert and sell",
-                "sale, position unchanged", "purchase, position unchanged"}
-KIND_WORD = {"bought": "Bought", "disc": "Discretionary", "sold": "Sold", "plan": "Planned", "comp": "Compensation"}
-KIND_ORDER = {"bought": 0, "disc": 1, "sold": 2, "plan": 3, "comp": 4}
-KIND_COLOR = {"bought": "#1F6B3A", "disc": "#B23428", "sold": "#8C4A44", "plan": "#6E6A64", "comp": "#8C8880"}
+# THE KINDS ARE THE PAGE'S (ops/kinds.py, 2026-09-15): the letter reads every
+# filing by the founder, not purchases and sales only, and ranks by the move
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kinds  # noqa: E402
+COMPENSATION = kinds.COMP_LABELS
+KIND_WORD = kinds.KIND_WORD
+KIND_ORDER = kinds.KIND_ORDER
+KIND_COLOR = {"bought": "#1F6B3A", "disc": "#B23428", "sold": "#8C4A44", "plan": "#6E6A64", "comp": "#8C8880", "xfer": "#6E6A64"}
 
 # the site's tokens
 PAPER, INK, MUT, FAINT, LINE, LINE2 = "#F7F4EE", "#1A1A1A", "#5F5B55", "#8C8880", "#D6D1C7", "#E8E4DC"
@@ -100,24 +103,16 @@ def read(path):
 
 
 def kind_of(e):
-    if e["label"] in COMPENSATION:
-        return "comp"
-    if e["code"] == "P":
-        return "bought"
-    # a sale filed before Form 4 had a plan box (April 2023) is "sold", not a
-    # decision the letter can vouch for; a weekly letter never meets one
-    return "plan" if e["plan"] == "plan" else "disc" if e["plan"] == "discretionary" else "sold"
+    return kinds.kind_of(e)
 
 
-def manner_of(e, k):
-    if k in ("bought", "disc", "sold"):
-        return "Open market"
-    if k == "plan":
-        return "Pre-set plan"
-    return {"exercise and sell": "Options cashed", "exercise, part sold": "Options cashed, part kept",
-            "vested and sold": "Vest, part sold", "convert and sell": "Units converted",
-            "sale, position unchanged": "Sale, stake unchanged",
-            "purchase, position unchanged": "Purchase, stake unchanged"}.get(e["label"], "Compensation")
+def manner_of(e, k=None):
+    """The detail, capitalised: Open market, Pre-set plan, Plan not stated,
+    Award granted, Gift."""
+    d = kinds.detail_of(e)
+    if kinds.kind_of(e) == "sold":
+        return "Plan not stated"
+    return d[:1].upper() + d[1:]
 
 
 def nice_day(d):
@@ -125,65 +120,79 @@ def nice_day(d):
 
 
 # ---------------------------------------------------------------- the week
-def week_rows(root, until, days=7, founders_only=True):
-    """The tape's rows for the window ending `until`: every purchase and
-    sale filed in the window, founders only, with the kind, the amount,
-    the stake after, whether the company is sealed, and the stake's move."""
-    since = (dt.date.fromisoformat(until) - dt.timedelta(days=days)).isoformat()
+def week_bounds(date):
+    """(monday, friday) of the last complete week on or before `date`. EDGAR
+    accepts no filings at the weekend, so a Saturday run has the whole week."""
+    d = dt.date.fromisoformat(date)
+    friday = d - dt.timedelta(days=(d.weekday() - 4) % 7)
+    return (friday - dt.timedelta(days=4)).isoformat(), friday.isoformat()
+
+
+def week_rows(root, until, days=None, founders_only=True):
+    """The tape's rows for the week ending the last Friday on or before
+    `until` (Monday to Friday, by filing date): every filing by a founder,
+    every kind, pre-IPO rows out, with the kind, the amount, the stake
+    after, whether the company is sealed, and the stake's move. Returns
+    (rows, monday). `days` widens the window backwards from the Friday for
+    a week that was skipped."""
+    monday, friday = week_bounds(until)
+    since = (dt.date.fromisoformat(friday) - dt.timedelta(days=days)).isoformat() if days else (dt.date.fromisoformat(monday) - dt.timedelta(days=1)).isoformat()
     events = read(os.path.join(root, "events.csv"))
-    panel = {r["ticker"].upper(): r for r in read(os.path.join(root, "panel.csv"))}
     founders = {r["ticker"].upper(): r.get("founder", "") for r in read(os.path.join(root, "founders.csv"))}
     sp_files = sorted(f for f in os.listdir(os.path.join(root, "universe")) if f.startswith("sp500-") and f.endswith(".csv"))
     sp = {r["ticker"].upper() for r in read(os.path.join(root, "universe", sp_files[-1]))} if sp_files else set()
     rows = []
     for e in events:
-        if e["code"] not in ("P", "S") or not (since < e["filed"] <= until):
+        if not (since < e["filed"] <= friday) or kinds._pre(e):
             continue
         tk = e["ticker"].upper()
         if founders_only and founders.get(tk) != "yes":
             continue
         k = kind_of(e)
-        pc = num(e.get("pct_of_holding"))
-        move = None if pc is None else (max(0.0, pc) if k == "bought" else max(0.0, -pc))
+        m = kinds.move_of(e)
+        pc = m[0] if m else None
         rows.append({
-            "kind": k, "tk": tk, "ceo": e["ceo"], "founder": founders.get(tk) == "yes",
-            "sealed": tk not in sp, "value": num(e.get("value")), "flag": e.get("price_flag") or "",
-            "after": num(e.get("pct_after")), "change": pc, "move": move if k != "comp" else None,
-            "manner": manner_of(e, k), "traded": e.get("traded") or e.get("filed"),
-            "url": e.get("url") or "", "first": (e.get("first_buy") or "") == "1",
-            "company": panel.get(tk, {}).get("company", ""),
+            "kind": k, "group": kinds.group_of(e), "tk": tk, "ceo": e["ceo"], "founder": founders.get(tk) == "yes",
+            "sealed": tk not in sp, "value": num(e.get("value")) if (e.get("code") or "") in ("P", "S") else None,
+            "flag": e.get("price_flag") or "", "after": num(e.get("pct_after")), "change": pc,
+            "move": (abs(pc) if pc is not None else None), "manner": manner_of(e), "label": e.get("label") or "",
+            "traded": e.get("traded") or e.get("filed"), "url": e.get("url") or "", "first": (e.get("first_buy") or "") == "1",
+            "guarded": (e.get("code") or "") not in ("P", "S") and num(e.get("pct_after")) == 0 and num(e.get("pct_of_holding")) is not None,
         })
-    rows.sort(key=lambda r: (KIND_ORDER[r["kind"]], -(r["move"] if r["move"] is not None else -1), r["traded"]))
-    return rows, since
+    return rows, monday
 
 
 def weather(rows):
-    who = lambda k: len({(r["tk"], r["ceo"]) for r in rows if r["kind"] == k})
-    comp = sum(1 for r in rows if r["kind"] == "comp")
+    """The tape's weather line, by kind, never by a figure."""
+    who = lambda f: len({(r["tk"], r["ceo"]) for r in rows if f(r)})  # noqa: E731
+    paid = lambda r: r["kind"] == "comp" and (r["label"] in ("award granted", "award granted, tax withheld", "options exercised", "options exercised, tax withheld", "exercise, part sold", "vested and sold"))  # noqa: E731
     first = sum(1 for r in rows if r["kind"] == "bought" and r["first"])
-    parts = [f"**{who('bought')}** CEO{'s' if who('bought') != 1 else ''} bought"]
+    parts = [f"**{who(lambda r: r['kind'] == 'bought')}** CEO{'s' if who(lambda r: r['kind'] == 'bought') != 1 else ''} bought"]
     if first:
         parts.append(f"**{first}** for the first time ever")
-    parts += [f"**{who('disc')}** cut a stake", f"**{who('plan')}** sold on a plan",
-              f"**{comp}** compensation filing{'s' if comp != 1 else ''} did not move a stake"]
+    parts += [f"**{who(lambda r: r['kind'] == 'disc')}** cut a stake", f"**{who(lambda r: r['kind'] == 'plan')}** sold on a plan",
+              f"**{who(paid)}** paid in shares", f"**{who(lambda r: r['kind'] == 'xfer' and r['label'] == 'gift')}** gave shares away"]
     return " · ".join(parts)
 
 
 def kicker(rows):
-    """Two lines: the largest open-market buy, the largest discretionary
-    sale. Never a plan, never compensation."""
+    """Two lines: the largest move of the stake, of any kind, and the largest
+    open-market buy. A purchase is rare enough to earn its line whenever
+    there is one; the move is the site's ranking."""
     out = []
-    rows = collapse(rows)
+    rows = [r for r in collapse(rows) if not r["guarded"]]
+    moves = [r for r in rows if r["move"] is not None]
+    if moves:
+        m = max(moves, key=lambda r: r["move"])
+        amt = " " + money(m["value"]) if m["value"] and not m["flag"] else ""
+        did = {"bought": f"bought{amt} on the open market", "disc": f"sold{amt} at their own discretion", "plan": f"sold{amt} on a pre-set plan",
+               "sold": f"sold{amt}, plan not stated"}.get(m["kind"], m["manner"].lower() + amt)
+        out.append(f"Largest move: {m['ceo']}, {m['tk']}, {did} ({'stake in Pro' if m['sealed'] else stake_change(m['change'])}).")
     buys = [r for r in rows if r["kind"] == "bought" and r["value"] and not r["flag"]]
     if buys:
         b = max(buys, key=lambda r: r["value"])
         out.append(f"Largest open-market buy: {b['ceo']}, {b['tk']}, {money(b['value'])} "
                    f"({'stake in Pro' if b['sealed'] else stake_change(b['change'])}).")
-    sales = [r for r in rows if r["kind"] == "disc" and r["value"] and not r["flag"]]
-    if sales:
-        s = max(sales, key=lambda r: r["value"])
-        out.append(f"Largest discretionary sale: {s['ceo']}, {s['tk']}, {money(s['value'])} "
-                   f"({'stake in Pro' if s['sealed'] else stake_change(s['change'])}).")
     return out
 
 
@@ -194,8 +203,8 @@ def collapse(rows):
     page can afford the rows; the letter cannot."""
     out, seen = [], {}
     for r in rows:
-        key = (r["tk"], r["ceo"], r["kind"])
-        if key in seen:
+        key = (r["tk"], r["ceo"], r["kind"], r["label"] if r["kind"] in ("comp", "xfer") else "")
+        if key in seen and not r["guarded"]:
             g = seen[key]
             g["n"] += 1
             if r["value"] is not None:
@@ -216,30 +225,28 @@ def collapse(rows):
 
 
 def pick(rows, cap=12):
-    """The largest of each kind, about a dozen rows: every open-market buy
-    first (they are rare and the point), then discretionary sales, then
-    plans, then one compensation row. Sealed rows are not held back."""
-    rows = collapse(rows)
+    """THE LARGEST MOVES OF THE WEEK, EVERY KIND, about a dozen rows, ranked
+    by the move; every open-market buy is kept whatever its size (they are
+    rare and the point); rows with no stated move follow, newest first.
+    Sealed rows are not held back; guarded rows never make the table."""
+    rows = [r for r in collapse(rows) if not r["guarded"]]
     buys = [r for r in rows if r["kind"] == "bought"]
-    disc = [r for r in rows if r["kind"] == "disc"]
-    plan = [r for r in rows if r["kind"] == "plan"]
-    comp = [r for r in rows if r["kind"] == "comp"][:1]
-    out = buys[:cap]
-    room = max(0, cap - len(out))
-    out += disc[:max(2, room * 2 // 3)]
-    room = max(0, cap - len(out))
-    out += plan[:max(2, room)]
-    out += comp
+    ranked = sorted([r for r in rows if r["move"] is not None and r not in buys], key=lambda r: -r["move"])
+    rest = sorted([r for r in rows if r["move"] is None and r not in buys], key=lambda r: r["traded"], reverse=True)
+    out = buys + ranked[:max(0, cap - len(buys))]
+    out += rest[:max(0, cap - len(out))]
+    out.sort(key=lambda r: (-(r["move"] if r["move"] is not None else -1), r["traded"]))
     return out
 
 
 # ---------------------------------------------------------------- the markdown
-def draft_markdown(root, date, days=7):
-    rows, since = week_rows(root, date, days)
+def draft_markdown(root, date, days=None):
+    rows, monday = week_rows(root, date, days)
+    friday = week_bounds(date)[1]
     shown = pick(rows)
-    sealed_n = sum(1 for r in rows if r["sealed"] and r["kind"] != "comp")
-    comp_n = sum(1 for r in rows if r["kind"] == "comp")
-    week = f"{nice_day(since)} to {nice_day(date)}"
+    sealed_n = sum(1 for r in shown if r["sealed"])
+    look = [r for r in rows if r["guarded"]]
+    week = f"{nice_day(monday)} to {nice_day(friday)}"
     who_b = len({(r["tk"], r["ceo"]) for r in rows if r["kind"] == "bought"})
     who_c = len({(r["tk"], r["ceo"]) for r in rows if r["kind"] == "disc"})
     lines = [
@@ -251,29 +258,31 @@ def draft_markdown(root, date, days=7):
         "",
         "# This week's tape.",
         "",
-        f"Founders only · {week} · stake-moving trades first",
+        f"Founders only · {week} · the largest moves of the stake, every kind",
         "",
         weather(rows),
         "",
     ]
     for k in kicker(rows):
         lines += [k, ""]          # each kicker line is its own paragraph
-    lines += ["| Kind | Company | CEO | Amount | New stake | Manner |", "|---|---|---|---|---|---|"]
+    lines += ["| Kind | Company | CEO | Amount | Change | New stake | Manner |", "|---|---|---|---|---|---|---|"]
     for r in shown:
-        amount = "—" if r["kind"] == "comp" else (money(r["value"]) if r["value"] else "—")
+        amount = money(r["value"]) if r["value"] and not r["flag"] else "—"
+        change = "Pro" if r["sealed"] else (stake_change(r["change"]).replace("stake ", "") if r["change"] is not None else "—")
         stake = "Pro" if r["sealed"] else (pct(r["after"]) or "—")
         ceo = r["ceo"] + (" (first buy)" if r["first"] else "")
         manner = r["manner"] + (f" · {r['n']} filings" if r.get("n", 1) > 1 else "")
-        lines.append(f"| {KIND_WORD[r['kind']]} | {r['tk']} | {ceo} | {amount} | {stake} | {manner} |")
+        lines.append(f"| {KIND_WORD[r['kind']]} | {r['tk']} | {ceo} | {amount} | {change} | {stake} | {manner} |")
     lines += [
         "",
-        f"{len(rows)} filings this week · shown here: the largest of each kind"
-        + (f" · the stake after the trade is in Pro for the {sealed_n} from companies outside the S&P 500" if sealed_n else "")
-        + (" · compensation listed last" if comp_n else "") + ".",
+        f"{len(rows)} filings this week · shown here: the largest moves of the stake, every open-market buy among them"
+        + (f" · the change and the stake after are in Pro for the {sealed_n} from companies outside the S&P 500" if sealed_n else "") + ".",
         "",
         f"[Read the full tape]({SITE}/tape/)",
         "",
     ]
+    if look:
+        lines += ["NEEDS A LOOK BEFORE THE SEND (not in the table): " + "; ".join(f"{r['ceo']}, {r['tk']}: {r['manner'].lower()} took the position on record to zero" for r in look) + ".", ""]
     return "\n".join(lines)
 
 
@@ -366,20 +375,19 @@ def render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal=None):
             head, body = val[0], val[1:]
             H.append('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:6px 0 10px;">')
             H.append("<tr>" + "".join(
-                f'<th align="{"right" if h in ("Amount","New stake") else "left"}" style="font-size:11px;font-weight:bold;letter-spacing:.06em;text-transform:uppercase;color:{INK};padding:0 6px 8px 0;border-bottom:1px solid {INK};white-space:nowrap;">{html.escape(h)}</th>'
+                f'<th align="{"right" if h in ("Amount","Change","New stake") else "left"}" style="font-size:11px;font-weight:bold;letter-spacing:.06em;text-transform:uppercase;color:{INK};padding:0 6px 8px 0;border-bottom:1px solid {INK};white-space:nowrap;">{html.escape(h)}</th>'
                 for h in head) + "</tr>")
             for cells in body:
-                k = {"Bought": "bought", "Discretionary": "disc", "Planned": "plan", "Plan": "plan", "Compensation": "comp"}.get(cells[0], "plan")
-                dim = k == "comp"
-                col = FAINT if dim else INK
+                k = {"Bought": "bought", "Discretionary": "disc", "Planned": "plan", "Plan": "plan", "Sold": "sold", "Compensation": "comp", "Transfer": "xfer"}.get(cells[0], "plan")
+                col = INK
                 tds = []
                 for i, c in enumerate(cells):
                     h = head[i] if i < len(head) else ""
                     if i == 0:
                         tds.append(f'<td style="padding:8px 6px 8px 0;border-top:1px solid {LINE2};font-size:12px;font-weight:bold;color:{KIND_COLOR[k]};white-space:nowrap;">{html.escape(c)}</td>')
-                    elif h == "New stake" and c == "Pro":
+                    elif h in ("New stake", "Change") and c == "Pro":
                         tds.append(f'<td align="right" style="padding:8px 6px 8px 0;border-top:1px solid {LINE2};"><a href="{SITE}/#pro" style="display:inline-block;font-size:9px;font-weight:bold;letter-spacing:.06em;color:{FAINT};border:1px solid {LINE};padding:1px 6px;text-decoration:none;">Pro</a></td>')
-                    elif h in ("Amount", "New stake"):
+                    elif h in ("Amount", "Change", "New stake"):
                         tds.append(f'<td align="right" style="padding:8px 6px 8px 0;border-top:1px solid {LINE2};font-family:Menlo,Consolas,monospace;font-size:12px;color:{col};white-space:nowrap;">{html.escape(c)}</td>')
                     elif h == "Company":
                         tds.append(f'<td style="padding:8px 6px 8px 0;border-top:1px solid {LINE2};font-size:13px;font-weight:bold;color:{col};"><a href="{SITE}/company/{html.escape(c)}/" style="color:{col};text-decoration:none;">{html.escape(c)}</a></td>')
@@ -418,17 +426,17 @@ def archive_page(md, topnav, css_href="/site.css"):
                 body.append(f'<p style="font-size:15px;color:var(--mut);margin:0 0 14px;max-width:70ch">{inline(val)}</p>')
         elif kind == "table":
             head, rows = val[0], val[1:]
-            body.append('<table class="tape"><thead><tr>' + "".join(f'<th{" class=\"n\"" if h in ("Amount","New stake") else ""}>{html.escape(h)}</th>' for h in head) + "</tr></thead><tbody>")
+            body.append('<table class="tape"><thead><tr>' + "".join(f'<th{" class=\"n\"" if h in ("Amount","Change","New stake") else ""}>{html.escape(h)}</th>' for h in head) + "</tr></thead><tbody>")
             for cells in rows:
-                k = {"Bought": "bought", "Discretionary": "disc", "Planned": "plan", "Plan": "plan", "Compensation": "comp"}.get(cells[0], "plan")
+                k = {"Bought": "bought", "Discretionary": "disc", "Planned": "plan", "Plan": "plan", "Sold": "sold", "Compensation": "comp", "Transfer": "xfer"}.get(cells[0], "plan")
                 tds = []
                 for i, c in enumerate(cells):
                     h = head[i] if i < len(head) else ""
                     if i == 0:
                         tds.append(f'<td class="kd"><span class="kind {k}">{html.escape(c)}</span></td>')
-                    elif h == "New stake" and c == "Pro":
-                        tds.append('<td class="n st"><span class="sealed" data-shape="0.00%" aria-label="in Pro" title="in Pro"></span></td>')
-                    elif h in ("Amount", "New stake"):
+                    elif h in ("New stake", "Change") and c == "Pro":
+                        tds.append(f'<td class="n"><span class="sealed" data-shape="{"0.00%" if h == "New stake" else "−0.0%"}" aria-label="in Pro" title="in Pro"></span></td>')
+                    elif h in ("Amount", "Change", "New stake"):
                         tds.append(f'<td class="n">{html.escape(c)}</td>')
                     elif h == "Company":
                         tds.append(f'<td class="co"><a class="pglink" href="/company/{html.escape(c)}/">{html.escape(c)}</a></td>')
@@ -436,7 +444,7 @@ def archive_page(md, topnav, css_href="/site.css"):
                         tds.append(f'<td class="mn">{html.escape(c)}</td>')
                     else:
                         tds.append(f'<td class="ceo">{html.escape(c)}</td>')
-                body.append(f'<tr class="dayrow{" dim" if k == "comp" else ""}">' + "".join(tds) + "</tr>")
+                body.append('<tr class="dayrow">' + "".join(tds) + "</tr>")
             body.append("</tbody></table>")
     date = meta.get("date", "")
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'

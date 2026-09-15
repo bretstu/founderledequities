@@ -1,5 +1,6 @@
-"""The sentences the site can say: the reply per company, the day's lines,
-the Monday thread. Nothing here posts anywhere."""
+"""The sentence the site can say about one company: the stake now and a
+year ago with the reason, the record, the URL. Nothing here posts anywhere.
+The day's lines and the week's thread are ops/moves.py (tests/test_moves.py)."""
 import importlib.util
 import pathlib
 import sys
@@ -30,37 +31,23 @@ def test_the_reply_is_the_stake_the_record_and_the_url(tmp_path, monkeypatch):
     _data(tmp_path, monkeypatch)
     panel, founders, by = fact.load()
     s = fact.fact("TSLA", panel, founders, by)
-    assert s.startswith("Elon Musk owns 28.44% of Tesla (TSLA) as of the Jun 16 filing, a founder. Since 2016: 1 open-market buy, 1 sale that moved the stake. Last: bought $1B on the open market, Sep 12.")
+    assert s.startswith("Elon Musk owns 28.44% of Tesla (TSLA) as of the Jun 16 filing, a founder. Since 2016: 1 open-market buy, 1 sale that moved the stake. Last: bought $1B on the open market, Sep 12."), "no history file: the sentence stands without the year"
     assert s.endswith("https://founderledequities.com/company/TSLA/"), "the entity's address, never the home page"
     assert "exercise" not in s, "compensation is not a sale that moved the stake"
 
 
-def test_todays_lines_are_decisions_only_notable_first(tmp_path, monkeypatch):
+
+
+def test_the_reply_says_the_year_when_the_record_has_one(tmp_path, monkeypatch):
     _data(tmp_path, monkeypatch)
+    (tmp_path / "history.csv").write_text(
+        "ticker,date,accession,shares,shares_split_adjusted,outstanding,pct\n"
+        "TSLA,2025-06-01,a1,400000000,400000000,3200000000,12.5\n"
+        "TSLA,2026-06-16,a2,1120000000,1120000000,3950000000,28.4412\n")
+    (tmp_path / "events.csv").write_text(
+        "ticker,ceo,filed,traded,code,label,value,pct_of_holding,pct_after,plan,pre_ipo,price_flag,first_buy,net_change,accession\n"
+        "TSLA,Elon Musk,2026-01-10,2026-01-10,A,award granted,,150,28.0,,,,,600000000,a2\n"
+        "TSLA,Elon Musk,2026-06-16,2026-06-16,P,open-market purchase,1000000000,0.51,28.44,discretionary,,,,120000000,a2\n")
     panel, founders, by = fact.load()
-    lines = fact.today_lines(panel, founders, by, "2026-09-10")
-    assert len(lines) == 3, lines
-    assert "HIRE" in lines[0] and "$10M+ at discretion" in lines[0] and "stake -40%" in lines[0], "the notable line leads"
-    assert any("first buy ever" in l for l in lines)
-    assert not any("38.4M" in l for l in lines), "a plan is not a decision"
-    assert all("/company/" in l for l in lines)
-
-
-def test_the_monday_thread_carries_every_decision_and_the_large_plans(tmp_path, monkeypatch):
-    """Every open-market buy and discretionary sale of the week with the
-    move and the stake after; a planned sale only when it moved the stake
-    5% or more, and then labelled as planned."""
-    _data(tmp_path, monkeypatch)
-    (tmp_path / "universe").mkdir()
-    (tmp_path / "universe" / "sp500-2026-09-01.csv").write_text("ticker\nTSLA\n")
-    (tmp_path / "founders.csv").write_text("ticker,founder\nTSLA,yes\nHIRE,yes\n")
-    t = fact.monday_thread("2026-09-14")
-    assert t.startswith("## The thread: three posts, then the tape\n\n1.\nThis week: 2 founders bought. 1 sold without a plan.")
-    assert "Elon Musk bought $1B of TSLA on the open market, added 0.51% to their stake. Now owns 28.44%." in t
-    assert "A Hire sold $12M of HIRE at their own discretion, sold 40% of their stake. Now owns 0.500%." in t
-    assert "(read both filings on the page before this one is public)" in t, "a large cut is checked before it is posted"
-    assert "## The whole week: the packet" in t
-    assert "38.4M" not in t, "a plan that moved the stake 0.3% is not in the thread"
-    assert t.rstrip().endswith("/tape/")
-    tz = fact.monday_thread("2026-09-14", tease=True)
-    assert "A Hire sold $12M of HIRE at their own discretion, sold 40% of their stake. The stake after is in Pro." in tz
+    s = fact.fact("TSLA", panel, founders, by)
+    assert "as of the Jun 16 filing, from 12.50% a year ago (compensation +150%, the share count -52%, bought +30%), a founder." in s, s

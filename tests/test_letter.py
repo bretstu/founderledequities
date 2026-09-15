@@ -19,7 +19,10 @@ def _fixture(tmp_path):
     (tmp_path / "founders.csv").write_text("ticker,founder\nTSLA,yes\nEQPT,yes\nDDOG,yes\nBILL,yes\nUTHR,yes\nHIRE,no\n")
     rows = [
         # ticker,cik,ceo,owner_cik,filed,traded,code,label,shares,value,avg_price,pct_of_holding,pct_approx,net_change,day_net,holding_after,outstanding,pct_after,residue,plan,other_codes,rows,unpriced_rows,securities,direct,form,accession,price_flag,url,registered,pre_ipo,avg_price_adjusted,traded_from,first_buy
-        ("TSLA", "Elon Musk", "2026-09-12", "2026-09-12", "P", "open-market purchase", "1000000000", "0.51", "28.44", "discretionary", ""),
+        ("TSLA", "Elon Musk", "2026-09-11", "2026-09-11", "P", "open-market purchase", "1000000000", "0.51", "28.44", "discretionary", ""),
+        ("UTHR", "Martine Rothblatt", "2026-09-10", "2026-09-10", "A", "award granted", "", "40", "2.20", "", ""),
+        ("DDOG", "Olivier Pomel", "2026-09-11", "2026-09-10", "G", "gift", "", "-3", "2.52", "", ""),
+        ("EQPT", "Jabbok Schlacks", "2026-09-06", "2026-09-05", "P", "open-market purchase", "9000000", "9", "13.0", "discretionary", ""),
         ("EQPT", "Jabbok Schlacks", "2026-09-10", "2026-09-09", "P", "open-market purchase", "271000", "0.05", "13.10", "discretionary", ""),
         ("EQPT", "Jabbok Schlacks", "2026-09-11", "2026-09-10", "P", "open-market purchase", "255000", "0.05", "13.15", "discretionary", "1"),
         ("BILL", "René Lacerte", "2026-09-09", "2026-09-08", "S", "discretionary sale", "10400000", "-7.15", "2.71", "discretionary", ""),
@@ -27,6 +30,7 @@ def _fixture(tmp_path):
         ("TSLA", "Elon Musk", "2026-09-08", "2026-09-08", "S", "scheduled sale", "38400000", "-0.30", "28.40", "plan", ""),
         ("UTHR", "Martine Rothblatt", "2026-09-08", "2026-09-08", "S", "exercise and sell", "", "", "1.56", "plan", ""),
         ("HIRE", "A Hire", "2026-09-08", "2026-09-08", "P", "open-market purchase", "5000000", "20", "1.0", "discretionary", ""),
+        ("BILL", "René Lacerte", "2026-09-09", "2026-09-08", "D", "forfeited", "", "-100", "0", "", ""),
         ("TSLA", "Elon Musk", "2026-08-01", "2026-08-01", "P", "open-market purchase", "1000000", "0.01", "28.00", "discretionary", ""),
     ]
     with open(tmp_path / "events.csv", "w") as fh:
@@ -36,49 +40,60 @@ def _fixture(tmp_path):
     return str(tmp_path)
 
 
-def test_the_week_is_founders_only_and_the_rows_collapse(tmp_path):
+def test_the_week_is_monday_to_friday_every_kind_and_the_rows_collapse(tmp_path):
     root = _fixture(tmp_path)
-    rows, since = letter.week_rows(root, "2026-09-14")
-    assert since == "2026-09-07"
+    assert letter.week_bounds("2026-09-12") == ("2026-09-07", "2026-09-11"), "a Saturday run: the week just closed"
+    assert letter.week_bounds("2026-09-14") == ("2026-09-07", "2026-09-11"), "a Monday run: the last complete week, not the one starting"
+    assert letter.week_bounds("2026-09-11") == ("2026-09-07", "2026-09-11"), "a Friday is its own week's end"
+    rows, monday = letter.week_rows(root, "2026-09-12")
+    assert monday == "2026-09-07"
     assert not any(r["tk"] == "HIRE" for r in rows), "a hired CEO is not in the founders' tape"
-    assert not any(r["traded"] == "2026-08-01" for r in rows), "outside the window"
+    assert not any(r["traded"] in ("2026-08-01", "2026-09-05") for r in rows), "outside the week: a September 5 purchase belongs to the week before"
+    assert any(r["kind"] == "comp" and r["tk"] == "UTHR" and r["label"] == "award granted" for r in rows), "an award is a row of the week"
+    assert any(r["kind"] == "xfer" and r["tk"] == "DDOG" for r in rows), "a gift is a row of the week"
     c = letter.collapse(rows)
     eq = [r for r in c if r["tk"] == "EQPT"]
     assert len(eq) == 1 and eq[0]["n"] == 2 and eq[0]["value"] == 526000 and eq[0]["after"] == 13.15 and eq[0]["first"]
-    # kind order, ranked by the stake's move within each; a sale ranks by its cut
-    kinds = [r["kind"] for r in c]
-    assert kinds == sorted(kinds, key=lambda k: letter.KIND_ORDER[k])
+    kinds_ = [r["kind"] for r in c]
+    assert kinds_ == sorted(kinds_, key=lambda k: letter.KIND_ORDER[k])
     disc = [r["tk"] for r in c if r["kind"] == "disc"]
     assert disc[0] == "BILL", "the biggest cut leads the discretionary group"
+    assert [r for r in rows if r["guarded"]][0]["tk"] == "BILL", "a forfeiture of the whole holding is guarded"
 
 
-def test_the_kicker_never_features_a_plan_or_compensation(tmp_path):
+def test_the_kicker_is_the_largest_move_and_the_largest_buy(tmp_path):
     root = _fixture(tmp_path)
-    rows, _ = letter.week_rows(root, "2026-09-14")
+    rows, _ = letter.week_rows(root, "2026-09-12")
     k = letter.kicker(rows)
-    assert k[0].startswith("Largest open-market buy: Elon Musk, TSLA, $1B (stake +0.51%)")
-    assert k[1].startswith("Largest discretionary sale: René Lacerte, BILL, $10.4M (stake in Pro)")
-    md = letter.draft_markdown(root, "2026-09-14")
-    assert "(stake +0.51%).\n\nLargest discretionary sale" in md, "each kicker line is its own paragraph"
-    assert "38.4M" not in " ".join(k), "Musk's $38.4M plan is not the sale of the week"
+    assert k[0] == "Largest move: Martine Rothblatt, UTHR, award granted (stake in Pro).", k[0]
+    assert k[1].startswith("Largest open-market buy: Elon Musk, TSLA, $1B (stake +0.51%)")
+    assert "38.4M" not in " ".join(k), "Musk's $38.4M plan moved 0.3%: not the move of the week"
+    assert "forfeited" not in " ".join(k), "the guarded row is never featured"
+    md = letter.draft_markdown(root, "2026-09-12")
+    assert "(stake in Pro).\n\nLargest open-market buy" in md, "each kicker line is its own paragraph"
 
 
-def test_the_draft_renders_in_the_sites_look_and_seals_the_stake(tmp_path):
+def test_the_draft_renders_in_the_sites_look_and_seals_the_change_and_the_stake(tmp_path):
     root = _fixture(tmp_path)
-    md = letter.draft_markdown(root, "2026-09-14")
-    assert md.startswith("---\ndate: 2026-09-14\nsubject: This week's tape: 2 CEOs bought, 2 cut a stake")
-    assert "**2** CEOs bought · **1** for the first time ever · **2** cut a stake · **1** sold on a plan · **1** compensation filing did not move a stake" in md
-    assert "| Bought | EQPT | Jabbok Schlacks (first buy) | $526K | Pro | Open market · 2 filings |" in md
-    assert "| Bought | TSLA | Elon Musk | $1B | 28.44% | Open market |" in md
+    md = letter.draft_markdown(root, "2026-09-12")
+    assert md.startswith("---\ndate: 2026-09-12\nsubject: This week's tape: 2 CEOs bought, 2 cut a stake\nweek: Sep 7 to Sep 11")
+    assert "**2** CEOs bought · **1** for the first time ever · **2** cut a stake · **1** sold on a plan · **1** paid in shares · **1** gave shares away" in md
+    assert "did not move a stake" not in md
+    assert "| Kind | Company | CEO | Amount | Change | New stake | Manner |" in md
+    assert "| Compensation | UTHR | Martine Rothblatt | — | Pro | Pro | Award granted |" in md, "the largest move of the week, an award, sealed"
+    assert "| Bought | EQPT | Jabbok Schlacks (first buy) | $526K | Pro | Pro | Open market · 2 filings |" in md
+    assert "| Bought | TSLA | Elon Musk | $1B | +0.51% | 28.44% | Open market |" in md
+    assert "| Transfer | DDOG | Olivier Pomel | — | -3.00% | 2.52% | Gift |" in md
+    assert "NEEDS A LOOK BEFORE THE SEND (not in the table): René Lacerte, BILL: forfeited took the position on record to zero." in md
     h, t, meta = letter.render(md, postal="PO Box 1, Portland, ME 04101")
     assert meta["subject"].startswith("This week's tape")
     assert "Georgia" in h and "#F7F4EE" in h and "Read the full tape" in h
-    assert h.count(">Pro</a>") == 3, "a small Pro tag where the stake is sealed (EQPT, BILL, UTHR sealed; DDOG and TSLA shown)"
+    assert h.count(">Pro</a>") == 8, "a small Pro tag where the change and the stake are sealed (EQPT, BILL, UTHR, EQPT... four sealed rows, two tags each)"
     assert "{{{RESEND_UNSUBSCRIBE_URL}}}" in h and "PO Box 1" in h
     assert "28.44%" in t and "Unsubscribe" in t, "a plain-text alternative too"
-    # the archive page uses the site's table classes and blurs, not the tag
     page = letter.archive_page(md, '<div class="top">nav</div>', "/site.css?v=abc")
-    assert 'class="tape"' in page and page.count('class="sealed"') == 3 and 'href="/site.css?v=abc"' in page
+    assert 'class="tape"' in page and page.count('class="sealed"') == 8 and 'href="/site.css?v=abc"' in page
+    assert 'class="kind xfer"' in page and 'class="kind comp"' in page
 
 
 def test_a_list_send_refuses_without_a_postal_line(tmp_path, monkeypatch):

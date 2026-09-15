@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-"""The sentences the site can say, ready to paste (PLAN.md: distribution).
+"""The sentence the site can say about one company, ready to paste.
 
-    python3 ops/fact.py NVDA            # the reply: the stake, the record, the URL
+    python3 ops/fact.py NVDA            # the reply: the stake now and a year ago, the record, the URL
     python3 ops/fact.py NVDA TSLA DELL  # several
-    python3 ops/fact.py --today         # drafts/x-today.md: today's decisions, one line each
-    python3 ops/fact.py --monday DATE   # drafts/x-monday.md: the week as one thread
 
 THE PIPELINE SUGGESTS; A PERSON PUBLISHES. Nothing here posts anywhere.
-Every line carries the company's URL, never the home page: search and the
-timeline both need the entity's address. Every figure is the site's own
-number as of the file the nightly wrote.
+Every line carries the company's URL, never the home page. Every figure is
+the site's own number as of the file the nightly wrote. The day's lines
+and the week's thread moved to ops/moves.py on 2026-09-15 (every kind,
+ranked by the move of the stake); this file keeps the reply.
 """
 import csv
 import datetime as dt
@@ -72,6 +71,17 @@ def load():
     return panel, founders, by
 
 
+def year_ago(tk, asof):
+    """', from 3.1% a year ago (sold −18%, compensation +4%)', from the
+    record (ops/moves.py); '' when the record has no year or nothing moved."""
+    try:
+        sys.path.insert(0, HERE)
+        import moves
+        return moves.year_clause(moves.Data(ROOT), tk, asof or dt.date.today().isoformat())
+    except Exception:  # noqa: BLE001 - no history file: the sentence stands without the year
+        return ""
+
+
 def record(evs):
     """Since 2016: open-market buys, sales that moved the stake, the last decision."""
     buys = sells = 0
@@ -100,7 +110,7 @@ def fact(tk, panel, founders, by):
     asof = r.get("as_of") or r.get("asof") or r.get("shares_as_of") or ""
     buys, sells, last = record(by.get(tk, []))
     who = "a founder" if founders.get(tk) == "yes" else "hired"
-    s = f"{ceo} owns {pct(p)} of {co} ({tk}) as of the {nice(asof)} filing, {who}. "
+    s = f"{ceo} owns {pct(p)} of {co} ({tk}) as of the {nice(asof)} filing{year_ago(tk, asof)}, {who}. "
     s += f"Since 2016: {buys} open-market buy{'s' if buys != 1 else ''}, {sells} sale{'s' if sells != 1 else ''} that moved the stake."
     if last is not None:
         v = num(last.get("value")) if not (last.get("price_flag") or "") else None
@@ -113,133 +123,13 @@ def fact(tk, panel, founders, by):
     return s
 
 
-def today_lines(panel, founders, by, since):
-    """One line per decision filed since `since`, notable ones marked."""
-    out = []
-    for tk, evs in by.items():
-        for e in evs:
-            filed = e.get("filed") or ""
-            if filed <= since or (e.get("label") or "") in COMPENSATION or (e.get("pre_ipo") or "") in ("1", "true", "True"):
-                continue
-            if e["code"] == "S" and (e.get("plan") or "") == "plan":
-                continue
-            v = num(e.get("value")) if not (e.get("price_flag") or "") else None
-            after = num(e.get("pct_after"))
-            change = num(e.get("pct_of_holding"))
-            first = (e.get("first_buy") or "") == "1"
-            notable = []
-            if first:
-                notable.append("first buy ever")
-            if e["code"] == "S" and v and v >= 10e6:
-                notable.append("$10M+ at discretion")
-            if change is not None and abs(change) >= 5:
-                notable.append(f"stake {change:+.0f}%")
-            r = panel.get(tk, {})
-            who = "founder" if founders.get(tk) == "yes" else "hired CEO"
-            verb = "bought" if e["code"] == "P" else "sold"
-            how = "on the open market" if e["code"] == "P" else "at their own discretion"
-            line = (f"- {tk} · {e.get('ceo') or r.get('ceo') or ''} ({who}) {verb}"
-                    f"{' ' + money(v) if v else ''} {how}, {nice(e.get('traded') or filed)}."
-                    f"{' Now owns ' + pct(after) + '.' if after is not None else ''}"
-                    f"{'  ← ' + ', '.join(notable) if notable else ''}"
-                    f"\n  {SITE}/company/{tk}/")
-            out.append((bool(notable), v or 0, line))
-    out.sort(key=lambda x: (-x[0], -x[1]))
-    return [l for _, _, l in out]
-
-
-def monday_thread(date, tease=False):
-    """The week as one thread: the spoken sentence; every open-market buy
-    and every discretionary sale, each with the amount, the stake's move
-    and the stake after (the move is the edge; one number a week is the
-    marketing, the record and the chart stay Pro); then any planned sale
-    that moved the stake by 5% or more, labelled as planned; the link.
-    --tease withholds the stake after for names outside the S&P."""
-    sys.path.insert(0, HERE)
-    import letter  # noqa: E402
-    rows, since = letter.week_rows(ROOT, date)
-    c = letter.collapse(rows)
-    who = lambda k: len({(r["tk"], r["ceo"]) for r in rows if r["kind"] == k})
-    b, d, p = who("bought"), who("disc"), who("plan")
-    lines = [f"This week: {b} founder{'s' if b != 1 else ''} bought. {d} sold without a plan. "
-             f"{p} sale{' was' if p == 1 else 's were'} already scheduled.", ""]
-    def move(r):
-        """THE MOVE IS A SHARE OF THE HOLDING, said in words so it cannot be
-        read as points of the company or as the stock's move: 'sold 23% of
-        the stake', 'added 3.9% to the stake', 'the stake ×2.4'."""
-        ch = r.get("change")
-        if ch is None or abs(ch) < 0.05:
-            return ""                      # a move too small to say is not said
-        # "their": the pipeline never guesses a person's gender from a name;
-        # swap in his or her when pasting if you know it
-        if ch >= 100:
-            return f"their stake ×{1 + ch/100:.1f}"
-        mag = f"{abs(ch):.0f}%" if abs(ch) >= 10 else f"{abs(ch):.1f}%" if abs(ch) >= 1 else f"{abs(ch):.2f}%"
-        return f"added {mag} to their stake" if ch > 0 else f"sold {mag} of their stake"
-    def stake_after(r):
-        if r["after"] is None:
-            return ""
-        if tease and r["sealed"]:
-            return " The stake after is in Pro."
-        return f" Now owns {pct(r['after'])}."
-    def line_for(r, planned=False):
-        v = money(r["value"]) if r["value"] and not r["flag"] else ""
-        n = f" across {r['n']} filings" if r.get("n", 1) > 1 else ""
-        if r["kind"] == "bought":
-            what = f"bought{' ' + v if v else ''} of {r['tk']} on the open market{n}"
-        elif planned:
-            what = f"sold{' ' + v if v else ''} of {r['tk']} under a plan set months ago{n}"
-        else:
-            what = f"sold{' ' + v if v else ''} of {r['tk']} at their own discretion{n}"
-        mv = move(r)
-        return f"{r['ceo']} {what}{', ' + mv if mv else ''}.{stake_after(r)}\n{SITE}/company/{r['tk']}/"
-    buys = [x for x in c if x["kind"] == "bought"]
-    discs = [x for x in c if x["kind"] == "disc"]
-    big_plans = [x for x in c if x["kind"] == "plan" and x.get("change") is not None and abs(x["change"]) >= 5]
-    # THE THREAD IS THREE POSTS: the sentence; the largest buy; the decision
-    # or plan that moved a stake most; the tape. The rest is the packet.
-    weather = lines[0]
-    top_buy = max(buys, key=lambda r: r["value"] or 0) if buys else None
-    movers = [r for r in discs + big_plans if r.get("change") is not None]
-    top_move = max(movers, key=lambda r: abs(r["change"])) if movers else (discs[0] if discs else None)
-    out = ["## The thread: three posts, then the tape", "", "1.", weather, ""]
-    if top_buy:
-        out += ["2.", line_for(top_buy), ""]
-    if top_move and top_move is not top_buy:
-        out += ["3." if top_buy else "2.", line_for(top_move, planned=top_move["kind"] == "plan")
-                + ("\n   (read both filings on the page before this one is public)" if top_move["kind"] == "plan" or abs(top_move.get("change") or 0) >= 10 else ""), ""]
-    out += [f"{'4' if top_buy and top_move else '3'}.", f"The rest of the week: {SITE}/tape/", "", "## The whole week: the packet", "", weather, ""]
-    for r in buys:
-        out += [line_for(r), ""]
-    for r in discs:
-        out += [line_for(r), ""]
-    if big_plans:
-        out += ["Planned, but large enough to note:", ""]
-        for r in big_plans:
-            out += [line_for(r, planned=True), ""]
-    out.append(f"Every filing of the week, founders first, free: {SITE}/tape/")
-    return "\n".join(out) + "\n"
-
-
 def main(argv):
     panel, founders, by = load()
     drafts = os.path.join(ROOT, "drafts")
     os.makedirs(drafts, exist_ok=True)
-    if "--today" in argv:
-        since = (dt.date.today() - dt.timedelta(days=1)).isoformat()
-        lines = today_lines(panel, founders, by, since)
-        p = os.path.join(drafts, "x-today.md")
-        head = f"# Today's decisions (filed after {since}) · pick one, write the sentence, post. The pipeline suggests; you publish.\n\n"
-        open(p, "w", encoding="utf-8").write(head + ("\n".join(lines) + "\n" if lines else "(nothing filed)\n"))
-        print(f"  {p}: {len(lines)} line(s)")
-        return 0
-    if "--monday" in argv:
-        i = argv.index("--monday")
-        date = argv[i + 1] if i + 1 < len(argv) else dt.date.today().isoformat()
-        p = os.path.join(drafts, "x-monday.md")
-        open(p, "w", encoding="utf-8").write(f"# The week of {date}, as one thread · paste, do not auto-post\n\n" + monday_thread(date, tease="--tease" in argv))
-        print(f"  {p}")
-        return 0
+    if "--today" in argv or "--monday" in argv:
+        print("  moved: python3 ops/moves.py today | week [DATE] | stakes [DATE]")
+        return 2
     tks = [a.upper() for a in argv if not a.startswith("-")]
     if not tks:
         print(__doc__)

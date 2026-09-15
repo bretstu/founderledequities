@@ -80,6 +80,8 @@ def _save_waiting(w):
     os.makedirs(os.path.dirname(WAITING), exist_ok=True)
     with open(WAITING, "w", encoding="utf-8") as fh:
         json.dump(w, fh)
+sys.path.insert(0, HERE)
+import kinds  # noqa: E402
 OUT = os.path.join(ROOT, "drafts", "x-live.md")
 COMPENSATION = {"exercise and sell", "exercise, part sold", "vested and sold", "convert and sell",
                 "sale, position unchanged", "purchase, position unchanged"}
@@ -310,10 +312,14 @@ def worth_a_post(u, r):
         return ""
     if decision:
         return "founder's open-market buy" if code == "P" else "founder's discretionary sale"
+    # THE KIND IS THE PAGE'S (ops/kinds.py, 2026-09-15): an award, a gift or
+    # an exercise that moved the holding is named for what it is, not
+    # "compensation" for everything that was not a plan
+    what = "plan" if plan else kinds.detail_of(r)
     if ch >= min_move:
-        return f"{'plan' if plan else 'compensation'} that moved the holding {ch:.1f}%"
+        return f"{what} that moved the holding {ch:.1f}%"
     if v >= min_amt:
-        return f"{'plan' if plan else 'compensation'} worth {money(v)}"
+        return f"{what} worth {money(v)}"
     return ""
 
 

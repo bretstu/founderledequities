@@ -124,17 +124,24 @@ cp -r site-data/. public/
 if [ "$(date +%u)" = "6" ]; then
   python3 ops/weekly.py || echo "  weekly: briefing failed; the site is unaffected"
 fi
-# ---- 2c. THE MONDAY TAPE IS DRAFTED, NEVER SENT, BY THE PIPELINE (PLAN.md 5a) ----
-# On Mondays the letter for the week is drafted to weekly/letter-<date>.md
-# with a preview beside it; a person edits it and runs ops/send-tape.sh.
-# An existing draft is never overwritten (an edit must survive a redeploy).
-if [ "$(date +%u)" = "1" ]; then
+# ---- 2c. THE WEEK'S LETTER AND THREAD ARE DRAFTED ON SATURDAY, NEVER SENT,
+# BY THE PIPELINE (2026-09-15; Mondays before). EDGAR accepts no filings at
+# the weekend, so by Saturday morning the week (Monday to Friday) is
+# complete and the letter says everything it can. It is drafted to
+# weekly/letter-<date>.md with a preview beside it; a person edits it and
+# runs ops/send-tape.sh on Monday. An existing draft is never overwritten
+# (an edit must survive a redeploy). The thread (drafts/moves-week.md) and
+# the trajectories (drafts/stakes-month.md) are written beside it, every
+# kind of filing, ranked by the move of the stake (ops/moves.py).
+if [ "$(date +%u)" = "6" ]; then
   python3 ops/letter.py draft || echo "  letter: draft failed; the site is unaffected"
-  python3 ops/fact.py --monday "$(date +%F)" || echo "  drafts: the Monday thread failed"
+  python3 ops/moves.py week "$(date +%F)" || echo "  drafts: the week's moves failed"
+  python3 ops/moves.py stakes "$(date +%F)" || echo "  drafts: the trajectories failed"
 fi
-# ---- 2e. THE DAY'S SENTENCES (distribution): drafts/x-today.md, one line per
-# decision filed today, for a person to pick from. Nothing is posted.
-python3 ops/fact.py --today || echo "  drafts: today's lines failed"
+# ---- 2e. THE DAY'S MOVES (distribution): drafts/moves-today.md, every
+# founder filing since yesterday, largest move first, for a person to pick
+# from. Nothing is posted.
+python3 ops/moves.py today || echo "  drafts: today's moves failed"
 
 # ---- 3. the HTML says what the page says ----
 # The hero, the stat strip and the top ten of the leaderboard are written
