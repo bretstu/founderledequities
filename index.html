@@ -422,7 +422,7 @@ table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
 /* ONE SHAPE FOR BOTH TABLES: the name columns take the left half, the
    figures sit in narrow right-aligned columns near their labels, the
    last two columns are the move and its date. The CEO cell truncates. */
-.tw-kd{width:16%}.tw-co{width:26%}.tw-ceo{width:22%}.tw-v{width:12%}.tw-st{width:12%}.tw-td{width:12%}
+.tw-kd{width:21%}.tw-co{width:22%}.tw-ceo{width:18%}.tw-v{width:10%}.tw-ch{width:9%}.tw-st{width:10%}.tw-td{width:10%}
 table.tape th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
 table.tape th.n,table.tape td.n{text-align:right;padding-right:28px}
 table.tape td{padding:9px 10px 9px 0;border-top:1px solid var(--line2);font-size:14px;vertical-align:middle;white-space:nowrap}
@@ -431,7 +431,21 @@ table.tape tr.dayrow:hover td{background:var(--line2)}
 table.tape tr.dim td{color:var(--faint)}
 table.tape td.kd{}
 table.tape .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
-table.tape .kind.bought{color:var(--buy)}table.tape .kind.disc{color:#B23428}table.tape .kind.sold{color:#8C4A44}table.tape .kind.plan{color:var(--mut)}table.tape .kind.comp{color:var(--faint)}
+table.tape .kind.bought{color:var(--buy)}table.tape .kind.disc{color:#B23428}table.tape .kind.sold{color:#8C4A44}table.tape .kind.plan{color:var(--mut)}table.tape .kind.comp{color:var(--faint)}table.tape .kind.xfer{color:var(--mut)}
+/* THE DETAIL IS THE FILING'S LABEL IN GREY, the same cell the company page
+   draws: "COMPENSATION award granted", "SOLD not stated" */
+table.tape td.kd{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+table.tape td.kd .detail{font-size:12px;color:var(--mut);margin-left:7px}
+table.tape td.kd .detail a{color:inherit;text-decoration:none}table.tape td.kd .detail a:hover{text-decoration:underline}
+table.tape td.ch .plus{color:var(--buy)}table.tape td.ch .minus{color:#B23428}
+table.tape tr.dim td.ch .plus,table.tape tr.dim td.ch .minus{color:var(--faint)}
+table.tape .lowc{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:4px;cursor:help}
+.tapectl.kinds{margin-top:10px}
+.tapectl.kinds .chip small{font-weight:500;color:var(--mut);margin-left:4px}
+.tapectl.kinds .chip.on small{color:rgba(255,255,255,.72)}
+.tapectl.kinds .tchips{display:flex;gap:8px;flex-wrap:wrap;align-items:center;width:100%}
+.tapectl.kinds .tsep{flex:1}
+.tapectl.kinds .chip.big{border-style:dashed}.tapectl.kinds .chip.big.on{border-style:solid}
 /* THE COMPANY CELL IS THE SAME CELL IN BOTH TABLES: the ticker in mono, the
    name in grey after it, the row truncating rather than spilling */
 table.tape td.co{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -718,7 +732,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
     <div class="actstats" id="actstats"></div>
     <!-- THE TAPE'S CONTROLS: a window (7 days free; the longer ones open the
          Pro box for a free reader and are drawn dimmed so they never look
-         free), and three toggles. The Pro note sits under them, never in
+         free), and founders only. The Pro note sits under them, never in
          their row. -->
     <div class="tapectl">
       <span class="chips" id="actwin" role="group" aria-label="window">
@@ -729,10 +743,12 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
       </span>
       <span class="toggles">
         <label class="tg"><input type="checkbox" id="tg-f" checked> Founders only</label>
-        <label class="tg"><input type="checkbox" id="tg-buys"> Open-market buys</label>
-        <label class="tg"><input type="checkbox" id="tg-nocomp"> Hide compensation</label>
       </span>
     </div>
+    <!-- THE KIND CHIPS ARE THE COMPANY PAGE'S (2026-09-15): All · Bought ·
+         Sold · Compensation · Transfers, each with the window's count, and
+         "Moved the stake ≥ 1%"; drawn by the script, one row of their own. -->
+    <div class="tapectl kinds"><span class="chips tchips" id="actkinds" role="group" aria-label="kind"></span></div>
     <div class="pronote" id="pronote"></div>
     <div class="tapewrap" id="actwrap"></div>
     <div class="actnote" id="actnote"></div>
@@ -814,7 +830,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,screen:"",sort:{key:"val",dir:-1},tbF:true,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,buys:false,nocomp:false},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
+const state={q:"",min:0,screen:"",sort:{key:"val",dir:-1},tbF:true,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,kind:"all",moved:false},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -1110,12 +1126,12 @@ async function loadData(){
   const loadEvents=fetchFirst(state.pro
       ?["/pro/events.csv","events-free.csv","events.csv"]
       :["events-free.csv","events.csv"],
-    /* THE HOME PAGE IS ABOUT TRADES. The feed also carries a row for each
-       filing that moved a stake without a trade (an exercise held, an award
-       vested, a gift); the company page shows those beside the trades so
-       Held never steps without a row to say why, and they stay out of the
-       activity feed, the leaderboard's trade columns and the tape here. */
-    t=>{const ev=mapEvents(parseCSV(t)).filter(e=>e.c==="P"||e.c==="S");
+    /* EVERY FILING LOADS (2026-09-15; the P/S filter that stood here from
+       the first version is gone). The tape is every filing by the chief
+       executive, ranked by what it did to the stake; the screener's trade
+       columns (lastTrades, soldTickers) keep their own purchase-and-sale
+       test, so they are unchanged. */
+    t=>{const ev=mapEvents(parseCSV(t));
         if(!ev.length)return false;
         EVENTS=ev;state.live.events=true;return true;});
   await Promise.all([loadHist,loadEvents]);
@@ -1709,56 +1725,155 @@ function evSide(e){
   if(unchangedKind(e)!==null)return"exsell";
   return e.c==="P"?"buys":"sells";
 }
+/* ================================================================
+   ONE TAXONOMY FOR EVERY FILING, ON THE TAPE AND THE COMPANY PAGE
+   (2026-09-15). The tape used to keep purchases and sales (codes P and
+   S) and drop the rest before any kind was decided, so an award that
+   doubled a founder's stake never reached it while the weather line
+   counted compensation as having moved nothing. Since 2016, awards moved a
+   founder's stake by 5%+ of the holding in 431 filings; open-market
+   purchases in 52. Now every filing by the chief executive is a row, and
+   two shared functions decide what it is: tapeKind (the badge) and
+   tapeGroup (the chip). ops/kinds.py is the Python copy for the stamped
+   first paint; tests/test_kinds.py holds the two to the same answers.
+     bought        an open-market (or scheduled) purchase that moved the stake
+     disc          a sale the person chose the day of (10b5-1 box unchecked)
+     plan          a sale under a pre-set plan (box checked)
+     sold          a sale filed before the form had the box (April 2023):
+                   badged Sold, detail "not stated", because a bare Sold
+                   beside Discretionary read as a fifth behaviour
+     comp          shares the company gave or took back, and what was sold
+                   of them: award granted, options exercised (held, cashed,
+                   part kept), vest part sold, withheld for tax, forfeited;
+                   codes A M F D X, and a P/S whose label says the position
+                   did not move the way a purchase or sale does
+     xfer          gift, conversion, and the codes that are none of the
+                   above (G C I J L U W Z); a pre-IPO catch-up row too
+   The ranking is the move as a share of the holding, whatever the kind.
+   ================================================================ */
+/*@shared*/
+const COMP_CODES={A:1,M:1,F:1,D:1,X:1};
 /*@shared*/
 function tapeKind(e){
-  /* THE FOUR KINDS OF THE TAPE, in the order the tape lists them. Bought:
-     an open-market purchase that moved the stake. Discretionary: a sale
-     the person chose the day of. Plan: a 10b5-1 sale. Compensation: an
-     exercise cashed, a vest part sold, units converted: a real trade
-     that did not move the stake the way a purchase or sale does. */
-  if(unchangedKind(e)!==null)return "comp";
-  if(e.c==="P")return "bought";
-  /* SOLD, NOT DISCRETIONARY, WHEN THE FORM DID NOT SAY: Form 4 had no
-     Rule 10b5-1 box before April 2023, so an older sale is a sale, not a
-     decision the site can vouch for (2026-09-14). Every sale since carries
-     the box and is planned or discretionary. */
-  return e.pl==="plan"?"plan":e.pl==="discretionary"?"disc":"sold";
+  if(e.pre)return "xfer";
+  const uk=unchangedKind(e);
+  if(e.c==="P"&&uk===null)return "bought";
+  if(e.c==="S"&&uk===null)return e.pl==="plan"?"plan":e.pl==="discretionary"?"disc":"sold";
+  if(e.c==="P"||e.c==="S"||COMP_CODES[e.c])return "comp";
+  return "xfer";
 }
 /*@shared*/
-const KIND_ORDER={bought:0,disc:1,sold:2,plan:3,comp:4};
+function tapeGroup(e){
+  const k=tapeKind(e);
+  return k==="disc"||k==="plan"||k==="sold"?"sold":k;
+}
 /*@shared*/
-const KIND_WORD={bought:"Bought",disc:"Discretionary",sold:"Sold",plan:"Planned",comp:"Compensation"};
+const KIND_ORDER={bought:0,disc:1,sold:2,plan:3,comp:4,xfer:5};
+/*@shared*/
+const KIND_WORD={bought:"Bought",disc:"Discretionary",sold:"Sold",plan:"Planned",comp:"Compensation",xfer:"Transfer"};
+/*@shared*/
+const GROUP_WORD={bought:"Bought",sold:"Sold",comp:"Compensation",xfer:"Transfers"};
+/* THE DETAIL IS THE FILING'S LABEL IN THE SITE'S WORDS, the grey word
+   after the badge on both pages and the manner on the tape's hover. */
+/*@shared*/
+const KIND_DETAIL={"exercise and sell":"options cashed","exercise, part sold":"options cashed, part kept","vested and sold":"vest, part sold",
+  "convert and sell":"units converted","sale, position unchanged":"sale, stake unchanged","purchase, position unchanged":"purchase, stake unchanged",
+  "options exercised":"options exercised, held","options exercised, tax withheld":"options exercised, tax withheld",
+  "award granted":"award granted","award granted, tax withheld":"award granted, tax withheld","forfeited":"forfeited",
+  "converted":"converted","gift":"gift","shares withheld for tax":"withheld for tax","other transaction":"other transaction"};
+/*@shared*/
+function tapeDetail(e){
+  if(e.pre)return "pre-IPO";
+  const k=tapeKind(e);
+  if(k==="bought")return e.pl==="plan"?"pre-set plan":"open market";
+  if(k==="disc")return "open market";
+  if(k==="plan")return "pre-set plan";
+  if(k==="sold")return "not stated";
+  return KIND_DETAIL[e.lb]||(k==="comp"?"compensation":"other transaction");
+}
 /*@shared*/
 function tapeManner(e){
+  const d=tapeDetail(e);
+  if(tapeKind(e)==="sold")return "Plan not stated";
+  return d.charAt(0).toUpperCase()+d.slice(1);
+}
+/*@shared*/
+function kindNote(e){
+  /* the hover on the badge: what this kind is */
   const k=tapeKind(e);
-  if(k==="bought"||k==="disc")return "Open market";
-  if(k==="plan")return "Pre-set plan";
-  return {"exercise and sell":"Options cashed","exercise, part sold":"Options cashed, part kept","vested and sold":"Vest, part sold",
-          "convert and sell":"Units converted","sale, position unchanged":"Sale, stake unchanged","purchase, position unchanged":"Purchase, stake unchanged"}[e.lb]||"Compensation";
+  if(e.pre)return "traded before the company's first ownership filing: a pre-registration transaction reported in the catch-up Form 4, not a trade in the public stock";
+  if(k==="bought")return e.pl==="plan"?"a purchase under a pre-set Rule 10b5-1 plan, rarer still than an open-market buy":"an open-market purchase that moved the stake";
+  if(k==="disc")return "a sale the person chose the day of";
+  if(k==="plan")return "planned: a sale under a pre-set plan (Rule 10b5-1), scheduled long before the trade date";
+  if(k==="sold")return "a sale filed before Form 4 had a Rule 10b5-1 box (April 2023): whether it was planned is not on the form";
+  if(k==="comp")return "shares the company gave, or took back, or sold of what it gave; the change column says what it did to the stake";
+  return "a transfer: a gift, a conversion between classes, or another non-market transaction the filing reports";
+}
+/* THE MOVE, OR WHY THERE IS NONE. The same number the company page's
+   Change column shows and the tape ranks by: the filing's net change as a
+   share of the holding before it, whatever the code. One guard: a filing
+   with no purchase or sale that takes the position on record to zero is
+   not ranked (Crinetics, Sep 2026: a forfeiture of the whole holding,
+   either a departure or a misread; the site does not rank what it cannot
+   explain), and its cell says so. */
+/*@shared*/
+function evMove(e){
+  if(e.mk||e.cover)return null;
+  const p=pctOf(e);
+  if(!p)return null;
+  if(e.c!=="P"&&e.c!=="S"&&e.po===0)return null;
+  return p;
+}
+/*@shared*/
+function moveWhy(e){
+  if(e.c!=="P"&&e.c!=="S"&&e.po===0&&pctOf(e))return "this filing takes the position on record to zero with no sale; the change is not ranked until a later filing explains it — open the filing";
+  if(unchangedKind(e)!==null&&!pctOf(e))return "the shares sold did not come out of the position on record; a percentage of a stake that did not move is not a number";
+  return pctWhy(e);
+}
+/*@shared*/
+function evMoved(e){
+  /* the company page's chip and the tape's dimming share one line: a
+     stated move of at least 1% of the holding */
+  const p=evMove(e);return !!p&&Math.abs(p.v)>=1;
+}
+/*@shared*/
+function evDim(e){
+  /* dimmed: a stated move under 1%, or a row the site says did not move
+     the stake. Not stated (and sealed) rows are not dimmed: the site does
+     not know. */
+  if(e.mk)return false;
+  const p=evMove(e);
+  if(p)return Math.abs(p.v)<1;
+  return unchangedKind(e)!==null&&unchangedKind(e)!=="pre";
+}
+/*@shared*/
+function tapeWindow(days,foundersOnly){
+  /* every filing by a chief executive in the window, by filing date;
+     a pre-IPO catch-up row stays on the company page */
+  const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
+  return EVENTS.filter(e=>!e.pre&&e.fd>=cut&&fOnly(e.tk,foundersOnly));
 }
 /*@shared*/
 function actWindow(){
-  const days=+state.ev.win||7;
-  const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
-  return EVENTS.filter(e=>(e.c==="P"||e.c==="S")&&e.fd>=cut&&fOnly(e.tk,state.ev.f));
+  return tapeWindow(+state.ev.win||7,state.ev.f);
 }
-/* the rows of the table: the window narrowed by the toggles */
+/* the rows of the table: the window narrowed by the chips */
 /*@shared*/
 function actRows(){
   return actWindow().filter(e=>{
-    const k=tapeKind(e);
-    if(state.ev.buys)return k==="bought";
-    if(state.ev.nocomp&&k==="comp")return false;
+    if(state.ev.kind&&state.ev.kind!=="all"&&tapeGroup(e)!==state.ev.kind)return false;
+    if(state.ev.moved&&!evMoved(e))return false;
     return true;
   });
 }
-/* KIND GROUPS IN ORDER, RANKED BY THE STAKE'S MOVE WITHIN EACH. A sale
-   ranks by how much it cut, a purchase by how much it added; a row with
-   no figure (a sealed one, or an unstated move) follows the ranked rows
-   of its group, in date order. */
+/* KIND GROUPS IN ORDER, RANKED BY THE STAKE'S MOVE WITHIN EACH, whatever
+   the direction: a sale by how much it cut, a purchase or a grant by how
+   much it added, a withholding by how much it took. A row with no figure
+   (a sealed one, or an unstated move) follows the ranked rows of its
+   group, in date order. */
 /*@shared*/
 function actSorted(rows){
-  const mv=e=>{if(e.mk)return null;const p=pctOf(e);if(!p)return null;return e.c==="P"?Math.max(0,p.v):Math.max(0,-p.v);};
+  const mv=e=>{const p=evMove(e);return p?Math.abs(p.v):null;};
   return [...rows].sort((a,b)=>{
     const ka=KIND_ORDER[tapeKind(a)],kb=KIND_ORDER[tapeKind(b)];
     if(ka!==kb)return ka-kb;
@@ -1796,8 +1911,7 @@ function niceDay(d){
    the tape's toggles and window */
 /*@shared*/
 function weekLine(){
-  const cut=new Date(Date.now()-7*86400e3).toISOString().slice(0,10);
-  const w=EVENTS.filter(e=>(e.c==="P"||e.c==="S")&&e.fd>=cut&&fOnly(e.tk,true));
+  const w=tapeWindow(7,true);
   if(!w.length)return "";
   const who=k=>new Set(w.filter(e=>tapeKind(e)===k).map(e=>e.tk+"|"+e.ceo)).size;
   const b=who("bought"),d=who("disc"),p=who("plan");
@@ -1807,61 +1921,95 @@ function weekLine(){
      for a letter that lands Monday morning, that is the week just closed. */
   return `<b>Past seven days:</b> ${b} founder${b===1?"":"s"} bought. ${d} sold without a plan. ${p} sale${p===1?" was":"s were"} already scheduled.`;
 }
-/* the weather line: what the window held */
+/* THE WEATHER LINE: what the window held, counted by kind, never by a
+   figure: a free reader's sealed rows carry no move, and a line that read
+   differently by tier would be the site saying two things. People for the
+   decisions and the pay (one person, four filings, one count). "Paid in
+   shares" is a filing where shares came in as compensation: an award, an
+   exercise held, a vest or an exercise with part kept. */
+/*@shared*/
+function tapeCounts(w){
+  const who=f=>new Set(w.filter(f).map(e=>e.tk+"|"+e.ceo)).size;
+  const paidIn=e=>tapeKind(e)==="comp"&&(e.c==="A"||e.c==="M"||e.lb==="exercise, part sold"||e.lb==="vested and sold");
+  return {
+    bought:who(e=>tapeKind(e)==="bought"),
+    first:w.filter(e=>tapeKind(e)==="bought"&&e.fb).length,
+    disc:who(e=>tapeKind(e)==="disc"),
+    plan:who(e=>tapeKind(e)==="plan"),
+    paid:who(paidIn),
+    gave:who(e=>tapeKind(e)==="xfer"&&e.lb==="gift"),
+    n:w.length
+  };
+}
 /*@shared*/
 function actStats(){
-  const w=actWindow();
-  const who=k=>new Set(w.filter(e=>tapeKind(e)===k).map(e=>e.tk+"|"+e.ceo)).size;
-  const nb=who("bought"),nc=who("disc"),np=who("plan"),ncomp=w.filter(e=>tapeKind(e)==="comp").length;
-  const first=w.filter(e=>e.c==="P"&&e.fb).length;
-  const parts=[`<b>${nb}</b> CEO${nb===1?"":"s"} bought`,`<b>${nc}</b> cut a stake`,`<b>${np}</b> sold on a plan`,
-    `<b>${ncomp}</b> compensation filing${ncomp===1?"":"s"} did not move a stake`];
-  if(first)parts.splice(1,0,`<b>${first}</b> for the first time ever`);
+  const c=tapeCounts(actWindow());
+  const parts=[`<b>${c.bought}</b> CEO${c.bought===1?"":"s"} bought`];
+  if(c.first)parts.push(`<b>${c.first}</b> for the first time ever`);
+  parts.push(`<b>${c.disc}</b> cut a stake`,`<b>${c.plan}</b> sold on a plan`,`<b>${c.paid}</b> paid in shares`,`<b>${c.gave}</b> gave shares away`);
   return parts.join(" · ");
 }
 /*@shared*/
 function actRow(e){
-  const k=tapeKind(e),dim=k==="comp";
-  const stake=e.mk?LOCK("the stake after the trade is in Pro","0.00%"):(e.po!==null&&e.po!==undefined)?e.po.toFixed(e.po<1?3:2)+"%":`<span class="nopr">&mdash;</span>`;
-  const amt=dim?"&mdash;":(e.fl?`<span class="nopr" title="${e.fl}">${evValCell(e)}</span>`:evValCell(e));
+  const k=tapeKind(e),dim=evDim(e),trade=e.c==="P"||e.c==="S";
+  const detail=(k==="comp"||k==="xfer"||k==="sold")?tapeDetail(e):"";
+  const link=(inner,title)=>e.u&&!e.mk?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${title}">${inner}</a>`:inner;
+  const conf=(PANEL.find(p=>p.tk===e.tk)||{}).conf||"";
+  const low=conf==="low"&&!e.mk?`<span class="lowc" title="the site's confidence in this company's stake is low: the newest filing may state fewer lines than the one before it, and the stake may be understated until the next complete filing; the company page says why">?</span>`:"";
+  const stake=e.mk?LOCK("the stake after the filing is in Pro","0.00%"):(e.po!==null&&e.po!==undefined)?e.po.toFixed(e.po<1?3:2)+"%"+low:`<span class="nopr">&mdash;</span>`;
+  const p=evMove(e);
+  const change=e.mk?LOCK("what the filing did to the stake is in Pro","−0.0%")
+    :p?`<span class="${p.v>=0?"plus":"minus"}" title="what this filing did to the stake, as a share of the stake before it${p.approx?"; "+approxNote(e):""}">${stakeChange(p.v,p.approx).replace(/^≈ /,"≈").replace(/stake /,"")}</span>`
+    :`<span class="nopr" title="${moveWhy(e)}">${unchangedKind(e)!==null&&unchangedKind(e)!=="pre"?"unchanged":"&mdash;"}</span>`;
+  const amt=!trade?`<span class="nopr" title="the filing states no price for this row; the change column says what it did to the stake">&mdash;</span>`:(e.fl?`<span class="nopr" title="${e.fl}">${evValCell(e)}</span>`:evValCell(e));
   return `<tr class="dayrow${dim?" dim":""}" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
-    <td class="kd"><span class="kind ${k}" title="${k==="bought"?"an open-market purchase that moved the stake":k==="disc"?"a sale the person chose the day of":k==="sold"?"a sale filed before Form 4 had a Rule 10b5-1 box (April 2023): whether it was planned is not on the form":k==="plan"?"planned: a sale under a pre-set plan (Rule 10b5-1), scheduled long before the trade date":"compensation cashed; the stake did not move the way a purchase or sale does"}">${KIND_WORD[k]}</span></td>
+    <td class="kd"><span class="kind ${k}" title="${kindNote(e)}">${KIND_WORD[k]}</span>${detail?`<span class="detail">${trade?detail:link(detail,"the filing, on EDGAR")}</span>`:""}</td>
     <td class="co"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a><span class="nm">${coOf(e.tk)}</span></td>
     <td class="ceo"><span class="cn" title="${(e.ceo||coOf(e.tk)).replace(/"/g,"&quot;")}">${e.ceo||coOf(e.tk)}</span>${fMark(e.tk)}${e.fb?`<span class="firstb" title="this person's first open-market purchase on record">first buy</span>`:""}</td>
-    <td class="n v">${e.u&&!dim?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">${amt}</a>`:amt}</td>
+    <td class="n v">${trade?link(amt,"the filing, on EDGAR"):amt}</td>
+    <td class="n ch">${change}</td>
     <td class="n st">${stake}</td>
     <td class="td"><span class="dt" title="${tapeManner(e)}; the transaction date${e.tf&&e.tf!==e.td?"s":""}; filed ${e.fd}${lagNote(e)}">${spanDay(e,shortDay)}</span></td>
   </tr>`;
 }
 /*@shared*/
+const TAPE_HEAD='<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-ch"><col class="tw-st"><col class="tw-td"></colgroup><thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">Change</th><th class="n">New stake</th><th>Traded</th></tr></thead>';
+/*@shared*/
 function renderActivity(){
   if(!$("#actwrap"))return;
-  const f=$("#tg-f"),bu=$("#tg-buys"),nc=$("#tg-nocomp");
-  if(f)f.checked=state.ev.f;if(bu)bu.checked=state.ev.buys;if(nc)nc.checked=state.ev.nocomp;
+  const f=$("#tg-f");if(f)f.checked=state.ev.f;
   document.querySelectorAll("#actwin .win").forEach(c=>{c.classList.toggle("on",c.dataset.win===state.ev.win);c.classList.toggle("dim",c.dataset.win!=="7"&&!state.pro);});
   const days=+state.ev.win||7;
   const to=new Date(),from=new Date(Date.now()-days*86400e3);
   const dd=x=>x.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
-  const win={7:"last 7 days",30:"last 30 days",90:"last 90 days",365:"last 12 months"}[state.ev.win]||"this window";
   /* THE CAPTION IS THE SAME SHAPE ON BOTH TABLES: who · when/how · order.
      "Founder-led" is the category; "Founders only" is the switch's label
      on /tape/, where it is a filter. */
   const sub=$("#tapesub");if(sub)sub.textContent=`${state.ev.f?"Founder-led":"Every CEO"} · ${dd(from).replace(/^(\w+) (\d+)$/,"$2 $1")}–${dd(to).replace(/^(\w+) (\d+)$/,"$2 $1")} · moves first`;
   $("#actstats").innerHTML=actStats();
+  /* THE CHIPS ARE THE COMPANY PAGE'S, with the window's count on each */
+  const w=actWindow();
+  const cnt=g=>w.filter(e=>(g==="all"||tapeGroup(e)===g)&&(!state.ev.moved||evMoved(e))).length;
+  const chips=$("#actkinds");
+  if(chips)chips.innerHTML=["all","bought","sold","comp","xfer"].map(g=>`<button class="chip kd${(state.ev.kind||"all")===g?" on":""}" data-kind="${g}" onclick="setKind('${g}')">${g==="all"?"All":GROUP_WORD[g]} <small>${cnt(g)}</small></button>`).join("")
+    +`<span class="tsep"></span><button class="chip big${state.ev.moved?" on":""}" onclick="setMoved(!state.ev.moved)" title="only the rows that moved the stake by at least 1% of what it was">Moved the stake &ge; 1%</button>`;
   const pn=$("#pronote");if(pn)pn.innerHTML=state.pro?"":`30d, 90d, 12m and export are <a onclick="openPro()" style="cursor:pointer">Pro</a>.`;
   const rows=actSorted(actRows());
-  const sealedN=rows.filter(e=>e.mk).length,compN=rows.filter(e=>tapeKind(e)==="comp").length;
+  const sealedN=rows.filter(e=>e.mk).length,dimN=rows.filter(evDim).length;
   /* THE HOME PAGE CARRIES AN EXCERPT (the first rows, the full tape a
      click away); /tape/ carries every row. Same block, one limit. */
   const limit=typeof TAPE_LIMIT==="number"?TAPE_LIMIT:0;
   const shown=limit&&rows.length>limit?rows.slice(0,limit):rows;
   $("#actwrap").innerHTML=rows.length
-    ?`<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-st"><col class="tw-td"></colgroup><thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Traded</th></tr></thead><tbody>${shown.map(actRow).join("")}</tbody></table>`
+    ?`${TAPE_HEAD}<tbody>${shown.map(actRow).join("")}</tbody></table>`
     :`<div class="dayempty">No filings of this kind in this window.</div>`;
   const excerpt=typeof TAPE_LIMIT==="number"&&TAPE_LIMIT>0;
-  $("#actnote").innerHTML=`${shown.length<rows.length?`${shown.length} of `:""}${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${sealedN&&!excerpt?` · the stake after the trade is in <a onclick="openPro()" style="cursor:pointer">Pro</a> for the ${sealedN.toLocaleString()} from companies outside the S&P 500`:""}${compN?` · compensation listed last`:""}`;
-
+  $("#actnote").innerHTML=`${shown.length<rows.length?`${shown.length} of `:""}${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${sealedN&&!excerpt?` · the change and the stake after are in <a onclick="openPro()" style="cursor:pointer">Pro</a> for the ${sealedN.toLocaleString()} from companies outside the S&P 500`:""}${dimN&&!excerpt?` · ${dimN.toLocaleString()} moved the stake by less than 1%, dimmed`:""}`;
 }
+/*@shared*/
+function setKind(g){state.ev.kind=g;renderActivity();}
+/*@shared*/
+function setMoved(on){state.ev.moved=!!on;renderActivity();}
 
 
 /* EVERY ROW IS A DOOR. A bar, a screener row, a trade in the feed: one
@@ -1964,7 +2112,7 @@ document.querySelectorAll(".chip[data-min]").forEach(c=>c.addEventListener("clic
 
 document.querySelectorAll(".chip.win").forEach(c=>
   c.addEventListener("click",()=>setWin(c.dataset.win)));
-for(const [id,key] of [["tg-f","f"],["tg-buys","buys"],["tg-nocomp","nocomp"]]){const el=$("#"+id);if(el)el.addEventListener("change",()=>{state.ev[key]=el.checked;renderActivity();});}
+{const el=$("#tg-f");if(el)el.addEventListener("change",()=>{state.ev.f=el.checked;renderActivity();});}
 /* ?day=YYYY-MM-DD pins the day strip: the link in a post lands on the day
    the post was about, whatever day it is read */
 

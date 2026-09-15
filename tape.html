@@ -55,14 +55,14 @@
   <div class="shead tapehead">
     <div>
       <h1 style="font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">This week's tape.</h1>
-      <div class="tapesub" id="tapesub">Founders only · last 7 days · stake-moving trades first.</div>
+      <div class="tapesub" id="tapesub">Founders only · last 7 days · moves first.</div>
     </div>
   </div>
   <div class="sbody">
     <div class="actstats" id="actstats"></div>
     <!-- THE TAPE'S CONTROLS: a window (7 days free; the longer ones open the
          Pro box for a free reader and are drawn dimmed so they never look
-         free), and three toggles. The Pro note sits under them, never in
+         free), and founders only. The Pro note sits under them, never in
          their row. -->
     <div class="tapectl">
       <span class="chips" id="actwin" role="group" aria-label="window">
@@ -73,10 +73,12 @@
       </span>
       <span class="toggles">
         <label class="tg"><input type="checkbox" id="tg-f" checked> Founders only</label>
-        <label class="tg"><input type="checkbox" id="tg-buys"> Open-market buys</label>
-        <label class="tg"><input type="checkbox" id="tg-nocomp"> Hide compensation</label>
       </span>
     </div>
+    <!-- THE KIND CHIPS ARE THE COMPANY PAGE'S (2026-09-15): All · Bought ·
+         Sold · Compensation · Transfers, each with the window's count, and
+         "Moved the stake ≥ 1%"; drawn by the script, one row of their own. -->
+    <div class="tapectl kinds"><span class="chips tchips" id="actkinds" role="group" aria-label="kind"></span></div>
     <div class="pronote" id="pronote"></div>
     <div class="subscribe" id="subscribe">
       <form class="homesub" id="subform" onsubmit="return subscribe(event)">

@@ -315,23 +315,15 @@ function recordBlock(r){
 function tradesBlock(r){
   const all=EVENTS.filter(e=>e.tk===r.tk).sort((a,b)=>(b.td||b.fd).localeCompare(a.td||a.fd)||b.fd.localeCompare(a.fd));
   if(!all.length)return `<div class="csec"><h2>Trades</h2><div class="sub">${!state.pro&&C.older?`No purchase or sale in the last twelve months. ${C.older.toLocaleString()} earlier trade${C.older===1?"":"s"}, back to ${C.since||"2016"}, are the archive: in <a href="/pro/">Pro</a>.`:"No purchase or sale on record."}</div></div>`;
-  const trade=e=>e.c==="P"||e.c==="S";
-  /* FIVE KINDS, NAMED FOR WHAT THE ROW IS. "Kept apart" named a rule of
-     the home page's summaries; here a reader wants to know what happened.
+  /* FIVE KINDS, NAMED FOR WHAT THE ROW IS, AND THE TAPE'S (2026-09-15):
+     the group is tapeGroup, the badge is tapeKind, the grey word is
+     tapeDetail, all shared with index.html so the two pages cannot drift.
      Bought and Sold are the market. Compensation is everything the company
      gave and what was sold of it: awards, exercises held or cashed, vests,
      withholding, forfeitures. Transfers are gifts, conversions and the
      rest. Share count is the company's own cover pages. */
-  const kindOf=e=>{
-    if(e.cover)return "covers";
-    const uk=unchangedKind(e);
-    if(e.c==="P"&&uk===null)return "buys";
-    if(e.c==="S"&&uk===null)return "sells";
-    if(e.c==="M"||e.c==="A"||e.c==="F"||e.c==="D")return "comp";
-    if(e.c==="S"&&(uk==="exercise"||uk==="vest"||uk==="convert"||uk===""))return "comp";
-    return "transfers";
-  };
-  const moved=e=>e.cover?false:(pctOf(e)?Math.abs(pctOf(e).v)>=1:false);
+  const kindOf=e=>e.cover?"covers":{bought:"buys",sold:"sells",comp:"comp",xfer:"transfers"}[tapeGroup(e)];
+  const moved=e=>evMoved(e);
   /* THE SHARE COUNT IS A ROW TOO. Tesla's July 2026 10-Q raised the
      denominator from 3.76B to 3.95B and Musk's 29.91% became 28.44% with
      no filing of his; the table showed nothing between its top row and
@@ -349,28 +341,20 @@ function tradesBlock(r){
      pipeline wrote, so "Planned sale" is one cell, not a red pill and an
      adjective. Coloured by what it did to the stake. */
   const kind=e=>{
-    /* ONE VOCABULARY FOR A TRADE, the tape's (2026-09-14): Bought,
-       Discretionary, Sold (a sale filed before Form 4 had a plan box),
-       Planned, Compensation; a transfer or a grant keeps its own word. The
-       specific label the pipeline wrote (exercise and sell, gift, award
-       granted) is the detail in grey after it. */
-    const uk=unchangedKind(e);
-    const detail={"exercise and sell":"exercise and sell","exercise, part sold":"exercise, part sold","vested and sold":"vest, part sold","convert and sell":"convert and sell",
-      "sale, position unchanged":"sale, position unchanged","purchase, position unchanged":"purchase, position unchanged",
-      "options exercised":"options exercised, held","options exercised, tax withheld":"options exercised, tax withheld",
-      "award granted":"award granted","award granted, tax withheld":"award granted, tax withheld","forfeited":"forfeited",
-      "converted":"converted","gift":"gift","shares withheld for tax":"shares withheld for tax","other transaction":"other transaction"}[e.lb]||"";
-    if(uk==="pre")return {t:e.c==="P"?"Pre-IPO purchase":"Pre-IPO sale",word:"",k:"neu",n:evBadge(e).n};
-    const comp=e.c!=="P"&&e.c!=="S";
-    if(comp)return {t:"",word:detail||"other transaction",k:"neu",n:"a filing with no purchase or sale that moved the stake: compensation, a gift or a conversion; no market value is stated for it"};
-    if(uk!==null)return {t:"Compensation",word:detail,k:"comp",n:"compensation cashed; the stake did not move the way a purchase or sale does"};
+    /* ONE VOCABULARY FOR EVERY FILING, the tape's (2026-09-15): Bought,
+       Discretionary, Planned, Sold (with "not stated": a sale filed before
+       Form 4 had a plan box), Compensation, Transfer. The badge is the
+       kind; the specific label the pipeline wrote, in the site's words
+       (options cashed, gift, award granted), is the detail in grey after
+       it. A pre-IPO catch-up keeps its own badge. */
+    if(e.pre)return {t:e.c==="P"?"Pre-IPO purchase":"Pre-IPO sale",word:"",k:"neu",n:evBadge(e).n};
     const tk=tapeKind(e);
-    const n=tk==="sold"?"Form 4 had no Rule 10b5-1 box before April 2023; whether this sale was pre-scheduled is not on the form":evBadge(e).n;
-    return {t:KIND_WORD[tk],word:"",k:tk,n};
+    const word=(tk==="comp"||tk==="xfer"||tk==="sold")?tapeDetail(e):"";
+    return {t:KIND_WORD[tk],word,k:tk,n:kindNote(e)};
   };
   const cell=e=>{
-    const p=pctOf(e);const uk=unchangedKind(e);const kd=kind(e);
-    const stkTxt=uk==="pre"?"pre-IPO":uk!==null?(p?stakeChange(p.v,p.approx):"unchanged"):p?stakeChange(p.v,p.approx):"not stated";
+    const p=evMove(e);const uk=unchangedKind(e);const kd=kind(e);
+    const stkTxt=uk==="pre"?"pre-IPO":p?stakeChange(p.v,p.approx):(uk!==null?"unchanged":"not stated");
     const stkCls=p?(p.v>=0?"plus":"minus"):"";
     const span=e.tf&&e.tf!==e.td?`${e.tf} to ${e.td.slice(5)}`:(e.td||e.fd);
     return {kd,p,uk,stkTxt,stkCls,span};
@@ -395,7 +379,7 @@ function tradesBlock(r){
       <td class="ty" title="${esc(kd.n)}">${kd.t?`<span class="kind ${kd.k}">${kd.t}</span>`:""}${kd.word?`<span class="detail">${kd.word}</span>`:""}</td>
       <td class="n v ${e.c==="P"?"up":e.c==="S"?"down":"lv"}">${e.c==="P"||e.c==="S"?evValCell(e):"&mdash;"}</td>
       <td class="n sh ${e.c==="P"?"up":e.c==="S"?"down":(e.nc>=0?"up":"down")}">${e.c==="P"||(e.c!=="S"&&e.nc>=0)?"+":"−"}${fmt(e.sh)}</td>
-      <td class="n stk ${stkCls}" title="${uk===null&&!p?esc(pctWhy(e)):"what this filing did to the stake, against the stake as the day opened"}">${stkTxt.replace(/^stake /,"")}</td>
+      <td class="n stk ${stkCls}" title="${!p?esc(moveWhy(e)):"what this filing did to the stake, against the stake as the day opened"}">${stkTxt.replace(/^stake /,"")}</td>
       <td class="n lv" title="shares held at the end of this filing's day, per the record; filings on one day share it">${e.ha?fmt(e.ha):"&mdash;"}</td>
       <td class="n lv" title="shares outstanding on record that day: the company's last cover page before it">${e.os?fmt(e.os):"&mdash;"}</td>
       <td class="n lv po" title="the stake at the end of the day: held over outstanding">${e.po!==null&&e.po!==undefined?e.po.toFixed(e.po<1?3:2)+"%":"&mdash;"}</td>
@@ -416,8 +400,9 @@ function tradesBlock(r){
   return `<div class="csec ctrades"><div class="thead"><h2>Trades</h2><button class="export" onclick="${r.masked?"openPro()":"exportTrades()"}" title="${r.masked?"the record is in Pro":"the rows below, as a CSV"}">Export CSV</button></div>
     <div class="tchips">${chip("all","All",count("all"))}${chip("buys","Bought",count("buys"))}${chip("sells","Sold",count("sells"))}${chip("comp","Compensation",count("comp"))}${chip("transfers","Transfers",count("transfers"))}${chip("covers","Share count",count("covers"))}<span class="tsep"></span>${bigChip}</div>
     ${rows?`<table><thead><tr><th>Date</th><th>Trade</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Change</th><th class="n lv">Held</th><th class="n lv">Outstanding</th><th class="n lv">Owned</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">${r.masked?"No filings in the last twelve months; the full record is in Pro.":"Nothing in this view."}</div>`}
-    ${VIEW==="comp"?`<div class="sub" style="margin-top:10px">Compensation: what the company gave and what was sold of it. Awards granted, options exercised and held or cashed, vests, tax withholding, forfeitures. None of it is counted as buying or selling in the site's summaries.</div>`:""}
+    ${VIEW==="comp"?`<div class="sub" style="margin-top:10px">Compensation: what the company gave and what was sold of it. Awards granted, options exercised and held or cashed, vests, tax withholding, forfeitures. None of it is counted as buying or selling in the site's summaries; the Change column says what each did to the stake.</div>`:""}
     ${VIEW==="transfers"?`<div class="sub" style="margin-top:10px">Transfers: gifts, conversions between classes, pre-IPO catch-ups and other non-market transactions the filing reports.</div>`:""}
+    ${VIEW==="sells"&&evs.some(e=>tapeKind(e)==="sold")?`<div class="sub" style="margin-top:10px">Not stated: Form 4 had no Rule 10b5-1 box before April 2023, so whether a sale filed before then was planned is not on the form. Every sale since is Discretionary or Planned.</div>`:""}
     ${VIEW==="covers"?`<div class="sub" style="margin-top:10px">Share count: the company's cover pages that changed the number of shares outstanding. The stake moves with them though nothing of the chief executive's did.</div>`:""}
     ${!state.pro&&C.older?`<div class="sub archive" style="margin-top:12px">The last twelve months. ${C.older.toLocaleString()} earlier trade${C.older===1?"":"s"}, back to ${C.since||"2016"}, are the archive: <a onclick="openPro()" style="cursor:pointer">in Pro</a>.</div>`:""}
   </div>`;

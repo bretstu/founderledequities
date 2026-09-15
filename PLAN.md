@@ -184,15 +184,59 @@ plan and billing, sign out.
   is never featured anywhere: "the sale of the week was a plan set
   months ago" is the Form 4 site's sentence.
 - `/tape`: the full tape with windows 7d/30d/90d/12m (free: 7d;
-  longer windows Pro) and toggles (founders only, on by default;
-  open-market buys; hide compensation). Columns: Kind · Company · CEO ·
-  Amount · New stake · Manner; the amount on every row, the new stake
-  blurred outside the S&P. Kind groups in the brief's order, ranked by
-  stake change within each. The subhead names the week's dates. For a
-  free reader the 30d/90d/12m chips are dimmed and open the Pro box; the
-  Pro note sits under the chips, never in their row. The signup box is
-  the letter only; watches live on company pages. The archive of past
-  tapes (`/tape/2026-09-14/`) is Pro beyond the current week.
+  longer windows Pro), founders only (on by default), and the company
+  page's chips: All · Bought · Sold · Compensation · Transfers, plus
+  "Moved the stake ≥ 1%". Columns: Kind · Company · CEO · Amount ·
+  Change · New stake · Traded; the amount on every purchase and sale
+  (the Form 4's own number, including the sale inside an exercise or a
+  vest), a dash on grants and transfers (the form prices them at
+  nothing, and pricing them ourselves would be our number, not the
+  filing's); the change and the new stake blurred outside the S&P.
+  Kind groups in order, ranked by the stake's move within each; a row
+  that moved the stake by less than 1% of the holding is dimmed. The
+  subhead names the week's dates. For a free reader the 30d/90d/12m
+  chips are dimmed and open the Pro box; the Pro note sits under the
+  chips, never in their row. The signup box is the letter only; watches
+  live on company pages. The archive of past tapes
+  (`/tape/2026-09-14/`) is Pro beyond the current week.
+- THE TAPE IS EVERY FILING BY THE CHIEF EXECUTIVE, NOT THE PURCHASES
+  AND SALES (2026-09-15; reverses the P/S filter of 2026-09-13). The
+  tape's premise is the stake, and it ranked by stake change while
+  excluding the filings that move founder stakes most. Measured over
+  every founder filing since 2016, an award (code A) moved a stake by
+  5% or more of the holding in 431 filings; an open-market purchase in
+  52. Gifts halved stakes (Kurtz, CrowdStrike, March 2025), withholding
+  took a fifth of small ones, and "exercise, part sold" often grew a
+  stake while the site called it "compensation cashed; the stake did
+  not move" (Smith, Axon, Nov 2021: $61.5M sold, the stake 1.1% to
+  3.0%). Now: one taxonomy on the tape and the company page, the
+  company page's, since it already carried every code. Four groups:
+  Bought; Sold (Discretionary, Planned, and Sold with the detail "not
+  stated" for a sale filed before Form 4 had a Rule 10b5-1 box, April
+  2023, because a bare "Sold" beside "Discretionary" read as a fifth
+  behaviour); Compensation (award granted, options exercised and held or
+  cashed, vests, withheld for tax, forfeited); Transfer (gift,
+  converted, other). The badge is the kind; the grey word after it is
+  the filing's label in the site's words; a shared function decides
+  both for every page, and a test holds the Python copy the stamped
+  first paint uses to the same answers. The weather line counts what the
+  window held by group and never again says a filing "did not move a
+  stake" unless its move was under 1%. Kind chips return to the tape
+  (they were removed 2026-09-13 with the cards; the cards stay gone) so
+  the same five views exist on both pages. The letter, the thread, the
+  X drafts and the watcher's mail still read purchases and sales only;
+  they move to the shared kinds next.
+- THREE GUARDS TRAVEL WITH THE WIDER FILTER, because the day it widened
+  was the day a first-report artifact would have topped the tape: a
+  pre-IPO catch-up row is not on the tape (it stays on the company
+  page, badged); a filing with no purchase or sale that takes the
+  position on record to zero is not ranked and its change reads "not
+  stated" with the reason (Crinetics, Sep 2026: a forfeiture of the
+  whole holding at high confidence, either a departure or a misread,
+  and the site does not rank what it cannot explain); and a row from a
+  company whose confidence is low carries the mark on its stake, so the
+  understatement the ledger's note accepts (Amplitude) is visible where
+  the number is.
 - The letter: the weather line, the optional two-line kicker, the same
   six columns with kinds as full words, the largest of each kind (about
   a dozen rows, one compensation row), a small outlined "Pro" tag where
@@ -200,7 +244,9 @@ plan and billing, sign out.
   unsubscribe and the postal line.
 - `/company/:ticker`: the current shape (name, ticker, market cap; the
   four cards; the chart with Stake default and Price toggle; the trades
-  table with its kinds). Free S&P: last twelve months; Pro: the archive.
+  table with the tape's kinds, every row badged: since 2026-09-15 an
+  award or a gift carries Compensation or Transfer, not a bare grey
+  word). Free S&P: last twelve months; Pro: the archive.
   Sealed pages as built: the question, one line, blurred cards, the
   price line, a year of blurred trades. Watch box under the chart.
 - `/pro`: the one plan card ($15/month or $150/year), the four bullets,

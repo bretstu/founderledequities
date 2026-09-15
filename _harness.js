@@ -72,7 +72,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setWin,actWindow,actRows,actSorted,actStats,tapeKind,tapeManner,soldTickers,lastTrades,exportTable,cleanHist,renderTable,setScreen,fInfo,set TAPE_LIMIT(v){TAPE_LIMIT=v},get SCREEN_COUNTS(){return SCREEN_COUNTS},set SCREEN_COUNTS(v){SCREEN_COUNTS=v},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setWin,actWindow,actRows,actRow,actSorted,actStats,tapeKind,tapeGroup,tapeDetail,tapeManner,evMove,evMoved,evDim,moveWhy,setKind,setMoved,tapeCounts,soldTickers,lastTrades,exportTable,cleanHist,renderTable,setScreen,fInfo,set TAPE_LIMIT(v){TAPE_LIMIT=v},get SCREEN_COUNTS(){return SCREEN_COUNTS},set SCREEN_COUNTS(v){SCREEN_COUNTS=v},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -105,44 +105,70 @@ const P=runPage();
   assert(!/class="blurred"/.test(els["#actwrap"]._html),"no blur class from the old gate anywhere: a sealed figure is a data-shape placeholder");
 
   // ---- THE TAPE: a weather line, the controls, one table grouped by kind ----
+  // EVERY FILING BY THE CHIEF EXECUTIVE IS A ROW (2026-09-15), on the tape
+  // and the company page alike; the kind chips are the company page's.
   {
     assert(idxsrc.includes('id="actwin"')&&idxsrc.includes('data-win="7"')&&idxsrc.includes('data-win="365"'),"the window chips run 7d to 12m");
-    assert(!idxsrc.includes('id="actcards"')&&!idxsrc.includes('id="actkinds"')&&!idxsrc.includes('id="actsort"'),"no card grid, no kind or sort chips: the table is the tape");
-    assert(idxsrc.includes('id="tg-f"')&&idxsrc.includes('id="tg-buys"')&&idxsrc.includes('id="tg-nocomp"'),"three toggles: founders only, open-market buys, hide compensation");
+    assert(!idxsrc.includes('id="actcards"')&&!idxsrc.includes('id="actsort"'),"no card grid, no sort chips: the table is the tape");
+    assert(idxsrc.includes('id="actkinds"')&&idxsrc.includes('id="tg-f"')&&!idxsrc.includes('id="tg-buys"')&&!idxsrc.includes('id="tg-nocomp"'),"founders only, and the company page's kind chips in place of the two toggles");
     assert(/id="tg-f" checked/.test(idxsrc),"founders only is on by default");
-    state.pro=true; setWin(365); state.ev.f=false; state.ev.buys=false; state.ev.nocomp=false; renderActivity();
+    state.pro=true; setWin(365); state.ev.f=false; state.ev.kind="all"; state.ev.moved=false; renderActivity();
     const rows=actSorted(actRows());
-    // THE HOME PAGE IS AN EXCERPT: twelve rows, the full tape a click away
+    // THE HOME PAGE IS AN EXCERPT: ten rows, the full tape a click away
     assert(idxsrc.includes("let TAPE_LIMIT=10;")&&idxsrc.includes('class="activitysec excerpt"'),"the home page's tape is a ten-row excerpt, like the scoreboard");
     assert((els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===10&&/^10 of [\d,]+ filings/.test(els["#actnote"]._html),"ten rows, and the note says of how many: "+els["#actnote"]._html.slice(0,40));
     assert(idxsrc.includes('<a class="exit" href="/tape/">The full tape &rarr;</a>')&&idxsrc.includes('<a class="exit" href="/companies/">All companies &rarr;</a>'),"both previews exit the same way: heading left, the full page right");
     assert(idxsrc.includes('id="homesub"'),"the letter's signup sits under the tape excerpt");
     P.TAPE_LIMIT=0;
     assert(rows.length>50,"the window holds the year's filings: "+rows.length);
-    // kind groups in order: bought, discretionary, plan, compensation
-    const order={bought:0,disc:1,plan:2,comp:3};
+    assert(rows.some(e=>e.c==="A")&&rows.some(e=>e.c==="G")&&rows.some(e=>e.c==="F"),"awards, gifts and withholding are rows of the tape, not filtered before the kind is decided");
+    assert(!rows.some(e=>e.pre),"a pre-IPO catch-up row stays on the company page");
+    // kind groups in order: bought, discretionary, sold (not stated), plan, compensation, transfer
+    const order={bought:0,disc:1,sold:2,plan:3,comp:4,xfer:5};
     const ks=rows.map(e=>order[tapeKind(e)]);
     assert(ks.every((k,i)=>i===0||k>=ks[i-1]),"kind groups in the tape's order");
-    assert(ks.includes(0)&&ks.includes(1)&&ks.includes(2)&&ks.includes(3),"all four kinds present in a year");
-    // ranked by the stake's move within a group
-    const mv=e=>{const p=P.pctOf(e);if(!p||e.mk)return null;return e.c==="P"?Math.max(0,p.v):Math.max(0,-p.v);};
-    for(const k of [0,1,2]){const g=rows.filter(e=>order[tapeKind(e)]===k).map(mv).filter(x=>x!==null);assert(g.every((x,i)=>i===0||x<=g[i-1]),"ranked by the stake's move within kind "+k);}
+    assert(ks.includes(0)&&ks.includes(1)&&ks.includes(3)&&ks.includes(4)&&ks.includes(5),"bought, discretionary, planned, compensation and transfer all present in a year");
+    assert(!ks.includes(2),"no 'not stated' sale in the last year: every Form 4 since April 2023 carries the box");
+    // ranked by the stake's move within a group, whatever the direction
+    const mv=e=>{const p=P.evMove(e);return p?Math.abs(p.v):null;};
+    for(const k of [0,1,3,4,5]){const g=rows.filter(e=>order[tapeKind(e)]===k).map(mv).filter(x=>x!==null);assert(g.every((x,i)=>i===0||x<=g[i-1]),"ranked by the stake's move within kind "+k);}
     const html=els["#actwrap"]._html;
     renderActivity();
     assert(els["#actwrap"]._html.includes('class="tape"')&&(els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===rows.length,"one table row per filing, once the excerpt's limit is lifted");
-    assert(/<th>Kind<\/th><th>Company<\/th><th>CEO<\/th><th class="n">Amount<\/th><th class="n">New stake<\/th><th>Traded<\/th>/.test(html),"six columns, the scoreboard's shape: the kind says the manner, the date is its own");
+    assert(/<th>Kind<\/th><th>Company<\/th><th>CEO<\/th><th class="n">Amount<\/th><th class="n">Change<\/th><th class="n">New stake<\/th><th>Traded<\/th>/.test(html),"seven columns: the kind says the manner, the change is the number the tape ranks by, the date is its own");
     assert(html.includes("openCompany(")&&html.includes("sec.gov"),"rows are doors and the amount links to the filing");
     assert(!html.includes("DISCRET."),"kinds are spelled out");
+    {const full=els["#actwrap"]._html;assert(full.includes('class="kind comp"')&&/class="detail">(<a [^>]+>)?award granted/.test(full)&&full.includes('class="kind xfer"')&&/class="detail">(<a [^>]+>)?gift</.test(full),"a grant and a gift carry the badge and the filing's label in grey, the label linking to the filing");}
+    // the amount is the Form 4's own number: on every purchase and sale, including the sale inside an exercise; a dash on a grant
+    const exRow=rows.find(e=>e.lb==="exercise, part sold"&&e.v&&!e.mk&&e.u);
+    if(exRow){const one=P.actRow(exRow);assert(one.includes(P.money(exRow.v))&&one.includes('class="kind comp"')&&one.includes("options cashed, part kept"),"the sale inside an exercise shows its value under the Compensation badge");}
+    const awRow=rows.find(e=>e.c==="A"&&!e.mk);
+    {const one=P.actRow(awRow);assert(one.includes("states no price for this row")&&!/\$[\d.]+[MK]/.test(one.slice(one.indexOf('class="n v"'),one.indexOf('class="n ch"'))),"a grant's amount is a dash that says why");}
+    // dimming: a stated move under 1% is dimmed, whatever the kind; a grant that moved the stake is not
+    const small=rows.find(e=>{const p=P.evMove(e);return p&&Math.abs(p.v)<1&&tapeKind(e)==="bought";});
+    const bigComp=rows.find(e=>{const p=P.evMove(e);return p&&Math.abs(p.v)>=5&&tapeKind(e)==="comp";});
+    assert(small&&P.evDim(small)&&bigComp&&!P.evDim(bigComp),"dimming follows the move, not the kind");
     const stats=els["#actstats"]._html;
-    assert(/<b>\d+<\/b> CEOs? bought · (<b>\d+<\/b> for the first time ever · )?<b>\d+<\/b> cut a stake · <b>\d+<\/b> sold on a plan · <b>\d+<\/b> compensation filings? did not move a stake/.test(stats),"the weather line: "+stats.replace(/<[^>]+>/g,""));
+    assert(/<b>\d+<\/b> CEOs? bought · (<b>\d+<\/b> for the first time ever · )?<b>\d+<\/b> cut a stake · <b>\d+<\/b> sold on a plan · <b>\d+<\/b> paid in shares · <b>\d+<\/b> gave shares away$/.test(stats),"the weather line: "+stats.replace(/<[^>]+>/g,""));
+    assert(!/did not move a stake/.test(stats)&&!idxsrc.includes("did not move a stake"),"the tape never again says a filing did not move a stake unless its move was under 1%");
     // a plan is never counted as a cut; compensation never as a cut
     const cut=+(stats.match(/<b>(\d+)<\/b> cut a stake/)||[])[1];
     const discPeople=new Set(actWindow().filter(e=>tapeKind(e)==="disc").map(e=>e.tk+"|"+e.ceo)).size;
     assert(cut===discPeople,"'cut a stake' counts discretionary sellers only: "+cut+" vs "+discPeople);
-    // toggles
-    state.ev.buys=true; renderActivity(); assert(actRows().every(e=>tapeKind(e)==="bought"),"open-market buys only");
-    state.ev.buys=false; state.ev.nocomp=true; renderActivity(); assert(actRows().every(e=>tapeKind(e)!=="comp"),"hide compensation hides it");
-    state.ev.nocomp=false;
+    const paid=+(stats.match(/<b>(\d+)<\/b> paid in shares/)||[])[1];
+    const paidPeople=new Set(actWindow().filter(e=>tapeKind(e)==="comp"&&(e.c==="A"||e.c==="M"||e.lb==="exercise, part sold"||e.lb==="vested and sold")).map(e=>e.tk+"|"+e.ceo)).size;
+    assert(paid===paidPeople&&paid>0,"'paid in shares' counts people who took shares as compensation, by kind, never by a sealed figure: "+paid);
+    // THE LINE IS THE SAME ON BOTH SIDES OF THE SEAL: sealing every row changes no count
+    {const savedE=P.EVENTS;P.EVENTS=savedE.map(e=>({...e,mk:true}));renderActivity();assert(els["#actstats"]._html===stats,"the weather line does not depend on a figure a free reader cannot see");P.EVENTS=savedE;renderActivity();}
+    // the chips
+    const chips=els["#actkinds"]._html;
+    assert(/data-kind="all"[^>]*>All <small>\d+<\/small>/.test(chips)&&chips.includes('data-kind="comp"')&&chips.includes("Transfers <small>")&&chips.includes("Moved the stake &ge; 1%"),"the company page's chips, with counts: "+chips.replace(/<[^>]+>/g," ").slice(0,80));
+    P.setKind("bought"); assert(actRows().every(e=>tapeKind(e)==="bought")&&actRows().length>0,"Bought shows purchases only");
+    P.setKind("sold"); assert(actRows().every(e=>["disc","plan","sold"].includes(tapeKind(e))),"Sold is discretionary, planned and not stated together");
+    P.setKind("comp"); assert(actRows().every(e=>tapeKind(e)==="comp")&&actRows().some(e=>e.c==="A"),"Compensation holds the awards");
+    P.setKind("xfer"); assert(actRows().every(e=>tapeKind(e)==="xfer"),"Transfers holds the gifts");
+    P.setKind("all"); P.setMoved(true); assert(actRows().every(P.evMoved)&&actRows().length<rows.length,"Moved the stake >= 1% keeps only stated moves of 1%+");
+    P.setMoved(false);
     // the subhead names the window's dates
     assert(/(Founder-led|Every CEO) · \d+ [A-Z][a-z]{2}–\d+ [A-Z][a-z]{2} · moves first/.test(els["#tapesub"]._text||""),"the caption is who · when · order: "+els["#tapesub"]._text);
     // a free reader: 7d only, the longer chips dimmed and gated, the Pro note under the chips
@@ -154,14 +180,41 @@ const P=runPage();
     state.pro=true; setWin(365);
   }
 
-  // ---- a sealed filing: the amount shows, the stake after is blurred ----
+  // ---- the kinds, one row of each, decided by the shared function ----
+  {
+    const k=(c,lb,pl,pre)=>tapeKind({c,lb,pl:pl||"unknown",pre:!!pre});
+    assert(k("P","open-market purchase","discretionary")==="bought"&&k("P","scheduled purchase","plan")==="bought","a purchase, open-market or scheduled");
+    assert(k("S","discretionary sale","discretionary")==="disc"&&k("S","scheduled sale","plan")==="plan"&&k("S","sale","unknown")==="sold","the three sales");
+    assert(k("S","exercise and sell","discretionary")==="comp"&&k("S","vested and sold","plan")==="comp"&&k("P","purchase, position unchanged","discretionary")==="comp","a sale that is compensation cashed is compensation, whatever the box says");
+    assert(k("A","award granted")==="comp"&&k("M","options exercised")==="comp"&&k("F","shares withheld for tax")==="comp"&&k("D","forfeited")==="comp"&&k("X","other transaction")==="comp","the company's codes are compensation");
+    assert(k("G","gift")==="xfer"&&k("C","converted")==="xfer"&&k("J","other transaction")==="xfer"&&k("W","other transaction")==="xfer","the rest are transfers");
+    assert(k("P","open-market purchase","discretionary",true)==="xfer","a pre-IPO catch-up is a transfer on the company page and not on the tape");
+    assert(P.tapeGroup({c:"S",lb:"sale",pl:"unknown"})==="sold"&&P.tapeGroup({c:"A",lb:"award granted"})==="comp","the group is the chip");
+    assert(P.tapeDetail({c:"S",lb:"sale",pl:"unknown"})==="not stated"&&P.tapeDetail({c:"S",lb:"exercise, part sold",pl:"plan"})==="options cashed, part kept"&&P.tapeDetail({c:"F",lb:"shares withheld for tax"})==="withheld for tax","the detail is the filing's label in the site's words");
+    assert(P.tapeManner({c:"S",lb:"sale",pl:"unknown"})==="Plan not stated"&&P.tapeManner({c:"S",lb:"scheduled sale",pl:"plan"})==="Pre-set plan","the manner on the hover");
+    // THE GUARD: a filing with no purchase or sale that takes the position to zero is not ranked
+    const zero={tk:"ZERO",ceo:"Gone Person",c:"D",lb:"forfeited",pl:"unknown",sh:1402911,v:null,fd:"2026-09-01",td:"2026-09-01",pc:-100,po:0,ha:0,nc:-1402911,rs:null,u:"https://www.sec.gov/z",mk:false};
+    assert(P.evMove(zero)===null&&P.moveWhy(zero).includes("takes the position on record to zero"),"a forfeiture of the whole holding is not ranked, and the cell says why");
+    assert(P.evMove({...zero,c:"S",lb:"discretionary sale",pl:"discretionary"})!==null,"a sale of the whole holding is a sale, and is ranked");
+    const savedE=P.EVENTS;
+    P.EVENTS=savedE.concat([zero,{tk:"OLDS",ceo:"Old Seller",c:"S",lb:"sale",pl:"unknown",sh:1000,v:2e6,fd:"2026-09-02",td:"2026-09-01",pc:-3,po:4,ha:1e6,nc:-1000,rs:null,u:"https://www.sec.gov/o",mk:false}]);
+    state.ev.f=false; setWin(30); renderActivity();
+    const h=els["#actwrap"]._html;
+    const z=h.slice(h.indexOf("openCompany('ZERO')"),h.indexOf("openCompany('ZERO')")+1400);
+    assert(z.includes('class="kind comp"')&&z.includes("forfeited")&&z.includes("takes the position on record to zero")&&!z.includes("sold out"),"the guarded row is on the tape, badged, its change unranked and explained");
+    const o=h.slice(h.indexOf("openCompany('OLDS')"),h.indexOf("openCompany('OLDS')")+1400);
+    assert(o.includes('class="kind sold"')&&o.includes('class="detail">not stated')&&o.includes("$2M"),"a pre-2023 sale reads Sold, not stated (the detail unlinked: the amount carries the link), with its amount");
+    P.EVENTS=savedE; setWin(365); renderActivity();
+  }
+
+  // ---- a sealed filing: the amount shows, the change and the stake after are blurred ----
   {
     const savedE=P.EVENTS;
     P.EVENTS=savedE.concat([{tk:"ZZSEAL",ceo:"Sealed Person",c:"S",lb:"discretionary sale",pl:"discretionary",sh:null,v:1.5e6,fd:"2026-09-01",td:"2026-08-31",pc:null,po:null,ha:null,nc:null,rs:null,u:"",mk:true}]);
     state.ev.f=false; setWin(365); renderActivity();
-    const html=els["#actwrap"]._html; const row=html.slice(html.indexOf("ZZSEAL"),html.indexOf("ZZSEAL")+900);
+    const html=els["#actwrap"]._html; const row=html.slice(html.indexOf("ZZSEAL"),html.indexOf("ZZSEAL")+1000);
     assert(row.includes("$1.5M"),"the amount is the Form 4's own number and shows on a sealed row");
-    assert((row.match(/class="sealed"/g)||[]).length===1,"and the stake after the trade is the one blur");
+    assert((row.match(/class="sealed"/g)||[]).length===2,"and the change and the stake after the trade are the two blurs");
     assert(!row.includes("sec.gov"),"no filing link on a sealed row");
     assert((els["#actnote"]._html||"").includes("outside the S&P 500"),"the note says where the sealed stakes are");
     P.EVENTS=savedE; renderActivity();

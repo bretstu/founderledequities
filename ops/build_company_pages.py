@@ -545,41 +545,22 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         JavaScript, so its HTML carried no link to any company page; a
         crawler that does not run scripts saw an empty tape, and every
         Monday post links here. The week's founders' rows are written into
-        the table at build; the script redraws them for the reader's tier."""
+        the table at build, from ops/kinds.py (the page's kinds, every
+        filing, 2026-09-15); the script redraws them for the reader's tier."""
         try:
             sys.path.insert(0, here)
-            import letter as _letter
+            import kinds as _kinds
             until = datetime.date.today().isoformat()
-            rows, _since = _letter.week_rows(root, until)
+            rows, _since = _kinds.window_rows(root, until)
             if not rows:   # an events file older than a week: its own last week
                 newest = max((x.get("filed") or "" for x in csv.DictReader(open(events_p, encoding="utf-8-sig"))), default="")
                 if newest:
-                    rows, _since = _letter.week_rows(root, newest)
+                    rows, _since = _kinds.window_rows(root, newest)
         except Exception:  # noqa: BLE001 - no events file, no rows; the script still draws
             return ""
         if not rows:
             return ""
-        word = {"bought": "Bought", "disc": "Discretionary", "sold": "Sold", "plan": "Planned", "comp": "Compensation"}
-        co_of = {}
-        try:
-            for pr in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
-                co_of[(pr.get("ticker") or "").upper()] = pr.get("company") or ""
-        except OSError:
-            pass
-        out = []
-        for rr in rows[:60]:
-            k = rr["kind"]
-            amt = "" if k == "comp" or not rr["value"] or rr["flag"] else _letter.money(rr["value"])
-            stake = ('<span class="sealed" data-shape="0.00%" aria-label="in Pro"></span>' if rr["sealed"]
-                     else (_letter.pct(rr["after"]) if rr["after"] is not None else ""))
-            out.append(f'<tr class="dayrow{" dim" if k == "comp" else ""}"><td class="kd"><span class="kind {k}">{word[k]}</span></td>'
-                       f'<td class="co"><a class="pglink" href="/company/{html.escape(rr["tk"])}/">{html.escape(rr["tk"])}</a><span class="nm">{html.escape(co_of.get(rr["tk"], ""))}</span></td>'
-                       f'<td class="ceo"><span class="cn">{html.escape(rr["ceo"])}</span></td>'
-                       f'<td class="n v">{amt}</td><td class="n st">{stake}</td>'
-                       f'<td class="td"><span class="dt">{html.escape(rr["traded"])}</span></td></tr>')
-        return ('<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-st"><col class="tw-td"></colgroup>'
-                '<thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Traded</th></tr></thead>'
-                '<tbody>' + "".join(out) + '</tbody></table>')
+        return _kinds.table_html(_kinds.sorted_rows(rows), _kinds.company_names(panel_p), limit=60)
 
     if os.path.exists(tape_tpl_p) and os.path.exists(tape_js_p):
         tape_js = header + shared + "\n\n" + open(tape_js_p, encoding="utf-8").read()

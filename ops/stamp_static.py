@@ -203,50 +203,27 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
     outstanding = {r["tk"]: r["out"] for r in rows}
     page = page.replace('<tbody id="tbody"></tbody>',
                         f'<tbody id="tbody">{rows_html(rows, last, outstanding, prices)}</tbody>', 1)
-    # THE WEEK'S SENTENCE AND THE TAPE EXCERPT, STAMPED (2026-09-14): both
-    # were drawn by the script from the filings feed, the one download the
-    # page waits for, so they appeared two seconds after everything else.
-    # The same rows the letter uses (ops/letter.py: founders, seven days
-    # by filing date, the kinds in order) are written into the HTML; the
-    # script redraws them, identically, when the feed arrives.
+    # THE TAPE EXCERPT, STAMPED (2026-09-14; every filing since 2026-09-15):
+    # it was drawn by the script from the filings feed, the one download
+    # the page waits for, so it appeared two seconds after everything else.
+    # The same rows the page draws (ops/kinds.py: founders, seven days by
+    # filing date, the kinds in order, ranked by the stake's move) are
+    # written into the HTML; the script redraws them, identically, when
+    # the feed arrives.
     try:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        import letter as _letter
+        import kinds as _kinds
         import datetime as _dt
-        wrows, _since = _letter.week_rows(os.path.dirname(os.path.abspath(events_p)) or ".", _dt.date.today().isoformat())
+        wrows, _since = _kinds.window_rows(os.path.dirname(os.path.abspath(events_p)) or ".", _dt.date.today().isoformat())
     except Exception:  # noqa: BLE001 - no events file: the script still draws
         wrows = []
     if wrows:
-        who = lambda k: len({(r["tk"], r["ceo"]) for r in wrows if r["kind"] == k})
-        b, d, pl = who("bought"), who("disc"), who("plan")
-        sentence = (f'<b>Past seven days:</b> {b} founder{"" if b == 1 else "s"} bought. {d} sold without a plan. '
-                    f'{pl} sale{" was" if pl == 1 else "s were"} already scheduled.')
-        # (the week's sentence left the fold on 2026-09-14; the tape excerpt below carries the week)
-        word = {"bought": "Bought", "disc": "Discretionary", "sold": "Sold", "plan": "Planned", "comp": "Compensation"}
-        co_of = {}
-        try:
-            for pr in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
-                co_of[(pr.get("ticker") or "").upper()] = pr.get("company") or ""
-        except OSError:
-            pass
-        out = []
-        shown = [r for r in wrows if r["kind"] != "comp"][:10]
-        for r in shown:
-            k = r["kind"]
-            amt = "" if not r["value"] or r["flag"] else _letter.money(r["value"])
-            stake = ('<span class="sealed" data-shape="0.00%" aria-label="in Pro"></span>' if r["sealed"]
-                     else (_letter.pct(r["after"]) if r["after"] is not None else ""))
-            out.append(f'<tr class="dayrow"><td class="kd"><span class="kind {k}">{word[k]}</span></td>'
-                       f'<td class="co"><a class="pglink" href="/company/{html.escape(r["tk"])}/">{html.escape(r["tk"])}</a><span class="nm">{html.escape(co_of.get(r["tk"], ""))}</span></td>'
-                       f'<td class="ceo"><span class="cn">{html.escape(r["ceo"])}</span></td>'
-                       f'<td class="n v">{amt}</td><td class="n st">{stake}</td>'
-                       f'<td class="td"><span class="dt">{html.escape(r["traded"])}</span></td></tr>')
-        table = ('<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-st"><col class="tw-td"></colgroup>'
-                 '<thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">New stake</th><th>Traded</th></tr></thead>'
-                 '<tbody>' + "".join(out) + '</tbody></table>')
+        wrows = _kinds.sorted_rows(wrows)
+        shown = wrows[:10]
+        table = _kinds.table_html(shown, _kinds.company_names(panel_p))
         page = page.replace('<div class="tapewrap" id="actwrap"></div>', f'<div class="tapewrap" id="actwrap">{table}</div>', 1)
         page = page.replace('<div class="actnote" id="actnote"></div>',
-                            f'<div class="actnote" id="actnote">{len(shown)} of {len(wrows)} filings · compensation listed last</div>', 1)
+                            f'<div class="actnote" id="actnote">{len(shown)} of {len(wrows)} filings</div>', 1)
     with open(index_out, "w", encoding="utf-8") as fh:
         fh.write(page)
     print(f"  stamped: {n['above5']} of {n['open']} in the strip, {len(rows)} table rows, "

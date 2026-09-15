@@ -29,7 +29,7 @@ async function boot(){
   if(p)PANEL=mapPanel(parseCSV(p));
   if(f)for(const r of parseCSV(f)){if(r.ticker)FOUNDERS[r.ticker.toUpperCase()]={f:(r.founder||"").toLowerCase(),ev:r.evidence||"",src:r.source||""};}
   if(e)EVENTS=mapEvents(parseCSV(e));
-  for(const [id,key] of [["tg-f","f"],["tg-buys","buys"],["tg-nocomp","nocomp"]]){const el=$("#"+id);if(el)el.addEventListener("change",()=>{state.ev[key]=el.checked;renderActivity();});}
+  {const el=$("#tg-f");if(el)el.addEventListener("change",()=>{state.ev.f=el.checked;renderActivity();});}   /* the kind chips are drawn by renderActivity and wire themselves */
   document.querySelectorAll("#actwin .win").forEach(c=>c.addEventListener("click",()=>setWin(c.dataset.win)));
   renderActivity();
   /* THE CONFIRMATION IS THE BOX. After the click, the form gives way to a
@@ -60,5 +60,5 @@ async function subscribe(ev){
   return false;
 }
 function openCompany(tk){location.href="/company/"+tk+"/";}
-state.ev={win:"7",f:true,buys:false,nocomp:false};
+state.ev={win:"7",f:true,kind:"all",moved:false};
 boot();
