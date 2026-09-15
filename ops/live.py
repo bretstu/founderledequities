@@ -83,8 +83,7 @@ def _save_waiting(w):
 sys.path.insert(0, HERE)
 import kinds  # noqa: E402
 OUT = os.path.join(ROOT, "drafts", "x-live.md")
-COMPENSATION = {"exercise and sell", "exercise, part sold", "vested and sold", "convert and sell",
-                "sale, position unchanged", "purchase, position unchanged"}
+COMPENSATION = kinds.COMP_LABELS  # the page's set (ops/kinds.py), one copy for every script
 
 
 def money(v):

@@ -26,9 +26,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, ROOT)
 from fle import config as _config  # noqa: E402  (loads .env)
+sys.path.insert(0, HERE)
+import kinds  # noqa: E402
 
-COMPENSATION = {"exercise and sell", "exercise, part sold", "vested and sold", "convert and sell",
-                "sale, position unchanged", "purchase, position unchanged"}
+COMPENSATION = kinds.COMP_LABELS  # the page's set (ops/kinds.py), one copy for every script
 MARK = os.path.join(ROOT, "weekly", "alerts-last.txt")
 
 

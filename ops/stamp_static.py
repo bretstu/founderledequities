@@ -24,6 +24,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kinds  # noqa: E402
 from og_image import money, numbers  # noqa: E402
 
 
@@ -87,8 +88,7 @@ def badge(f):
 def last_trades(events_p, tickers):
     """Each company's most recent stake-moving trade, as the table shows it
     (bought/sold, planned/discretionary, the amount, the trade date)."""
-    unchanged = {"exercise and sell", "exercise, part sold", "vested and sold", "convert and sell",
-                 "sale, position unchanged", "purchase, position unchanged"}
+    unchanged = kinds.COMP_LABELS  # the page's set (ops/kinds.py), one copy for every script
     last = {}
     try:
         for r in csv.DictReader(open(events_p, encoding="utf-8-sig")):

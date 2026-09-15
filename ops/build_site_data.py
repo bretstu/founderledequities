@@ -7,8 +7,7 @@
 
 Layout produced (paths relative to the output dir):
     universe.csv            every company, list-page columns; non-S&P rows
-                            carry pct only if UNCHANGED_LABELS = {"exercise and sell", "exercise, part sold", "vested and sold", "convert and sell",
-                    "sale, position unchanged", "purchase, position unchanged"}
+                            carry pct only if
 GENEROUS, else masked=1, and
                             every row carries its rank by value and by
                             share, so a free page can place a sealed row
@@ -31,11 +30,12 @@ import json
 import os
 import sys
 from collections import defaultdict
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kinds  # noqa: E402
 
 GENEROUS = False   # True: public universe.csv carries every pct unmasked
 # the compensation kinds, as the page defines them: a sale that did not move the stake
-UNCHANGED_LABELS = {"exercise and sell", "exercise, part sold", "vested and sold", "convert and sell",
-                    "sale, position unchanged", "purchase, position unchanged"}
+UNCHANGED_LABELS = kinds.COMP_LABELS  # the page's set (ops/kinds.py), one copy for every script
 
 # EVERY COLUMN THE PAGE READS, OR THE PAGE READS A HOLE. The universe
 # promotion moved the page from the raw panel to this list, and

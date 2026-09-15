@@ -447,6 +447,7 @@ def stakes_md(d, date):
                     flags.append("STAKE TO ZERO: a departure or a misread; read the page")
                 out.append(f"- {tk} · {r.get('ceo') or ''} · {pct(t['then'])} → {pct(t['now'])} ({t['change']:+.0f}% of the holding) · {reason(t)}"
                            + (("  ← " + ", ".join(flags)) if flags else "") + f"\n  {SITE}/company/{tk}/")
+    out.append(since_last_saturday(d, date))
     # milestones over the last 30 days
     t0 = (dt.date.fromisoformat(date) - dt.timedelta(days=30)).isoformat()
     ms = []
@@ -468,6 +469,68 @@ def stakes_md(d, date):
                f"{sum(1 for tk in founders if (num(d.panel[tk].get('pct')) or 0) >= 25)} own a quarter or more, "
                f"{sum(1 for tk in founders if (num(d.panel[tk].get('pct')) or 0) >= 10)} a tenth or more.\n")
     return "\n".join(out) + "\n"
+
+
+def since_last_saturday(d, date):
+    """WHAT CHANGED THIS WEEK, FROM THE RECORD (2026-09-15; ops/weekly.py kept
+    a snapshot of the panel to say this, and is retired): stakes crossing
+    5/10/25/50% between the record's point a week ago and today; never-sold
+    streaks that ended (a founder's first stake-moving sale on record);
+    companies that began Section 16 reporting (an IPO or a spin, from the
+    events' registered date); the board, the ten largest founder stakes by
+    value at today's close, ranked against the same holdings a week ago at
+    today's close, so a rank move is the holding moving, never the price."""
+    t0 = (dt.date.fromisoformat(date) - dt.timedelta(days=7)).isoformat()
+    founders = [tk for tk in d.panel if d.founder(tk)]
+    items = []
+    for tk in founders:
+        a, b = at(d, tk, t0), at(d, tk, date)
+        if not a or not b or a[0] is None or b[0] is None:
+            continue
+        for th in THRESHOLDS[1:]:
+            if a[0] < th <= b[0]:
+                items.append(f"- {tk} · {d.panel[tk].get('ceo') or ''} · crossed {th:g}% upward ({pct(a[0])} → {pct(b[0])})\n  {SITE}/company/{tk}/")
+            if b[0] < th <= a[0]:
+                items.append(f"- {tk} · {d.panel[tk].get('ceo') or ''} · fell below {th:g}% ({pct(a[0])} → {pct(b[0])})\n  {SITE}/company/{tk}/")
+    for e in d.rows(t0, date):
+        if d.first_sale(e):
+            items.append(f"- {e['tk']} · {e.get('ceo') or ''} · never-sold streak ended: the first stake-moving sale on record, {nice(e.get('traded') or e.get('filed'))}\n  {SITE}/company/{e['tk']}/")
+    reg = {}
+    for e in d.events:
+        if e.get("registered") and t0 < e["registered"] <= date:
+            reg[e["tk"]] = e["registered"]
+    for tk, r in sorted(reg.items(), key=lambda kv: kv[1], reverse=True):
+        items.append(f"- {tk} · {d.panel.get(tk, {}).get('company') or ''} · began Section 16 reporting on {r} (an IPO or a spin)\n  {SITE}/company/{tk}/")
+    out = ["\n## Since last Saturday\n"] + (items or ["(nothing crossed a line, no streak ended, no company joined)"])
+    # the board
+    vals = []
+    for tk in founders:
+        sh, px = num(d.panel[tk].get("shares")), d.prices.get(tk)
+        if sh and px:
+            vals.append((sh * px, tk))
+    vals.sort(reverse=True)
+    prior = []
+    for tk in founders:
+        a, px = at(d, tk, t0), d.prices.get(tk)
+        if a and a[1] and px:
+            prior.append((a[1] * px, tk))
+    prior.sort(reverse=True)
+    prior_rank = {tk: i + 1 for i, (_, tk) in enumerate(prior)}
+    out.append("\n## The board: the ten largest founder stakes by value, at today's close\n")
+    for i, (v, tk) in enumerate(vals[:10], 1):
+        mv = ""
+        if prior_rank.get(tk):
+            dlt = prior_rank[tk] - i
+            mv = f" · ↑{dlt} on the week" if dlt > 0 else f" · ↓{-dlt} on the week" if dlt < 0 else ""
+        out.append(f"- {i}. {tk} · {d.panel[tk].get('ceo') or ''} · {kinds.money(v)} · {pct(num(d.panel[tk].get('pct')))} of the company{mv}\n  {SITE}/company/{tk}/")
+    # one number, several candidates
+    sold = {e["tk"] for e in d.events if kinds.group_of(e) == "sold" and not kinds._pre(e)}
+    never = sum(1 for tk in founders if tk not in sold)
+    above5 = sum(1 for tk in d.sp if tk in d.panel and (num(d.panel[tk].get("pct")) or 0) > 5)
+    out.append("\n## One number (candidates)\n")
+    out.append(f"- {above5} of {len(d.sp)} S&P 500 CEOs own more than 5% of the company they run")
+    out.append(f"- {never} founder-CEOs have never made a stake-moving sale since the company was public")
+    return "\n".join(out)
 
 
 # ---------------------------------------------------------------- main

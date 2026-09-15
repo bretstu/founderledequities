@@ -178,3 +178,26 @@ def test_the_weather_line_and_the_stamped_table(tmp_path):
     seal = t[t.index('href="/company/SEAL/"') - 300:]
     assert seal.count('class="sealed"') >= 2 and "$61.5M" in seal, "sealed: the change and the stake blurred, the amount shown"
     assert "9.06%" in t and "0.91" not in seal.split("</tr>")[0]
+
+
+def test_no_script_keeps_its_own_copy_of_the_kinds():
+    """ONE COPY (2026-09-15). Every ops script that decides what a filing is
+    reads ops/kinds.py; a private set of the compensation labels is how the
+    tape, the letter, the drafts and the watcher drifted apart the first
+    time. fle/events.py writes the labels and is the source; two scripts
+    keep a narrower set on purpose and are named here so a third cannot
+    appear unnoticed."""
+    import re
+    literal = re.compile(r'"exercise and sell",\s*"exercise, part sold",\s*"vested and sold"')
+    allowed = {"kinds.py"}
+    narrower = {"build_company_pages.py": "UNCHANGED", "company_cards.py": "startswith"}
+    for name in sorted(os.listdir(os.path.join(ROOT, "ops"))):
+        if not name.endswith(".py"):
+            continue
+        src = open(os.path.join(ROOT, "ops", name), encoding="utf-8").read()
+        if name in allowed:
+            continue
+        assert not literal.search(src), f"ops/{name} keeps its own copy of the compensation labels; import kinds"
+        if name in narrower:
+            assert narrower[name] in src, f"ops/{name} changed its narrower rule; decide whether it is still deliberate"
+    assert not os.path.exists(os.path.join(ROOT, "ops", "weekly.py")), "weekly.py is retired; its week-over-week section is ops/moves.py stakes"

@@ -18,7 +18,7 @@ def _fixture(tmp_path):
     (tmp_path / "founders.csv").write_text("ticker,founder\nOPEN,yes\nSEAL,yes\nGONE,yes\nHIRE,no\n")
     (tmp_path / "prices.csv").write_text("ticker,close\nOPEN,10\nSEAL,20\nGONE,5\nHIRE,1\n")
     cols = ["ticker", "ceo", "filed", "traded", "code", "label", "plan", "value", "price_flag", "pct_of_holding", "pct_approx",
-            "pct_after", "pre_ipo", "first_buy", "url", "net_change", "accession"]
+            "pct_after", "pre_ipo", "first_buy", "url", "net_change", "accession", "registered"]
     rows = [
         ["OPEN", "Ann Founder", "2026-09-08", "2026-09-07", "P", "open-market purchase", "discretionary", "1300000", "", "3.9", "", "6.46", "", "1", "https://www.sec.gov/a", "260000", "x1"],
         ["OPEN", "Ann Founder", "2026-09-10", "2026-09-09", "A", "award granted", "", "", "", "40.3", "", "9.06", "", "", "https://www.sec.gov/b", "2600000", "x2"],
@@ -32,13 +32,14 @@ def _fixture(tmp_path):
         ["OPEN", "Ann Founder", "2026-09-12", "2026-09-11", "P", "open-market purchase", "discretionary", "100", "", "0.001", "", "9.02", "", "1", "https://www.sec.gov/j", "10", "x9"],
     ]
     with open(tmp_path / "events.csv", "w", newline="") as fh:
-        w = csv.writer(fh); w.writerow(cols); w.writerows(rows)
+        w = csv.writer(fh); w.writerow(cols); w.writerows([r + ["2026-09-09" if r[0] == "GONE" else ""] for r in rows])
     (tmp_path / "history.csv").write_text(
         "ticker,date,form,accession,shares,shares_split_adjusted,outstanding,pct\n"
         "OPEN,2025-09-01,4,o0,4000000,4000000,80000000,5.0\n"
         "OPEN,2026-09-07,4,x1,6460000,6460000,100000000,6.46\n"
         "OPEN,2026-09-10,4,x3,9020000,9020000,100000000,9.02\n"
         "SEAL,2025-09-01,4,s0,1300000,1300000,100000000,1.3\n"
+        "SEAL,2026-09-05,4,s1,1170000,1170000,100000000,1.17\n"
         "SEAL,2026-09-10,4,y2,888000,888000,100000000,0.888\n"
         "GONE,2025-09-01,4,g0,1402911,1402911,100000000,1.4\n"
         "GONE,2026-09-08,4,z1,0,0,100000000,0\n"
@@ -106,3 +107,17 @@ def test_the_stakes_file_ranks_by_the_change_and_flags_the_page_to_read(tmp_path
     assert "GONE · Cy Founder · fell below 1% (1.40% → 0.000%)" in md
     assert md.index("### Reduced most") < md.index("- GONE") < md.index("### Grew most") < md.index("- OPEN"), "reduced and grew are separate lists"
     assert "3 founder-CEOs hold $108M of the companies they run" in md
+
+
+def test_since_last_saturday_comes_from_the_record_not_a_snapshot(tmp_path):
+    d = moves.Data(_fixture(tmp_path))
+    md = moves.since_last_saturday(d, "2026-09-12")
+    assert "## Since last Saturday" in md
+    assert "- SEAL · Bob Founder · never-sold streak ended: the first stake-moving sale on record, Sep 8" in md
+    assert "- GONE · Gone Co · began Section 16 reporting on 2026-09-09 (an IPO or a spin)" in md
+    assert "crossed 5% upward" not in md, "the week's crossings are 5/10/25/50; 1% is a monthly milestone only"
+    board = md[md.index("## The board"):]
+    assert board.index("- 1. OPEN · Ann Founder · $90.2M · 9.02% of the company") < board.index("- 2. SEAL · Bob Founder · $17.8M · 0.888% of the company"), board
+    assert "↑" not in board and "↓" not in board, "same holdings, same order: no rank move on the week"
+    assert "- 2 founder-CEOs have never made a stake-moving sale since the company was public" in md, "SEAL sold this week; OPEN and GONE never have (a forfeiture is not a sale)"
+    assert "- 1 of 1 S&P 500 CEOs own more than 5%" in md

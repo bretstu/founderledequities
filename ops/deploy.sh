@@ -120,10 +120,8 @@ fi
 
 # ---- 2. free tier, at the root: the generator's output plus prices ----
 cp -r site-data/. public/
-# ---- 2b. the weekly briefing, Saturdays: everything the week produced, ranked, with receipts ----
-if [ "$(date +%u)" = "6" ]; then
-  python3 ops/weekly.py || echo "  weekly: briefing failed; the site is unaffected"
-fi
+# (2b, the weekly briefing, ops/weekly.py, retired 2026-09-15: its week-over-week
+#  section lives in ops/moves.py stakes, computed from the record, no snapshot)
 # ---- 2c. THE WEEK'S LETTER AND THREAD ARE DRAFTED ON SATURDAY, NEVER SENT,
 # BY THE PIPELINE (2026-09-15; Mondays before). EDGAR accepts no filings at
 # the weekend, so by Saturday morning the week (Monday to Friday) is
