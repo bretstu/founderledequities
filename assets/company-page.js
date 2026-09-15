@@ -314,7 +314,7 @@ function recordBlock(r){
 /* ---- the trades ---- */
 function tradesBlock(r){
   const all=EVENTS.filter(e=>e.tk===r.tk).sort((a,b)=>(b.td||b.fd).localeCompare(a.td||a.fd)||b.fd.localeCompare(a.fd));
-  if(!all.length)return `<div class="csec"><h2>Trades</h2><div class="sub">No purchase or sale on record.</div></div>`;
+  if(!all.length)return `<div class="csec"><h2>Trades</h2><div class="sub">${!state.pro&&C.older?`No purchase or sale in the last twelve months. ${C.older.toLocaleString()} earlier trade${C.older===1?"":"s"}, back to ${C.since||"2016"}, are the archive: in <a href="/pro/">Pro</a>.`:"No purchase or sale on record."}</div></div>`;
   const trade=e=>e.c==="P"||e.c==="S";
   /* FIVE KINDS, NAMED FOR WHAT THE ROW IS. "Kept apart" named a rule of
      the home page's summaries; here a reader wants to know what happened.
@@ -552,7 +552,12 @@ async function fetchText(paths){
   if(C.price){row.price=C.price;row.val=row.sh?row.sh*C.price:null;PRICES_ASOF=C.price_date||"";}
   setRow(row);
   renderOpen(row,{animate:false});   /* the numbers first; the record and trades fill in */
-  const base=(C.sp||!pro)?"":"/pro";
+  /* A PRO READER LOADS THE PRO SHARDS FOR EVERY COMPANY (2026-09-14). The
+     free shard is a year of the record whether or not the company is in
+     the S&P; for a founder whose last trade is older than that (Dorsey,
+     June 2025) it is empty, and a Pro reader was shown "no purchase or
+     sale on record" over 87 of them. */
+  const base=pro?"/pro":"";
   const [h,e,p]=await Promise.all([
     row.masked?Promise.resolve(null):fetchText([`${base}/history/${C.tk}.csv`,`/history/${C.tk}.csv`]),
     fetchText([`${base}/events/${C.tk}.csv`,`/events/${C.tk}.csv`]),
