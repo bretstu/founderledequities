@@ -359,6 +359,24 @@ def publish_and_mail(pending, uni):
     return lines, still
 
 
+def known_accessions():
+    """What the site already carries: every accession in events.csv. A feed
+    entry for one of these is not news, whatever the watcher's memory says
+    (EDGAR re-lists filings from time to time with the same accession; three
+    of Friday's filings reappeared on Tuesday morning and were mailed as
+    new, 2026-09-15)."""
+    out = set()
+    try:
+        with open(os.path.join(ROOT, "events.csv"), encoding="utf-8-sig", newline="") as fh:
+            for r in csv.DictReader(fh):
+                a = r.get("accession")
+                if a:
+                    out.add(a)
+    except OSError:
+        pass
+    return out
+
+
 def one_pass(client, uni, seen):
     # READ BACK TO THE LAST PASS'S FRONTIER. In the evening rush more than
     # fifty Form 4s can land in five minutes, so one page is not enough:
@@ -380,11 +398,18 @@ def one_pass(client, uni, seen):
         print(f"  {dt.datetime.now().strftime('%H:%M')} the feed overflowed since the last pass "
               f"({len(filings)} filings read, none seen before): some may have fallen between; the nightly catches them")
     new = []
+    known = None
     for acc, d in filings.items():
         if acc in seen:
             continue
         if d["issuer"] not in uni or uni[d["issuer"]]["owner"] not in d["reporters"]:
             seen.add(acc)          # not a founder's own filing: remembered, never reported
+            continue
+        if known is None:
+            known = known_accessions()
+        if acc in known:
+            print(f"  {dt.datetime.now().strftime('%H:%M')} {uni[d['issuer']]['tk']}: {acc} re-listed by EDGAR; already on the site, nothing to do")
+            seen.add(acc)
             continue
         new.append((acc, d["issuer"]))
     lines = []

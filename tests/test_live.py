@@ -26,6 +26,7 @@ class Client:
 
 
 def test_the_feed_is_narrowed_to_the_ceo(monkeypatch):
+    monkeypatch.setattr(live, "known_accessions", lambda: set())
     filings = live.feed(Client())
     assert filings["0001647639-26-000123"]["issuer"] == 1647639 and filings["0001647639-26-000123"]["reporters"] == {"1834231"}
     uni = {1647639: {"tk": "UPST", "owner": "1834231", "ceo": "Paul Gu", "co": "Upstart", "pct": "1.38", "asof": "2026-06-01"}}
@@ -77,3 +78,11 @@ def test_a_blank_move_is_judged_by_the_stakes_before_and_after():
     assert "Now owns 4.58%." in t and "Stake 5.72% before this filing, 4.58% after: more than the sale alone explains; read the record before posting." in t
     small = dict(r, pct_after="5.70")
     assert live.worth_a_post(u, small) == "", "a blank move with the stake barely changed is not a post"
+
+
+def test_a_relisted_filing_the_site_already_carries_is_not_news(monkeypatch):
+    uni = {1647639: {"tk": "UPST", "owner": "1834231", "ceo": "Paul Gu", "co": "Upstart", "pct": "1.38", "asof": "2026-06-01", "founder": True}}
+    monkeypatch.setattr(live, "known_accessions", lambda: {"0001647639-26-000123"})
+    monkeypatch.setattr(live, "describe", lambda *a: (_ for _ in ()).throw(AssertionError("must not parse a filing the site already carries")))
+    lines, decisions = live.one_pass(Client(), uni, set())
+    assert lines == [] and decisions == []
