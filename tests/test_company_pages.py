@@ -431,6 +431,7 @@ def test_the_watches_have_a_box_a_page_and_two_ways_to_stop(tmp_path):
     page_js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
     assert "function watchBlock(" in page_js and "band(r)+watchBlock(r)+recordBlock(r)" in page_js, "the box sits under the cards, before the chart, on every page"
     assert "Stopped. No more emails about" in page_js and "No more emails about anyone" in page_js, "the box says what a stop link did"
+    assert "One founder watch is free" not in page_js and "Copy the sentence" not in page_js, "the box carries no fine print for a free reader"
     w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
     assert "A list of names is Pro" in w and "stopall" in w and "confirm=" in w
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()

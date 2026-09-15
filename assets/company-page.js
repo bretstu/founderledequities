@@ -449,8 +449,7 @@ function watchBlock(r){
       ${form}
     </div>`}
     <div class="wmsg" id="wmsg"></div>
-    <div class="wfine">${state.pro?`<a href="/account/">Your watches &rarr;</a>`:`One founder watch is free. A list of names is <a href="/pro/">Pro</a>.`}
-      &middot; <a href="#" onclick="copyFact(PANEL[0]);return false" title="the stake, the record and this page's address, for wherever the name comes up">Copy the sentence</a> <span id="factmsg" class="factmsg"></span></div>
+    ${state.pro?`<div class="wfine"><a href="/account/">Your watches &rarr;</a></div>`:""}
   </div>`;
 }
 async function unwatchThis(tk){
