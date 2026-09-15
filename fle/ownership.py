@@ -506,12 +506,16 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     # Worth saying out loud, because it is the finding the product exists
     # for and a reader should not have to derive it from two columns.
     if rec.shares and not rec.flows_reconcile:
-        # Almost always a split, occasionally a missed filing. Either way the
-        # flow columns are in mixed units and must not be summed.
+        # THE CAUTION SAYS WHAT IT KNOWS AND STOPS (2026-09-15). It used to
+        # blame a split by default; Castle Biosciences has never split and
+        # carried that sentence, and Carvana's split was the stake being
+        # wrong, not the flows. A residual means the flow columns do not
+        # reconcile to the holding and must not be summed; why is for the
+        # record to show, not for this line to guess.
         flag(CAUTION, f"the flows leave {rec.flow_residual:,.0f} unexplained "
-                      f"against a holding of {rec.shares:,.0f}; usually a stock "
-                      f"split, which is not a transaction -- do not add these "
-                      f"columns for this row")
+                      f"against a holding of {rec.shares:,.0f}: the flow columns "
+                      f"do not reconcile to the holding and must not be summed "
+                      f"for this row")
     if rec.founded_share is not None and rec.founded_share >= 25:
         flag(NOTE, f"{rec.founded_share:.0f}% of their stake was already held "
                    f"when they became an insider")

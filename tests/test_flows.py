@@ -142,7 +142,9 @@ def test_a_split_breaks_the_reconciliation_and_is_reported():
     from fle import ownership
     src = inspect.getsource(ownership.build)
     assert "not rec.flows_reconcile" in src
-    assert "do not add these" in " ".join(src.split())
+    joined = " ".join(src.split())
+    assert "must not be summed" in joined, "the caution still says the columns cannot be added"
+    assert "usually a stock split" not in joined, "and no longer guesses why (Castle has never split; 2026-09-15)"
 
 
 def test_the_current_holding_is_unaffected_by_any_of_this():
