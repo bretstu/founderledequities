@@ -149,9 +149,15 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .thisweek .arr{color:var(--mut);margin-left:2px}
 /* the tape excerpt on the home page: no controls; the full tape a click away */
 .excerpt .tapectl,.excerpt .pronote,.excerpt .actstats{display:none}
-.hometape{margin-top:34px;padding:22px 0 0;border-top:1px solid var(--ink)}
-.hometape .hs-k{font-family:var(--disp);font-size:20px;font-weight:500;margin-right:6px}
-.hometape .hs-fine{flex-basis:100%;font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
+/* THE WEEKLY LETTER'S BAND: one line, the promise on the left, the field
+   and Send on the right, inside the same column as the tables, with its
+   own air above the footer. No weekday (a send is a week, not a
+   calendar), no price. Hidden for a Pro session. */
+.hometape{margin-top:36px;padding:20px 22px;border:1px solid var(--ink);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.hometape .homesub{display:contents}
+.hometape .hs-k{font-family:var(--disp);font-size:20px;font-weight:500;margin-right:auto}
+.hometape .hs-msg{flex-basis:100%;font-size:13.5px;color:var(--mut)}
+.hometape .hs-msg:empty{display:none}
 body.pro .hometape{display:none}
 .homesub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .homesub .hs-k{font-size:14px;font-weight:600;margin-right:4px}
@@ -743,11 +749,10 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
          footer, its own air; hidden for a Pro session (Account carries it) -->
     <div class="hometape" id="hometape">
       <form class="homesub" id="homesub" onsubmit="return subscribeHome(event)">
-        <span class="hs-k">Monday letter &mdash; the week, one email.</span>
+        <span class="hs-k">Weekly letter &mdash; what moved, once a week.</span>
         <input type="email" id="homeemail" placeholder="you@example.com" required autocomplete="email">
         <button type="submit">Send it</button>
         <span class="hs-msg" id="homemsg"></span>
-        <span class="hs-fine">No ads. Unsubscribe any time.</span>
       </form>
     </div>
   </div>
