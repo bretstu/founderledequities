@@ -122,12 +122,15 @@ def moved(e):
 
 
 def dim(e):
-    if e.get("sealed"):
+    """A compensation or transfer row whose move is under 1%, or a row the
+    site says did not move the stake. A purchase or a sale never dims."""
+    if e.get("sealed") or _pre(e):
         return False
+    code = e.get("code") or ""
+    if code in ("P", "S"):
+        return (e.get("label") or "") in COMP_LABELS
     m = move_of(e)
-    if m is not None:
-        return abs(m[0]) < 1
-    return (e.get("code") or "") in ("P", "S") and (e.get("label") or "") in COMP_LABELS and not _pre(e)
+    return m is not None and abs(m[0]) < 1
 
 
 def stake_change(v, approx=False):

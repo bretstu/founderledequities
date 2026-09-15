@@ -145,9 +145,12 @@ const P=runPage();
     const awRow=rows.find(e=>e.c==="A"&&!e.mk);
     {const one=P.actRow(awRow);assert(one.includes("states no price for this row")&&!/\$[\d.]+[MK]/.test(one.slice(one.indexOf('class="n v"'),one.indexOf('class="n ch"'))),"a grant's amount is a dash that says why");}
     // dimming: a stated move under 1% is dimmed, whatever the kind; a grant that moved the stake is not
-    const small=rows.find(e=>{const p=P.evMove(e);return p&&Math.abs(p.v)<1&&tapeKind(e)==="bought";});
+    const smallTrade=rows.find(e=>{const p=P.evMove(e);return p&&Math.abs(p.v)<1&&(tapeKind(e)==="plan"||tapeKind(e)==="disc");});
+    const smallComp=rows.find(e=>{const p=P.evMove(e);return p&&Math.abs(p.v)<1&&e.c==="F";});
     const bigComp=rows.find(e=>{const p=P.evMove(e);return p&&Math.abs(p.v)>=5&&tapeKind(e)==="comp";});
-    assert(small&&P.evDim(small)&&bigComp&&!P.evDim(bigComp),"dimming follows the move, not the kind");
+    assert(smallTrade&&!P.evDim(smallTrade)&&smallComp&&P.evDim(smallComp)&&bigComp&&!P.evDim(bigComp),"a purchase or a sale never dims; a grant or a withholding under 1% does, one that moved the stake does not");
+    assert(P.evDim({c:"S",lb:"exercise and sell",pl:"discretionary",pc:null,po:2}),"a sale the site says left the position unchanged is dimmed");
+    assert(idxsrc.indexOf('id="tg-f"')<idxsrc.indexOf('id="actkinds"')&&idxsrc.slice(idxsrc.indexOf('id="tg-f"'),idxsrc.indexOf('id="actkinds"')).indexOf('class="tapectl')===-1,"the kind chips sit on the same control row as the window and founders only");
     const stats=els["#actstats"]._html;
     assert(/<b>\d+<\/b> CEOs? bought · (<b>\d+<\/b> for the first time ever · )?<b>\d+<\/b> cut a stake · <b>\d+<\/b> sold on a plan · <b>\d+<\/b> paid in shares · <b>\d+<\/b> gave shares away$/.test(stats),"the weather line: "+stats.replace(/<[^>]+>/g,""));
     assert(!/did not move a stake/.test(stats)&&!idxsrc.includes("did not move a stake"),"the tape never again says a filing did not move a stake unless its move was under 1%");

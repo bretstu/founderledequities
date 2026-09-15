@@ -106,7 +106,9 @@ def test_the_guard_and_the_dimming():
     assert kinds.move_of(sold_out) == (-100.0, False), "a sale of the whole holding is ranked"
     small = {"code": "F", "label": "shares withheld for tax", "plan": "", "pct_of_holding": "-0.4", "pct_after": "2"}
     big = {"code": "A", "label": "award granted", "plan": "", "pct_of_holding": "40", "pct_after": "2.8"}
-    assert kinds.dim(small) and not kinds.dim(big), "dimming follows the move, not the kind"
+    assert kinds.dim(small) and not kinds.dim(big), "a grant or a withholding dims by its move"
+    trade = {"code": "S", "label": "scheduled sale", "plan": "plan", "pct_of_holding": "-0.3", "pct_after": "9.5"}
+    assert not kinds.dim(trade), "a purchase or a sale never dims"
     unch = {"code": "S", "label": "exercise and sell", "plan": "discretionary", "pct_of_holding": "", "pct_after": "2"}
     assert kinds.dim(unch), "a sale the site says did not move the position is dimmed"
     assert kinds.stake_change(-23.4) == "−23%" and kinds.stake_change(7.6) == "+7.6%" and kinds.stake_change(0.45) == "+0.45%" and kinds.stake_change(-0.4) == "−0.40%"
