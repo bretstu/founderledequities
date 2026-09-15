@@ -522,7 +522,7 @@ function renderOpen(r,{animate=true}={}){
   /* the watch sits under the cards, before the chart: it is the page's
      conversion, and under the trades table it was missed */
   $("#cbody").innerHTML=band(r)+watchBlock(r)+recordBlock(r)+tradesBlock(r)+whyBlock(r);
-  $("#creport").innerHTML=reportBlock(r);
+  const cr=$("#creport");if(cr)cr.innerHTML="";   /* the footer says where the numbers come from; the sentence that stood here was the same sentence */
   const svg=document.querySelector(".cchart svg.fchart");
   if(svg){attachHover(svg);if(animate)drawIn(svg);}
 }
@@ -542,6 +542,8 @@ async function fetchText(paths){
   try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)me=await q.json();}catch(e){}
   nav(me);
   const pro=!!(me&&me.pro);
+  state.pro=pro;   /* the shared renderers read state.pro (the archive note, the watch box's fine print): the session must be there, not only in a local (2026-09-14) */
+  document.body.classList.toggle("pro",pro);
   if(me&&me.pro){try{const w=await (await fetch("/api/watch?tk="+encodeURIComponent(C.tk),{cache:"no-store"})).json();if(w.watches&&w.watches.length)WATCHING=w.watches[0];}catch(e){}}
   let row=C.row?mapPanel([C.row])[0]:null;
   if(!row&&pro){
