@@ -240,8 +240,7 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     rec.splits = splits.describe()
     if not splits.ok:
         rec.split_note = splits.note
-    for _d, _f, why in splits.doubts:
-        flag(CAUTION, f"a split the cover pages do not corroborate: {why}")
+
     # THE DENOMINATOR FIRST, for its class count. The ledger needs to know
     # whether this company has one class before it can decide whether the
     # security title means anything.
@@ -359,6 +358,14 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     if led.match_score and (led.match_score < 0.9 or led.margin < 0.15):
         flag(CAUTION, f"insider matched at {led.match_score:.2f}"
                       + (f", next best {led.runner_up:.2f}" if led.runner_up else ""))
+    # THE FEED IS PRUNED AT REGISTRATION (splits.disown_at_registration) once
+    # the ledger knows the person's first filing here, and only then is the
+    # total taken; the flows above were added with the unpruned table, which
+    # a non-reconciling residual will say
+    for _d, _f, why in splits.disown_at_registration(led.mine):
+        flag(CAUTION, f"a split in the feed was not applied: {why}")
+    for _d, _f, why in splits.doubts:
+        flag(CAUTION, f"a split the cover pages do not corroborate: {why}")
     rec.shares = led.total
     rec.shares_as_of = led.last_filing
     rec.lines = len(led.lines)

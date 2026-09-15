@@ -94,6 +94,55 @@ class Splits:
         self.doubts = out
         return out
 
+    disowned: list = field(default_factory=list)   # (date, factor, why): events that are not this registrant's
+
+    def disown_at_registration(self, filings, days: int = 7) -> list:
+        """A TICKER'S SPLIT HISTORY CAN BELONG TO ANOTHER COMPANY (2026-09-15,
+        Hut 8). The feed keys events to a ticker, and a ticker can pass from
+        one registrant to another. HUT went from Hut 8 Mining to Hut 8 Corp
+        (CIK 1964789, a new company) at the merger of 30 November 2023; the
+        feed's "5 -> 1 on 2023-12-04" is the ratio at which the OLD
+        registrant's shares were exchanged (0.2, the Hut 8 Exchange Ratio of
+        the closing 8-K), recorded on the new ticker's first day the only
+        way the feed's schema allows. Genoot's 3,308,850 were Hut 8 Corp
+        shares issued to him for USBTC stock on the day the company was
+        born; the first cover page, 88,962,964, is the two exchanges added
+        and nothing divided. Applying the event published 0.54% for a 2.68%
+        stake.
+
+        THE KEY IS THE PERSON'S FIRST OWNERSHIP FILING AT THIS REGISTRANT,
+        because it is the date their shares began to exist under it, which
+        is the one thing the feed cannot know. The registrant's own first
+        EDGAR filing does not work (Hut 8 Corp's is a form 425 of February
+        2023, ten months before the event) and its first cover page comes
+        after it. So an event dated on or before that first filing, or
+        within `days` after it, is not this registrant's split and is not
+        applied; the panel names it. The one false-positive shape, a real
+        split within a week of a new chief executive's Form 3, has not been
+        seen, and would be visible in the same caution. An event before the
+        first filing could not have touched these filings anyway. `filings`
+        is ledger.mine, the person's filings at this issuer."""
+        import datetime as _dt
+        dates = sorted(f.get("filingDate") or "" for f in (filings or []) if f.get("filingDate"))
+        if not dates:
+            return []
+        first = dates[0]
+        try:
+            limit = (_dt.date.fromisoformat(first) + _dt.timedelta(days=days)).isoformat()
+        except ValueError:
+            return []
+        keep, out = [], []
+        for ev in self.events:
+            if ev.date <= limit:
+                out.append((ev.date, ev.factor, f"the feed's {ev.factor:g}x on {ev.date} is dated within {days} days of the first "
+                                                f"filing at this registrant ({first}): a predecessor's exchange ratio, not a split "
+                                                f"of this stock; not applied"))
+            else:
+                keep.append(ev)
+        self.events = keep
+        self.disowned = out
+        return out
+
     @property
     def ok(self) -> bool:
         return not self.note
