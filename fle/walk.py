@@ -97,6 +97,8 @@ def walk_company(job: dict) -> dict:
             series.classes = {"0000": out.per_class}
         sp = (fetch_splits(client, tk, SETTINGS.polygon_api_key)
               if job.get("splits") else None)
+        if sp is not None and sp.events:
+            sp.corroborate(series)     # the cover pages judge the feed (splits.corroborate)
         hist = build_history(client, walk_cik, led.owner_cik, led.mine,
                              series=series, splits=sp,
                              exclude=excl.for_issuer(cik), since=job["since"])

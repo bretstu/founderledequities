@@ -32,7 +32,7 @@ from __future__ import annotations
 import statistics
 from dataclasses import dataclass, field
 
-from .outstanding import CONCEPT, class_names, _facts_from_document
+from .outstanding import CONCEPT, class_names, _facts_from_document, counted_dates
 
 
 @dataclass
@@ -42,6 +42,7 @@ class Point:
     shares: float
     form: str = ""
     accession: str = ""
+    counted: str = ""      # the instant the count is as of (outstanding.counted_dates); as_of is the period end
 
 
 @dataclass
@@ -237,8 +238,10 @@ def from_cover_pages(client, cik: int, since: str = "",
         names = class_names(raw)
         per_class = {names.get(ctx, ctx): v for ctx, v in facts.items()}
         when = f.get("reportDate") or f.get("filingDate") or ""
+        dates = counted_dates(raw)
         out.points.append(Point(as_of=when, shares=sum(facts.values()),
-                                form=f.get("form") or "", accession=acc))
+                                form=f.get("form") or "", accession=acc,
+                                counted=max((dates.get(ctx, "") for ctx in facts), default="") or f.get("filingDate") or ""))
         # The class list, keyed by year. A structure changes almost never, so
         # the first filing of each year settles it.
         year = (f.get("filingDate") or "")[:4]

@@ -1565,6 +1565,17 @@ def _refresh(args, log) -> int:
             shutil.copy2(state_p, state_scratch)
         elif os.path.exists(state_scratch):
             os.remove(state_scratch)
+        if getattr(args, "rewalk", False) and os.path.exists(state_scratch):
+            # A RULE CHANGE NEEDS A REWALK (2026-09-15): the state file keeps
+            # a company's rows while its newest filing is unchanged, which is
+            # right nightly and wrong the day the walk's arithmetic changes
+            with open(state_scratch, encoding="utf-8") as fh:
+                st = json.load(fh)
+            for t in targeted:
+                st.pop(t, None)
+            with open(state_scratch, "w", encoding="utf-8") as fh:
+                json.dump(st, fh)
+            log(f"targeted: --rewalk forgets {len(targeted)} state entr{'y' if len(targeted) == 1 else 'ies'}")
     if run("history", lambda: cmd_history(ns(
             universe=args.universe, out=path("history.csv"), limit=None,
             tickers=",".join(targeted) or None, exclusions=args.exclusions, since=args.since,
@@ -1753,9 +1764,13 @@ def _heartbeat(log, signal, body: str = "") -> None:
 
 
 # Verified outside the pipeline; see VERIFIED in the dashboards.
+# SMCI re-verified 2026-09-15 at 66,196,146: Liang's early-September planned
+# sales took 200,000 shares off the previous anchor (66,396,146), and the diff
+# flagged the stale constant as a moved holding. An anchor is a number as of
+# a date; when a founder trades, the anchor moves with the filing.
 ANCHORS = {"TSLA": 1123324786, "META": 342463325, "DELL": 294263250,
            "COIN": 25640144, "XYZ": 48844566, "LYV": 4188167,
-           "ECHO": 147184017, "SMCI": 66396146, "FOXA": 86776627}
+           "ECHO": 147184017, "SMCI": 66196146, "FOXA": 86776627}
 
 
 def anchor_moves(before_path: str, after_path: str) -> dict:
@@ -2509,6 +2524,9 @@ def main(argv=None) -> int:
     rf.add_argument("--since", default="2016-01-01")
     rf.add_argument("--tickers", default=None,
                     help="targeted: walk only these companies (comma-separated); the rest keep last night's rows")
+    rf.add_argument("--rewalk", action="store_true",
+                    help="targeted: walk the named companies' history again even with no new filing "
+                         "(forgets their entry in history-state.json first), for a rule change")
     rf.add_argument("--workers", type=int, default=4)
     rf.add_argument("--founders", action="store_true",
                     help="re-read every proxy tonight, not just weekly")

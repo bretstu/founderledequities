@@ -61,6 +61,39 @@ class Splits:
     def adjust(self, shares: float, date: str) -> float:
         return shares * self.factor_since(date)
 
+    doubts: list = field(default_factory=list)   # (date, factor, why): splits the covers do not corroborate; applied anyway
+
+    def corroborate(self, series) -> list:
+        """THE COVER PAGES ARE READ AGAINST THE FEED, AND THE FEED STANDS
+        (2026-09-15). A first version refused a split when the first cover
+        after it was not roughly the last cover before it times the factor.
+        Strive proved that rule cannot decide: its 1-for-20 of February 6 is
+        real (the 10-Q says so in words), and the covers around it go 16.6M
+        to 69.2M because the company issued fifty times its share count in
+        the same quarter. A refused real split sends the company straight
+        back to the mixed-units error this work exists to end, so nothing is
+        refused here: a split the covers do not corroborate is applied and
+        named on the panel as a doubt, with both counts and dates, for a
+        person to read against the filing. Each cover is dated by the
+        instant its count is as of (Point.counted), never the period end.
+        Returns the doubts."""
+        day = lambda p: getattr(p, "counted", "") or p.as_of  # noqa: E731
+        pts = sorted((p for p in getattr(series, "points", []) or [] if day(p) and p.shares), key=day)
+        out = []
+        for ev in self.events:
+            before = [p for p in pts if day(p) < ev.date]
+            after = [p for p in pts if day(p) >= ev.date]
+            if not before or not after:
+                continue
+            b, a = before[-1], after[0]
+            observed = a.shares / b.shares if b.shares else None
+            if observed is not None and not (0.5 <= observed / ev.factor <= 2.0):
+                out.append((ev.date, ev.factor, f"the feed says {ev.factor:g}x on {ev.date}; the cover pages go {b.shares:,.0f} "
+                                                f"(as of {day(b)}) to {a.shares:,.0f} (as of {day(a)}), {observed:.2f}x: applied, "
+                                                f"read the filing"))
+        self.doubts = out
+        return out
+
     @property
     def ok(self) -> bool:
         return not self.note

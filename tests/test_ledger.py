@@ -3818,3 +3818,44 @@ def test_the_cover_page_is_restated_through_the_same_splits_as_the_holding():
     out = cover_in_todays_basis(66564294, "2026-07-03", ten)
     assert round(held) == 13950140 and out == 66564294 and round(held / out * 100, 2) == 20.96, "the holding restated, the post-split cover as filed"
     assert cover_in_todays_basis(66564294, "2026-07-03", None) == 66564294 and cover_in_todays_basis(0, "2026-07-03", ten) == 0
+
+
+def test_a_cover_count_is_dated_by_its_own_instant_not_the_period_end():
+    """STRIVE (ASST), 2026. A real 1-for-20 reverse split on February 6 sat
+    between the year end (December 31) and the 10-K's cover (as of March).
+    Dated by period end, the walk carried the March count back through the
+    split, divided it by 20, and wrote 252.6% for Cole's January holding;
+    dated the same way, a first version of the feed check compared two
+    post-split covers and refused a split the 10-Q itself describes. Every
+    cover point now carries the instant its count is as of, and all split
+    arithmetic uses it: the count is on the right side of the split, the
+    check keeps the split, and the January holding restates to 0.5%."""
+    from fle.splits import Splits, Split
+    from fle.series import Series, Point
+    from fle.outstanding import counted_dates
+    from fle.ownership import cover_in_todays_basis
+    from fle.ledger import groups_total, Group
+
+    html = ('<xbrli:context id="c1"><xbrli:entity/><xbrli:period><xbrli:instant>2026-03-15</xbrli:instant></xbrli:period></xbrli:context>'
+            '<context id="c2"><period><startDate>2025-01-01</startDate><endDate>2025-12-31</endDate></period></context>')
+    assert counted_dates(html) == {"c1": "2026-03-15"}, "the instant of the fact's context; a duration context has none"
+
+    covers = Series(points=[Point("2025-09-30", 16624395.0, counted="2025-11-10"),
+                            Point("2025-12-31", 69158785.0, counted="2026-03-15"),     # the 10-K, filed after the split
+                            Point("2026-03-31", 73082631.0, counted="2026-05-08"),
+                            Point("2026-06-30", 85441903.0, counted="2026-08-10")])
+    sp = Splits(ticker="ASST", events=[Split(date="2026-02-06", factor=1 / 20)])
+    doubts = sp.corroborate(covers)
+    assert len(sp.events) == 1 and sp.factor_since("2026-01-13") == 0.05, "THE SPLIT STANDS: the feed is never overruled by the covers"
+    assert len(doubts) == 1 and "applied, read the filing" in doubts[0][2] and "as of 2025-11-10" in doubts[0][2], \
+        "but the fifty-fold issuance around it is named for a person: " + doubts[0][2]
+    held = groups_total({"a": Group(security="Class A Common Stock", direct="D", shares=8734802, filed="2026-01-13")}, sp)
+    out = cover_in_todays_basis(85441903, "2026-08-10", sp)
+    assert round(held) == 436740 and out == 85441903 and round(held / out * 100, 2) == 0.51
+    # the counted date puts the March cover on the post-split side, so the walk no longer divides it by 20
+    assert sp.factor_since("2026-03-15") == 1.0 and sp.factor_since("2025-12-31") == 0.05
+    # a split the covers corroborate raises no doubt; one with no cover after it yet cannot be judged
+    assert Splits(ticker="CVNA", events=[Split(date="2026-05-07", factor=5.0)]).corroborate(
+        Series(points=[Point("2026-03-31", 219367148.0, counted="2026-04-28"), Point("2026-06-30", 1100463770.0, counted="2026-07-27")])) == []
+    assert Splits(ticker="X", events=[Split(date="2026-09-10", factor=2.0)]).corroborate(covers) == []
+    assert Splits(ticker="Y", events=[Split(date="2026-01-01", factor=2.0)]).corroborate(Series()) == []

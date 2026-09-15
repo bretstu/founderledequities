@@ -227,9 +227,21 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     rec.ceo = owner_name
 
     splits = fetch_splits(client, ticker, SETTINGS.polygon_api_key)
+    if splits.events:
+        # only a company the feed says has split pays for its cover series;
+        # the covers are what corroborate the feed (splits.corroborate)
+        from .series import denominator_series
+        try:
+            first = min(e.date for e in splits.events)
+            since = f"{int(first[:4]) - 2}-01-01"
+            splits.corroborate(denominator_series(client, cik, since=since))
+        except Exception as exc:  # noqa: BLE001 - no covers to judge by: the feed stands, and the note says so
+            splits.note = splits.note or f"could not corroborate the splits against the cover pages: {exc}"
     rec.splits = splits.describe()
     if not splits.ok:
         rec.split_note = splits.note
+    for _d, _f, why in splits.doubts:
+        flag(CAUTION, f"a split the cover pages do not corroborate: {why}")
     # THE DENOMINATOR FIRST, for its class count. The ledger needs to know
     # whether this company has one class before it can decide whether the
     # security title means anything.
@@ -436,7 +448,7 @@ def build(client, cik: int, company: str = "", ticker: str = "",
         # (a Form 4 the week after the split, the cover three months later:
         # 35.3% for a man who owns 3.5%). Both sides of the split on both
         # sides of the fraction, or neither: never one.
-        rec.outstanding = cover_in_todays_basis(out.shares, out.as_of, splits)
+        rec.outstanding = cover_in_todays_basis(out.shares, out.counted or out.as_of, splits)
         rec.outstanding_as_of = out.as_of
         rec.share_classes = out.classes
         rec.cover_url = out.url

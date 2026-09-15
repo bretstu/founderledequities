@@ -344,7 +344,7 @@ def add_cover_points(hist, series, splits=None, since: str = "") -> int:
                 prev = sn
         if prev is None or (prev.outstanding and abs(prev.outstanding - p.shares) < 1):
             continue
-        raw = (prev.adjusted / splits.factor_since(p.as_of)) if splits else prev.shares
+        raw = (prev.adjusted / splits.factor_since(p.counted or p.as_of)) if splits else prev.shares
         added.append(Snapshot(
             date=p.as_of, form=p.form or "10-Q", accession=p.accession,
             shares=raw, adjusted=prev.adjusted, outstanding=p.shares,
@@ -836,7 +836,8 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
         if out and splits and point and point.as_of != when:
             here = splits.factor_since(when)
             if here:
-                out *= splits.factor_since(point.as_of) / here
+                # the count's own date, not the period end (Strive, 2026)
+                out *= splits.factor_since(point.counted or point.as_of) / here
         codes = sorted(day_codes.get(when, set()))
         hist.snapshots.append(Snapshot(
             date=when, form=f.get("form") or "", accession=acc,

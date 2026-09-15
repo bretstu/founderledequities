@@ -44,6 +44,7 @@ CONCEPT = ("https://data.sec.gov/api/xbrl/companyconcept/CIK{cik:010d}"
 class Outstanding:
     shares: float | None = None
     as_of: str = ""
+    counted: str = ""              # the instant the count is as of, from the fact's context
     form: str = ""
     accession: str = ""
     classes: int = 1
@@ -79,6 +80,26 @@ CONTEXT_BLOCK = re.compile(
 MEMBER = re.compile(
     r'<(?:[\w.-]+:)?explicitMember[^>]*>([^<]+)</(?:[\w.-]+:)?explicitMember>',
     re.I)
+
+
+INSTANT = re.compile(r'<(?:[\w.-]+:)?instant>\s*(\d{4}-\d{2}-\d{2})\s*</', re.I)
+
+
+def counted_dates(html: str) -> dict[str, str]:
+    """context id -> the instant the count is as of. THE COVER COUNT HAS ITS
+    OWN DATE (2026-09-15, Strive): a 10-K for the year to December 31 is
+    filed in March, and its cover says "as of March 15"; the fact's context
+    carries that instant. Dating the count by the period end is harmless
+    until a split falls between the two, and then the count is on the wrong
+    side of it: Strive's 1-for-20 of February 6 sat between its year end
+    and its March cover, the walk divided a post-split count by 20, and the
+    stake read 252%."""
+    out = {}
+    for cid, body in CONTEXT_BLOCK.findall(html or ""):
+        m = INSTANT.search(body)
+        if m:
+            out[cid] = m.group(1)
+    return out
 
 
 def class_names(html: str) -> dict[str, str]:
@@ -171,9 +192,11 @@ def from_latest_filing(client, cik: int) -> Outstanding:
         if not facts:
             continue
         names = class_names(raw_html)
+        when = counted_dates(raw_html)
         return Outstanding(
             shares=sum(facts.values()),
             as_of=f.get("reportDate") or f.get("filingDate") or "",
+            counted=max((when.get(ctx, "") for ctx in facts), default="") or f.get("filingDate") or "",
             form=f.get("form") or "", accession=f.get("accessionNumber") or "",
             classes=len(facts),
             per_class={names.get(ctx, ctx): v for ctx, v in facts.items()},
@@ -267,7 +290,7 @@ def shares_outstanding(client, cik: int) -> Outstanding:
     hist = [(u.get("end") or "", float(u["val"]), u.get("form") or "")
             for u in rows[-12:]]
     out = Outstanding(
-        shares=total, as_of=latest_end,
+        shares=total, as_of=latest_end, counted=latest_end,
         form=chosen[0].get("form") or "", accession=chosen[0].get("accn") or "",
         classes=len(chosen), history=hist,
     )
