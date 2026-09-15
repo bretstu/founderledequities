@@ -5,6 +5,7 @@
 #   ops/hits.sh            # the last 7 days
 #   ops/hits.sh today
 #   ops/hits.sh 30         # the last 30 days
+#   ops/hits.sh visitors   # today, one line per visit: when, who (a short id), where from, country, what they did
 #
 # Days are Eastern (the table stores UTC timestamps; the report shifts them
 # by four hours, so a visit at 9 p.m. counts as today, not tomorrow). A
@@ -15,6 +16,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 ARG="${1:-7}"
+VISITORS=0
+if [ "$ARG" = "visitors" ]; then VISITORS=1; ARG="today"; fi
 # the visit's day in Eastern time: UTC minus four hours (EDT); five in winter
 OFF=$(TZ=America/New_York date +%z | sed -E 's/^([+-])0?([0-9]+)00$/\1\2/')
 EDAY="date(ts, '${OFF} hours')"
@@ -44,6 +47,13 @@ for r in rows:
 '
 }
 
+if [ "$VISITORS" = "1" ]; then
+  echo "== today's visits, one line each (Eastern) =="
+  Q "SELECT substr(datetime(ts, '${OFF} hours'), 12, 5) AS at, substr(vid, 1, 6) AS who, country, path, COALESCE(NULLIF(ref,''),'(direct)') AS came_from, COALESCE(NULLIF(device,''),'') AS device, CASE WHEN pro=1 THEN 'pro' ELSE '' END AS pro FROM hits WHERE kind='view' AND $WHERE ORDER BY ts"
+  echo "== and what each did (clicks, pages opened) =="
+  Q "SELECT substr(datetime(ts, '${OFF} hours'), 12, 5) AS at, substr(vid, 1, 6) AS who, kind, name, COALESCE(detail,'') AS detail, path FROM hits WHERE kind IN ('click','open','switch','sort') AND $WHERE ORDER BY ts"
+  exit 0
+fi
 echo "== views per day ($LABEL) =="
 Q "SELECT $EDAY AS day, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY 1 ORDER BY 1"
 echo "== by page ($LABEL) =="
