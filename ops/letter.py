@@ -49,9 +49,9 @@ COPY_RULE = ("S&P 500 current stakes and the last twelve months are open. "
 POSTAL_PLACEHOLDER = "[postal address]"
 COMPENSATION = {"exercise and sell", "exercise, part sold", "vested and sold", "convert and sell",
                 "sale, position unchanged", "purchase, position unchanged"}
-KIND_WORD = {"bought": "Bought", "disc": "Discretionary", "plan": "Planned", "comp": "Compensation"}
-KIND_ORDER = {"bought": 0, "disc": 1, "plan": 2, "comp": 3}
-KIND_COLOR = {"bought": "#1F6B3A", "disc": "#B23428", "plan": "#6E6A64", "comp": "#8C8880"}
+KIND_WORD = {"bought": "Bought", "disc": "Discretionary", "sold": "Sold", "plan": "Planned", "comp": "Compensation"}
+KIND_ORDER = {"bought": 0, "disc": 1, "sold": 2, "plan": 3, "comp": 4}
+KIND_COLOR = {"bought": "#1F6B3A", "disc": "#B23428", "sold": "#8C4A44", "plan": "#6E6A64", "comp": "#8C8880"}
 
 # the site's tokens
 PAPER, INK, MUT, FAINT, LINE, LINE2 = "#F7F4EE", "#1A1A1A", "#5F5B55", "#8C8880", "#D6D1C7", "#E8E4DC"
@@ -104,11 +104,13 @@ def kind_of(e):
         return "comp"
     if e["code"] == "P":
         return "bought"
-    return "plan" if e["plan"] == "plan" else "disc"
+    # a sale filed before Form 4 had a plan box (April 2023) is "sold", not a
+    # decision the letter can vouch for; a weekly letter never meets one
+    return "plan" if e["plan"] == "plan" else "disc" if e["plan"] == "discretionary" else "sold"
 
 
 def manner_of(e, k):
-    if k in ("bought", "disc"):
+    if k in ("bought", "disc", "sold"):
         return "Open market"
     if k == "plan":
         return "Pre-set plan"

@@ -349,20 +349,24 @@ function tradesBlock(r){
      pipeline wrote, so "Planned sale" is one cell, not a red pill and an
      adjective. Coloured by what it did to the stake. */
   const kind=e=>{
+    /* ONE VOCABULARY FOR A TRADE, the tape's (2026-09-14): Bought,
+       Discretionary, Sold (a sale filed before Form 4 had a plan box),
+       Planned, Compensation; a transfer or a grant keeps its own word. The
+       specific label the pipeline wrote (exercise and sell, gift, award
+       granted) is the detail in grey after it. */
     const uk=unchangedKind(e);
-    if(uk==="pre")return {t:e.c==="P"?"Pre-IPO purchase":"Pre-IPO sale",k:"neu",n:evBadge(e).n};
-    const words={"scheduled sale":"Planned sale","discretionary sale":"Discretionary sale","sale":"Sale",
-      "exercise and sell":"Exercise and sell","exercise, part sold":"Exercise, part sold","vested and sold":"Vest, part sold","convert and sell":"Convert and sell",
-      "sale, position unchanged":"Sale, position unchanged","open-market purchase":"Open-market purchase",
-      "scheduled purchase":"Planned purchase","purchase, position unchanged":"Purchase, position unchanged",
-      "options exercised":"Options exercised, held","options exercised, tax withheld":"Options exercised, tax withheld",
-      "award granted":"Award granted","award granted, tax withheld":"Award granted, tax withheld","forfeited":"Forfeited",
-      "converted":"Converted","gift":"Gift","shares withheld for tax":"Shares withheld for tax","other transaction":"Other transaction"};
-    const t=words[e.lb]||(e.c==="P"?"Purchase":e.c==="S"?"Sale":"Other transaction");
+    const detail={"exercise and sell":"exercise and sell","exercise, part sold":"exercise, part sold","vested and sold":"vest, part sold","convert and sell":"convert and sell",
+      "sale, position unchanged":"sale, position unchanged","purchase, position unchanged":"purchase, position unchanged",
+      "options exercised":"options exercised, held","options exercised, tax withheld":"options exercised, tax withheld",
+      "award granted":"award granted","award granted, tax withheld":"award granted, tax withheld","forfeited":"forfeited",
+      "converted":"converted","gift":"gift","shares withheld for tax":"shares withheld for tax","other transaction":"other transaction"}[e.lb]||"";
+    if(uk==="pre")return {t:e.c==="P"?"Pre-IPO purchase":"Pre-IPO sale",word:"",k:"neu",n:evBadge(e).n};
     const comp=e.c!=="P"&&e.c!=="S";
-    const n=comp?"a filing with no purchase or sale that moved the stake: compensation, a gift or a conversion; no market value is stated for it"
-      :e.lb==="sale"?"Form 4 had no Rule 10b5-1 box before April 2023; whether this sale was pre-scheduled is not on the form":evBadge(e).n;
-    return {t,k:comp?"neu":uk!==null?"neu":e.c==="P"?"up":"down",n};
+    if(comp)return {t:"",word:detail||"other transaction",k:"neu",n:"a filing with no purchase or sale that moved the stake: compensation, a gift or a conversion; no market value is stated for it"};
+    if(uk!==null)return {t:"Compensation",word:detail,k:"comp",n:"compensation cashed; the stake did not move the way a purchase or sale does"};
+    const tk=tapeKind(e);
+    const n=tk==="sold"?"Form 4 had no Rule 10b5-1 box before April 2023; whether this sale was pre-scheduled is not on the form":evBadge(e).n;
+    return {t:KIND_WORD[tk],word:"",k:tk,n};
   };
   const cell=e=>{
     const p=pctOf(e);const uk=unchangedKind(e);const kd=kind(e);
@@ -381,14 +385,14 @@ function tradesBlock(r){
       <td class="f">${e.u?`<a href="${e.u}" target="_blank" rel="noopener" title="the filing, on EDGAR">${esc(e.form)} ↗</a>`:""}</td></tr>`;
     const {kd,p,uk,stkTxt,stkCls,span}=cell(e);
     if(e.mk)return `<tr><td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
-      <td class="ty ${kd.k}" title="${esc(kd.n)}"><i></i>${kd.t}</td>
+      <td class="ty" title="${esc(kd.n)}">${kd.t?`<span class="kind ${kd.k}">${kd.t}</span>`:""}${kd.word?`<span class="detail">${kd.word}</span>`:""}</td>
       <td class="n v">${BLUR("$0.0M")}</td><td class="n sh">${BLUR("−00,000")}</td><td class="n stk">${BLUR("−0.00%")}</td>
       <td class="n lv">${BLUR("00,000,000")}</td>
       <td class="n lv">${e.os?fmt(e.os):"&mdash;"}</td>
       <td class="n lv po">${BLUR("0.00%")}</td>
       <td class="f">${BLUR("Form 4")}</td></tr>`;
     return `<tr><td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
-      <td class="ty ${kd.k}" title="${esc(kd.n)}"><i></i>${kd.t}</td>
+      <td class="ty" title="${esc(kd.n)}">${kd.t?`<span class="kind ${kd.k}">${kd.t}</span>`:""}${kd.word?`<span class="detail">${kd.word}</span>`:""}</td>
       <td class="n v ${e.c==="P"?"up":e.c==="S"?"down":"lv"}">${e.c==="P"||e.c==="S"?evValCell(e):"&mdash;"}</td>
       <td class="n sh ${e.c==="P"?"up":e.c==="S"?"down":(e.nc>=0?"up":"down")}">${e.c==="P"||(e.c!=="S"&&e.nc>=0)?"+":"−"}${fmt(e.sh)}</td>
       <td class="n stk ${stkCls}" title="${uk===null&&!p?esc(pctWhy(e)):"what this filing did to the stake, against the stake as the day opened"}">${stkTxt.replace(/^stake /,"")}</td>
@@ -402,7 +406,7 @@ function tradesBlock(r){
     const lines=[head.join(",")].concat(evs.map(e=>{
       if(e.cover)return [e.fd,e.fd,e.fd,`Shares outstanding restated (${e.form})`,"","","",e.ha||"",e.os||"",(e.po!==null&&e.po!==undefined)?e.po.toFixed(4):"",e.u||""].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",");
       const {kd,p,uk}=cell(e);
-      return [e.tf||e.td||e.fd,e.td||e.fd,e.fd,kd.t,e.fl?"":(e.v||""),(e.c==="P"?"":"-")+(e.sh||""),
+      return [e.tf||e.td||e.fd,e.td||e.fd,e.fd,(kd.t||"")+(kd.word?(kd.t?" · ":"")+kd.word:""),e.fl?"":(e.v||""),(e.c==="P"?"":"-")+(e.sh||""),
               p?p.v.toFixed(4):(uk!==null?"0":""),e.ha||"",e.os||"",(e.po!==null&&e.po!==undefined)?e.po.toFixed(4):"",e.u||""].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",");
     }));
     const blob=new Blob([lines.join("\n")],{type:"text/csv"});

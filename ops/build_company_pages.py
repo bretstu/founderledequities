@@ -559,7 +559,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
             return ""
         if not rows:
             return ""
-        word = {"bought": "Bought", "disc": "Discretionary", "plan": "Planned", "comp": "Compensation"}
+        word = {"bought": "Bought", "disc": "Discretionary", "sold": "Sold", "plan": "Planned", "comp": "Compensation"}
         co_of = {}
         try:
             for pr in csv.DictReader(open(panel_p, encoding="utf-8-sig")):

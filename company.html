@@ -153,11 +153,13 @@
     .ctrades td.lv{color:var(--mut)}
     .ctrades td.lv.po{color:var(--ink);font-weight:600}
     @media(max-width:860px){.ctrades th.lv,.ctrades td.lv{display:none}}
-    .ctrades td.ty{font-family:var(--ui);font-size:13px;font-weight:600;padding-left:8px}
-    .ctrades td.ty i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px;background:var(--faint)}
-    .ctrades td.ty.up{color:var(--buy)}.ctrades td.ty.up i{background:var(--buy)}
-    .ctrades td.ty.down{color:#c22a2a}.ctrades td.ty.down i{background:#c22a2a}
-    .ctrades td.ty.neu{color:var(--mut)}
+    /* the Trade column in the tape's vocabulary and style: a tracked label
+       in the kind's colour, the pipeline's specific word in grey after it */
+    .ctrades td.ty{padding-left:8px;white-space:nowrap}
+    .ctrades td.ty .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
+    .ctrades td.ty .kind.bought{color:var(--buy)}.ctrades td.ty .kind.disc{color:#B23428}.ctrades td.ty .kind.sold{color:#8C4A44}
+    .ctrades td.ty .kind.plan{color:var(--mut)}.ctrades td.ty .kind.comp{color:var(--faint)}.ctrades td.ty .kind.neu{color:var(--mut)}
+    .ctrades td.ty .detail{font-size:12.5px;color:var(--mut);margin-left:8px}
     .ctrades td.f a{color:var(--blue);text-decoration:none;font-size:11px}
     .ctrades th.f,.ctrades td.f{text-align:right;padding-right:0}
     /* the receipt */

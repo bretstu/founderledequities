@@ -123,8 +123,9 @@ def rows_html(rows, last, outstanding, prices):
             val = money(r["val"]) if r["val"] else ""
         if lt:
             code = lt.get("code")
-            k = "bought" if code == "P" else ("plan" if (lt.get("plan") or "") == "plan" else "disc")
-            word = {"bought": "Bought", "plan": "Planned", "disc": "Discretionary"}[k]
+            pl = lt.get("plan") or ""
+            k = "bought" if code == "P" else ("plan" if pl == "plan" else "disc" if pl == "discretionary" else "sold")
+            word = {"bought": "Bought", "plan": "Planned", "disc": "Discretionary", "sold": "Sold"}[k]
             when = html.escape(lt.get("traded") or lt.get("filed") or "")
             try:
                 import datetime as _dt
@@ -221,7 +222,7 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
         sentence = (f'<b>Past seven days:</b> {b} founder{"" if b == 1 else "s"} bought. {d} sold without a plan. '
                     f'{pl} sale{" was" if pl == 1 else "s were"} already scheduled.')
         # (the week's sentence left the fold on 2026-09-14; the tape excerpt below carries the week)
-        word = {"bought": "Bought", "disc": "Discretionary", "plan": "Planned", "comp": "Compensation"}
+        word = {"bought": "Bought", "disc": "Discretionary", "sold": "Sold", "plan": "Planned", "comp": "Compensation"}
         co_of = {}
         try:
             for pr in csv.DictReader(open(panel_p, encoding="utf-8-sig")):

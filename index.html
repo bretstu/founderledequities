@@ -334,7 +334,7 @@ td.c-lt .dt{display:none;font-family:var(--mono);font-size:11px;color:var(--fain
    amount are the screener's, on /companies/. */
 
 td.c-lt .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
-td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .kind.plan{color:var(--mut)}
+td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .kind.sold{color:#8C4A44}td.c-lt .kind.plan{color:var(--mut)}
 .more{font-weight:700;font-size:13px;border:1px solid var(--ink);border-radius:0;padding:8px 16px}
 .more:hover{background:var(--ink);color:#fff}
 
@@ -431,7 +431,7 @@ table.tape tr.dayrow:hover td{background:var(--line2)}
 table.tape tr.dim td{color:var(--faint)}
 table.tape td.kd{}
 table.tape .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
-table.tape .kind.bought{color:var(--buy)}table.tape .kind.disc{color:#B23428}table.tape .kind.plan{color:var(--mut)}table.tape .kind.comp{color:var(--faint)}
+table.tape .kind.bought{color:var(--buy)}table.tape .kind.disc{color:#B23428}table.tape .kind.sold{color:#8C4A44}table.tape .kind.plan{color:var(--mut)}table.tape .kind.comp{color:var(--faint)}
 /* THE COMPANY CELL IS THE SAME CELL IN BOTH TABLES: the ticker in mono, the
    name in grey after it, the row truncating rather than spilling */
 table.tape td.co{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1363,8 +1363,8 @@ function renderTable(){
     /* THE LAST MOVE IS ITS KIND (never "Sold" in red on a pre-set plan):
        bought on the open market, sold at discretion, or sold on a plan;
        sorts bought, discretionary, planned */
-    r.ltk=lt?(lt.c==="P"?"bought":lt.pl==="plan"?"planned":"discretionary"):"";
-    r.man=lt?(lt.c==="P"?"Bought":lt.pl==="plan"?"Planned":"Discretionary"):"";
+    r.ltk=lt?(lt.c==="P"?"bought":lt.pl==="plan"?"planned":lt.pl==="discretionary"?"discretionary":"sold"):"";
+    r.man=lt?(lt.c==="P"?"Bought":lt.pl==="plan"?"Planned":lt.pl==="discretionary"?"Discretionary":"Sold"):"";
     r.fd=!!(fInfo(r.tk)&&fInfo(r.tk).f==="yes");                 /* Founder: its own column, its own sort */
     r.ns=fromList?r.pns:(!sold.has(r.tk)&&!!HIST[r.tk]);   /* never sold, on a record that exists */
   }
@@ -1425,7 +1425,7 @@ function renderTable(){
      <td class="n num">${r.masked?LOCK("in Pro","$00.0M"):r.val?money(r.val):""}</td>
      <td class="n num c-mc">${r.mcap?money(r.mcap):""}</td>
      <td class="n num c-r1">${r.r1===null||r.r1===undefined?`<span class="nopr"></span>`:`<span class="${r.r1>=0?"up":"down"}">${r.r1>=0?"+":""}${r.r1.toFixed(1)}%</span>`}</td>
-     <td class="c-lt">${r.ltev?`<span class="kind ${r.ltk==="bought"?"bought":r.ltk==="planned"?"plan":"disc"}">${r.man}</span><span class="dt">${shortDay(r.ltev.td||r.ltev.fd)}</span>`:`<span class="nopr" title="no trade that moved the public-company stake on record"></span>`}</td>
+     <td class="c-lt">${r.ltev?`<span class="kind ${r.ltk==="bought"?"bought":r.ltk==="planned"?"plan":r.ltk==="sold"?"sold":"disc"}">${r.man}</span><span class="dt">${shortDay(r.ltev.td||r.ltev.fd)}</span>`:`<span class="nopr" title="no trade that moved the public-company stake on record"></span>`}</td>
      <td class="n num c-amt">${r.ltev&&r.ltev.mk?LOCK("in Pro","$0.0M"):r.ltev&&r.ltev.v&&!r.ltev.fl?money(r.ltev.v):`<span class="nopr"></span>`}</td>
      <td class="c-ltd">${r.ltev?`<span class="ltd" title="traded ${r.ltev.td||r.ltev.fd}; filed ${r.ltev.fd}${lagNote(r.ltev)}">${shortDay(r.ltev.td||r.ltev.fd)}</span>`:`<span class="nopr"></span>`}</td>
     </tr>`}).join("");
@@ -1718,12 +1718,16 @@ function tapeKind(e){
      that did not move the stake the way a purchase or sale does. */
   if(unchangedKind(e)!==null)return "comp";
   if(e.c==="P")return "bought";
-  return e.pl==="plan"?"plan":"disc";
+  /* SOLD, NOT DISCRETIONARY, WHEN THE FORM DID NOT SAY: Form 4 had no
+     Rule 10b5-1 box before April 2023, so an older sale is a sale, not a
+     decision the site can vouch for (2026-09-14). Every sale since carries
+     the box and is planned or discretionary. */
+  return e.pl==="plan"?"plan":e.pl==="discretionary"?"disc":"sold";
 }
 /*@shared*/
-const KIND_ORDER={bought:0,disc:1,plan:2,comp:3};
+const KIND_ORDER={bought:0,disc:1,sold:2,plan:3,comp:4};
 /*@shared*/
-const KIND_WORD={bought:"Bought",disc:"Discretionary",plan:"Planned",comp:"Compensation"};
+const KIND_WORD={bought:"Bought",disc:"Discretionary",sold:"Sold",plan:"Planned",comp:"Compensation"};
 /*@shared*/
 function tapeManner(e){
   const k=tapeKind(e);
@@ -1821,7 +1825,7 @@ function actRow(e){
   const stake=e.mk?LOCK("the stake after the trade is in Pro","0.00%"):(e.po!==null&&e.po!==undefined)?e.po.toFixed(e.po<1?3:2)+"%":`<span class="nopr">&mdash;</span>`;
   const amt=dim?"&mdash;":(e.fl?`<span class="nopr" title="${e.fl}">${evValCell(e)}</span>`:evValCell(e));
   return `<tr class="dayrow${dim?" dim":""}" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
-    <td class="kd"><span class="kind ${k}" title="${k==="bought"?"an open-market purchase that moved the stake":k==="disc"?"a sale the person chose the day of":k==="plan"?"planned: a sale under a pre-set plan (Rule 10b5-1), scheduled long before the trade date":"compensation cashed; the stake did not move the way a purchase or sale does"}">${KIND_WORD[k]}</span></td>
+    <td class="kd"><span class="kind ${k}" title="${k==="bought"?"an open-market purchase that moved the stake":k==="disc"?"a sale the person chose the day of":k==="sold"?"a sale filed before Form 4 had a Rule 10b5-1 box (April 2023): whether it was planned is not on the form":k==="plan"?"planned: a sale under a pre-set plan (Rule 10b5-1), scheduled long before the trade date":"compensation cashed; the stake did not move the way a purchase or sale does"}">${KIND_WORD[k]}</span></td>
     <td class="co"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a><span class="nm">${coOf(e.tk)}</span></td>
     <td class="ceo"><span class="cn" title="${(e.ceo||coOf(e.tk)).replace(/"/g,"&quot;")}">${e.ceo||coOf(e.tk)}</span>${fMark(e.tk)}${e.fb?`<span class="firstb" title="this person's first open-market purchase on record">first buy</span>`:""}</td>
     <td class="n v">${e.u&&!dim?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">${amt}</a>`:amt}</td>
