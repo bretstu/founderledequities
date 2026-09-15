@@ -6,17 +6,22 @@
 #   ops/hits.sh today
 #   ops/hits.sh 30         # the last 30 days
 #
-# Days are UTC. A private window is a new visitor every time; the owner's
+# Days are Eastern (the table stores UTC timestamps; the report shifts them
+# by four hours, so a visit at 9 p.m. counts as today, not tomorrow). A
+# private window is a new visitor every time; the owner's
 # usual browser is switched off with ?nohit=1 once in the address bar.
 # t.co in the referrer column is X; blank is direct, private, or an app.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 ARG="${1:-7}"
+# the visit's day in Eastern time: UTC minus four hours (EDT); five in winter
+OFF=$(TZ=America/New_York date +%z | sed -E 's/^([+-])0?([0-9]+)00$/\1\2/')
+EDAY="date(ts, '${OFF} hours')"
 if [ "$ARG" = "today" ]; then
-  WHERE="day = date('now')"; LABEL="today"
+  WHERE="$EDAY = date('now', '${OFF} hours')"; LABEL="today"
 else
-  WHERE="day >= date('now','-${ARG} days')"; LABEL="last ${ARG} days"
+  WHERE="$EDAY >= date('now', '${OFF} hours', '-${ARG} days')"; LABEL="last ${ARG} days"
 fi
 
 DB="${FLE_HITS_DB:-$(wrangler d1 list --json 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin)[0]['name'])")}"
@@ -26,7 +31,7 @@ Q() {
 }
 
 echo "== views per day ($LABEL): day · visitors · views =="
-Q "SELECT day, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY day ORDER BY day"
+Q "SELECT $EDAY AS day, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY 1 ORDER BY 1"
 echo "== by page ($LABEL): path · visitors · views =="
 Q "SELECT path, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY path ORDER BY views DESC LIMIT 20"
 echo "== by referrer ($LABEL): t.co is X; (direct) is typed, private or an app =="
