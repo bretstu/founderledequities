@@ -144,7 +144,8 @@ def feed(client, start=0):
         if not m:
             continue
         cik, acc = int(m.group(1)), m.group(2)
-        d = filings.setdefault(acc, {"issuer": None, "reporters": set(), "title": title})
+        d = filings.setdefault(acc, {"issuer": None, "reporters": set(), "title": title,
+                                     "updated": e.findtext("a:updated", default="", namespaces=ns), "page": start // 100})
         if "(Issuer)" in title:
             d["issuer"] = cik
         elif "(Reporting)" in title:
@@ -400,6 +401,7 @@ def one_pass(client, uni, seen):
               f"({len(filings)} filings read, none seen before): some may have fallen between; the nightly catches them")
     new = []
     known = None
+    lines = []
     for acc, d in filings.items():
         if acc in seen:
             continue
@@ -409,11 +411,14 @@ def one_pass(client, uni, seen):
         if known is None:
             known = known_accessions()
         if acc in known:
-            print(f"  {dt.datetime.now().strftime('%H:%M')} {uni[d['issuer']]['tk']}: {acc} re-listed by EDGAR; already on the site, nothing to do")
+            # THE EVIDENCE, KEPT: which page it sat on and the feed's own stamp.
+            # A fresh stamp on an early page is EDGAR re-disseminating; an old
+            # stamp on a deep page is the watcher paging too far.
+            lines.append(f"- {dt.datetime.now().strftime('%H:%M')} {uni[d['issuer']]['tk']} · {acc} is already on the site (filed earlier); "
+                         f"it reappeared on feed page {d.get('page')} with feed stamp {d.get('updated') or '?'} · nothing to do")
             seen.add(acc)
             continue
         new.append((acc, d["issuer"]))
-    lines = []
     decisions = []
     now = dt.datetime.now().strftime("%H:%M")
     for acc, cik in new:

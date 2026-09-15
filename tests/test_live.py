@@ -85,4 +85,5 @@ def test_a_relisted_filing_the_site_already_carries_is_not_news(monkeypatch):
     monkeypatch.setattr(live, "known_accessions", lambda: {"0001647639-26-000123"})
     monkeypatch.setattr(live, "describe", lambda *a: (_ for _ in ()).throw(AssertionError("must not parse a filing the site already carries")))
     lines, decisions = live.one_pass(Client(), uni, set())
-    assert lines == [] and decisions == []
+    assert decisions == [], "no run, no mail"
+    assert len(lines) == 1 and "already on the site" in lines[0] and "feed page 0" in lines[0], "the evidence is kept in the day file"
