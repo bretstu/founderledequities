@@ -3,6 +3,7 @@
 
     python3 ops/live.py           # one pass: read EDGAR's latest Form 4s, report the new ones
     python3 ops/live.py --show    # what is on the feed right now, and which are ours (proof)
+    python3 ops/live.py --find 0001628280-26-061620 [...]   # where on the feed an accession sits, and its feed timestamp
     python3 ops/live.py --loop    # every five minutes until stopped
 
 Every pass reads EDGAR's feed of the most recent Form 4s (one request),
@@ -463,6 +464,31 @@ def main(argv):
                        f"{SITE}/tape/")
         print(f"  test mail to {to or '(LIVE_TO unset)'}: {'sent' if ok else 'FAILED: ' + LAST_MAIL_ERROR}")
         return 0 if ok else 1
+    if "--find" in argv:
+        # DIAGNOSIS: for each accession, the page of the feed it is on and the
+        # feed's own <updated> stamp for it. An old filing with a fresh stamp
+        # on page 0 was re-disseminated by EDGAR; an old filing with its
+        # original stamp on page 7 means the watcher paged too far back.
+        client = EdgarClient()
+        want = {a for a in argv[argv.index("--find") + 1:] if re.match(r"\d{10}-\d{2}-\d{6}$", a)}
+        ns = {"a": "http://www.w3.org/2005/Atom"}
+        acc_of = re.compile(r"/data/(\d+)/\d+/(\d{10}-\d{2}-\d{6})")
+        found = {}
+        for i in range(PAGES):
+            body = client.get(FEED.format(start=i * 100), use_cache=False)
+            root = ET.fromstring(body)
+            for e in root.findall("a:entry", ns):
+                link = (e.find("a:link", ns).get("href") if e.find("a:link", ns) is not None else "") or ""
+                m = acc_of.search(link)
+                if m and m.group(2) in want:
+                    found.setdefault(m.group(2), []).append((i, e.findtext("a:updated", default="", namespaces=ns), e.findtext("a:title", default="", namespaces=ns)))
+        for a in sorted(want):
+            if a in found:
+                for pg, upd, title in found[a]:
+                    print(f"  {a}  page {pg}  feed stamp {upd}  {title[:60]}")
+            else:
+                print(f"  {a}  not on the first {PAGES} pages of the feed now")
+        return 0
     if "--show" in argv:
         client = EdgarClient()
         uni = universe()
