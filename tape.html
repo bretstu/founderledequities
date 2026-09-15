@@ -21,7 +21,7 @@
     :root{--max:1280px}   /* the workbench measure: /tape/ and /companies/ share it; / keeps the letter's */
     /* THE TAPE AS A PAGE (PLAN.md section 5): the same block the home page
        carries, with the Monday-tape signup beside it. */
-    .tapepage{max-width:1120px;margin:0 auto;padding:0 clamp(20px,3.5vw,48px)}
+    .tapepage{max-width:var(--max);margin:0 auto;padding:0 clamp(20px,3.5vw,48px)}   /* the workbench measure, as /companies/ */
     .tapepage .activitysec{padding:48px 0 40px}
     /* THE SIGNUP IS A BAND, NOT A COLUMN (2026-09-14): a sidebar took 300px
        from seven columns and clipped the names. One row under the table's
