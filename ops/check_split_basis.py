@@ -31,7 +31,7 @@ def main(diff_p="panel-diff.csv", panel_p="panel.csv", before_p=""):
         tk = (r.get("ticker") or "").upper()
         p = panel.get(tk, {})
         caut = p.get("cautions") or ""
-        expl = [c for c in caut.split("|") if "restated" in c and "through the split" in c]
+        expl = [c for c in caut.split("|") if ("restated" in c and "through the split" in c) or "a split in the feed was not applied" in c]
         b, a = r.get("pct_before") or r.get("shares_before") or "", r.get("pct_after") or p.get("pct") or ""
         try:
             b = f"{float(b):.2f}%" if "pct" in "".join(r.keys()) else f"{int(float(b)):,}"

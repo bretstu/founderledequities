@@ -98,7 +98,7 @@ def walk_company(job: dict) -> dict:
         sp = (fetch_splits(client, tk, SETTINGS.polygon_api_key)
               if job.get("splits") else None)
         if sp is not None and sp.events:
-            sp.disown_at_registration(led.mine)   # a predecessor's exchange ratio is not this registrant's split
+            sp.disown_before_first_cover(series)   # a predecessor's event on the same ticker is not this registrant's
             sp.corroborate(series)     # the cover pages judge the feed (splits.corroborate)
         hist = build_history(client, walk_cik, led.owner_cik, led.mine,
                              series=series, splits=sp,

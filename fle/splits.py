@@ -96,7 +96,7 @@ class Splits:
 
     disowned: list = field(default_factory=list)   # (date, factor, why): events that are not this registrant's
 
-    def disown_at_registration(self, filings, days: int = 7) -> list:
+    def disown_before_first_cover(self, series) -> list:
         """A TICKER'S SPLIT HISTORY CAN BELONG TO ANOTHER COMPANY (2026-09-15,
         Hut 8). The feed keys events to a ticker, and a ticker can pass from
         one registrant to another. HUT went from Hut 8 Mining to Hut 8 Corp
@@ -110,33 +110,27 @@ class Splits:
         and nothing divided. Applying the event published 0.54% for a 2.68%
         stake.
 
-        THE KEY IS THE PERSON'S FIRST OWNERSHIP FILING AT THIS REGISTRANT,
-        because it is the date their shares began to exist under it, which
-        is the one thing the feed cannot know. The registrant's own first
-        EDGAR filing does not work (Hut 8 Corp's is a form 425 of February
-        2023, ten months before the event) and its first cover page comes
-        after it. So an event dated on or before that first filing, or
-        within `days` after it, is not this registrant's split and is not
-        applied; the panel names it. The one false-positive shape, a real
-        split within a week of a new chief executive's Form 3, has not been
-        seen, and would be visible in the same caution. An event before the
-        first filing could not have touched these filings anyway. `filings`
-        is ledger.mine, the person's filings at this issuer."""
-        import datetime as _dt
-        dates = sorted(f.get("filingDate") or "" for f in (filings or []) if f.get("filingDate"))
-        if not dates:
+        THE KEY IS THE REGISTRANT'S FIRST COVER PAGE, on the date its count
+        is as of (Point.counted). An event dated before it has no count of
+        this registrant on its far side: nothing of this company's could
+        have split, because as a public company it did not yet exist. A
+        first version keyed on the person's first ownership filing and
+        missed this very case: Genoot's Form 3 is dated 9 November, when
+        the registration went effective, three weeks before the merger and
+        the event. Strive, Carvana and every long-standing registrant have
+        covers years before their splits and are untouched. Returns the
+        events not applied; the panel names them."""
+        day = lambda p: getattr(p, "counted", "") or p.as_of  # noqa: E731
+        pts = [day(p) for p in getattr(series, "points", []) or [] if day(p) and p.shares]
+        if not pts:
             return []
-        first = dates[0]
-        try:
-            limit = (_dt.date.fromisoformat(first) + _dt.timedelta(days=days)).isoformat()
-        except ValueError:
-            return []
+        first = min(pts)
         keep, out = [], []
         for ev in self.events:
-            if ev.date <= limit:
-                out.append((ev.date, ev.factor, f"the feed's {ev.factor:g}x on {ev.date} is dated within {days} days of the first "
-                                                f"filing at this registrant ({first}): a predecessor's exchange ratio, not a split "
-                                                f"of this stock; not applied"))
+            if ev.date < first:
+                out.append((ev.date, ev.factor, f"the feed's {ev.factor:g}x on {ev.date} predates this registrant's first cover page "
+                                                f"(as of {first}): a predecessor's event on the same ticker, not a split of this stock; "
+                                                f"not applied"))
             else:
                 keep.append(ev)
         self.events = keep

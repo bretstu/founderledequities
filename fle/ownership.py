@@ -234,7 +234,9 @@ def build(client, cik: int, company: str = "", ticker: str = "",
         try:
             first = min(e.date for e in splits.events)
             since = f"{int(first[:4]) - 2}-01-01"
-            splits.corroborate(denominator_series(client, cik, since=since))
+            covers = denominator_series(client, cik, since=since)
+            splits.disown_before_first_cover(covers)   # a predecessor's event on the same ticker is not this registrant's
+            splits.corroborate(covers)
         except Exception as exc:  # noqa: BLE001 - no covers to judge by: the feed stands, and the note says so
             splits.note = splits.note or f"could not corroborate the splits against the cover pages: {exc}"
     rec.splits = splits.describe()
@@ -358,11 +360,7 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     if led.match_score and (led.match_score < 0.9 or led.margin < 0.15):
         flag(CAUTION, f"insider matched at {led.match_score:.2f}"
                       + (f", next best {led.runner_up:.2f}" if led.runner_up else ""))
-    # THE FEED IS PRUNED AT REGISTRATION (splits.disown_at_registration) once
-    # the ledger knows the person's first filing here, and only then is the
-    # total taken; the flows above were added with the unpruned table, which
-    # a non-reconciling residual will say
-    for _d, _f, why in splits.disown_at_registration(led.mine):
+    for _d, _f, why in splits.disowned:
         flag(CAUTION, f"a split in the feed was not applied: {why}")
     for _d, _f, why in splits.doubts:
         flag(CAUTION, f"a split the cover pages do not corroborate: {why}")

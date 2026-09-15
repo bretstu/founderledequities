@@ -3861,23 +3861,28 @@ def test_a_cover_count_is_dated_by_its_own_instant_not_the_period_end():
     assert Splits(ticker="Y", events=[Split(date="2026-01-01", factor=2.0)]).corroborate(Series()) == []
 
 
-def test_a_feed_event_at_registration_is_a_predecessors_exchange_not_a_split():
-    """HUT 8, 2023 (fixed 2026-09-15). Genoot's first filing at Hut 8 Corp is
-    dated the merger close; the feed's "5 -> 1" four days later is the old
-    Hut 8 Mining exchange ratio. Not applied: 3,308,850 shares stay
-    3,308,850. Strive's 1-for-20, five months after Cole's Form 3, is
-    applied as before."""
+def test_a_feed_event_before_the_registrants_first_cover_is_a_predecessors():
+    """HUT 8, 2023 (fixed 2026-09-15, on the second attempt). Genoot's Form 3
+    is dated 9 November (registration effective), his holding begins on the
+    Form 4 of 30 November (the merger close), and the feed's "5 -> 1" is
+    dated 4 December: the old Hut 8 Mining exchange ratio on the new
+    ticker's first day. The registrant's first cover page (the 10-Q filed
+    19 December, 88,962,964 shares) is the first count of this company; an
+    event before it is not this company's split. A first version keyed on
+    the person's first filing (7 days) and missed the event by 18 days."""
     from fle.splits import Splits, Split
+    from fle.series import Series, Point
     from fle.ledger import groups_total, Group
     hut = Splits(ticker="HUT", events=[Split(date="2023-12-04", factor=0.2)])
-    mine = [{"filingDate": "2023-12-04", "form": "3"}, {"filingDate": "2023-12-06", "form": "4/A"}, {"filingDate": "2026-01-10", "form": "4"}]
-    out = hut.disown_at_registration(mine)
-    assert hut.events == [] and len(out) == 1 and "predecessor" in out[0][2] and "not applied" in out[0][2]
-    held = groups_total({"c": Group(security="Common stock", direct="D", shares=3308850, filed="2023-11-30")}, hut)
-    assert held == 3308850
+    covers = Series(points=[Point("2023-09-30", 88962964.0, counted="2023-12-15"), Point("2024-03-31", 90500000.0, counted="2024-05-10")])
+    out = hut.disown_before_first_cover(covers)
+    assert hut.events == [] and len(out) == 1 and "predecessor" in out[0][2] and "as of 2023-12-15" in out[0][2]
+    assert groups_total({"c": Group(security="Common stock", direct="D", shares=3308850, filed="2023-11-30")}, hut) == 3308850
+    # Strive: covers from 2022, the split in 2026: applied
     asst = Splits(ticker="ASST", events=[Split(date="2026-02-06", factor=1 / 20)])
-    assert asst.disown_at_registration([{"filingDate": "2025-09-15", "form": "3"}, {"filingDate": "2026-01-13", "form": "4"}]) == []
-    assert asst.factor_since("2026-01-13") == 0.05, "a real split months after the first filing is applied"
-    before = Splits(ticker="X", events=[Split(date="2019-01-01", factor=2.0)])
-    assert len(before.disown_at_registration([{"filingDate": "2020-06-01", "form": "3"}])) == 1, "a split before the first filing could not touch these filings; dropped for cleanliness"
-    assert Splits(ticker="Y", events=[Split(date="2024-01-01", factor=2.0)]).disown_at_registration([]) == [], "no filings known: the feed stands"
+    assert asst.disown_before_first_cover(Series(points=[Point("2022-12-31", 1e7, counted="2023-03-20"), Point("2025-12-31", 69158785.0, counted="2026-03-15")])) == []
+    assert asst.factor_since("2026-01-13") == 0.05
+    # Carvana: covers since 2017, the split in 2026: applied
+    cvna = Splits(ticker="CVNA", events=[Split(date="2026-05-07", factor=5.0)])
+    assert cvna.disown_before_first_cover(Series(points=[Point("2017-06-30", 1e8, counted="2017-08-01")])) == [] and cvna.factor_since("2023-08-18") == 5.0
+    assert Splits(ticker="Y", events=[Split(date="2024-01-01", factor=2.0)]).disown_before_first_cover(Series()) == [], "no covers known: the feed stands"
