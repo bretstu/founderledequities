@@ -26,17 +26,31 @@ fi
 
 DB="${FLE_HITS_DB:-$(wrangler d1 list --json 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin)[0]['name'])")}"
 Q() {
-  wrangler d1 execute "$DB" --remote --json --command "$1" 2>/dev/null \
-    | python3 -c "import sys,json;r=json.load(sys.stdin)[0]['results'];[print('  '+'  '.join(f'{v}' for v in x.values())) for x in r] if r else print('  (none)')"
+  wrangler d1 execute "$DB" --remote --json --command "$1" 2>/dev/null | python3 -c '
+import sys, json
+rows = json.load(sys.stdin)[0]["results"]
+if not rows:
+    print("  (none)"); sys.exit()
+cols = list(rows[0].keys())
+num = {c: all(isinstance(r[c], (int, float)) for r in rows) for c in cols}
+w = {c: max(len(c), *(len(str(r[c])) for r in rows)) for c in cols}
+w = {c: min(v, 72) for c, v in w.items()}
+def cell(c, v):
+    t = str(v)[:72]
+    return t.rjust(w[c]) if num[c] else t.ljust(w[c])
+print("  " + "  ".join(c.rjust(w[c]) if num[c] else c.ljust(w[c]) for c in cols))
+for r in rows:
+    print("  " + "  ".join(cell(c, r[c]) for c in cols))
+'
 }
 
-echo "== views per day ($LABEL): day · visitors · views =="
+echo "== views per day ($LABEL) =="
 Q "SELECT $EDAY AS day, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY 1 ORDER BY 1"
-echo "== by page ($LABEL): path · visitors · views =="
+echo "== by page ($LABEL) =="
 Q "SELECT path, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY path ORDER BY views DESC LIMIT 20"
-echo "== by referrer ($LABEL): t.co is X; (direct) is typed, private or an app =="
+echo "== by referrer ($LABEL): t.co is X; (direct) is typed, private, or an app =="
 Q "SELECT COALESCE(NULLIF(ref,''),'(direct)') AS ref, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY ref ORDER BY views DESC LIMIT 12"
 echo "== by country ($LABEL) =="
 Q "SELECT country, COUNT(DISTINCT vid) AS visitors FROM hits WHERE kind='view' AND $WHERE GROUP BY country ORDER BY visitors DESC LIMIT 8"
-echo "== what they did ($LABEL): filings opened, company pages opened, Go Pro =="
+echo "== what they did ($LABEL) =="
 Q "SELECT kind || ' ' || name AS what, COUNT(*) AS n FROM hits WHERE kind IN ('click','open') AND $WHERE GROUP BY what ORDER BY n DESC LIMIT 10"
