@@ -3732,3 +3732,89 @@ def test_spacex_a_catch_up_form_4_sorts_by_its_newest_transaction():
     assert dates == sorted(dates) and dates[-1] == "2026-06-15", dates
     assert hist.snapshots[-1].shares == 842_091_670
     assert hist.snapshots[0].shares <= hist.snapshots[-1].shares, "no phantom decline"
+
+
+def test_a_class_carried_through_a_split_is_restated_with_it():
+    """CARVANA, 2026 (fixed 2026-09-15). Garcia's Class B was stated once, in
+    August 2023 (27,666,483 shares), and never again; his Class A was
+    restated by the first Form 4 after the 5-for-1 split of 7 May 2026
+    (8,603,303 post-split). The walk summed post-split A and pre-split B and
+    published 3.31% for a 13.4% holding, at medium confidence, for three
+    months. Every carried group is now restated through the splits after
+    the document that stated it, in the ledger and in every history row,
+    and the panel says which class rests on which filing."""
+    from fle.history import build_history
+    from fle.ledger import groups_total, carried_through_split, Group
+    from fle.series import Series, Point
+    from fle.splits import Splits, Split
+
+    def doc(a, b, when):
+        head = ('<ownershipDocument><issuer><issuerCik>0001318605</issuerCik></issuer>'
+                '<reportingOwner><reportingOwnerId><rptOwnerCik>0001494730</rptOwnerCik>'
+                '<rptOwnerName>Garcia Ernest</rptOwnerName></reportingOwnerId>'
+                '<reportingOwnerRelationship><isOfficer>1</isOfficer><officerTitle>CEO</officerTitle>'
+                '</reportingOwnerRelationship></reportingOwner>')
+        row = lambda title, bal: (f'<nonDerivativeHolding><securityTitle><value>{title}</value></securityTitle>'  # noqa: E731
+                                  f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{bal}</value>'
+                                  f'</sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature>'
+                                  f'<directOrIndirectOwnership><value>D</value></directOrIndirectOwnership>'
+                                  f'</ownershipNature></nonDerivativeHolding>')
+        body = (row("Class A Common Stock", a) if a is not None else "") + (row("Class B Common Stock", b) if b is not None else "")
+        return head + body + '</ownershipDocument>'
+
+    docs = {"c1": doc(1722074, 27666483, "2023-08-21"),   # both classes stated
+            "c2": doc(1722074, None, "2026-05-01"),       # Class A only, pre-split
+            "c3": doc(8603303, None, "2026-06-01")}       # Class A only, restated post-split; B untouched
+    mine = [{"form": "4", "accessionNumber": k, "filingDate": d, "primaryDocument": "d.xml"}
+            for k, d in [("c1", "2023-08-21"), ("c2", "2026-05-01"), ("c3", "2026-06-01")]]
+
+    class _Edgar:
+        def filing_index(self, cik, acc):
+            return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+
+        def get(self, url, use_cache=True):
+            for k in docs:
+                if k in url:
+                    return docs[k]
+            raise KeyError(url)
+
+    series = Series(points=[Point("2023-06-30", 219367148.0), Point("2026-06-30", 1100463770.0)])
+    sp = Splits(ticker="CVNA", events=[Split(date="2026-05-07", factor=5.0)])
+    hist = build_history(_Edgar(), 1318605, "1494730", mine, series=series, splits=sp)
+    shares = [round(s.shares) for s in hist.snapshots]
+    pcts = [round(s.pct, 2) for s in hist.snapshots]
+    # three filings and the June 30 cover page: the third row is the first post-split filing
+    assert shares == [29388557, 29388557, 146935718, 146935718], shares
+    assert pcts[:2] == [13.40, 13.40] and all(13.3 <= x <= 13.4 for x in pcts[2:]), pcts
+    # one basis, today's, in the adjusted column: the two pre-split rows differ from the two post-split
+    # ones by the 7,067 shares this fixture withholds without a transaction row
+    assert [round(s.adjusted) for s in hist.snapshots] == [146942785, 146942785, 146935718, 146935718]
+    assert abs(hist.snapshots[2].unexplained or 0) <= 7067, "a split is not an unexplained move (the walk once wrote -110,665,932 here)"
+
+    groups = {"class a": Group(security="Class A Common Stock", direct="D", shares=8603303, filed="2026-06-01"),
+              "class b": Group(security="Class B Common Stock", direct="D", shares=27666483, filed="2023-08-21", as_of="2023-08-21")}
+    assert round(groups_total(groups, sp)) == 146935718, "the panel's total, in today's basis"
+    assert round(groups_total(groups, sp, "2026-05-01")) == round(8603303 / 5 + 27666483), "and in a pre-split row's basis"
+    assert carried_through_split(groups, sp) == [("Class B Common Stock", "2023-08-21", 5.0)], "the class that rests on an old filing is named"
+    assert groups_total(groups, None) == 8603303 + 27666483, "no split table: the sum as filed, as before"
+
+
+def test_the_cover_page_is_restated_through_the_same_splits_as_the_holding():
+    """BEYOND MEAT, 2026: the last Form 4 (June) and the cover page (August)
+    both predate a 1-for-30 reverse split, and the stake is right as filed,
+    5.1%. Restating the holding into today's shares without the cover would
+    have published 0.17%. Coca-Cola Consolidated is the other shape: a
+    holding filed before a 10-for-1, a cover page after it, 2.10% shown
+    for 20.96%. The rule: both sides of the fraction in today's shares."""
+    from fle.ownership import cover_in_todays_basis
+    from fle.ledger import groups_total, Group
+    from fle.splits import Splits, Split
+    rev = Splits(ticker="BYND", events=[Split(date="2026-09-01", factor=1 / 30)])
+    held = groups_total({"c": Group(security="Common Stock", direct="D", shares=26295397, filed="2026-06-01")}, rev)
+    out = cover_in_todays_basis(515818978, "2026-08-05", rev)
+    assert round(held) == 876513 and round(out) == 17193966 and round(held / out * 100, 3) == 5.098, "both restated: the stake as filed"
+    ten = Splits(ticker="COKE", events=[Split(date="2025-05-20", factor=10.0)])
+    held = groups_total({"c": Group(security="Common Stock", direct="D", shares=1395014, filed="2025-05-09")}, ten)
+    out = cover_in_todays_basis(66564294, "2026-07-03", ten)
+    assert round(held) == 13950140 and out == 66564294 and round(held / out * 100, 2) == 20.96, "the holding restated, the post-split cover as filed"
+    assert cover_in_todays_basis(66564294, "2026-07-03", None) == 66564294 and cover_in_todays_basis(0, "2026-07-03", ten) == 0

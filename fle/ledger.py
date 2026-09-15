@@ -1051,11 +1051,52 @@ class Group:
         return f"{self.security} · {where}"
 
 
+def groups_total(groups, splits=None, when: str = "") -> float:
+    """EVERY GROUP IN ONE BASIS (2026-09-15, Carvana). A group's shares are
+    in the basis of the filing that settled it, and a class nobody has
+    touched is carried from that filing as it was written. Garcia's Class B
+    was stated once, in August 2023 (27,666,483 shares), and never again,
+    because nothing happened to it; his Class A was restated by the first
+    Form 4 after the 5-for-1 split of 7 May 2026. Summing the two as filed
+    added post-split Class A to pre-split Class B and published 3.31% for a
+    man who owns 13.4%, at medium confidence, for three months.
+
+    So each group is carried through every split after its own filing into
+    the basis of `when` (today when `when` is empty): the split table is
+    the evidence, the same one the flows and the history's adjusted column
+    already use, and the reconciliation still checks it."""
+    if not splits:
+        return sum(g.shares for g in groups.values())
+    here = splits.factor_since(when) if when else 1.0
+    total = 0.0
+    for g in groups.values():
+        # THE BASIS IS THE DOCUMENT THAT STATED THE SHARES (g.filed, its
+        # period), not the group's last transaction date (g.as_of), which the
+        # ledger carries across documents and can predate a split the
+        # document itself is written after
+        basis = g.filed or g.as_of or when
+        total += splits.adjust(g.shares, basis) / (here or 1.0)
+    return total
+
+
+def carried_through_split(groups, splits=None) -> list:
+    """The groups a split moved without a filing: (security, as_of, factor)."""
+    if not splits:
+        return []
+    out = []
+    for g in groups.values():
+        f = splits.factor_since(g.filed or g.as_of or "")
+        if f != 1.0:
+            out.append((g.security, g.filed or g.as_of, f))
+    return out
+
+
 @dataclass
 class Ledger:
     owner_cik: str = ""
     owner_name: str = ""
     groups: dict = field(default_factory=dict)
+    splits: object = None          # the split table the walk was given; the total is in today's basis
     options: float = 0.0
     option_titles: dict = field(default_factory=dict)
     partnership_units: float = 0.0
@@ -1099,7 +1140,7 @@ class Ledger:
 
     @property
     def total(self) -> float:
-        return sum(g.shares for g in self.groups.values())
+        return groups_total(self.groups, self.splits)
 
     @property
     def lines(self) -> dict:              # kept for the CSV's `lines` count
@@ -1131,7 +1172,7 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                  share_classes: int = 0, class_members=None, exclude=(),
                  on_progress=None) -> Ledger:
     """The newest filing that reports each group, summed. That is all."""
-    led = Ledger()
+    led = Ledger(splits=splits)
     subs = client.submissions(issuer_cik)
     # Ordered by the period each filing REPORTS ON, not by the day it was
     # posted. An amendment carries the period of the report it corrects, so

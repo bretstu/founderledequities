@@ -201,6 +201,14 @@ def _days(a: str, b: str) -> int | None:
         return None
 
 
+def cover_in_todays_basis(shares, as_of: str, splits=None):
+    """The cover page's count carried through every split after its date, so
+    it is in the same shares as the holding; unchanged with no split table."""
+    if not shares or not splits or not as_of:
+        return shares
+    return shares * splits.factor_since(as_of)
+
+
 def build(client, cik: int, company: str = "", ticker: str = "",
           owner_name: str | None = None, exclusions=None,
           on_progress=None) -> Ownership:
@@ -366,6 +374,14 @@ def build(client, cik: int, company: str = "", ticker: str = "",
             rec.graded.append(("caution",
                 f"includes {int(sh):,} shares of {sec} the filings disclose in a remark rather than a table; "
                 f"{int(rec.shares_tabled):,} in the tables. {note}"))
+    # A CLASS CARRIED THROUGH A SPLIT IS SAID (2026-09-15): the number is
+    # right by the split table, and a person should know which filing it
+    # rests on, because no Form 4 has restated it
+    from .ledger import carried_through_split
+    for sec, asof, f in carried_through_split(led.groups, led.splits):
+        rec.graded.append(("caution",
+            f"{sec} is carried from the filing of {asof} and restated {f:g}x through the split(s) since; "
+            f"no filing has restated the class itself"))
     rec.filings_read = led.filings_read
     rec.settled = led.settled
     rec.form4_url = led.last_url
@@ -413,11 +429,21 @@ def build(client, cik: int, company: str = "", ticker: str = "",
             flag(NOTE, "holds no common stock")
 
     if out.ok:
-        rec.outstanding = out.shares
+        # THE DENOMINATOR IS RESTATED THROUGH THE SAME SPLITS (2026-09-15).
+        # The holding is now in today's shares (ledger.groups_total), so the
+        # cover page must be too: a cover page filed before a split is
+        # carried through it, as the walk has done since Nvidia's 10-for-1
+        # (a Form 4 the week after the split, the cover three months later:
+        # 35.3% for a man who owns 3.5%). Both sides of the split on both
+        # sides of the fraction, or neither: never one.
+        rec.outstanding = cover_in_todays_basis(out.shares, out.as_of, splits)
         rec.outstanding_as_of = out.as_of
         rec.share_classes = out.classes
         rec.cover_url = out.url
         rec.pct = rec.shares / rec.outstanding * 100
+        if rec.outstanding != out.shares:
+            flag(CAUTION, f"shares outstanding restated {rec.outstanding / out.shares:g}x through the split(s) "
+                          f"since the cover page of {out.as_of} ({out.shares:,.0f} as filed)")
         rec.gap_days = _days(rec.shares_as_of, rec.outstanding_as_of)
         # A DENOMINATOR SMALLER THAN THE NUMERATOR IS NOT A DENOMINATOR.
         # Nothing else in the pipeline would have caught Fox: the numerator
