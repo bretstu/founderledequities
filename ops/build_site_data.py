@@ -307,12 +307,16 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
         hist_by_t[r["ticker"]].append(r)
     for t, rows in sorted(hist_by_t.items()):
         rows.sort(key=lambda r: r.get("date", ""))
-        sub = "history" if t in sp else "pro/history"
-        with open(os.path.join(out_dir, sub, f"{t}.csv"), "w",
-                  newline="", encoding="utf-8") as fh:
-            w = csv.DictWriter(fh, fieldnames=hist_cols)
-            w.writeheader()
-            w.writerows(rows)
+        # EVERY COMPANY'S RECORD UNDER /pro/history/, the open ones under
+        # /history/ as well (2026-09-14): a Pro reader's page asks the Pro
+        # path for every company, and an S&P company's record must be there.
+        subs = ["pro/history"] + (["history"] if t in sp else [])
+        for sub in subs:
+            with open(os.path.join(out_dir, sub, f"{t}.csv"), "w",
+                      newline="", encoding="utf-8") as fh:
+                w = csv.DictWriter(fh, fieldnames=hist_cols)
+                w.writeheader()
+                w.writerows(rows)
 
     # ---- the lite history files: the page's synchronous brain ----
     # Monthly resolution plus each series' first point, record low, and
@@ -521,8 +525,8 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
         return os.path.getsize(os.path.join(out_dir, name)) // 1024
     print(f"  universe.csv        {len(panel)} rows, {_kb('universe.csv')} KB "
           f"({sum(1 for r in panel if r['ticker'] not in sp)} maskable)")
-    print(f"  history shards      {_n('history')} free + {_n('pro/history')} pro")
     print(f"  events shards       {_n('events')} free + {_n('pro/events')} pro")
+    print(f"  history shards      {_n('history')} open (also under pro) + {_n('pro/history')} pro")
     biggest = max(((os.path.getsize(os.path.join(out_dir, s, f)), s + "/" + f)
                    for s in ("history", "pro/history")
                    for f in os.listdir(os.path.join(out_dir, s))),

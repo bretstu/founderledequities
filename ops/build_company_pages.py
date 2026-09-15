@@ -642,6 +642,15 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         with open(os.path.join(out_dir, "about.html"), "w", encoding="utf-8") as fh:
             fh.write(about_html)
 
+    # A REAL 404 (2026-09-14): without one the host answers an unknown path
+    # with the home page and a 200, which a script fetching a file that does
+    # not exist takes for the file. Pages serves 404.html with a 404.
+    nf_p = os.path.join(root, "404.html")
+    if os.path.exists(nf_p):
+        with open(os.path.join(out_dir, "404.html"), "w", encoding="utf-8") as fh:
+            fh.write(open(nf_p, encoding="utf-8").read().replace("{{TOPNAV}}", topnav)
+                     .replace('href="/site.css"', f'href="/site.css?v={css_v}"'))
+
     sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
     prices, price_date = {}, ""
     try:

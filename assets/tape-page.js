@@ -7,7 +7,11 @@ const withV=p=>p+(p.includes("?")?"&":"?")+"v="+DATA_V;
 const $=s=>document.querySelector(s);
 function openPro(){location.href="/pro/";}
 async function fetchText(paths){
-  for(const p of paths){try{const q=await fetch(withV(p));if(q.ok)return await q.text();}catch(e){}}
+  /* A PAGE IS NOT A FILE: the host answers an unknown path with the home
+     page and a 200; a reply that starts like HTML is a miss and the next
+     path is tried (2026-09-14: /pro/history/XYZ.csv did not exist, and the
+     stake chart parsed the home page). */
+  for(const p of paths){try{const q=await fetch(withV(p));if(!q.ok)continue;const t=await q.text();if(/^\s*</.test(t))continue;return t;}catch(e){}}
   return null;
 }
 async function boot(){
