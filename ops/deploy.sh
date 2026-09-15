@@ -96,7 +96,7 @@ $OGPY ops/og_image.py panel.csv "$SP_LIST" prices.csv founders.csv og.png \
   || echo "  og image: not drawn; keeping the existing og.png"
 
 rm -rf public && mkdir -p public
-cp index.html about.html public/
+cp index.html about.html public/   # the about template is replaced by its built page (build_company_pages) further down
 # THE FONTS ARE OURS. Four woff2 files, Latin-subset, served from the site:
 # no third-party round trips before the type renders, and no invisible
 # text while a font is on its way (font-display: swap).
@@ -154,26 +154,6 @@ $OGPY ops/company_cards.py panel.csv "$SP_LIST" prices.csv founders.csv events.c
   || echo "  company cards: not drawn; pages keep og.png"
 if [ -d og ] && [ -n "$(ls og 2>/dev/null)" ]; then mkdir -p public/og && cp og/*.png public/og/; fi
 python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" public/ events.csv history.csv --og og --prices price-history
-# ---- 4a. founders against the index, drawn once, into the Method page ----
-python3 ops/perf_svg.py perf.csv founders.csv "$SP_LIST" public/perf.svg \
-  && python3 - << 'PY'
-import re
-p = "public/about.html"
-s = open(p, encoding="utf-8").read()
-svg = open("public/perf.svg", encoding="utf-8").read()
-if "<!--PERF_SVG-->" in s:
-    open(p, "w", encoding="utf-8").write(s.replace("<!--PERF_SVG-->", svg, 1))
-PY
-# ---- 4a2. THE TAPE'S CARD: this week's sentence, drawn now, at an address
-# that changes with the picture (unfurlers cache by URL for days) ----
-mkdir -p public/og
-if $OGPY ops/tape_card.py public/og/tape.png; then
-  TCV=$(sha256sum public/og/tape.png | cut -c1-10)
-  sed -i "s|founderledequities.com/og/tape.png\"|founderledequities.com/og/tape.png?v=$TCV\"|g" public/tape/index.html
-else
-  echo "  tape card: not drawn; the page keeps the site's card"
-  sed -i "s|founderledequities.com/og/tape.png\"|founderledequities.com/og.png\"|g" public/tape/index.html
-fi
 # ---- 4b. the archive of letters: every letter ever drafted is a page, /tape/<date>/ ----
 for f in weekly/letter-*.md; do
   [ -f "$f" ] || continue

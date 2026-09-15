@@ -316,12 +316,12 @@ const P=runPage();
   assert(P.cleanHist("ECHO").length===2&&P.cleanHist("ECHO")[0][1]===5,
     "replacing HIST invalidates the cleaned cache — no more sample ghosts");
 
-  // ---- founders against the index: a static image on Method, drawn at deploy ----
+  // ---- About, from first principles: what, where from, what ownership means, why ----
   {
     const about=require("fs").readFileSync("about.html","utf8");
-    assert(about.includes("<!--PERF_SVG-->")&&about.includes("Why founder-led")&&about.includes("A portrait, not a strategy."),
-      "the chart's place is Method, with its caveat");
-    assert(require("fs").existsSync("ops/perf_svg.py"),"and ops/perf_svg.py draws it");
+    assert(about.includes("{{TOPNAV}}")&&about.includes("What ownership means here")&&about.includes("What a trade means here")&&about.includes("EDGAR"),
+      "the About page says what the site is, where the numbers come from, what ownership and a trade mean");
+    assert(!about.includes("PERF_SVG")&&!about.includes("confidence marks")&&!about.includes('class="dot high"'),"no chart, no marks legend: the site is about current ownership and how it moves");
   }
 
   // ---- founders-only, per section, independently ----
@@ -373,31 +373,17 @@ const P=runPage();
   assert((idx.match(/about\.html/g)||[]).length>=2,
     "the About page is reachable from the nav and the footer");
   const about=require("fs").readFileSync("about.html","utf8");
-  // THE ABOUT PAGE IS THE METHOD, IN PLAIN LANGUAGE. What a reader must find there:
-  for(const t of ["ownership = shares the CEO holds",              // the definition, as a formula
-                  "shares the company has outstanding",
-                  "Unvested restricted stock",                     // what counts, and what does not
-                  "Options and restricted stock units",
-                  "Partnership units",
-                  "10-Q or 10-K",                                  // the denominator's source
-                  "beneficial ownership",                          // why other numbers differ
-                  "Voting power",
-                  "The one exception",                             // remarks, read by a person
-                  "Compensation",                                  // what the company gave and what was sold of it
-                  "10b5-1",
-                  "proxy statement decides",                       // who is a founder
-                  "A portrait, not a strategy",                    // the index's caveat
-                  "dividends excluded",
-                  "RSP",
-                  "high","medium","low",                           // the marks
-                  "Nothing here is investment advice",
-                  "One person",
-                  "corrections@founderledequities.com","hello@founderledequities.com"])
+  // THE ABOUT PAGE, FROM FIRST PRINCIPLES (2026-09-14): what a reader must find there
+  for(const t of ["What ownership means here",               // the definition, in words
+                  "shares outstanding",                       // the denominator's source
+                  "10-Q or 10-K",
+                  "have not vested are not counted",          // what does not count
+                  "proxy statement says so",                  // who is a founder
+                  "Rule 10b5-1",                              // the kinds of trade
+                  "EDGAR",                                    // where the numbers come from
+                  "investment advice",
+                  "corrections@founderledequities.com"])
     assert(about.includes(t),"about.html carries: "+t);
-  assert(about.includes('href="./"'),"and links back to the site");
-  assert(about.indexOf("How ownership is calculated")<about.indexOf("What counts as a trade")
-       &&about.indexOf("What counts as a trade")<about.indexOf("The fine print"),
-    "the method comes before the fine print");
 
   // ---- payments wiring on the page ----
   assert(idx.includes('href="/pro/"')&&idx.includes("$15 a month or $150 a year"),

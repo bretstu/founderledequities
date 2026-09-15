@@ -1,245 +1,64 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>About — how every number is made — Founder Led Equities</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>About · Founder Led Equities</title>
+  <meta name="description" content="What Founder Led Equities is, where its numbers come from, and what ownership means here: the chief executive's economic stake in the company they run, computed from their SEC filings.">
   <link rel="canonical" href="https://founderledequities.com/about.html">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Founder Led Equities">
-  <meta property="og:url" content="https://founderledequities.com/about.html">
-  <meta property="og:title" content="About — how every number is made — Founder Led Equities">
-  <meta property="og:description" content="How Founder Led Equities calculates what every CEO owns of the company they run: the definition, the sources, the rules, and what the marks mean.">
-  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:title" content="About · Founder Led Equities">
   <meta property="og:image" content="https://founderledequities.com/og.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="How many CEOs own more than 5% of the company they run, computed from SEC filings">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://founderledequities.com/og.png">
-  <meta name="description" content="How Founder Led Equities calculates what every CEO owns of the company they run: the definition, the sources, the rules, and what the marks mean.">
-<link rel="preload" href="/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/hanken.woff2" as="font" type="font/woff2" crossorigin>
-<style>
-/* self-hosted, Latin subset, swapped in when they arrive */
-@font-face{font-family:"Bricolage Grotesque";src:url("/fonts/bricolage.woff2") format("woff2");font-weight:200 800;font-stretch:75% 100%;font-display:swap}
-@font-face{font-family:"Fraunces";src:url("/fonts/fraunces.woff2") format("woff2");font-weight:100 900;font-display:swap}
-@font-face{font-family:"Hanken Grotesk";src:url("/fonts/hanken.woff2") format("woff2");font-weight:100 900;font-display:swap}
-@font-face{font-family:"IBM Plex Mono";src:url("/fonts/plexmono.woff2") format("woff2");font-weight:400;font-display:swap}
-@font-face{font-family:"IBM Plex Mono";src:url("/fonts/plexmono-medium.woff2") format("woff2");font-weight:500 600;font-display:swap}
-.perffig{margin:22px 0 18px;padding:14px 16px 10px;border:1px solid var(--line)}
-.perffig svg{width:100%;height:auto;display:block}
-.perffig figcaption{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:8px}
-</style>
-<style>
-:root{
-  --bg:#F7F4EE; --panel:#F7F4EE; --line:#D6D1C7; --rule:#1A1A1A;
-  --ink:#1A1A1A; --mut:#5D6167; --faint:#6F7379;
-  --blue:#0C0D0E; --blue-d:#000000; --wash:#DCEBE1; --buy:#1F6B3A;
-  --disp:"Fraunces",Georgia,"Times New Roman",serif;
-  --ui:"Hanken Grotesk",-apple-system,sans-serif;
-  --mono:"IBM Plex Mono","SF Mono",monospace;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:16.5px;line-height:1.7;-webkit-font-smoothing:antialiased}
-a{color:var(--ink);text-decoration:none}
-a:hover{text-decoration:underline;text-underline-offset:2px}
-a:hover{text-decoration:underline}
-:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-.top{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--ink)}
-.topin{max-width:1120px;margin:0 auto;padding:16px clamp(20px,3.5vw,48px);display:flex;align-items:center;justify-content:space-between;gap:18px}
-.logo{font-family:var(--disp);font-weight:600;font-size:22px;letter-spacing:-.01em;color:var(--ink)}
-.logo i{font-style:normal;color:#93A0FF}
-.back{font-size:13.5px;font-weight:600;color:var(--mut);white-space:nowrap}
-.logo{white-space:nowrap}
-.back:hover{color:#fff;text-decoration:none}
-main{max-width:1120px;margin:0 auto;padding:clamp(44px,6vw,80px) clamp(20px,3.5vw,48px) 24px}
-h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(38px,5vw,64px)}
-.standfirst{margin-top:18px;color:var(--mut);font-size:17.5px;line-height:1.6;max-width:64ch}
-section{padding:clamp(30px,3.4vw,44px) 0;border-top:2px solid var(--rule)}
-section:first-of-type{border-top:none;padding-top:clamp(34px,4vw,52px)}
-h2{font-family:var(--disp);font-weight:500;letter-spacing:-.022em;font-size:clamp(25px,2.8vw,34px);margin-bottom:16px}
-p{max-width:78ch;margin-bottom:14px;color:#26282B}
-ul{max-width:78ch;margin:0 0 14px 20px;color:#26282B}
-li{margin-bottom:6px}
-h3{font-family:var(--disp);font-weight:500;font-size:18px;letter-spacing:-.01em;margin:22px 0 8px}
-p b{font-weight:650}
-.mail{display:inline-block;margin-top:7px;font-family:var(--mono);font-size:14px;font-weight:500}
-.formula{font-family:var(--mono);font-size:clamp(15px,1.8vw,19px);font-weight:600;background:var(--panel);border-radius:10px;padding:18px 22px;margin:6px 0 18px;max-width:78ch;color:var(--ink)}
-.formula small{display:block;font-weight:400;font-size:13px;color:var(--mut);margin-top:8px;font-family:var(--ui)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:10px 28px;max-width:78ch;margin-bottom:14px}
-.two h3{margin-top:6px}
-@media(max-width:700px){.two{grid-template-columns:1fr}}
-.q{border-left:3px solid var(--blue);background:var(--panel);border-radius:0 9px 9px 0;padding:13px 17px;margin:18px 0;max-width:68ch;color:var(--mut);font-size:14px}
-.k{font-family:var(--mono);font-size:13px;background:var(--panel);border-radius:5px;padding:1px 6px}
-.conf{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
-.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
-.dot.high{background:var(--blue)}
-.dot.medium{background:#fff;border:2px solid var(--blue)}
-.dot.low{background:#fff;border:2px solid #B06A00}
-footer{border-top:2px solid var(--rule);margin-top:18px}
-footer .in{max-width:1120px;margin:0 auto;padding:26px clamp(20px,3.5vw,48px) 48px;font-size:12.5px;color:var(--faint)}
-</style>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/hanken.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/site.css">
+  <style>
+    /* ABOUT, FROM FIRST PRINCIPLES (2026-09-14): what the site is, where the
+       numbers come from, what ownership and a trade mean here, why. A few
+       paragraphs in the letter's column. The marks legend, the index
+       chart and the long method walk that stood here are gone: the site is
+       about current ownership and how it moves, and that is what this says. */
+    .apage{max-width:720px;margin:0 auto;padding:56px clamp(20px,3.5vw,48px) 80px}
+    .apage h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(36px,5vw,56px);margin:0 0 28px}
+    .apage h2{font-family:var(--disp);font-weight:500;font-size:22px;letter-spacing:-.01em;margin:34px 0 8px}
+    .apage p{font-size:16.5px;line-height:1.6;color:var(--ink);margin:0 0 14px}
+    .apage p.fine{font-size:13.5px;color:var(--mut);line-height:1.55}
+    .apage a{color:var(--ink)}
+    .apage .kinds{margin:6px 0 14px;padding:0;list-style:none}
+    .apage .kinds li{font-size:16.5px;line-height:1.6;padding-left:0}
+    .apage .kinds .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;margin-right:10px;display:inline-block;width:150px}
+    .apage .kinds .bought{color:var(--buy)}.apage .kinds .disc{color:#B23428}.apage .kinds .plan,.apage .kinds .comp{color:var(--mut)}
+  </style>
 </head>
 <body>
+{{TOPNAV}}
+<main class="apage">
+  <h1>About.</h1>
 
-<div class="top"><div class="topin">
-  <a href="./" style="text-decoration:none"><span class="logo">Founder Led <i>Equities</i></span></a>
-  <a class="back" href="./">← Back to the numbers</a>
-</div></div>
+  <p><b>What this is.</b> Founder Led Equities shows what the chief executive of every US public company worth $1&nbsp;billion or more owns of the company they run: the share, in percent and in dollars, as of their newest filing, and how that share has moved through every purchase and sale since 2016. About 2,100 companies are covered. Roughly 300 of them are run by a founder, meaning the company's own proxy statement says so, and those are the ones the site is about.</p>
 
-<main>
-  <h1>How every number is made.</h1>
-  <p class="standfirst">What every CEO owns of the company they run, computed from the
-  filings they signed. This page is the definition, the sources, and the rules, in
-  plain language.</p>
+  <h2>Where the numbers come from</h2>
+  <p>Every figure is computed from the forms insiders sign with the SEC (Forms 3, 4 and 5), read from EDGAR by a pipeline that runs every night, and for founders within minutes of a filing during the day. Nothing is estimated and nothing is copied from a third party. Every number on a company page links to the filing it came from.</p>
 
-  <section id="why">
-    <h2>Why founders</h2>
-    <p>When you buy a stock you own a piece of a company but almost none of the say.
-    The direction belongs to whoever runs it, so the question behind every stock is a
-    personnel question: who is deciding, and what happens to them if they're wrong?</p>
-    <p>Most CEOs are hired, and paid mostly in options: upside without downside, on a
-    timer. A founder who still holds a large stake is different. <b>Their stake does
-    not expire.</b> If the company loses, they lose, in the largest position of their
-    life, for as long as they hold it. About one in ten large public companies is still
-    run by a person who started it. This site keeps score: who owns what, whether it's
-    growing or shrinking, and what they did with their own money.</p>
-  </section>
+  <h2>What ownership means here</h2>
+  <p>Economic ownership: the shares the person beneficially owns, directly and through trusts, family and holding companies, across every class of stock, divided by the company's shares outstanding from its latest 10-Q or 10-K cover page. Options, units and awards that have not vested are not counted, because they are not shares yet. When a filing leaves a gap the record cannot reconcile, the page says so rather than guessing.</p>
 
-  <section id="ownership">
-    <h2>How ownership is calculated</h2>
-    <div class="formula">ownership = shares the CEO holds ÷ shares the company has outstanding
-      <small>The same denominator for every CEO, so every figure on the site is comparable.</small></div>
-    <div class="two">
-      <div><h3>Counted</h3>
-        <ul>
-          <li>Issued shares held directly or through trusts, holding companies and family vehicles that are theirs.</li>
-          <li>Every class of common stock; a convertible class counts at its conversion ratio.</li>
-          <li>Unvested restricted stock: it is issued, it votes, and it is in the share count. The row says when a stake includes it.</li>
-        </ul></div>
-      <div><h3>Not counted</h3>
-        <ul>
-          <li>Options and restricted stock units. They are promises of shares, not shares: not issued, not in the count.</li>
-          <li>Shares a filing attributes to the CEO that the company itself says are not theirs. Rare, and every such case is listed with its source.</li>
-          <li>Partnership units and other economics held outside common stock. Where that is the whole stake (Blackstone), the site prints no number rather than a misleading one.</li>
-        </ul></div>
-    </div>
-    <h3>Where the numbers come from</h3>
-    <p><b>Shares held</b> come from the tables of SEC Forms 3, 4 and 5, the filings the CEO
-    signs within two business days of a trade. For each share class the site takes the
-    newest filing that reports it and sums its lines, so a stake is what the CEO's own
-    latest report says it is. <b>Shares outstanding</b> come from the cover page of the
-    company's newest 10-Q or 10-K, carried through stock splits. Nothing is estimated.</p>
-    <h3>Why this differs from other numbers you'll see</h3>
-    <p>The SEC's <b>beneficial ownership</b> figure, the one in a proxy statement or a
-    Schedule 13G, is a legal test, not a measure of what someone owns. It adds shares the
-    person <i>could</i> acquire within 60 days (vested options, RSUs about to settle) to
-    both the top and the bottom of the fraction, and it includes shares attributed by rule
-    even when the person disclaims them. That is why a headline can say 48% where this site
-    says 46%. <b>Voting power</b> is a third thing again: shares weighted by the votes their
-    class carries. At a company with super-voting stock it can be double the economic stake.
-    This site measures economic ownership: the shares whose value rises and falls with the
-    stock today.</p>
-    <h3>The one exception, and how it's handled</h3>
-    <p>Occasionally a filer states in a remark that shares they hold of record are not in
-    their filing's tables. The site reads tables, never prose, so no software turns that
-    sentence into a number. A person does, once, and records it with the filing as the
-    source. The row then shows both figures, the total and the part the tables report, and
-    the entry retires itself the day a filing reports those shares in a table or stops
-    stating the figure.</p>
-  </section>
+  <h2>What a trade means here</h2>
+  <p>Every purchase and sale is classified by what the person actually decided:</p>
+  <ul class="kinds">
+    <li><span class="kind bought">Bought</span>shares bought on the open market, with their own money.</li>
+    <li><span class="kind disc">Discretionary</span>shares sold at a time the person chose.</li>
+    <li><span class="kind plan">Planned</span>shares sold under a plan set months earlier (Rule 10b5-1); the decision was made long before the sale.</li>
+    <li><span class="kind comp">Compensation</span>options exercised and sold, or shares withheld for tax; the stake did not move the way a purchase or sale moves it.</li>
+  </ul>
+  <p>The distinction is the point. A founder who buys, or who sells outside a plan, has decided something this week. A planned sale was decided last year.</p>
 
-  <section id="trades">
-    <h2>What counts as a trade</h2>
-    <p><b>Bought</b> and <b>sold</b> mean the stake moved: shares acquired on the open
-    market, or shares sold from the position. <b>Planned</b> marks a sale made under a
-    10b5-1 plan set months or years earlier; <b>discretionary</b> means the person chose
-    the day. The distinction matters: most CEO selling is planned, and the rare open-market
-    purchase is the signal.</p>
-    <p><b>Compensation</b> is what the company gave and what was sold of it: awards granted,
-    options exercised and held or sold the same day, vests with tax withheld, units converted
-    and sold. Those trades did not move the stake the way a purchase or a sale does, and they
-    are listed, named, and left out of every ranking, so a "$50M sale" that was options cashed
-    is never counted as a founder reducing their stake. Gifts, conversions and catch-up filings
-    for trades made before the company was public are shown as transfers, on the same terms.</p>
-    <p>Two dates appear on every trade: the day it happened and the day it reached EDGAR.
-    Filers have two business days, and catch-up filings after an IPO can carry months of
-    trades at once.</p>
-  </section>
+  <h2>Why</h2>
+  <p>The person running a company is the one insider whose stake is a statement about it. Whether they still own it, and what they did about it this week, is public in the filings but hard to read there. This site reads them.</p>
 
-  <section id="founders">
-    <h2>Who is a founder</h2>
-    <p>The company's own proxy statement decides. If it names the CEO a founder or
-    co-founder, the row carries the badge and the sentence that earned it. An heir who
-    inherited the chair, or a founder who moved to the board while someone else runs the
-    company, is not a founder-CEO. Where the proxy's language is ambiguous the badge reads
-    "founder?" rather than guessing. The classification is reviewed by hand against the
-    largest stakes and corrected at the source when it is wrong.</p>
-  </section>
-
-  <section id="index">
-    <h2>Why founder-led: founders against the index</h2>
-    <p>The chart is the reason the category is worth screening, and it is evidence, not a
-    product: nobody looks at it twice, so it lives here rather than on the home page. An
-    equal-weight basket of the S&amp;P 500's founder-led companies, rebalanced monthly from
-    split-adjusted month-end closes with dividends excluded on every line, against the S&amp;P
-    500 (SPY) and, because equal weight against cap weight mixes two effects, the equal-weight
-    S&amp;P 500 (RSP). Companies enter when their price history begins. Drawn at each
-    deploy from the same month-end closes the rest of the site prices with.</p>
-    <figure class="perffig">
-      <!--PERF_SVG-->
-      <figcaption>Growth of $10,000, equal-weighted, the founder-led members of the S&amp;P 500 against SPY and RSP.</figcaption>
-    </figure>
-    <p><b>A portrait, not a strategy.</b> The basket is today's founder-led companies
-    applied backward. Founders who left, companies acquired or delisted, and companies that
-    fell below $1B are not in it, and they are disproportionately the losers. That flatters
-    the line. Nothing here is investment advice.</p>
-  </section>
-
-  <section id="marks">
-    <h2>The confidence marks</h2>
-    <p><span class="conf"><span class="dot high"></span><b>high</b></span> the newest filing
-    reconciles with the record and the share count is fresh.
-    <span class="conf"><span class="dot medium"></span><b>medium</b></span> a judgment was
-    made along the way (a convertible class, a restated balance) and the row says which.
-    <span class="conf"><span class="dot low"></span><b>low</b></span> something known is
-    missing or the figures don't reconcile; treat the number as a lead, not a fact, and read
-    the filing linked on the row.</p>
-  </section>
-
-  <section id="fresh">
-    <h2>How fresh it is</h2>
-    <p>Everything refreshes nightly from EDGAR. Prices are the latest close. A trade can take
-    two business days to appear in a filing, so "yesterday" on this site means the filings
-    available last night.</p>
-    <p><b>S&amp;P 500 current stakes and the last twelve months are open.</b> The archive, every
-    other $1B+ name, longer tape windows, and export are Pro: $15 a month or $150 a year, a
-    14-day trial, cancel any time (<a href="/pro/">the plan</a>). Pro is more of the same
-    file, not a different lens: nothing is computed differently behind the seal.</p>
-  </section>
-
-  <section id="who">
-    <h2>Who makes this</h2>
-    <p>One person, nights and weekends. No firm behind it, no positions to promote, nothing
-    for sale beyond the site. Credibility can't rest on a brand name, so it rests on method
-    and receipts: every figure links to the filing it came from, and when the data can't be
-    reconciled the site says so.</p>
-    <p>A number that disagrees with a filing is the most useful message I can get:
-    <a class="mail" href="mailto:corrections@founderledequities.com">corrections@founderledequities.com</a>.
-    Ideas and requests: <a class="mail" href="mailto:hello@founderledequities.com">hello@founderledequities.com</a>.</p>
-  </section>
-
-  <section id="disclaimer">
-    <h2>The fine print</h2>
-    <p><b>Nothing here is investment advice.</b> The site reports what filings say; it
-    recommends nothing, and a large founder stake is not by itself a reason to own a stock.
-    <b>Accuracy is pursued, not guaranteed:</b> filings contain errors, filers are
-    inconsistent, software has bugs. Where this site and a filing disagree, the filing is
-    right. <b>Visits are counted by the site itself, without cookies:</b> which sections were
-    read and which buttons pressed, no email, no IP address, nothing shared.</p>
-  </section>
+  <p class="fine">S&amp;P 500 current stakes and the last twelve months of trades are open to everyone. The archive and the companies outside the S&amp;P 500 are <a href="/pro/">Pro</a>: $15 a month, nothing computed differently behind the seal. Made by one person in Portland, Maine. The site counts its own visitors without cookies and shows no ads. A number that disagrees with a filing is the most useful message I can get: <a href="mailto:corrections@founderledequities.com">corrections@founderledequities.com</a>. Nothing here is investment advice.</p>
 </main>
-
-<footer><div class="in">Founder Led Equities · computed from SEC EDGAR · not investment advice</div></footer>
 </body>
 </html>

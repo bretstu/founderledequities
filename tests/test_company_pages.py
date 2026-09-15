@@ -170,34 +170,17 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     assert "document.cookie" not in src
 
 
-def test_the_index_chart_is_drawn_once_for_method(tmp_path):
-    """Founders against the index is a static SVG (ops/perf_svg.py) drawn at
-    deploy from perf.csv for the Method page: the S&P founders' equal-weight
-    line against SPY and RSP, growth of $10,000, with the caveat in the
-    page. Nothing on the home page loads perf.csv any more."""
-    import importlib.util, pathlib
-    spec = importlib.util.spec_from_file_location("perf_svg", pathlib.Path(ROOT) / "ops" / "perf_svg.py")
-    ps = importlib.util.module_from_spec(spec); spec.loader.exec_module(ps)
-    (tmp_path / "sp.csv").write_text("ticker\nAAA\nBBB\n")
-    (tmp_path / "founders.csv").write_text("ticker,founder\nAAA,yes\nBBB,yes\nCCC,yes\nDDD,yes\nEEE,yes\nFFF,yes\n")
-    months = [f"2024-{m:02d}" for m in range(1, 13)]
-    rows = ["ticker,month,close"]
-    for tk, start, step in (("SPY", 100, 1), ("RSP", 100, 0.5), ("AAA", 10, 1), ("BBB", 20, 1), ("CCC", 5, 1), ("DDD", 5, 1), ("EEE", 5, 1), ("FFF", 5, 1)):
-        for i, m in enumerate(months):
-            rows.append(f"{tk},{m},{start + step * i}")
-    (tmp_path / "perf.csv").write_text("\n".join(rows) + "\n")
-    # only the S&P founders (AAA, BBB) are the cohort; fewer than five founders means no line
-    assert ps.series(str(tmp_path / "perf.csv"), str(tmp_path / "founders.csv"), str(tmp_path / "sp.csv")) is None
-    (tmp_path / "sp.csv").write_text("ticker\nAAA\nBBB\nCCC\nDDD\nEEE\nFFF\n")
-    d = ps.series(str(tmp_path / "perf.csv"), str(tmp_path / "founders.csv"), str(tmp_path / "sp.csv"))
-    assert d and d["count"] == 6 and d["months"][0] == "2024-01" and len(d["founders"]) == 12
-    assert d["founders"][-1] > d["spy"][-1] > d["rsp"][-1], "the fixture's founders outgrow SPY, SPY outgrows RSP"
-    svg = ps.svg(d)
-    assert svg.startswith("<svg") and "Founders index" in svg and "S&amp;P 500 (SPY)" in svg and "$10,000" in svg
-    idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
-    assert "perf.csv" not in idx and "function perfSeries(" not in idx, "the home page no longer draws the chart"
-    about = open(os.path.join(ROOT, "about.html"), encoding="utf-8").read()
-    assert "<!--PERF_SVG-->" in about and "A portrait, not a strategy." in about
+def test_the_about_page_is_built_with_the_masthead(tmp_path):
+    """About is a template with the masthead from index.html, written where
+    the site serves it; it explains ownership and the kinds of trade and
+    carries no chart or marks legend."""
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    about = open(os.path.join(out, "about.html"), encoding="utf-8").read()
+    assert "{{TOPNAV}}" not in about and 'class="topnav"' in about or "topin" in about
+    for phrase in ("What ownership means here", "What a trade means here", "EDGAR", "Rule 10b5-1"):
+        assert phrase in about, phrase
+    assert "PERF_SVG" not in about and 'class="dot high"' not in about
 
 def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path):
     """A fetch without scripts must read the stake, the value, the record

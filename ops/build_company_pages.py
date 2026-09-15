@@ -632,6 +632,15 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         with open(os.path.join(out_dir, "pro", "index.html"), "w", encoding="utf-8") as fh:
             fh.write(pro_html)
     topnav = extract_topnav(index_html)
+    # THE ABOUT PAGE: a template with the masthead from index.html, written
+    # where the site has always served it (/about.html)
+    about_tpl_p = os.path.join(root, "about.html")
+    if os.path.exists(about_tpl_p) and "{{TOPNAV}}" in open(about_tpl_p, encoding="utf-8").read():
+        about_html = (open(about_tpl_p, encoding="utf-8").read()
+                      .replace("{{TOPNAV}}", topnav)
+                      .replace('href="/site.css"', f'href="/site.css?v={css_v}"'))
+        with open(os.path.join(out_dir, "about.html"), "w", encoding="utf-8") as fh:
+            fh.write(about_html)
 
     sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
     prices, price_date = {}, ""
