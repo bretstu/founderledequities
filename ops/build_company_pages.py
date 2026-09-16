@@ -786,7 +786,13 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
             fh.write(f"  <url><loc>{html.escape(u)}</loc><lastmod>{lm}</lastmod></url>\n")
         fh.write("</urlset>\n")
     with open(os.path.join(out_dir, "robots.txt"), "w", encoding="utf-8") as fh:
-        fh.write(f"User-agent: *\nAllow: /\nDisallow: /pro/\nDisallow: /api/\nSitemap: {SITE}/sitemap.xml\n")
+        # THE PRO PAGE IS INDEXABLE; ONLY THE DATA UNDER IT IS NOT (2026-09-16):
+        # "Disallow: /pro/" blocked the page that sells the subscription, and
+        # Search Console said so. The data files beneath the prefix answer 401
+        # to anyone without a subscription anyway; the rules name them so the
+        # crawler does not spend its budget asking.
+        fh.write(f"User-agent: *\nAllow: /\nDisallow: /pro/universe.csv\nDisallow: /pro/history/\nDisallow: /pro/events/\n"
+                 f"Disallow: /api/\nSitemap: {SITE}/sitemap.xml\n")
     print(f"  company pages: {n_open} open, {n_sealed} sealed; company.js, site.css, sitemap.xml, robots.txt")
     return 0
 

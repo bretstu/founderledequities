@@ -111,7 +111,9 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert sm.count("<loc>") == 7 and "/company/SEALD/" in sm and "/companies/" in sm and "/tape/" in sm and "/pro/" in sm, \
         "every company is in the sitemap: the open ones with the answer, the sealed ones with the question"
     robots = open(os.path.join(out, "robots.txt"), encoding="utf-8").read()
-    assert "Disallow: /pro/" in robots and "Sitemap:" in robots
+    assert "Sitemap:" in robots
+    # the Pro page is indexable; the data beneath the prefix is not (2026-09-16, Search Console)
+    assert "Disallow: /pro/\n" not in robots and "Disallow: /pro/history/" in robots and "Disallow: /pro/events/" in robots and "Disallow: /pro/universe.csv" in robots
     js = open(os.path.join(out, "company.js"), encoding="utf-8").read()
     assert "const BLUR=" in js and "function cleanHist(" in js, "the page's own logic follows the shared code"
 
