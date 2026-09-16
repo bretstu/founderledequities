@@ -56,7 +56,7 @@ import copy
 from .ledger import (SECTION16, Group, _merge_same_day, _parse, _rows, groups_total,
                      displace_amended, retired_classes,
                      class_letters,
-                     is_share_class, issuer_of, match_class, SINGLE_CLASS,
+                     is_share_class, issuer_of, match_class, names_another_letter, dominant_letter, SINGLE_CLASS,
                      vehicle_keys, is_anonymous, base_of)
 
 
@@ -461,6 +461,9 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
     day_value: dict = {}
     day_unpriced: dict = {}
 
+    # THE LETTER THIS PERSON'S ROWS USE MOST, read once so every row of every
+    # document lands the same way in this walk and in the ledger's (MoonLake)
+    dominant = dominant_letter(client, issuer_cik, ordered)
     # A CLASS THE COMPANY RETIRED closes at the first cover without it
     # (ledger.retired_classes); read once from the cover pages' class lists
     retired = retired_classes(series) if series else {}
@@ -538,8 +541,8 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                 continue
             if r.table == "II" and not is_share_class(r.security):
                 continue
-            if one_class:
-                title = SINGLE_CLASS
+            if one_class and not names_another_letter(r.security, letters, dominant):
+                title = SINGLE_CLASS      # unless the title names a letter the cover does not (MoonLake, 2026-09-15)
             elif letters:
                 title = match_class(r.security, letters)
                 if title is None:

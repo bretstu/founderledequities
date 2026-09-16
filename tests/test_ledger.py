@@ -3888,6 +3888,75 @@ def test_a_feed_event_before_the_registrants_first_cover_is_a_predecessors():
     assert Splits(ticker="Y", events=[Split(date="2024-01-01", factor=2.0)]).disown_before_first_cover(Series()) == [], "no covers known: the feed stands"
 
 
+def test_a_lettered_title_is_its_own_class_even_when_the_cover_names_one():
+    """MOONLAKE, Dec 2025 (fixed 2026-09-15). The cover names Class A alone
+    (the Class C shares of an Up-C carry votes, not economics). The
+    founder's exchange filing has a Class A row, 3,074,893 after, and a
+    Class C row, 0 after. Both folded into the one class the walk knew and
+    the later row won: 0 shares, three months, no caution. Now the Class C
+    row is a discovered class of its own, as it would be if the cover
+    named two, and an unlettered "Common Stock" title still maps to the
+    single class."""
+    from fle.history import build_history
+    from fle.series import Series, Point
+    from fle.ledger import names_another_letter
+    head = ('<ownershipDocument><periodOfReport>{p}</periodOfReport><issuer><issuerCik>0001821586</issuerCik></issuer>'
+            '<reportingOwner><reportingOwnerId><rptOwnerCik>0001213900</rptOwnerCik><rptOwnerName>Santos da Silva Jorge</rptOwnerName></reportingOwnerId>'
+            '<reportingOwnerRelationship><isOfficer>1</isOfficer><officerTitle>CEO</officerTitle></reportingOwnerRelationship></reportingOwner>')
+
+    def tx(title, code, sh, ad, after, d):
+        return (f'<nonDerivativeTransaction><securityTitle><value>{title}</value></securityTitle><transactionDate><value>{d}</value></transactionDate>'
+                f'<transactionCoding><transactionCode>{code}</transactionCode></transactionCoding><transactionAmounts><transactionShares><value>{sh}</value></transactionShares>'
+                f'<transactionAcquiredDisposedCode><value>{ad}</value></transactionAcquiredDisposedCode></transactionAmounts>'
+                f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts>'
+                f'<ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></nonDerivativeTransaction>')
+    A = "Class A ordinary shares, par value $0.0001 per share"; C = "Class C ordinary shares, par value $0.0001 per share"
+    docs = {"m1": head.format(p="2025-12-08") + tx(A, "S", 130000, "D", 2948577, "2025-12-08") + tx(A, "S", 70000, "D", 2878577, "2025-12-08") + '</ownershipDocument>',
+            "m2": head.format(p="2025-12-19") + tx(A, "C", 196316, "A", 3074893, "2025-12-19") + tx(C, "D", 196316, "D", 0, "2025-12-19") + '</ownershipDocument>',
+            "m3": head.format(p="2026-01-05") + tx("Common Stock", "S", 100000, "D", 2974893, "2026-01-05") + '</ownershipDocument>'}
+
+    class _E:
+        def filing_index(self, cik, acc):
+            return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+
+        def get(self, url, use_cache=True):
+            return next(v for k, v in docs.items() if k in url)
+
+    mine = [{"form": "4", "accessionNumber": k, "filingDate": d, "reportDate": r, "primaryDocument": "d.xml"}
+            for k, d, r in [("m1", "2025-12-10", "2025-12-08"), ("m2", "2025-12-22", "2025-12-19"), ("m3", "2026-01-07", "2026-01-05")]]
+    ser = Series(points=[Point("2025-09-30", 73615396.0)], classes={"2025": {"us-gaap:CommonClassAMember": 73615396.0}})
+    h = build_history(_E(), 1821586, "1213900", mine, series=ser)
+    got = [(s.date, round(s.shares), s.groups) for s in h.snapshots]
+    assert got == [("2025-12-08", 2878577, 1), ("2025-12-19", 3074893, 2), ("2026-01-05", 2974893, 2)], got
+    lettered = {("class", "A"): "Class A Common Stock"}
+    assert names_another_letter(C, lettered, None) and not names_another_letter(A, lettered, None), "the cover's letter is the class"
+    assert not names_another_letter("Common Stock", lettered, None), "no letter: the single class, whatever the cover calls it"
+    assert not names_another_letter("Stock Option (Right to Buy)", lettered, None), "not a share"
+    # BOX, CBRE, ninety companies: an unlettered cover and filings that say "Class A": the person's dominant letter is the class
+    bare = {("", ""): "Common Stock"}
+    assert not names_another_letter("Class A Common Stock", bare, ("class", "A")), "the dominant letter is the class"
+    assert names_another_letter("Class B Common Stock", bare, ("class", "A")), "and another letter is another class (Archer's B)"
+    assert not names_another_letter("Class A Common Stock", bare, None), "no letter anywhere: nothing to split on"
+
+    # the same walk with an unlettered cover: MoonLake still right, and a company whose titles alternate
+    # between "Common Stock" and "Class A Common Stock" is one holding, not two
+    ser = Series(points=[Point("2025-09-30", 73615396.0)], classes={"2025": {"c-2": 73615396.0}})
+    h = build_history(_E(), 1821586, "1213900", mine, series=ser)
+    assert [(s.date, round(s.shares)) for s in h.snapshots] == [("2025-12-08", 2878577), ("2025-12-19", 3074893), ("2026-01-05", 2974893)]
+    docs2 = {"b1": head.format(p="2025-11-01") + tx("Common Stock", "P", 1000, "A", 500000, "2025-11-01") + '</ownershipDocument>',
+             "b2": head.format(p="2025-12-01") + tx("Class A Common Stock", "S", 1000, "D", 499000, "2025-12-01") + '</ownershipDocument>'}
+
+    class _E2:
+        def filing_index(self, cik, acc):
+            return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+
+        def get(self, url, use_cache=True):
+            return next(v for k, v in docs2.items() if k in url)
+
+    mine2 = [{"form": "4", "accessionNumber": k, "filingDate": d, "reportDate": d, "primaryDocument": "d.xml"} for k, d in [("b1", "2025-11-01"), ("b2", "2025-12-01")]]
+    h = build_history(_E2(), 1821586, "1213900", mine2, series=Series(points=[Point("2025-09-30", 1e8)], classes={"2025": {"c-2": 1e8}}))
+    assert [(s.date, round(s.shares), s.groups) for s in h.snapshots] == [("2025-11-01", 500000, 1), ("2025-12-01", 499000, 1)], "one holding, two spellings"
+
 
 def test_a_class_the_company_retired_is_closed_at_the_first_cover_without_it():
     """BLOOM, LITHIA, ACV AUCTIONS (2026-09-16). A Class B group stated in
@@ -3928,3 +3997,73 @@ def test_a_class_the_company_retired_is_closed_at_the_first_cover_without_it():
     # a group stated after the retirement cover is not closed by it (a filer restating the class after the fact)
     late = {"B": Group(security="Class B Common Stock", direct="D", shares=10, filed="2024-01-15")}
     assert closed_groups(late, {("class", "B"): "2023-08-08"}) == []
+
+
+def test_the_letter_rule_and_the_retirement_rule_are_both_present():
+    """2026-09-16: a package built from a sandbox that had the letter rule
+    reverted shipped the retirement rule without it, and three founders
+    went back to zero. The two rules are one design; this pins both."""
+    import fle.ledger as L
+    import fle.history as H
+    import inspect
+    assert callable(getattr(L, "names_another_letter", None)) and callable(getattr(L, "dominant_letter", None))
+    assert callable(getattr(L, "retired_classes", None)) and callable(getattr(L, "closed_groups", None))
+    assert "names_another_letter" in inspect.getsource(H.build_history) and "retired_classes" in inspect.getsource(H.build_history)
+    assert "names_another_letter" in inspect.getsource(L.build_ledger)
+
+
+def _archer_docs():
+    """The three real filings, and a client that serves them."""
+    head = ('<ownershipDocument><periodOfReport>{p}</periodOfReport><issuer><issuerCik>0001824502</issuerCik></issuer>'
+            '<reportingOwner><reportingOwnerId><rptOwnerCik>0001882604</rptOwnerCik><rptOwnerName>Goldstein Adam</rptOwnerName></reportingOwnerId>'
+            '<reportingOwnerRelationship><isOfficer>1</isOfficer><officerTitle>CEO</officerTitle></reportingOwnerRelationship></reportingOwner>')
+
+    def tx(t, code, sh, ad, after, di, nat="", d="2024-11-18"):
+        return (f'<nonDerivativeTransaction><securityTitle><value>{t}</value></securityTitle><transactionDate><value>{d}</value></transactionDate><transactionCoding><transactionCode>{code}</transactionCode></transactionCoding>'
+                f'<transactionAmounts><transactionShares><value>{sh}</value></transactionShares><transactionAcquiredDisposedCode><value>{ad}</value></transactionAcquiredDisposedCode></transactionAmounts>'
+                f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>{di}</value></directOrIndirectOwnership><natureOfOwnership><value>{nat}</value></natureOfOwnership></ownershipNature></nonDerivativeTransaction>')
+
+    def hold(t, after, di, nat=""):
+        return (f'<nonDerivativeHolding><securityTitle><value>{t}</value></securityTitle><postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts>'
+                f'<ownershipNature><directOrIndirectOwnership><value>{di}</value></directOrIndirectOwnership><natureOfOwnership><value>{nat}</value></natureOfOwnership></ownershipNature></nonDerivativeHolding>')
+
+    def dtx(t, code, sh, after, di, nat="", d="2024-11-18", under="Class A Common Stock"):
+        return (f'<derivativeTransaction><securityTitle><value>{t}</value></securityTitle><transactionDate><value>{d}</value></transactionDate><transactionCoding><transactionCode>{code}</transactionCode></transactionCoding>'
+                f'<transactionAmounts><transactionShares><value>{sh}</value></transactionShares></transactionAmounts><underlyingSecurity><underlyingSecurityTitle><value>{under}</value></underlyingSecurityTitle><underlyingSecurityShares><value>{sh}</value></underlyingSecurityShares></underlyingSecurity>'
+                f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>{di}</value></directOrIndirectOwnership><natureOfOwnership><value>{nat}</value></natureOfOwnership></ownershipNature></derivativeTransaction>')
+
+    def dh(t, after, di, nat="", under="Class A Common Stock"):
+        return (f'<derivativeHolding><securityTitle><value>{t}</value></securityTitle><underlyingSecurity><underlyingSecurityTitle><value>{under}</value></underlyingSecurityTitle><underlyingSecurityShares><value>{after}</value></underlyingSecurityShares></underlyingSecurity>'
+                f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>{di}</value></directOrIndirectOwnership><natureOfOwnership><value>{nat}</value></natureOfOwnership></ownershipNature></derivativeHolding>')
+    A, B = "Class A Common Stock", "Class B Common Stock"
+    docs = {"a1": head.format(p="2024-11-18") + tx(A, "C", 5002306, "A", 5002306, "D") + hold(A, 139526, "I", "By Capri Growth LLC")
+                  + dtx("Performance Based Restricted Stock Units", "M", 5002306, 10004612, "D", under=B) + dtx(B, "M", 5002306, 11463959, "D") + dtx(B, "C", 5002306, 6461653, "D") + dh(B, 27756278, "I", "By Capri Growth LLC") + '</ownershipDocument>',
+            "a2": head.format(p="2024-11-19") + tx(A, "S", 805170, "D", 4197136, "D", d="2024-11-19") + tx(A, "S", 1372247, "D", 2824889, "D", d="2024-11-19") + tx(A, "S", 829761, "D", 1995128, "D", d="2024-11-19") + tx(A, "P", 19762, "A", 2014890, "D", d="2024-11-19") + hold(A, 139526, "I", "By Capri Growth LLC") + '</ownershipDocument>',
+            "a3": head.format(p="2024-12-31") + tx(A, "C", 6461653, "A", 8476543, "D", d="2024-12-31") + tx(A, "C", 27756278, "A", 27895804, "I", "By Capri Growth LLC", d="2024-12-31")
+                  + dtx(B, "C", 6461653, 0, "D", d="2024-12-31") + dtx(B, "C", 27756278, 0, "I", "By Capri Growth LLC", d="2024-12-31") + '</ownershipDocument>'}
+
+    class _E:
+        def filing_index(self, cik, acc):
+            return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+
+        def get(self, url, use_cache=True):
+            return next(v for k, v in docs.items() if k in url)
+
+    mine = [{"form": "4", "accessionNumber": k, "filingDate": d, "reportDate": r, "primaryDocument": "d.xml"} for k, d, r in [("a1", "2024-11-19", "2024-11-18"), ("a2", "2024-11-22", "2024-11-19"), ("a3", "2025-01-03", "2024-12-31")]]
+    return docs, mine, _E
+
+
+def test_archer_under_the_letter_rule_with_todays_one_class_cover():
+    """ARCHER (2026-09-16). The three real filings that took Goldstein's record
+    to zero: 18 Nov 2024 (a PRSU tranche into Class B, 5.0M converted to
+    Class A), 21 Nov (Class A tax sales, no Class B rows), 31 Dec (the
+    charter converts every Class B to Class A). Under the one-class cover
+    Archer has today, the production rule wrote 34,357,457 / 2,154,416 / 0;
+    with the letter rule his Table II Class B is its own group, carried
+    through the Class A-only filing, and the conversion lands without loss."""
+    from fle.history import build_history
+    from fle.series import Series, Point
+    docs, mine, _E = _archer_docs()
+    one = Series(points=[Point("2024-09-30", 425272673.0)], classes={"0000": {"c-4": 389161681.0}})
+    got = [(s.date, round(s.shares), s.groups) for s in build_history(_E(), 1824502, "1882604", mine, series=one).snapshots]
+    assert got == [("2024-11-18", 39359763, 2), ("2024-11-19", 36372347, 2), ("2024-12-31", 36372347, 2)], got
