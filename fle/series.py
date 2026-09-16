@@ -244,19 +244,10 @@ def from_cover_pages(client, cik: int, since: str = "",
                                 counted=max((dates.get(ctx, "") for ctx in facts), default="") or f.get("filingDate") or ""))
         # The class list, keyed by year. A structure changes almost never, so
         # the first filing of each year settles it.
-        # TWO COUNTS ON A COVER ARE TWO CLASSES WHETHER OR NOT THE CONTEXTS
-        # NAME THEM (2026-09-16, Archer): its 10-Qs tagged Class A (389.2M)
-        # and Class B (36.1M) in bare contexts, c-4 and c-5, with no member;
-        # the list was stored only when a member was named, so the walk saw
-        # one class, folded Goldstein's Table II Class B into it, and wrote 0
-        # for a 36M holding. Without member names the walk keys each row on
-        # its own title, which keeps the classes apart; a single bare context
-        # is one class, as before. Contexts stating the same count as of the
-        # same instant are one class tagged twice.
         year = (f.get("filingDate") or "")[:4]
-        distinct = {(dates.get(ctx, ""), v) for ctx, v in facts.items()}
-        if year and year not in seen_year and per_class:
-            seen_year[year] = per_class if len(distinct) == len(per_class) else dict(list(per_class.items())[:len(distinct)])
+        if year and year not in seen_year and any(
+                m for m in per_class if ":" in str(m)):
+            seen_year[year] = per_class
     out.points.sort(key=lambda p: p.as_of)
     # The multi-class path sums several facts per cover page, so a filer's
     # scale error lands here too -- Edison International's 797 trillion came
@@ -285,41 +276,8 @@ def denominator_series(client, cik: int, since: str = "",
         # Dimensioned after all: the API's un-dimensioned history is not the
         # whole company, so fall back and read them all.
         return from_cover_pages(client, cik, since=since, on_step=on_step)
-    # A STRUCTURE THAT CHANGED NEEDS THE COVER PAGES (2026-09-16, Archer):
-    # the newest cover said one class, because Class B was abolished on
-    # 31 December 2024, and that one class was applied to every year, the
-    # dual-class ones included, whose per-class counts the API path had
-    # dropped besides. The oldest cover in the window is read too; if either
-    # end shows more than one count, the cover pages settle the classes year
-    # by year. One extra cached document per company.
-    first = _oldest_cover(client, cik, since)
-    if first is not None and len(first) > 1:
-        return from_cover_pages(client, cik, since=since, on_step=on_step)
     got.classes = {"0000": one} if one else {}
     return got
-
-
-def _oldest_cover(client, cik: int, since: str) -> dict | None:
-    """The class list from the earliest periodic filing in the window, or None."""
-    subs = client.submissions(int(cik))
-    filings = [f for f in subs.get("_filings", [])
-               if (f.get("form") or "") in PERIODIC and (not since or (f.get("filingDate") or "") >= since)]
-    filings.sort(key=lambda f: (f.get("filingDate") or ""))
-    for f in filings[:3]:
-        acc = f.get("accessionNumber") or ""
-        try:
-            name = f.get("primaryDocument")
-            if not name:
-                continue
-            raw = client.primary_document(int(cik), acc, name)
-        except Exception:  # noqa: BLE001
-            continue
-        facts = _facts_from_document(raw)
-        if not facts:
-            continue
-        names = class_names(raw)
-        return {names.get(ctx, ctx): v for ctx, v in facts.items()}
-    return None
 
 
 def _newest_cover(client, cik: int, since: str) -> dict | None:

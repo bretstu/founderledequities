@@ -3886,3 +3886,73 @@ def test_a_feed_event_before_the_registrants_first_cover_is_a_predecessors():
     cvna = Splits(ticker="CVNA", events=[Split(date="2026-05-07", factor=5.0)])
     assert cvna.disown_before_first_cover(Series(points=[Point("2017-06-30", 1e8, counted="2017-08-01")])) == [] and cvna.factor_since("2023-08-18") == 5.0
     assert Splits(ticker="Y", events=[Split(date="2024-01-01", factor=2.0)]).disown_before_first_cover(Series()) == [], "no covers known: the feed stands"
+
+
+def test_a_lettered_title_is_its_own_class_even_when_the_cover_names_one():
+    """MOONLAKE, Dec 2025 (fixed 2026-09-15). The cover names Class A alone
+    (the Class C shares of an Up-C carry votes, not economics). The
+    founder's exchange filing has a Class A row, 3,074,893 after, and a
+    Class C row, 0 after. Both folded into the one class the walk knew and
+    the later row won: 0 shares, three months, no caution. Now the Class C
+    row is a discovered class of its own, as it would be if the cover
+    named two, and an unlettered "Common Stock" title still maps to the
+    single class."""
+    from fle.history import build_history
+    from fle.series import Series, Point
+    from fle.ledger import names_another_letter
+    head = ('<ownershipDocument><periodOfReport>{p}</periodOfReport><issuer><issuerCik>0001821586</issuerCik></issuer>'
+            '<reportingOwner><reportingOwnerId><rptOwnerCik>0001213900</rptOwnerCik><rptOwnerName>Santos da Silva Jorge</rptOwnerName></reportingOwnerId>'
+            '<reportingOwnerRelationship><isOfficer>1</isOfficer><officerTitle>CEO</officerTitle></reportingOwnerRelationship></reportingOwner>')
+
+    def tx(title, code, sh, ad, after, d):
+        return (f'<nonDerivativeTransaction><securityTitle><value>{title}</value></securityTitle><transactionDate><value>{d}</value></transactionDate>'
+                f'<transactionCoding><transactionCode>{code}</transactionCode></transactionCoding><transactionAmounts><transactionShares><value>{sh}</value></transactionShares>'
+                f'<transactionAcquiredDisposedCode><value>{ad}</value></transactionAcquiredDisposedCode></transactionAmounts>'
+                f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts>'
+                f'<ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></nonDerivativeTransaction>')
+    A = "Class A ordinary shares, par value $0.0001 per share"; C = "Class C ordinary shares, par value $0.0001 per share"
+    docs = {"m1": head.format(p="2025-12-08") + tx(A, "S", 130000, "D", 2948577, "2025-12-08") + tx(A, "S", 70000, "D", 2878577, "2025-12-08") + '</ownershipDocument>',
+            "m2": head.format(p="2025-12-19") + tx(A, "C", 196316, "A", 3074893, "2025-12-19") + tx(C, "D", 196316, "D", 0, "2025-12-19") + '</ownershipDocument>',
+            "m3": head.format(p="2026-01-05") + tx("Common Stock", "S", 100000, "D", 2974893, "2026-01-05") + '</ownershipDocument>'}
+
+    class _E:
+        def filing_index(self, cik, acc):
+            return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+
+        def get(self, url, use_cache=True):
+            return next(v for k, v in docs.items() if k in url)
+
+    mine = [{"form": "4", "accessionNumber": k, "filingDate": d, "reportDate": r, "primaryDocument": "d.xml"}
+            for k, d, r in [("m1", "2025-12-10", "2025-12-08"), ("m2", "2025-12-22", "2025-12-19"), ("m3", "2026-01-07", "2026-01-05")]]
+    ser = Series(points=[Point("2025-09-30", 73615396.0)], classes={"2025": {"us-gaap:CommonClassAMember": 73615396.0}})
+    h = build_history(_E(), 1821586, "1213900", mine, series=ser)
+    got = [(s.date, round(s.shares), s.groups) for s in h.snapshots]
+    assert got == [("2025-12-08", 2878577, 1), ("2025-12-19", 3074893, 2), ("2026-01-05", 2974893, 2)], got
+    lettered = {("class", "A"): "Class A Common Stock"}
+    assert names_another_letter(C, lettered, None) and not names_another_letter(A, lettered, None), "the cover's letter is the class"
+    assert not names_another_letter("Common Stock", lettered, None), "no letter: the single class, whatever the cover calls it"
+    assert not names_another_letter("Stock Option (Right to Buy)", lettered, None), "not a share"
+    # BOX, CBRE, ninety companies: an unlettered cover and filings that say "Class A": the person's dominant letter is the class
+    bare = {("", ""): "Common Stock"}
+    assert not names_another_letter("Class A Common Stock", bare, ("class", "A")), "the dominant letter is the class"
+    assert names_another_letter("Class B Common Stock", bare, ("class", "A")), "and another letter is another class (Archer's B)"
+    assert not names_another_letter("Class A Common Stock", bare, None), "no letter anywhere: nothing to split on"
+
+    # the same walk with an unlettered cover: MoonLake still right, and a company whose titles alternate
+    # between "Common Stock" and "Class A Common Stock" is one holding, not two
+    ser = Series(points=[Point("2025-09-30", 73615396.0)], classes={"2025": {"c-2": 73615396.0}})
+    h = build_history(_E(), 1821586, "1213900", mine, series=ser)
+    assert [(s.date, round(s.shares)) for s in h.snapshots] == [("2025-12-08", 2878577), ("2025-12-19", 3074893), ("2026-01-05", 2974893)]
+    docs2 = {"b1": head.format(p="2025-11-01") + tx("Common Stock", "P", 1000, "A", 500000, "2025-11-01") + '</ownershipDocument>',
+             "b2": head.format(p="2025-12-01") + tx("Class A Common Stock", "S", 1000, "D", 499000, "2025-12-01") + '</ownershipDocument>'}
+
+    class _E2:
+        def filing_index(self, cik, acc):
+            return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+
+        def get(self, url, use_cache=True):
+            return next(v for k, v in docs2.items() if k in url)
+
+    mine2 = [{"form": "4", "accessionNumber": k, "filingDate": d, "reportDate": d, "primaryDocument": "d.xml"} for k, d in [("b1", "2025-11-01"), ("b2", "2025-12-01")]]
+    h = build_history(_E2(), 1821586, "1213900", mine2, series=Series(points=[Point("2025-09-30", 1e8)], classes={"2025": {"c-2": 1e8}}))
+    assert [(s.date, round(s.shares), s.groups) for s in h.snapshots] == [("2025-11-01", 500000, 1), ("2025-12-01", 499000, 1)], "one holding, two spellings"

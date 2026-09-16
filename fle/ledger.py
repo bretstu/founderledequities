@@ -151,6 +151,59 @@ def title_letter(title: str) -> tuple | None:
     return (k.group(1).lower() if k else "class", singles[0].upper())
 
 
+def dominant_letter(client, cik: int, docs: list) -> tuple | None:
+    """The class letter this person's own Table I share rows use most, across
+    every filing in `docs`; ties go to the newest filing's letter. None when
+    the filings never name a letter. Read once, before the walk, so the
+    ledger and the history assign every title the same way."""
+    counts: dict = {}
+    first: dict = {}
+    for i, f in enumerate(sorted(docs, key=lambda f: f.get("filingDate") or "", reverse=True)):
+        root = _parse(client, cik, f)
+        if root is None:
+            continue
+        for tag in ("nonDerivativeTransaction", "nonDerivativeHolding"):
+            for node in root.iter(tag):
+                t = _t(node, "securityTitle")
+                if not t or not is_share_class(t):
+                    continue
+                got = title_letter(t)
+                if got is not None and got[1]:
+                    counts[got] = counts.get(got, 0) + 1
+                    first.setdefault(got, i)
+    if not counts:
+        return None
+    return max(counts, key=lambda g: (counts[g], -first[g]))
+
+
+def names_another_letter(title: str, letters: dict, dominant: tuple | None) -> bool:
+    """WITH ONE CLASS, EVERY TITLE IS IT -- UNLESS THE TITLE SAYS OTHERWISE
+    (2026-09-15, MoonLake). The cover page of an Up-C names one class, the
+    Class A shares the market holds; the founder's exchange filing carries
+    a Class A row (196,316 acquired, 3,074,893 after) and a Class C row (the
+    paired voting shares surrendered, 0 after). Both rows were assigned to
+    the one class, the later row won, and the walk published 0 shares for
+    a 3.9% holder for three months.
+
+    A title that names a class letter other than THE class is another
+    class, discovered as it is when the cover names several. Which letter
+    is the class: the cover's, when the cover has one; otherwise the letter
+    this person's own share rows use most (dominant_letter), because most
+    one-class covers carry no letter while the filings say "Class A" (Box,
+    CBRE, ninety companies), and a rule that read "Class A" as foreign to
+    an unlettered cover would split those holdings in two. A title with no
+    letter ("Common Stock") is always the single class."""
+    if not is_share_class(title):
+        return False
+    got = title_letter(title)
+    if got is None or not got[1]:
+        return False
+    if got in (letters or {}):
+        return False
+    the_class = next((g for g in (letters or {}) if g[1]), None) or dominant
+    return the_class is not None and got != the_class
+
+
 def match_class(title: str, letters: dict) -> str | None:
     """The company's own label for the class this title names, or None."""
     if not letters:
@@ -1170,17 +1223,8 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                  max_search: int | None = 500, fast: bool = False,
                  silences: int = 25, trace: bool = False, splits=None,
                  share_classes: int = 0, class_members=None, exclude=(),
-                 on_progress=None, classes_at=None) -> Ledger:
-    """The newest filing that reports each group, summed. That is all.
-
-    `classes_at(date) -> members` (2026-09-16, Archer): the class list as it
-    stood on a document's date, the same per-year list the history walk
-    reads. Without it every filing is read under today's cover, and a
-    company whose structure changed is misread for its past: Archer's Class
-    B was abolished on 31 December 2024, the newest cover says one class,
-    and under one class the 2024 filings folded Goldstein's Class B into
-    Class A and wrote 0 for 36M shares. When given, it wins over
-    share_classes and class_members for each document."""
+                 on_progress=None) -> Ledger:
+    """The newest filing that reports each group, summed. That is all."""
     led = Ledger(splits=splits)
     subs = client.submissions(issuer_cik)
     # Ordered by the period each filing REPORTS ON, not by the day it was
@@ -1379,18 +1423,13 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                                        f.get("accessionNumber") or ""),
                   reverse=True)
     todo = mine if max_filings is None else mine[:max_filings]
+    dominant = dominant_letter(client, issuer_cik, todo) if share_classes == 1 else None
     for i, f in enumerate(todo):
         if on_progress:
             on_progress(led.filings_read + 1, len(todo))
         root = _parse(client, issuer_cik, f)
         if root is None:
             continue
-        if classes_at is not None:
-            # THE CLASSES AS THEY WERE ON THIS DOCUMENT'S DATE (see the docstring)
-            here_members = classes_at(f.get("reportDate") or f.get("filingDate") or "")
-            if here_members:
-                share_classes = len(here_members)
-                letters = class_letters(here_members)
 
         # A filing in their feed that names another company. Rapino is a
         # director of Sirius XM and chief executive of Live Nation; both sit
@@ -1464,7 +1503,7 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                 continue
             # THE CLASS, NOT THE TITLE. With one class every title is it;
             # with several the title is matched to the company's own list.
-            if share_classes == 1:
+            if share_classes == 1 and not names_another_letter(r.security, letters, dominant):
                 title = SINGLE_CLASS
             else:
                 title = match_class(r.security, letters)
