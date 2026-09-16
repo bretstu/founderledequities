@@ -56,7 +56,7 @@ import copy
 from .ledger import (SECTION16, Group, _merge_same_day, _parse, _rows, groups_total,
                      displace_amended, retired_classes, letters_seen,
                      class_letters,
-                     is_share_class, issuer_of, match_class, names_another_letter, dominant_letter, SINGLE_CLASS,
+                     is_share_class, issuer_of, match_class, names_another_letter, dominant_letter, single_class_letter, SINGLE_CLASS,
                      vehicle_keys, is_anonymous, base_of)
 
 
@@ -551,8 +551,8 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                 continue
             if r.table == "II" and not is_share_class(r.security):
                 continue
-            if one_class and not names_another_letter(r.security, letters, dominant):
-                title = SINGLE_CLASS      # unless the title names a letter the cover does not (MoonLake, 2026-09-15)
+            if one_class and not names_another_letter(r.security, single_class_letter(letters, dominant)):
+                title = SINGLE_CLASS      # unless the title names a letter other than the company's one class (MoonLake, Bloom)
             elif letters:
                 title = match_class(r.security, letters)
                 if title is None:

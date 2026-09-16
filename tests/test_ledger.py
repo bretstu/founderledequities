@@ -3928,15 +3928,22 @@ def test_a_lettered_title_is_its_own_class_even_when_the_cover_names_one():
     h = build_history(_E(), 1821586, "1213900", mine, series=ser)
     got = [(s.date, round(s.shares), s.groups) for s in h.snapshots]
     assert got == [("2025-12-08", 2878577, 1), ("2025-12-19", 3074893, 2), ("2026-01-05", 2974893, 2)], got
+    from fle.ledger import single_class_letter
     lettered = {("class", "A"): "Class A Common Stock"}
-    assert names_another_letter(C, lettered, None) and not names_another_letter(A, lettered, None), "the cover's letter is the class"
-    assert not names_another_letter("Common Stock", lettered, None), "no letter: the single class, whatever the cover calls it"
-    assert not names_another_letter("Stock Option (Right to Buy)", lettered, None), "not a share"
+    the = single_class_letter(lettered, None); assert the == ("class", "A"), "the cover's letter is the class"
+    assert names_another_letter(C, the) and not names_another_letter(A, the)
+    assert not names_another_letter("Common Stock", the), "no letter: the single class, whatever the cover calls it"
+    assert not names_another_letter("Stock Option (Right to Buy)", the), "not a share"
     # BOX, CBRE, ninety companies: an unlettered cover and filings that say "Class A": the person's dominant letter is the class
     bare = {("", ""): "Common Stock"}
-    assert not names_another_letter("Class A Common Stock", bare, ("class", "A")), "the dominant letter is the class"
-    assert names_another_letter("Class B Common Stock", bare, ("class", "A")), "and another letter is another class (Archer's B)"
-    assert not names_another_letter("Class A Common Stock", bare, None), "no letter anywhere: nothing to split on"
+    the = single_class_letter(bare, ("class", "A")); assert the == ("class", "A"), "the dominant letter is the class"
+    assert not names_another_letter("Class A Common Stock", the)
+    assert names_another_letter("Class B Common Stock", the), "and another letter is another class (Archer's B)"
+    assert not names_another_letter("Class A Common Stock", single_class_letter(bare, None)), "no letter anywhere: nothing to split on"
+    # BLOOM: the class is decided once; a discovered letter added to the map later must not become "the class"
+    grown = {("", ""): "Common Stock", ("class", "B"): "Class B Common Stock"}   # what the map looks like after a discovery
+    assert single_class_letter(bare, ("class", "A")) == ("class", "A") and not names_another_letter("Class A Common Stock", ("class", "A"))
+    assert single_class_letter(grown, ("class", "A")) == ("class", "B"), "which is exactly why it must be decided before the walk, from the cover's map"
 
     # the same walk with an unlettered cover: MoonLake still right, and a company whose titles alternate
     # between "Common Stock" and "Class A Common Stock" is one holding, not two
@@ -4146,3 +4153,52 @@ def test_from_cover_pages_keeps_a_cover_summary_for_every_year():
     assert s.cover_years["2023"]["count"] == 2 and len(s.cover_years["2023"]["named"]) == 2 and s.cover_years["2023"]["counted"] == "2023-08-08"
     assert s.cover_years["2024"] == {"named": [], "count": 1, "counted": "2024-08-05"}, s.cover_years["2024"]
     assert list(s.classes) == ["2023"], "the keying list still holds named years only"
+
+
+def test_bloom_the_single_class_is_decided_once_and_the_retired_class_closes():
+    """BLOOM (2026-09-16). Sridhar's April 2021 filing (Class A after
+    519,767; an RSU into Class B; Class B rows), May 2021 (options into
+    Class B; Class B after 1,495,749), September 2026 ("Common Stock",
+    4,511,513). Newest first, the walk discovered Class B in May, and the
+    first version then read "the class" from the grown map, judged April's
+    Class A "another letter", and kept it as a third group: 6,760,363. The
+    class is decided once (A, the dominant letter); the Class B group is
+    then closed by the 2024 cover that dropped it: 4,511,513."""
+    from fle.ledger import build_ledger, retired_classes, closed_groups
+    from fle.series import Series
+    head = ('<ownershipDocument><periodOfReport>{p}</periodOfReport><issuer><issuerCik>0001664703</issuerCik></issuer>'
+            '<reportingOwner><reportingOwnerId><rptOwnerCik>0001</rptOwnerCik><rptOwnerName>Sridhar KR</rptOwnerName></reportingOwnerId>'
+            '<reportingOwnerRelationship><isOfficer>1</isOfficer><officerTitle>CEO</officerTitle></reportingOwnerRelationship></reportingOwner>')
+
+    def tx(t, code, sh, ad, after, di, d):
+        return (f'<nonDerivativeTransaction><securityTitle><value>{t}</value></securityTitle><transactionDate><value>{d}</value></transactionDate><transactionCoding><transactionCode>{code}</transactionCode></transactionCoding>'
+                f'<transactionAmounts><transactionShares><value>{sh}</value></transactionShares><transactionAcquiredDisposedCode><value>{ad}</value></transactionAcquiredDisposedCode></transactionAmounts>'
+                f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>{di}</value></directOrIndirectOwnership></ownershipNature></nonDerivativeTransaction>')
+
+    def dtx(t, code, sh, after, di, d, under):
+        return (f'<derivativeTransaction><securityTitle><value>{t}</value></securityTitle><transactionDate><value>{d}</value></transactionDate><transactionCoding><transactionCode>{code}</transactionCode></transactionCoding>'
+                f'<transactionAmounts><transactionShares><value>{sh}</value></transactionShares></transactionAmounts><underlyingSecurity><underlyingSecurityTitle><value>{under}</value></underlyingSecurityTitle><underlyingSecurityShares><value>{sh}</value></underlyingSecurityShares></underlyingSecurity>'
+                f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>{di}</value></directOrIndirectOwnership></ownershipNature></derivativeTransaction>')
+    A, B = "Class A Common Stock", "Class B Common Stock"
+    docs = {"d1": head.format(p="2021-04-06") + tx(A, "M", 71000, "A", 519767, "D", "2021-04-06") + dtx("Restricted Stock Units (Class B Common Stock)", "M", 71000, 71000, "D", "2021-04-06", B) + dtx(B, "M", 71000, 0, "D", "2021-04-06", A) + dtx(B, "C", 71000, 1495749, "D", "2021-04-06", A) + '</ownershipDocument>',
+            "d2": head.format(p="2021-05-10") + dtx("Stock Option (Right to Buy Class B)", "M", 233334, 0, "D", "2021-05-10", B) + dtx(B, "M", 233334, 1729083, "D", "2021-05-10", A) + dtx(B, "C", 233334, 1495749, "D", "2021-05-10", A) + '</ownershipDocument>',
+            "d3": head.format(p="2026-09-01") + tx("Common Stock", "S", 10000, "D", 4511513, "D", "2026-09-01") + '</ownershipDocument>'}
+
+    class _E:
+        def submissions(self, cik):
+            return {"_filings": [{"form": "4", "accessionNumber": k, "filingDate": d, "reportDate": d, "primaryDocument": "d.xml"} for k, d in [("d1", "2021-04-06"), ("d2", "2021-05-10"), ("d3", "2026-09-01")]]}
+
+        def filing_index(self, cik, acc):
+            return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+
+        def get(self, url, use_cache=True):
+            return next(v for k, v in docs.items() if k in url)
+    led = build_ledger(_E(), 1664703, owner_cik="1", share_classes=1, class_members={"c-2": 294527346.0})
+    assert sorted((g.security, round(g.shares)) for g in led.groups.values()) == [("Class B Common Stock", 1495749), ("Common Stock (the company's only class)", 4511513)], \
+        "two groups: the single class, and the discovered Class B; the April Class A row folded into the single class"
+    assert led.dominant == ("class", "A")
+    Am, Bm = "us-gaap:CommonClassAMember", "us-gaap:CommonClassBMember"
+    covers = Series(cover_years={"2023": {"named": [Am, Bm], "count": 2, "counted": "2023-02-14"}, "2024": {"named": [], "count": 1, "counted": "2024-02-12"}})
+    led.retired = retired_classes(covers, remaining=led.dominant)
+    assert [(g.security, round(g.shares), cut) for _k, g, cut in closed_groups(led.groups, led.retired)] == [("Class B Common Stock", 1495749, "2024-02-12")]
+    assert round(led.total) == 4511513

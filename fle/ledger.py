@@ -196,7 +196,19 @@ def letters_seen(client, cik: int, docs: list) -> set:
     return out
 
 
-def names_another_letter(title: str, letters: dict, dominant: tuple | None) -> bool:
+def single_class_letter(letters: dict, dominant: tuple | None):
+    """THE COMPANY'S ONE CLASS, DECIDED ONCE (2026-09-16, Bloom): the cover's
+    lettered class when it names one, else the letter the person's own rows
+    use most. Decided before the walk and never revised, because the letter
+    rule compares every title to it; the first version read it from the
+    live class map, which the discovered-class branch grows as it goes, so
+    after a Class B was discovered a Class A row was judged "another letter"
+    and keyed apart from the single class it belongs to, and a later Class B
+    row folded into the single class. Rows of one class keyed two ways."""
+    return next((g for g in (letters or {}) if g[1]), None) or dominant
+
+
+def names_another_letter(title: str, the_class: tuple | None) -> bool:
     """WITH ONE CLASS, EVERY TITLE IS IT -- UNLESS THE TITLE SAYS OTHERWISE
     (2026-09-15, MoonLake). The cover page of an Up-C names one class, the
     Class A shares the market holds; the founder's exchange filing carries
@@ -205,22 +217,16 @@ def names_another_letter(title: str, letters: dict, dominant: tuple | None) -> b
     the one class, the later row won, and the walk published 0 shares for
     a 3.9% holder for three months.
 
-    A title that names a class letter other than THE class is another
-    class, discovered as it is when the cover names several. Which letter
-    is the class: the cover's, when the cover has one; otherwise the letter
-    this person's own share rows use most (dominant_letter), because most
-    one-class covers carry no letter while the filings say "Class A" (Box,
-    CBRE, ninety companies), and a rule that read "Class A" as foreign to
-    an unlettered cover would split those holdings in two. A title with no
-    letter ("Common Stock") is always the single class."""
+    A title that names a class letter other than THE class (single_class_letter)
+    is another class, discovered as it is when the cover names several. A
+    title with no letter ("Common Stock") is always the single class, so
+    the spelling difference between a cover that says "Class A" and a
+    filing that says "Common Stock" never splits a holding."""
     if not is_share_class(title):
         return False
     got = title_letter(title)
     if got is None or not got[1]:
         return False
-    if got in (letters or {}):
-        return False
-    the_class = next((g for g in (letters or {}) if g[1]), None) or dominant
     return the_class is not None and got != the_class
 
 
@@ -1528,6 +1534,7 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
     todo = mine if max_filings is None else mine[:max_filings]
     dominant = dominant_letter(client, issuer_cik, todo) if share_classes == 1 else None
     led.dominant = dominant
+    the_class = single_class_letter(letters, dominant)   # decided once, before the walk (Bloom)
     for i, f in enumerate(todo):
         if on_progress:
             on_progress(led.filings_read + 1, len(todo))
@@ -1607,7 +1614,7 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                 continue
             # THE CLASS, NOT THE TITLE. With one class every title is it;
             # with several the title is matched to the company's own list.
-            if share_classes == 1 and not names_another_letter(r.security, letters, dominant):
+            if share_classes == 1 and not names_another_letter(r.security, the_class):
                 title = SINGLE_CLASS
             else:
                 title = match_class(r.security, letters)
