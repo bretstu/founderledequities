@@ -58,18 +58,41 @@ def person_filings(client, issuer_cik, owner_cik):
 
 
 def facts(client, row, cover_classes):
-    """-> dict of the four facts for one company, or None when fact 1 does not hold."""
+    """-> dict of the four facts for one company, or None when fact 1 does not hold.
+
+    THE UNITS' FILING IS THE FILING (2026-09-16). The newest filing that
+    states a unit title is that title's statement: within it, the last row
+    per (title, vehicle) is the balance (a gift's before-and-after rows are
+    not added), and the vehicles are summed. The paired class is read from
+    THE SAME filing when it has paired rows, so the match is two numbers on
+    one date; when the units' filing has none, the paired holding comes from
+    the newest filing that states it and the census says read, not keep."""
     tk, cik, oc = row["ticker"], row["cik"], row.get("owner_cik") or ""
     if not oc:
         return None
-    units, pay, paired = {}, {}, {}
+    units_by_v, pay_by_v, units_acc, units_when = {}, {}, None, ""
+    paired_same, paired_any, paired_any_acc = {}, {}, ""
     docs = person_filings(client, cik, oc)
+
+    def paired_rows(root):
+        out = {}
+        for tag in ("nonDerivativeTransaction", "nonDerivativeHolding"):
+            for node in root.iter(tag):
+                title = (_t(node, "securityTitle") or "").strip()
+                got = title_letter(title) if title and is_share_class(title) else None
+                if got and got[1] and got[1] != "A":
+                    amt = _num(node, "sharesOwnedFollowingTransaction")
+                    if amt is not None:
+                        out[(title[:40], _t(node, "directOrIndirectOwnership") or "", (_t(node, "natureOfOwnership") or "")[:30])] = amt   # last row wins
+        return out
+
     for f in docs:
         root = _parse(client, int(cik), f)
         if root is None:
             continue
         when = f.get("reportDate") or f.get("filingDate") or ""
         acc = f.get("accessionNumber") or ""
+        this_units, this_pay = {}, {}
         for tag in ("derivativeTransaction", "derivativeHolding"):
             for node in root.iter(tag):
                 title = (_t(node, "securityTitle") or "").strip()
@@ -85,38 +108,46 @@ def facts(client, row, cover_classes):
                 amt = _num(node, "sharesOwnedFollowingTransaction")
                 if amt is None:
                     continue
-                bucket = pay if PAY_TITLE.search(title) else units
-                # A TITLE'S ROWS ARE SUMMED WITHIN THE FILING THAT STATES IT
-                # (2026-09-16): a founder's units sit in several vehicles, one
-                # row each under one title; the first version took the first
-                # row and called Medline, Rush Street and Solaris conflicts.
-                # The paired side was already summed the same way. Newest
-                # filing first, so the first filing to state a title is its
-                # current statement and later filings do not add to it.
-                t = title[:48]
-                prev = bucket.get(t)
-                if prev is None:
-                    bucket[t] = (amt, when, acc)
-                elif prev[2] == acc:
-                    bucket[t] = (prev[0] + amt, when, acc)
-        if not paired:
-            for tag in ("nonDerivativeTransaction", "nonDerivativeHolding"):
-                for node in root.iter(tag):
-                    title = (_t(node, "securityTitle") or "").strip()
-                    got = title_letter(title) if title and is_share_class(title) else None
-                    if got and got[1] and got[1] != "A":
-                        amt = _num(node, "sharesOwnedFollowingTransaction")
-                        key = (title[:40], _t(node, "directOrIndirectOwnership") or "", (_t(node, "natureOfOwnership") or "")[:30])
-                        if amt is not None and key not in paired:
-                            paired[key] = (amt, when, acc)
-    if not units:
+                # ONE VEHICLE'S NEXT BALANCE, OR ANOTHER LINE (2026-09-16). Two rows
+                # with the same title and the same D/I and nature are either a
+                # vehicle's successive balances (Symbotic: 166.9M before a gift,
+                # 165.9M after) or two lines told apart only by a footnote
+                # (Medline: 24,313 and 514,876, both "indirect"). The structure
+                # decides: a transaction row whose balance equals the previous
+                # row's balance plus or minus its own shares is the same vehicle
+                # and replaces it; anything else is another line and adds.
+                bucket = this_pay if PAY_TITLE.search(title) else this_units
+                base = (title[:48], _t(node, "directOrIndirectOwnership") or "", (_t(node, "natureOfOwnership") or "")[:30])
+                shares = _num(node, "transactionShares") if tag == "derivativeTransaction" else None
+                prev_key = next((k for k in reversed(list(bucket)) if k[:3] == base), None)
+                if prev_key is not None and shares is not None and (abs(bucket[prev_key] + shares - amt) < 1 or abs(bucket[prev_key] - shares - amt) < 1):
+                    bucket[prev_key] = amt
+                else:
+                    bucket[base + (len(bucket),)] = amt
+        if this_units and units_acc is None:
+            units_by_v, units_acc, units_when = this_units, acc, when
+            paired_same = paired_rows(root)
+        if this_pay and not pay_by_v:
+            pay_by_v = this_pay
+        if not paired_any:
+            pr = paired_rows(root)
+            if pr:
+                paired_any, paired_any_acc = pr, acc
+    if not units_by_v:
         return None
-    paired_total = sum(a for a, *_ in paired.values())
-    paired_acc = next((acc for (_a, _w, acc) in paired.values()), "")
+
+    def by_title(v):
+        out = {}
+        for (title, _d, _n, _i), amt in v.items():
+            out[title] = out.get(title, 0.0) + amt
+        return {t: (a, units_when, units_acc) for t, a in out.items()}
+    units, pay = by_title(units_by_v), by_title(pay_by_v)
+    same = bool(paired_same)
+    paired = paired_same if same else paired_any
+    paired_total = sum(paired.values())
     match = [t for t, (a, w, acc) in units.items() if paired_total and abs(a - paired_total) / max(a, paired_total) < 0.02]
-    same_filing = bool(match) and units[match[0]][2] == paired_acc
     two = len(cover_classes) >= 2
-    if match and two and paired_total and same_filing:
+    if match and two and paired_total and same:
         suggest = "keep"          # proved on one date, in one document
     elif match and two and paired_total:
         suggest = "read"          # the counts agree but from different filings: the words decide, a person reads
@@ -124,8 +155,8 @@ def facts(client, row, cover_classes):
         suggest = "exclude"
     else:
         suggest = "read"
-    return {"tk": tk, "units": units, "pay": pay, "paired": paired, "paired_total": paired_total, "cover": len(cover_classes) or 1,
-            "match": match, "suggest": suggest, "filings": len(docs)}
+    return {"tk": tk, "units": units, "pay": pay, "paired": {k: (a, "", paired_any_acc if not same else units_acc) for k, a in paired.items()},
+            "paired_total": paired_total, "cover": len(cover_classes) or 1, "match": match, "suggest": suggest, "filings": len(docs)}
 
 
 def main(argv):

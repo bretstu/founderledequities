@@ -47,18 +47,59 @@ HAND = os.path.join(ROOT, "universe", "partnerships.csv")
 AUTO = os.path.join(ROOT, "universe", "partnerships-auto.csv")
 
 
-def generate(client, panel, covers, only=None):
-    """-> {TICKER: row} for every company with unit rows."""
+def members(root):
+    """EVERY COMPANY IN THE UNIVERSE, EXCLUDED ONES INCLUDED (2026-09-16). The
+    first version read the panel, which no longer holds the companies the
+    register had excluded, called their absence "no unit rows now", removed
+    their rows, and put them back on the site the next morning. The universe
+    file has ticker, CIK, company and the chief executive's owner CIK; the
+    panel adds the name and the fewer-lines caution for the companies it has."""
+    import glob
+    files = sorted(glob.glob(os.path.join(root, "universe", "universe-*.csv")))
+    if not files:
+        return census.read(os.path.join(root, "panel.csv"))
+    panel = {r["ticker"]: r for r in census.read(os.path.join(root, "panel.csv"))}
+    # THE OWNER CIK IS REMEMBERED: the universe file has none, the panel has
+    # it only for companies still on the panel, so the register keeps it for
+    # every company it has ever judged (and a hand row may carry it too)
+    known = {}
+    for src in (read_generated(os.path.join(root, "universe", "partnerships-auto.csv")), read_hand(os.path.join(root, "universe", "partnerships.csv"))):
+        for tk, row in src.items():
+            if row.get("owner_cik"):
+                known[tk] = row
+    out = []
+    for r in census.read(files[-1]):
+        tk = (r.get("ticker") or "").upper()
+        if not tk or not r.get("cik"):
+            continue
+        p = panel.get(tk, {}); k = known.get(tk, {})
+        out.append({"ticker": tk, "cik": r["cik"], "owner_cik": r.get("owner_cik") or p.get("owner_cik") or k.get("owner_cik") or "",
+                    "company": r.get("company") or p.get("company") or k.get("company") or "", "ceo": r.get("ceo") or p.get("ceo") or k.get("ceo") or "",
+                    "cautions": p.get("cautions") or ""})
+    return out
+
+
+def generate(client, panel, covers, only=None, unjudged=None):
+    """-> {TICKER: row} for every company with unit rows. A company that
+    cannot be judged (no owner CIK, or a read that failed) is added to
+    `unjudged`; the caller carries its previous row rather than removing it:
+    REMOVAL NEEDS POSITIVE EVIDENCE, the filings read and no unit rows."""
     out = {}
     for r in panel:
         tk = r["ticker"]
         if only and tk not in only:
+            continue
+        if not r.get("owner_cik"):
+            if unjudged is not None:
+                unjudged.add(tk)
             continue
         letters = {m.group(1) for m in census.re.finditer(r"Class([A-Z])", covers.get(tk, ""))}
         try:
             c = census.facts(client, r, letters)
         except Exception as exc:  # noqa: BLE001
             print(f"  {tk}: could not read: {exc}", file=sys.stderr)
+            if unjudged is not None:
+                unjudged.add(tk)
             continue
         if not c:
             continue
@@ -80,7 +121,7 @@ def generate(client, panel, covers, only=None):
             action, reason = "exclude", (f"The facts conflict (units {big:,.0f} {big_title}; paired {c['paired_total']:,.0f} {paired_titles}; "
                                          f"cover classes {c['cover']}): excluded until a person reads the filing. REVIEW.")
         out[tk] = {"ticker": tk, "action": action, "structure": "partnership", "company": r.get("company") or "", "ceo": r.get("ceo") or "",
-                   "cik": r.get("cik") or "", "cover_classes": str(c["cover"]), "paired_class": paired_titles,
+                   "cik": r.get("cik") or "", "owner_cik": r.get("owner_cik") or "", "cover_classes": str(c["cover"]), "paired_class": paired_titles,
                    "units_reported": "; ".join(f"{t} {a:,.0f}" for t, (a, w, acc) in list(c["units"].items())[:3]),
                    "reason": reason, "source": f"https://www.sec.gov/Archives/edgar/data/{int(r['cik'])}/{big_acc.replace('-', '')}/",
                    "as_of": dt.date.today().isoformat(), "by": "census"}
@@ -111,14 +152,17 @@ def delta(old, new, hand):
 def main(argv):
     dry = "--dry-run" in argv
     only = {a.upper() for a in argv if not a.startswith("--")}
-    panel = census.read(os.path.join(ROOT, "panel.csv"))
+    panel = members(ROOT)
     covers = {}
     for h in census.read(os.path.join(ROOT, "history.csv")):
         covers[h["ticker"]] = h.get("classes") or ""
     client = census.EdgarClient()
     old = read_generated(AUTO)
     hand = read_hand(HAND)
-    new = generate(client, panel, covers, only or None)
+    unjudged = set()
+    new = generate(client, panel, covers, only or None, unjudged)
+    carried = {tk: row for tk, row in old.items() if tk in unjudged}
+    new.update(carried)
     if only:
         for tk, r in sorted(new.items()):
             print(f"  {tk:6} {r['action']:8} {r['reason'][:150]}")
@@ -127,7 +171,9 @@ def main(argv):
     kept = sum(1 for r in new.values() if r["action"] == "keep")
     review = sum(1 for r in new.values() if "REVIEW" in r["reason"])
     head = (f"partnerships: {len(new)} companies with unit rows; {kept} kept, {len(new) - kept} excluded "
-            f"({review} awaiting a reading); {len(hand)} hand rows on top; {len(lines)} change(s) since last run")
+            f"({review} awaiting a reading); {len(hand)} hand rows on top; {len(carried)} carried unjudged; {len(lines)} change(s) since last run")
+    for tk in sorted(carried):
+        lines.append(f"- {tk}: carried unchanged: could not be judged this week (no owner CIK on file, or the filings could not be read)")
     print("  " + head)
     for ln in lines:
         print("   " + ln)

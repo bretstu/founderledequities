@@ -154,13 +154,28 @@ def test_a_titles_rows_are_summed_within_the_filing_and_a_keep_needs_one_filing(
     same = head.format(p="2026-03-01") + paired(726819, "D", "") + paired(3513496, "I", "By Solaris Energy Capital") + unit(726819, "D") + unit(3513496, "I") + '</ownershipDocument>'
     r = U.facts(C([("s1", "2026-03-01")], [same]), {"ticker": "SEI", "cik": "1", "owner_cik": "2"}, {"A", "B"})
     assert r["suggest"] == "keep" and r["units"]["LLC Units"][0] == 4240315 and r["paired_total"] == 4240315, "two rows, one title, summed"
+    # RED ROCK: the 2016 filing states units and paired shares together; a 2026 filing restates only the
+    # paired class. The match is proved on the 2016 date, the pairing is structural, and the ledger's
+    # current Class B is the 2026 statement as usual: keep.
     old = head.format(p="2016-05-18") + paired(22613985, "I", "Fertitta") + unit(22613985, "I") + '</ownershipDocument>'
     new = head.format(p="2026-06-01") + paired(45385804, "I", "Fertitta") + '</ownershipDocument>'
     r = U.facts(C([("n1", "2026-06-01"), ("o1", "2016-05-18")], [new, old]), {"ticker": "RRR", "cik": "1", "owner_cik": "2"}, {"A", "B"})
-    assert r["suggest"] == "read", "units from 2016, the paired class from 2026: a person decides"
-    new2 = head.format(p="2026-06-01") + paired(22613985, "I", "Fertitta") + '</ownershipDocument>'
-    r = U.facts(C([("n1", "2026-06-01"), ("o1", "2016-05-18")], [new2, old]), {"ticker": "RRR", "cik": "1", "owner_cik": "2"}, {"A", "B"})
-    assert r["suggest"] == "read", "counts that agree across different filings do not prove the pairing either"
+    assert r["suggest"] == "keep" and r["paired_total"] == 22613985, "the paired rows of the units' own filing are compared"
+    # a units-only filing (no paired rows in it) with the paired class stated elsewhere: counts agree, but not on one date
+    units_only = head.format(p="2026-03-01") + unit(22613985, "I") + '</ownershipDocument>'
+    r = U.facts(C([("u1", "2026-03-01"), ("n1", "2026-02-01")], [units_only, new.replace("45385804", "22613985")]), {"ticker": "RRR", "cik": "1", "owner_cik": "2"}, {"A", "B"})
+    assert r["suggest"] == "read", "counts that agree across different filings do not prove the pairing"
+    # SYMBOTIC: a gift's before-and-after rows for one vehicle are one balance (the second row's balance is the
+    # first's minus its shares); MEDLINE: two lines told apart only by a footnote add (the balances are independent)
+    dtx = lambda title, shares, after, di, code: (f'<derivativeTransaction><securityTitle><value>{title}</value></securityTitle><transactionCoding><transactionCode>{code}</transactionCode></transactionCoding>'  # noqa: E731
+                                                  f'<transactionAmounts><transactionShares><value>{shares}</value></transactionShares></transactionAmounts><underlyingSecurity><underlyingSecurityTitle><value>Class A Common Stock</value></underlyingSecurityTitle></underlyingSecurity>'
+                                                  f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>{di}</value></directOrIndirectOwnership></ownershipNature></derivativeTransaction>')
+    gift = head.format(p="2025-12-11") + paired(2215990, "I", "By RJJRP") + dtx("LLC Units", 1000000, 166940810, "I", "J") + dtx("LLC Units", 1000000, 165940810, "I", "G") + unit(43765590, "I") + '</ownershipDocument>'
+    r = U.facts(C([("g1", "2025-12-11")], [gift]), {"ticker": "SYM", "cik": "1", "owner_cik": "2"}, {"A", "B"})
+    assert r["units"]["LLC Units"][0] == 165940810 + 43765590, "one vehicle's successive balances replace; a separate holding line adds"
+    med = head.format(p="2025-12-16") + paired(24313, "D", "") + paired(514876, "I", "See Footnote") + dtx("LLC Units", 24313, 24313, "I", "A") + dtx("LLC Units", 514876, 514876, "I", "A") + '</ownershipDocument>'
+    r = U.facts(C([("m1", "2025-12-16")], [med]), {"ticker": "MDLN", "cik": "1", "owner_cik": "2"}, {"A", "B"})
+    assert r["suggest"] == "keep" and r["units"]["LLC Units"][0] == 539189, "two lines with the same D/I and an empty nature, distinguished by their balances"
 
 
 def test_the_stage_excludes_a_keep_that_stands_on_a_partial_filing():
@@ -180,3 +195,30 @@ def test_the_stage_excludes_a_keep_that_stands_on_a_partial_filing():
     assert st.generate(C(), clean, covers)["OK"]["action"] == "keep"
     p = st.generate(C(), partial, covers)["PART"]
     assert p["action"] == "exclude" and "fewer lines" in p["reason"] and "REVIEW" in p["reason"]
+
+
+def test_the_stage_reads_the_universe_not_the_panel(tmp_path, monkeypatch):
+    """The first version read the panel, which no longer held the companies
+    the register had excluded, called their absence a collapse, and put
+    them back on the site the next morning."""
+    import partnerships_stage as st
+    (tmp_path / "universe").mkdir()
+    (tmp_path / "universe" / "universe-2026-08-31.csv").write_text("cik,ticker,company,ceo,owner_cik,added\n1393818,BX,Blackstone,Stephen Schwarzman,1227945,\n1318605,TSLA,Tesla,Elon Musk,1494730,\n")
+    (tmp_path / "panel.csv").write_text("ticker,cik,company,ceo,owner_cik,cautions\nTSLA,1318605,Tesla,Elon Musk,1494730,the newest filing names fewer lines than the one before it\n")
+    monkeypatch.setattr(st, "ROOT", str(tmp_path))
+    m = st.members(str(tmp_path))
+    assert [r["ticker"] for r in m] == ["BX", "TSLA"], "the excluded company is still a member to be judged"
+    assert m[0]["owner_cik"] == "1227945" and m[1]["cautions"].startswith("the newest filing")
+    # the universe file has no owner CIK (the real one: cik,ticker,company,added); the register remembers it
+    (tmp_path / "universe" / "universe-2026-08-31.csv").write_text("cik,ticker,company,added\n1393818,BX,Blackstone,\n1318605,TSLA,Tesla,\n")
+    (tmp_path / "universe" / "partnerships-auto.csv").write_text("ticker,action,structure,company,ceo,cik,owner_cik,cover_classes,paired_class,units_reported,reason,source,as_of,by\nBX,exclude,partnership,Blackstone,Stephen Schwarzman,1393818,1227945,1,,units,no paired,https://www.sec.gov/x,2026-09-13,census\n")
+    m = st.members(str(tmp_path))
+    assert m[0]["owner_cik"] == "1227945", "off the panel, the owner CIK comes from last week's row"
+    # a company nobody can judge keeps its row: removal needs positive evidence
+    (tmp_path / "universe" / "partnerships-auto.csv").write_text("ticker,action,structure,company,ceo,cik,owner_cik,cover_classes,paired_class,units_reported,reason,source,as_of,by\nBX,exclude,partnership,Blackstone,Stephen Schwarzman,1393818,,1,,units,no paired,https://www.sec.gov/x,2026-09-13,census\n")
+    m = st.members(str(tmp_path)); assert m[0]["owner_cik"] == ""
+    unjudged = set()
+    class _C:
+        def submissions(self, cik): raise AssertionError("must not be called without an owner CIK")
+    out = st.generate(_C(), m, {}, None, unjudged)
+    assert "BX" in unjudged and "BX" not in out

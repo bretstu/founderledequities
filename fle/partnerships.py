@@ -46,7 +46,7 @@ import os
 
 REGISTER = os.path.join("universe", "partnerships.csv")            # hand rows: a person's decisions, in git
 GENERATED = os.path.join("universe", "partnerships-auto.csv")      # the weekly stage's rows: data, beside the panel
-COLUMNS = ["ticker", "action", "structure", "company", "ceo", "cik", "cover_classes", "paired_class",
+COLUMNS = ["ticker", "action", "structure", "company", "ceo", "cik", "owner_cik", "cover_classes", "paired_class",
            "units_reported", "reason", "source", "as_of", "by"]
 
 
