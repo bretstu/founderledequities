@@ -771,37 +771,10 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
             fh.write(page)
         urls.append(f"{SITE}/company/{tk}/")
 
-    # EXCLUDED COMPANIES: not deleted, explained. The page exists at the same
-    # address, says what the structure is and why no stake is shown, and
-    # links to the proxy, which states the stake as-converted.
-    for tk, row in sorted(register.items()):
-        if row["action"] != "exclude":
-            continue
-        co = row.get("company") or tk
-        title = f"{co} ({tk}): why this site shows no stake"
-        desc = f"{co} is structured as a partnership under a public corporation; its chief executive's ownership is held as exchangeable units the site does not count."
-        proxy = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={html.escape(row.get('cik') or '')}&type=DEF+14A&dateb=&owner=include&count=10"
-        body = (f'<h1 class="cname">{html.escape(co)}<span class="ctk">{html.escape(tk)}</span></h1>'
-                f'<div class="ceo-line">{html.escape(row.get("ceo") or "")}</div>'
-                f'<div class="excluded"><p class="lead">{html.escape(note_for(row))}</p>'
-                f'<p class="sub">{html.escape(row.get("reason") or "")}</p>'
-                f'<p class="sub">Read the <a href="{proxy}" rel="noopener">proxy statement on EDGAR</a>, or the '
-                f'<a href="{html.escape(row.get("source") or proxy)}" rel="noopener">filing this decision rests on</a>. '
-                f'Decided {html.escape(row.get("as_of") or "")}; every company&#8217;s structure is re-read from its filings monthly.</p></div>')
-        payload = {"tk": tk, "co": co, "ceo": row.get("ceo") or "", "sp": False, "excluded": True}
-        page = (template
-                .replace('<div id="cbody"></div>', '<div id="cbody">' + body + '</div>')
-                .replace('<div id="cmore"></div>', '<div id="cmore"></div>')
-                .replace("{{TITLE}}", html.escape(title)).replace("{{DESCRIPTION}}", html.escape(desc))
-                .replace("{{TICKER}}", html.escape(tk)).replace("{{MCAP}}", "").replace("{{COMPANY}}", html.escape(co))
-                .replace("{{COMPANY_JSON}}", json.dumps(payload).replace("</", "<\\/")))
-        d = os.path.join(out_dir, "company", tk)
-        os.makedirs(d, exist_ok=True)
-        with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
-            fh.write(page)
-        urls.append(f"{SITE}/company/{tk}/")
-        lastmods[tk] = row.get("as_of") or ""
-
+    # AN EXCLUDED COMPANY HAS NO PAGE (2026-09-15): it is not in the universe,
+    # not in the screener, not in the sitemap; its address answers with the
+    # real 404 like any company the site does not cover. The register row
+    # holds the facts should it ever be asked for.
     companies_index(index_rows, founders, sp, out_dir, topnav, css_v)
     urls.append("https://founderledequities.com/companies/")
     with open(os.path.join(out_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:

@@ -42,7 +42,7 @@ def test_an_excluded_company_leaves_the_universe_before_the_panel_walks(tmp_path
     assert [m.ticker for m in read_universe(str(u), register=False)] == ["BX", "CVNA", "TSLA"], "and can be read whole on request"
 
 
-def test_the_excluded_page_explains_and_the_kept_page_carries_a_note(tmp_path):
+def test_the_excluded_company_has_no_page_and_the_kept_page_carries_a_note(tmp_path):
     panel = tmp_path / "panel.csv"
     with open(panel, "w", newline="") as fh:
         w = csv.writer(fh)
@@ -55,18 +55,13 @@ def test_the_excluded_page_explains_and_the_kept_page_carries_a_note(tmp_path):
     founders = tmp_path / "founders.csv"; founders.write_text('ticker,founder,evidence,source\nCVNA,yes,"co-founded",DEF 14A\n')
     out = tmp_path / "public"
     bcp.main(str(panel), str(founders), str(prices), str(sp), str(out))
-    bx = open(out / "company" / "BX" / "index.html", encoding="utf-8").read()
-    assert "why this site shows no stake" in bx and "Blackstone Inc." in bx and "Schwarzman" in bx
-    assert "browse-edgar?action=getcompany&amp;CIK=1393818&amp;type=DEF+14A" in bx or "CIK=1393818&type=DEF+14A" in bx, "the proxy link"
-    assert '"excluded": true' in bx, "the script is told to leave the page as built"
-    assert "Holdings units in Table II" not in bx or True
+    assert not (out / "company" / "BX").exists(), "an excluded company has no page: the real 404"
     cv = open(out / "company" / "CVNA" / "index.html", encoding="utf-8").read()
     assert 'class="sub structure-note"' in cv and "Class B Common Stock" in cv and "one for one" in cv
     sm = open(out / "sitemap.xml", encoding="utf-8").read()
-    assert "/company/BX/" in sm and "/company/CVNA/" in sm, "both pages are in the sitemap"
+    assert "/company/BX/" not in sm and "/company/CVNA/" in sm, "the kept page is in the sitemap; the excluded one is not"
     idx = open(out / "companies" / "index.html", encoding="utf-8").read()
     assert "/company/BX/" not in idx, "an excluded company is not in the screener"
-    assert "window.COMPANY&&window.COMPANY.excluded" in open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
 
 
 def test_the_seeded_register_is_well_formed():

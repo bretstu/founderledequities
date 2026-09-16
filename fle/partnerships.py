@@ -25,8 +25,15 @@ So the register records a decision per company, from the filings:
   exclude  the founder's economics are units the site does not count. The
            company leaves the universe before the panel walks (read_universe
            drops it), so the panel, history, tape, screens, drafts, letter
-           and watcher never see it; its page becomes the explanation and a
-           link to the proxy, which states the stake as-converted.
+           and watcher never see it, and it has no page: its address answers
+           with the site's 404 like any company outside the universe. (A page
+           explaining the exclusion was tried and removed the same day:
+           nothing on the site links to it.)
+THE FACTS ARE STRUCTURED FIELDS, NEVER FOOTNOTES: the security title,
+underlying security, conversion price and expiration date of each Table
+II row; the cover's class tags; the title and amount of each Table I row.
+The one judgment a person makes is the register row, from one reading of
+the filing the row cites.
 Every row cites the filing that establishes it and carries an as-of date;
 ops/upc_census.py --facts prints the facts for a candidate so a row can be
 written, and re-checks the rows so a structure that collapsed (units
