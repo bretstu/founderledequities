@@ -135,7 +135,7 @@ const P=runPage();
     const html=els["#actwrap"]._html;
     renderActivity();
     assert(els["#actwrap"]._html.includes('class="tape"')&&(els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===rows.length,"one table row per filing, once the excerpt's limit is lifted");
-    assert(/data-key="kind">Kind<span class="arr">.*data-key="co">Company.*data-key="ceo">CEO.*data-key="v">Amount.*data-key="ch">Change.*data-key="st">New stake.*data-key="td"[^>]*>Traded.*data-key="fd"[^>]*>Filed/.test(html),"eight sortable columns: the kind says the manner, the change is the number the tape ranks by, traded and filed are their own");
+    assert(/data-key="kind">Kind<span class="arr">.*data-key="co">Company.*data-key="ceo">CEO.*data-key="v">Amount.*data-key="ch">Change.*data-key="st">New stake.*data-key="fd"[^>]*>Filed.*data-key="td"[^>]*>Traded/.test(html),"eight sortable columns, Traded last: the kind says the manner, the change is the number the tape ranks by, filed and traded are their own");
     assert(html.includes('<td class="fd"><span class="dt" title="the day EDGAR accepted the form">'),"every row carries the day EDGAR accepted the form");
     // THE HEADERS SORT, LIKE THE SCOREBOARD'S; Kind restores the tape's own order
     P.setTapeSort("v"); {const r=actSorted(actRows()); const vs=r.map(e=>((e.c==="P"||e.c==="S")&&e.v&&!e.fl)?e.v:null).filter(x=>x!==null); assert(vs.every((x,i)=>i===0||x<=vs[i-1]),"Amount sorts descending on the first click"); assert(els["#actwrap"]._html.includes('data-key="v">Amount<span class="arr"> ↓'),"and the header shows the arrow");}
@@ -144,6 +144,7 @@ const P=runPage();
     P.setTapeSort("ceo"); {const r=actSorted(actRows()); const cs=r.map(e=>e.ceo||""); assert(cs.every((x,i)=>i===0||x.localeCompare(cs[i-1])>=0),"a name column sorts A to Z on the first click");}
     P.setTapeSort("kind"); assert(state.ev.sort.key===null,"Kind is the tape's own order again");
     assert(!idxsrc.includes("filed ${e.fd}"),"the filed day is a column, not a hover");
+    assert(idxsrc.includes('data-key="ltf"')&&idxsrc.includes('class="c-ltf"')&&idxsrc.indexOf('data-key="ltf"')<idxsrc.indexOf('data-key="ltd" title'),"the scoreboard has a Filed column before Traded, as the tape does");
     assert(html.includes("openCompany(")&&html.includes("sec.gov"),"rows are doors and the amount links to the filing");
     assert(!html.includes("DISCRET."),"kinds are spelled out");
     {const full=els["#actwrap"]._html;assert(full.includes('class="kind comp"')&&/class="detail">(<a [^>]+>)?award granted/.test(full)&&full.includes('class="kind xfer"')&&/class="detail">(<a [^>]+>)?gift</.test(full),"a grant and a gift carry the badge and the filing's label in grey, the label linking to the filing");}

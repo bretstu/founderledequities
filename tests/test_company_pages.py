@@ -455,3 +455,41 @@ def test_the_page_carries_the_date_it_was_last_true_and_the_tape_carries_its_lin
     assert '"dateModified": "2026-09-02"' in page or '"dateModified": "' in page, "the schema says when the figure was last true"
     assert '"tickerSymbol": "TSLA"' in page
     assert os.path.exists(os.path.join(ROOT, "llms.txt")) and "founderledequities.com/company/" in open(os.path.join(ROOT, "llms.txt"), encoding="utf-8").read()
+
+
+def test_every_built_page_script_loads_without_a_top_level_error(tmp_path):
+    """THE BUILT SCRIPTS ARE RUN, NOT ONLY PARSED (2026-09-16). tape.js and
+    companies.js are the home page's shared blocks plus a page script, in an
+    order the home page never runs; a shared block that touched state.ev at
+    load passed the harness and killed both pages. Each built script is
+    loaded under stub globals that swallow DOM and network calls; anything
+    that throws at the top level fails here."""
+    import shutil
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    driver = r"""
+const vm=require("vm"),fs=require("fs");
+const P=new Proxy(function(){},{get:(t,k)=>k===Symbol.toPrimitive?()=>"":k==="then"?undefined:P,apply:()=>P,construct:()=>P,set:()=>true,has:()=>true});
+for(const f of process.argv.slice(2)){
+  const src=fs.readFileSync(f,"utf8");
+  const g={document:P,window:P,location:{href:"https://x/",pathname:"/",search:"",hash:""},navigator:P,fetch:()=>Promise.reject(new Error("offline")),setTimeout:()=>0,clearTimeout:()=>0,setInterval:()=>0,console,localStorage:P,history:P,Intl,Date,Math,JSON,Promise,URL,URLSearchParams,requestAnimationFrame:()=>0,addEventListener:()=>0,performance:{now:()=>0},COMPANY:{tk:"TSLA",co:"Tesla",ceo:"Elon Musk",sp:true}};
+  g.window=g;g.globalThis=g;g.self=g;
+  try{vm.runInNewContext(src,g,{filename:f,timeout:5000});}
+  catch(e){console.error("LOAD ERROR in "+f+": "+(e&&e.stack||e));process.exit(1);}
+}
+// the async paths run against a fake DOM and are not judged here: the top-level load is
+process.on("unhandledRejection",()=>{});
+console.log("loaded "+process.argv.slice(2).length+" scripts");process.exit(0);
+"""
+    scripts = [os.path.join(out, n) for n in ("tape.js", "companies.js", "company.js") if os.path.exists(os.path.join(out, n))]
+    assert scripts, "the builder writes the page scripts"
+    drv = os.path.join(str(tmp_path), "load_check.js")
+    with open(drv, "w", encoding="utf-8") as fh:
+        fh.write(driver)
+    p = subprocess.run([node, drv] + scripts, capture_output=True, text=True, timeout=60)
+    assert p.returncode == 0, p.stderr[-1500:]
+    assert f"loaded {len(scripts)} scripts" in p.stdout, p.stdout

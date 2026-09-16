@@ -43,12 +43,12 @@ KIND_DETAIL = {"exercise and sell": "options cashed", "exercise, part sold": "op
                "forfeited": "forfeited", "converted": "converted", "gift": "gift",
                "shares withheld for tax": "withheld for tax", "other transaction": "other transaction"}
 TAPE_HEAD = ('<table class="tape"><colgroup><col class="tw-kind"><col class="tw-co"><col class="tw-ceo"><col class="tw-v">'
-             '<col class="tw-ch"><col class="tw-st"><col class="tw-td"><col class="tw-fd"></colgroup>'
+             '<col class="tw-ch"><col class="tw-st"><col class="tw-fd"><col class="tw-td"></colgroup>'
              '<thead><tr><th class="sortable" data-key="kind">Kind<span class="arr"></span></th><th class="sortable" data-key="co">Company<span class="arr"></span></th>'
              '<th class="sortable" data-key="ceo">CEO<span class="arr"></span></th><th class="sortable n" data-key="v">Amount<span class="arr"></span></th>'
              '<th class="sortable n" data-key="ch">Change<span class="arr"></span></th><th class="sortable n" data-key="st">New stake<span class="arr"></span></th>'
-             '<th class="sortable" data-key="td" title="the day of the transaction; a span when the form covers several">Traded<span class="arr"></span></th>'
-             '<th class="sortable" data-key="fd" title="the day EDGAR accepted the form">Filed<span class="arr"></span></th></tr></thead>')
+             '<th class="sortable" data-key="fd" title="the day EDGAR accepted the form">Filed<span class="arr"></span></th>'
+             '<th class="sortable" data-key="td" title="the day of the transaction; a span when the form covers several">Traded<span class="arr"></span></th></tr></thead>')
 
 
 def _pre(e):
@@ -259,8 +259,8 @@ def row_html(e, co_of):
             f'<span class="nm">{html.escape(co_of.get(tk, ""))}</span></td>'
             f'<td class="ceo"><span class="cn">{html.escape(e.get("ceo") or "")}</span></td>'
             f'<td class="n v">{amt}</td><td class="n ch">{change}</td><td class="n st">{stake}</td>'
-            f'<td class="td"><span class="dt">{html.escape(e.get("traded") or e.get("filed") or "")}</span></td>'
-            f'<td class="fd"><span class="dt">{html.escape(e.get("filed") or "")}</span></td></tr>')
+            f'<td class="fd"><span class="dt">{html.escape(e.get("filed") or "")}</span></td>'
+            f'<td class="td"><span class="dt">{html.escape(e.get("traded") or e.get("filed") or "")}</span></td></tr>')
 
 
 def table_html(rows, co_of, limit=None):
