@@ -56,7 +56,7 @@ from dataclasses import dataclass, field, asdict
 from .config import SETTINGS
 from .schedule13 import is_foreign_reporter, stake_from_schedule13
 from .identity import peo_from_certification
-from .ledger import build_ledger
+from .ledger import build_ledger, retired_classes, closed_groups
 from .splits import fetch_splits
 from .successor import find_predecessor
 from .outstanding import shares_outstanding, jumped
@@ -245,13 +245,25 @@ def build(client, cik: int, company: str = "", ticker: str = "",
 
     # THE DENOMINATOR FIRST, for its class count. The ledger needs to know
     # whether this company has one class before it can decide whether the
-    # security title means anything.
+    # security title means anything. THE CLASSES OF EACH YEAR, NOT ONLY
+    # TODAY'S (2026-09-16, Archer): the ledger walks years of filings, and a
+    # filing is read under the classes its company had on its date. The
+    # series carries that list per year (fle/series.py); fetched here for
+    # every company, from the same cache the history walk fills.
     out = shares_outstanding(client, cik)
+    classes_at = None
+    try:
+        from .series import denominator_series as _dseries
+        _ser = _dseries(client, cik, since="2016-01-01")
+        if _ser and _ser.classes:
+            classes_at = _ser.classes_at
+    except Exception:  # noqa: BLE001 - no series: today's cover decides, as before
+        classes_at = None
     led = build_ledger(client, cik, owner_name=owner_name, splits=splits,
                        share_classes=out.classes if out.ok else 0,
                        class_members=out.per_class,
                        exclude=exclusions.for_issuer(cik) if exclusions else (),
-                       on_progress=on_progress)
+                       on_progress=on_progress, classes_at=classes_at)
 
     # A SUCCESSOR FILES UNDER ITS PREDECESSOR'S CIK. Only reached when the
     # normal path found nothing, so it cannot disturb a company that works.
@@ -364,6 +376,18 @@ def build(client, cik: int, company: str = "", ticker: str = "",
         flag(CAUTION, f"a split in the feed was not applied: {why}")
     for _d, _f, why in splits.doubts:
         flag(CAUTION, f"a split the cover pages do not corroborate: {why}")
+    # A CLASS THE COMPANY RETIRED IS CLOSED (ledger.retired_classes, 2026-09-16):
+    # the cover pages' class lists say when a class stopped existing; a group
+    # of that class stated before then is not counted, and the page says so
+    try:
+        from .series import denominator_series as _dseries
+        _ser = _dseries(client, cik, since="2016-01-01")
+        led.retired = retired_classes(_ser) if _ser else {}
+    except Exception:  # noqa: BLE001 - no covers to read: nothing is retired
+        led.retired = {}
+    for _k, g, cut in closed_groups(led.groups, led.retired):
+        flag(CAUTION, f"a class the company retired is not counted: {g.security} last stated {g.filed or g.as_of} "
+                      f"({g.shares:,.0f} shares); the cover pages stop listing the class from {cut}")
     rec.shares = led.total
     rec.shares_as_of = led.last_filing
     rec.lines = len(led.lines)

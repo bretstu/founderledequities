@@ -3888,71 +3888,43 @@ def test_a_feed_event_before_the_registrants_first_cover_is_a_predecessors():
     assert Splits(ticker="Y", events=[Split(date="2024-01-01", factor=2.0)]).disown_before_first_cover(Series()) == [], "no covers known: the feed stands"
 
 
-def test_a_lettered_title_is_its_own_class_even_when_the_cover_names_one():
-    """MOONLAKE, Dec 2025 (fixed 2026-09-15). The cover names Class A alone
-    (the Class C shares of an Up-C carry votes, not economics). The
-    founder's exchange filing has a Class A row, 3,074,893 after, and a
-    Class C row, 0 after. Both folded into the one class the walk knew and
-    the later row won: 0 shares, three months, no caution. Now the Class C
-    row is a discovered class of its own, as it would be if the cover
-    named two, and an unlettered "Common Stock" title still maps to the
-    single class."""
-    from fle.history import build_history
+
+def test_a_class_the_company_retired_is_closed_at_the_first_cover_without_it():
+    """BLOOM, LITHIA, ACV AUCTIONS (2026-09-16). A Class B group stated in
+    2021 under the letter rule; the covers name Class A and B through 2022
+    and Class A alone from 2023: closed, with the two dates. A class the
+    newest cover still lists (Nuvation's B) is not retired; a class no cover
+    ever listed (MoonLake's C) is not retired; a group stated after the
+    retirement cover is not closed by it."""
+    from fle.ledger import retired_classes, closed_groups, groups_total, Group
     from fle.series import Series, Point
-    from fle.ledger import names_another_letter
-    head = ('<ownershipDocument><periodOfReport>{p}</periodOfReport><issuer><issuerCik>0001821586</issuerCik></issuer>'
-            '<reportingOwner><reportingOwnerId><rptOwnerCik>0001213900</rptOwnerCik><rptOwnerName>Santos da Silva Jorge</rptOwnerName></reportingOwnerId>'
-            '<reportingOwnerRelationship><isOfficer>1</isOfficer><officerTitle>CEO</officerTitle></reportingOwnerRelationship></reportingOwner>')
-
-    def tx(title, code, sh, ad, after, d):
-        return (f'<nonDerivativeTransaction><securityTitle><value>{title}</value></securityTitle><transactionDate><value>{d}</value></transactionDate>'
-                f'<transactionCoding><transactionCode>{code}</transactionCode></transactionCoding><transactionAmounts><transactionShares><value>{sh}</value></transactionShares>'
-                f'<transactionAcquiredDisposedCode><value>{ad}</value></transactionAcquiredDisposedCode></transactionAmounts>'
-                f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts>'
-                f'<ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></nonDerivativeTransaction>')
-    A = "Class A ordinary shares, par value $0.0001 per share"; C = "Class C ordinary shares, par value $0.0001 per share"
-    docs = {"m1": head.format(p="2025-12-08") + tx(A, "S", 130000, "D", 2948577, "2025-12-08") + tx(A, "S", 70000, "D", 2878577, "2025-12-08") + '</ownershipDocument>',
-            "m2": head.format(p="2025-12-19") + tx(A, "C", 196316, "A", 3074893, "2025-12-19") + tx(C, "D", 196316, "D", 0, "2025-12-19") + '</ownershipDocument>',
-            "m3": head.format(p="2026-01-05") + tx("Common Stock", "S", 100000, "D", 2974893, "2026-01-05") + '</ownershipDocument>'}
-
-    class _E:
-        def filing_index(self, cik, acc):
-            return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
-
-        def get(self, url, use_cache=True):
-            return next(v for k, v in docs.items() if k in url)
-
-    mine = [{"form": "4", "accessionNumber": k, "filingDate": d, "reportDate": r, "primaryDocument": "d.xml"}
-            for k, d, r in [("m1", "2025-12-10", "2025-12-08"), ("m2", "2025-12-22", "2025-12-19"), ("m3", "2026-01-07", "2026-01-05")]]
-    ser = Series(points=[Point("2025-09-30", 73615396.0)], classes={"2025": {"us-gaap:CommonClassAMember": 73615396.0}})
-    h = build_history(_E(), 1821586, "1213900", mine, series=ser)
-    got = [(s.date, round(s.shares), s.groups) for s in h.snapshots]
-    assert got == [("2025-12-08", 2878577, 1), ("2025-12-19", 3074893, 2), ("2026-01-05", 2974893, 2)], got
-    lettered = {("class", "A"): "Class A Common Stock"}
-    assert names_another_letter(C, lettered, None) and not names_another_letter(A, lettered, None), "the cover's letter is the class"
-    assert not names_another_letter("Common Stock", lettered, None), "no letter: the single class, whatever the cover calls it"
-    assert not names_another_letter("Stock Option (Right to Buy)", lettered, None), "not a share"
-    # BOX, CBRE, ninety companies: an unlettered cover and filings that say "Class A": the person's dominant letter is the class
-    bare = {("", ""): "Common Stock"}
-    assert not names_another_letter("Class A Common Stock", bare, ("class", "A")), "the dominant letter is the class"
-    assert names_another_letter("Class B Common Stock", bare, ("class", "A")), "and another letter is another class (Archer's B)"
-    assert not names_another_letter("Class A Common Stock", bare, None), "no letter anywhere: nothing to split on"
-
-    # the same walk with an unlettered cover: MoonLake still right, and a company whose titles alternate
-    # between "Common Stock" and "Class A Common Stock" is one holding, not two
-    ser = Series(points=[Point("2025-09-30", 73615396.0)], classes={"2025": {"c-2": 73615396.0}})
-    h = build_history(_E(), 1821586, "1213900", mine, series=ser)
-    assert [(s.date, round(s.shares)) for s in h.snapshots] == [("2025-12-08", 2878577), ("2025-12-19", 3074893), ("2026-01-05", 2974893)]
-    docs2 = {"b1": head.format(p="2025-11-01") + tx("Common Stock", "P", 1000, "A", 500000, "2025-11-01") + '</ownershipDocument>',
-             "b2": head.format(p="2025-12-01") + tx("Class A Common Stock", "S", 1000, "D", 499000, "2025-12-01") + '</ownershipDocument>'}
-
-    class _E2:
-        def filing_index(self, cik, acc):
-            return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
-
-        def get(self, url, use_cache=True):
-            return next(v for k, v in docs2.items() if k in url)
-
-    mine2 = [{"form": "4", "accessionNumber": k, "filingDate": d, "reportDate": d, "primaryDocument": "d.xml"} for k, d in [("b1", "2025-11-01"), ("b2", "2025-12-01")]]
-    h = build_history(_E2(), 1821586, "1213900", mine2, series=Series(points=[Point("2025-09-30", 1e8)], classes={"2025": {"c-2": 1e8}}))
-    assert [(s.date, round(s.shares), s.groups) for s in h.snapshots] == [("2025-11-01", 500000, 1), ("2025-12-01", 499000, 1)], "one holding, two spellings"
+    A, B = "us-gaap:CommonClassAMember", "us-gaap:CommonClassBMember"
+    bloom = Series(points=[Point("2021-06-30", 1.7e8, counted="2021-08-02"), Point("2022-06-30", 1.9e8, counted="2022-08-01"),
+                           Point("2023-06-30", 2.2e8, counted="2023-08-08"), Point("2026-06-30", 2.9e8, counted="2026-08-05")],
+                  classes={"2021": {A: 1.5e8, B: 2e7}, "2022": {A: 1.7e8, B: 2e7}, "2023": {A: 2.2e8}, "2026": {A: 2.9e8}})
+    r = retired_classes(bloom)
+    assert r == {("class", "B"): "2023-08-08"}, r
+    groups = {"A": Group(security="Class A Common Stock", direct="D", shares=4511513, filed="2026-02-27"),
+              "B": Group(security="Class B Common Stock", direct="D", shares=1495749, filed="2021-05-12")}
+    closed = closed_groups(groups, r)
+    assert [k for k, _g, _c in closed] == ["B"] and closed[0][2] == "2023-08-08"
+    assert groups_total(groups, retired=r) == 4511513, "the retired class is not counted"
+    assert groups_total(groups, retired=r, when="2022-01-01") == 4511513 + 1495749, "and was counted while it existed"
+    # ACV: the conversion filed six weeks late, dated 31 Dec 2024; a withholding filing dated 2 Jan 2025 still states Class B;
+    # the covers list Class A alone from the 10-K as of 2025-02-20
+    acv = Series(points=[Point("2024-09-30", 1.6e8, counted="2024-11-04"), Point("2024-12-31", 1.65e8, counted="2025-02-20")],
+                 classes={"2024": {A: 1.5e8, B: 1.1e7}, "2025": {A: 1.65e8}})
+    r = retired_classes(acv)
+    g = {"B": Group(security="Class B Common Stock", direct="D", shares=861722, filed="2025-01-02")}
+    assert [k for k, _g, _c in closed_groups(g, r)] == ["B"], "stated 2 Jan 2025, before the 20 Feb cover without Class B: closed"
+    # still listed: not retired
+    nuv = Series(points=[Point("2026-06-30", 1e8)], classes={"2021": {A: 9e7, B: 1e6}, "2026": {A: 9.9e7, B: 1e6}})
+    assert retired_classes(nuv) == {}
+    # never listed: not retired
+    moon = Series(points=[Point("2026-06-30", 8.5e7)], classes={"2024": {A: 8e7}, "2026": {A: 8.5e7}})
+    assert retired_classes(moon) == {}
+    # one named year only: nothing to compare
+    assert retired_classes(Series(classes={"2026": {A: 1e8}})) == {}
+    # a group stated after the retirement cover is not closed by it (a filer restating the class after the fact)
+    late = {"B": Group(security="Class B Common Stock", direct="D", shares=10, filed="2024-01-15")}
+    assert closed_groups(late, {("class", "B"): "2023-08-08"}) == []

@@ -151,59 +151,6 @@ def title_letter(title: str) -> tuple | None:
     return (k.group(1).lower() if k else "class", singles[0].upper())
 
 
-def dominant_letter(client, cik: int, docs: list) -> tuple | None:
-    """The class letter this person's own Table I share rows use most, across
-    every filing in `docs`; ties go to the newest filing's letter. None when
-    the filings never name a letter. Read once, before the walk, so the
-    ledger and the history assign every title the same way."""
-    counts: dict = {}
-    first: dict = {}
-    for i, f in enumerate(sorted(docs, key=lambda f: f.get("filingDate") or "", reverse=True)):
-        root = _parse(client, cik, f)
-        if root is None:
-            continue
-        for tag in ("nonDerivativeTransaction", "nonDerivativeHolding"):
-            for node in root.iter(tag):
-                t = _t(node, "securityTitle")
-                if not t or not is_share_class(t):
-                    continue
-                got = title_letter(t)
-                if got is not None and got[1]:
-                    counts[got] = counts.get(got, 0) + 1
-                    first.setdefault(got, i)
-    if not counts:
-        return None
-    return max(counts, key=lambda g: (counts[g], -first[g]))
-
-
-def names_another_letter(title: str, letters: dict, dominant: tuple | None) -> bool:
-    """WITH ONE CLASS, EVERY TITLE IS IT -- UNLESS THE TITLE SAYS OTHERWISE
-    (2026-09-15, MoonLake). The cover page of an Up-C names one class, the
-    Class A shares the market holds; the founder's exchange filing carries
-    a Class A row (196,316 acquired, 3,074,893 after) and a Class C row (the
-    paired voting shares surrendered, 0 after). Both rows were assigned to
-    the one class, the later row won, and the walk published 0 shares for
-    a 3.9% holder for three months.
-
-    A title that names a class letter other than THE class is another
-    class, discovered as it is when the cover names several. Which letter
-    is the class: the cover's, when the cover has one; otherwise the letter
-    this person's own share rows use most (dominant_letter), because most
-    one-class covers carry no letter while the filings say "Class A" (Box,
-    CBRE, ninety companies), and a rule that read "Class A" as foreign to
-    an unlettered cover would split those holdings in two. A title with no
-    letter ("Common Stock") is always the single class."""
-    if not is_share_class(title):
-        return False
-    got = title_letter(title)
-    if got is None or not got[1]:
-        return False
-    if got in (letters or {}):
-        return False
-    the_class = next((g for g in (letters or {}) if g[1]), None) or dominant
-    return the_class is not None and got != the_class
-
-
 def match_class(title: str, letters: dict) -> str | None:
     """The company's own label for the class this title names, or None."""
     if not letters:
@@ -1104,7 +1051,63 @@ class Group:
         return f"{self.security} · {where}"
 
 
-def groups_total(groups, splits=None, when: str = "") -> float:
+def retired_classes(series) -> dict:
+    """A CLASS THE COMPANY RETIRED IS CLOSED (2026-09-16, Bloom, Lithia,
+    ACV Auctions). Under a one-class cover a title naming another letter is
+    its own group (the letter rule, MoonLake and Archer), and that group is
+    carried from its last statement like any class. When the company then
+    abolishes the class by charter and the holder files nothing (the shares
+    convert by themselves), the group is carried forever: Sridhar's Class B
+    of 2021, DeBoer's Class B of 2010, Chamoun's Class B stated two days
+    after the conversion by a filing prepared before it. The company's own
+    cover pages say when the class stopped existing: an earlier cover listed
+    it, the newest does not. -> {(kind, letter): the as-of date of the first
+    cover without it}, for every class an earlier cover listed and the
+    newest cover lacks. A class no cover ever listed is not retired (the
+    cover omitted it, MoonLake's shape); a class the newest cover still
+    lists is not retired."""
+    classes = getattr(series, "classes", None) or {}
+    named = {y: m for y, m in classes.items() if y != "0000" and any(":" in str(k) for k in m)}
+    if len(named) < 2:
+        return {}
+    years = sorted(named)
+    newest = set(class_letters(named[years[-1]]))
+    points = sorted(getattr(series, "points", []) or [], key=lambda p: p.as_of)
+    out = {}
+    for i, y in enumerate(years[:-1]):
+        for key in class_letters(named[y]):
+            if key in newest or key in out or not key[1]:
+                continue
+            later = [yy for yy in years[i + 1:] if key not in class_letters(named[yy])]
+            if not later:
+                continue
+            first_without = later[0]
+            # the class lists are keyed by filing year, and a cover's count is as of
+            # its filing (Point.counted): a 10-K for 31 December, filed in February,
+            # is the February cover, and its year is the February one
+            p = next((p for p in points if ((getattr(p, "counted", "") or p.as_of) or "")[:4] == first_without), None)
+            out[key] = (getattr(p, "counted", "") or p.as_of) if p else f"{first_without}-01-01"
+    return out
+
+
+def closed_groups(groups, retired: dict, when: str = "") -> list:
+    """The groups a retirement closes at `when` (today when empty): keyed by
+    a retired letter, stated before the first cover without the class."""
+    if not retired:
+        return []
+    out = []
+    for key, g in groups.items():
+        got = title_letter(g.security or "")
+        if got is None or got not in retired:
+            continue
+        cut = retired[got]
+        stated = g.filed or g.as_of or ""
+        if stated and stated < cut and (not when or when >= cut):
+            out.append((key, g, cut))
+    return out
+
+
+def groups_total(groups, splits=None, when: str = "", retired: dict | None = None) -> float:
     """EVERY GROUP IN ONE BASIS (2026-09-15, Carvana). A group's shares are
     in the basis of the filing that settled it, and a class nobody has
     touched is carried from that filing as it was written. Garcia's Class B
@@ -1118,11 +1121,14 @@ def groups_total(groups, splits=None, when: str = "") -> float:
     the basis of `when` (today when `when` is empty): the split table is
     the evidence, the same one the flows and the history's adjusted column
     already use, and the reconciliation still checks it."""
+    closed = {k for k, _g, _c in closed_groups(groups, retired or {}, when)}
     if not splits:
-        return sum(g.shares for g in groups.values())
+        return sum(g.shares for k, g in groups.items() if k not in closed)
     here = splits.factor_since(when) if when else 1.0
     total = 0.0
-    for g in groups.values():
+    for k, g in groups.items():
+        if k in closed:
+            continue
         # THE BASIS IS THE DOCUMENT THAT STATED THE SHARES (g.filed, its
         # period), not the group's last transaction date (g.as_of), which the
         # ledger carries across documents and can predate a split the
@@ -1184,6 +1190,7 @@ class Ledger:
     # which filings count, they will disagree on the answer.
     mine: list = field(default_factory=list)
     single_class: bool = False    # the title was not used at all
+    retired: dict = field(default_factory=dict)   # {(kind, letter): first cover without it} (retired_classes)
     classes: list = field(default_factory=list)   # letters the company names
     unnamed_class: dict = field(default_factory=dict)  # title -> most it held
     discovered_classes: set = field(default_factory=set)  # counted, absent from cover
@@ -1193,7 +1200,7 @@ class Ledger:
 
     @property
     def total(self) -> float:
-        return groups_total(self.groups, self.splits)
+        return groups_total(self.groups, self.splits, retired=getattr(self, "retired", None))
 
     @property
     def lines(self) -> dict:              # kept for the CSV's `lines` count
@@ -1223,8 +1230,17 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                  max_search: int | None = 500, fast: bool = False,
                  silences: int = 25, trace: bool = False, splits=None,
                  share_classes: int = 0, class_members=None, exclude=(),
-                 on_progress=None) -> Ledger:
-    """The newest filing that reports each group, summed. That is all."""
+                 on_progress=None, classes_at=None) -> Ledger:
+    """The newest filing that reports each group, summed. That is all.
+
+    `classes_at(date) -> members` (2026-09-16, Archer): the class list as it
+    stood on a document's date, the same per-year list the history walk
+    reads. Without it every filing is read under today's cover, and a
+    company whose structure changed is misread for its past: Archer's Class
+    B was abolished on 31 December 2024, the newest cover says one class,
+    and under one class the 2024 filings folded Goldstein's Class B into
+    Class A and wrote 0 for 36M shares. When given, it wins over
+    share_classes and class_members for each document."""
     led = Ledger(splits=splits)
     subs = client.submissions(issuer_cik)
     # Ordered by the period each filing REPORTS ON, not by the day it was
@@ -1423,13 +1439,18 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                                        f.get("accessionNumber") or ""),
                   reverse=True)
     todo = mine if max_filings is None else mine[:max_filings]
-    dominant = dominant_letter(client, issuer_cik, todo) if share_classes == 1 else None
     for i, f in enumerate(todo):
         if on_progress:
             on_progress(led.filings_read + 1, len(todo))
         root = _parse(client, issuer_cik, f)
         if root is None:
             continue
+        if classes_at is not None:
+            # THE CLASSES AS THEY WERE ON THIS DOCUMENT'S DATE (see the docstring)
+            here_members = classes_at(f.get("reportDate") or f.get("filingDate") or "")
+            if here_members:
+                share_classes = len(here_members)
+                letters = class_letters(here_members)
 
         # A filing in their feed that names another company. Rapino is a
         # director of Sirius XM and chief executive of Live Nation; both sit
@@ -1503,7 +1524,7 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                 continue
             # THE CLASS, NOT THE TITLE. With one class every title is it;
             # with several the title is matched to the company's own list.
-            if share_classes == 1 and not names_another_letter(r.security, letters, dominant):
+            if share_classes == 1:
                 title = SINGLE_CLASS
             else:
                 title = match_class(r.security, letters)

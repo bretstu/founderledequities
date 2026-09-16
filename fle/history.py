@@ -54,9 +54,9 @@ from dataclasses import dataclass, field
 import copy
 
 from .ledger import (SECTION16, Group, _merge_same_day, _parse, _rows, groups_total,
-                     displace_amended,
+                     displace_amended, retired_classes,
                      class_letters,
-                     is_share_class, issuer_of, match_class, names_another_letter, dominant_letter, SINGLE_CLASS,
+                     is_share_class, issuer_of, match_class, SINGLE_CLASS,
                      vehicle_keys, is_anonymous, base_of)
 
 
@@ -461,9 +461,9 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
     day_value: dict = {}
     day_unpriced: dict = {}
 
-    # THE LETTER THIS PERSON'S ROWS USE MOST, read once so every row of every
-    # document lands the same way in this walk and in the ledger's (MoonLake)
-    dominant = dominant_letter(client, issuer_cik, ordered)
+    # A CLASS THE COMPANY RETIRED closes at the first cover without it
+    # (ledger.retired_classes); read once from the cover pages' class lists
+    retired = retired_classes(series) if series else {}
     for i, f in enumerate(ordered, 1):
         if on_step:
             on_step(i, len(ordered))
@@ -538,8 +538,8 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                 continue
             if r.table == "II" and not is_share_class(r.security):
                 continue
-            if one_class and not names_another_letter(r.security, letters, dominant):
-                title = SINGLE_CLASS      # unless the title names a letter the cover does not (MoonLake, 2026-09-15)
+            if one_class:
+                title = SINGLE_CLASS
             elif letters:
                 title = match_class(r.security, letters)
                 if title is None:
@@ -811,7 +811,7 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
         # EVERY GROUP IN THIS ROW'S BASIS (ledger.groups_total): a class
         # carried from before a split is restated through it here, as the
         # first post-split Form 4 restates the class it touches
-        total = groups_total(groups, splits, when)
+        total = groups_total(groups, splits, when, retired=retired)
         prev_total = (hist.snapshots[-1].shares if hist.snapshots else None)
         adj_total = splits.adjust(total, when) if splits else total
         prev_adj = (hist.snapshots[-1].adjusted if hist.snapshots else None)
