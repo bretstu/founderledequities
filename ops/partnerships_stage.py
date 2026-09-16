@@ -64,8 +64,13 @@ def generate(client, panel, covers, only=None):
             continue
         big_title, (big, _w, big_acc) = max(c["units"].items(), key=lambda kv: kv[1][0])
         paired_titles = ", ".join(sorted({k[0] for k in c["paired"]}))
-        if c["suggest"] == "keep":
-            action, reason = "keep", (f"Units equal the paired class on the cover ({c['match'][0]} = {c['paired_total']:,.0f} {paired_titles}); "
+        partial = "names fewer lines" in (r.get("cautions") or "")
+        if c["suggest"] == "keep" and partial:
+            action, reason = "exclude", (f"Units equal the paired class ({c['match'][0]} = {c['paired_total']:,.0f} {paired_titles}), but the newest "
+                                         f"filing names fewer lines than the one before it (the ledger's caution): the match may stand on a partial "
+                                         f"statement; excluded until the next complete filing. REVIEW.")
+        elif c["suggest"] == "keep":
+            action, reason = "keep", (f"Units equal the paired class on the cover ({c['match'][0]} = {c['paired_total']:,.0f} {paired_titles}) in the same filing; "
                                       f"the ordinary rule is the as-converted stake.")
         elif c["suggest"] == "exclude":
             action, reason = "exclude", (f"The chief executive holds {big:,.0f} {big_title} the site does not count"

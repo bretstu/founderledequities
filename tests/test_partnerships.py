@@ -9,7 +9,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "ops"))
-from fle.partnerships import read_register, excluded, kept, note_for, path_for  # noqa: E402
+from fle.partnerships import read_register, read_hand, excluded, kept, note_for, path_for  # noqa: E402
 from fle.universe import read_universe  # noqa: E402
 import build_company_pages as bcp  # noqa: E402
 
@@ -65,8 +65,11 @@ def test_the_excluded_company_has_no_page_and_the_kept_page_carries_a_note(tmp_p
 
 
 def test_the_seeded_register_is_well_formed():
+    """The hand file alone: on the mini PC the generated file sits beside it
+    and read_register merges the two, which is right for the pipeline and
+    wrong for this check."""
     p = os.path.join(ROOT, "universe", "partnerships.csv")
-    r = read_register(p)
+    r = read_hand(p)
     assert set(r) >= {"CVNA", "BX", "MLTX", "PEB"}
     for tk, row in r.items():
         assert row["source"].startswith("https://www.sec.gov/") and row["as_of"] and row["reason"], tk
@@ -128,3 +131,52 @@ def test_the_stage_generates_keep_and_exclude_from_the_four_facts():
     out = st.generate(C(doc_excl), panel, {"EXCL": "c-2"})
     assert out["EXCL"]["action"] == "exclude" and "does not count" in out["EXCL"]["reason"]
     assert st.generate(C("<ownershipDocument><issuer><issuerCik>1</issuerCik></issuer></ownershipDocument>"), panel, {}) == {}, "no unit rows: not in the register"
+
+
+def test_a_titles_rows_are_summed_within_the_filing_and_a_keep_needs_one_filing():
+    """MEDLINE, RUSH STREET, SOLARIS (2026-09-16): a founder's units sit in
+    several vehicles, one row each under one title; the first version read
+    the first row and called exact matches conflicts. And RED ROCK: units
+    last stated in 2016, the paired class restated since; counts from
+    different dates prove nothing, so the census says read, not keep."""
+    import upc_census as U
+    head = '<ownershipDocument><periodOfReport>{p}</periodOfReport><issuer><issuerCik>0001</issuerCik></issuer>'
+    paired = lambda amt, di, nat: (f'<nonDerivativeHolding><securityTitle><value>Class B Common Stock</value></securityTitle><postTransactionAmounts><sharesOwnedFollowingTransaction><value>{amt}</value></sharesOwnedFollowingTransaction></postTransactionAmounts>'  # noqa: E731
+                                   f'<ownershipNature><directOrIndirectOwnership><value>{di}</value></directOrIndirectOwnership><natureOfOwnership><value>{nat}</value></natureOfOwnership></ownershipNature></nonDerivativeHolding>')
+    unit = lambda amt, di: (f'<derivativeHolding><securityTitle><value>LLC Units</value></securityTitle><underlyingSecurity><underlyingSecurityTitle><value>Class A Common Stock</value></underlyingSecurityTitle></underlyingSecurity>'  # noqa: E731
+                            f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{amt}</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>{di}</value></directOrIndirectOwnership></ownershipNature></derivativeHolding>')
+
+    class C:
+        def __init__(self, docs, bodies): self.docs, self.bodies = docs, bodies
+        def submissions(self, cik): return {"_filings": [{"form": "4", "accessionNumber": k, "filingDate": d, "reportDate": d, "primaryDocument": "d.xml"} for k, d in self.docs]}
+        def filing_index(self, cik, acc): return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+        def get(self, url, use_cache=True): return next(b for (k, d), b in zip(self.docs, self.bodies) if k in url)
+    same = head.format(p="2026-03-01") + paired(726819, "D", "") + paired(3513496, "I", "By Solaris Energy Capital") + unit(726819, "D") + unit(3513496, "I") + '</ownershipDocument>'
+    r = U.facts(C([("s1", "2026-03-01")], [same]), {"ticker": "SEI", "cik": "1", "owner_cik": "2"}, {"A", "B"})
+    assert r["suggest"] == "keep" and r["units"]["LLC Units"][0] == 4240315 and r["paired_total"] == 4240315, "two rows, one title, summed"
+    old = head.format(p="2016-05-18") + paired(22613985, "I", "Fertitta") + unit(22613985, "I") + '</ownershipDocument>'
+    new = head.format(p="2026-06-01") + paired(45385804, "I", "Fertitta") + '</ownershipDocument>'
+    r = U.facts(C([("n1", "2026-06-01"), ("o1", "2016-05-18")], [new, old]), {"ticker": "RRR", "cik": "1", "owner_cik": "2"}, {"A", "B"})
+    assert r["suggest"] == "read", "units from 2016, the paired class from 2026: a person decides"
+    new2 = head.format(p="2026-06-01") + paired(22613985, "I", "Fertitta") + '</ownershipDocument>'
+    r = U.facts(C([("n1", "2026-06-01"), ("o1", "2016-05-18")], [new2, old]), {"ticker": "RRR", "cik": "1", "owner_cik": "2"}, {"A", "B"})
+    assert r["suggest"] == "read", "counts that agree across different filings do not prove the pairing either"
+
+
+def test_the_stage_excludes_a_keep_that_stands_on_a_partial_filing():
+    import partnerships_stage as st
+    import upc_census as U
+    doc = ('<ownershipDocument><periodOfReport>2026-06-01</periodOfReport><issuer><issuerCik>0001</issuerCik></issuer>'
+           '<nonDerivativeHolding><securityTitle><value>Class B Common Stock</value></securityTitle><postTransactionAmounts><sharesOwnedFollowingTransaction><value>1000</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></nonDerivativeHolding>'
+           '<derivativeHolding><securityTitle><value>LLC Units</value></securityTitle><underlyingSecurity><underlyingSecurityTitle><value>Class A Common Stock</value></underlyingSecurityTitle></underlyingSecurity><postTransactionAmounts><sharesOwnedFollowingTransaction><value>1000</value></sharesOwnedFollowingTransaction></postTransactionAmounts></derivativeHolding></ownershipDocument>')
+
+    class C:
+        def submissions(self, cik): return {"_filings": [{"form": "4", "accessionNumber": "0000000001-26-000001", "filingDate": "2026-06-03", "reportDate": "2026-06-01", "primaryDocument": "d.xml"}]}
+        def filing_index(self, cik, acc): return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+        def get(self, url, use_cache=True): return doc
+    clean = [{"ticker": "OK", "cik": "1", "owner_cik": "2", "company": "Ok", "ceo": "K", "cautions": ""}]
+    partial = [{"ticker": "PART", "cik": "1", "owner_cik": "2", "company": "Part", "ceo": "P", "cautions": "the newest filing names fewer lines than the one before it"}]
+    covers = {"OK": "us-gaap:CommonClassAMember|us-gaap:CommonClassBMember", "PART": "us-gaap:CommonClassAMember|us-gaap:CommonClassBMember"}
+    assert st.generate(C(), clean, covers)["OK"]["action"] == "keep"
+    p = st.generate(C(), partial, covers)["PART"]
+    assert p["action"] == "exclude" and "fewer lines" in p["reason"] and "REVIEW" in p["reason"]

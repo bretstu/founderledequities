@@ -86,7 +86,19 @@ def facts(client, row, cover_classes):
                 if amt is None:
                     continue
                 bucket = pay if PAY_TITLE.search(title) else units
-                bucket.setdefault(title[:48], (amt, when, acc))     # newest first: the first mention is the current one
+                # A TITLE'S ROWS ARE SUMMED WITHIN THE FILING THAT STATES IT
+                # (2026-09-16): a founder's units sit in several vehicles, one
+                # row each under one title; the first version took the first
+                # row and called Medline, Rush Street and Solaris conflicts.
+                # The paired side was already summed the same way. Newest
+                # filing first, so the first filing to state a title is its
+                # current statement and later filings do not add to it.
+                t = title[:48]
+                prev = bucket.get(t)
+                if prev is None:
+                    bucket[t] = (amt, when, acc)
+                elif prev[2] == acc:
+                    bucket[t] = (prev[0] + amt, when, acc)
         if not paired:
             for tag in ("nonDerivativeTransaction", "nonDerivativeHolding"):
                 for node in root.iter(tag):
@@ -100,10 +112,14 @@ def facts(client, row, cover_classes):
     if not units:
         return None
     paired_total = sum(a for a, *_ in paired.values())
+    paired_acc = next((acc for (_a, _w, acc) in paired.values()), "")
     match = [t for t, (a, w, acc) in units.items() if paired_total and abs(a - paired_total) / max(a, paired_total) < 0.02]
+    same_filing = bool(match) and units[match[0]][2] == paired_acc
     two = len(cover_classes) >= 2
-    if match and two and paired_total:
-        suggest = "keep"
+    if match and two and paired_total and same_filing:
+        suggest = "keep"          # proved on one date, in one document
+    elif match and two and paired_total:
+        suggest = "read"          # the counts agree but from different filings: the words decide, a person reads
     elif not paired_total or (two and not match and paired_total < 0.5 * max(a for a, *_ in units.values())):
         suggest = "exclude"
     else:
