@@ -72,3 +72,59 @@ def test_the_seeded_register_is_well_formed():
         assert row["source"].startswith("https://www.sec.gov/") and row["as_of"] and row["reason"], tk
         assert row["structure"] in ("up-c", "upreit"), tk
     assert r["CVNA"]["action"] == "keep" and r["BX"]["action"] == "exclude"
+
+
+def test_the_generated_register_sits_under_the_hand_rows(tmp_path):
+    (tmp_path / "universe").mkdir()
+    hand = tmp_path / "universe" / "partnerships.csv"; hand.write_text(REG)
+    auto = tmp_path / "universe" / "partnerships-auto.csv"
+    auto.write_text("ticker,action,structure,company,ceo,cik,cover_classes,paired_class,units_reported,reason,source,as_of,by\n"
+                    "OWL,keep,partnership,Blue Owl,Doug Ostrover,1823945,3,Class C Shares,units,Units equal the paired class.,https://www.sec.gov/o,2026-09-20,census\n"
+                    "CVNA,exclude,partnership,Carvana,Ernest C. Garcia,1690820,2,Class B,units,The facts conflict. REVIEW.,https://www.sec.gov/c,2026-09-20,census\n"
+                    "PJT,exclude,partnership,PJT,Paul Taubman,1626115,2,,Partnership Units 5352000,no paired class,https://www.sec.gov/p,2026-09-20,census\n")
+    r = read_register(str(hand))
+    assert r["CVNA"]["action"] == "keep" and r["CVNA"]["by"] == "hand", "the hand row wins over the census's REVIEW exclusion"
+    assert r["OWL"]["action"] == "keep" and r["OWL"]["by"] == "census"
+    assert r["PJT"]["action"] == "exclude" and r["BX"]["action"] == "exclude"
+    assert set(excluded(str(hand))) == {"BX", "PJT"} and set(kept(str(hand))) == {"CVNA", "OWL"}
+    u = tmp_path / "universe" / "universe-2026-08-31.csv"
+    u.write_text("cik,ticker,company,added\n1393818,BX,Blackstone,\n1690820,CVNA,Carvana,\n1823945,OWL,Blue Owl,\n1626115,PJT,PJT,\n1318605,TSLA,Tesla,\n")
+    assert [m.ticker for m in read_universe(str(u))] == ["CVNA", "OWL", "TSLA"], "both files exclude; the hand keep survives"
+
+
+def test_the_stage_delta_names_every_change():
+    import partnerships_stage as st
+    old = {"OWL": {"action": "keep", "reason": "x"}, "PJT": {"action": "exclude", "reason": "y"}, "GONE": {"action": "exclude", "reason": "z"}}
+    new = {"OWL": {"action": "exclude", "reason": "lost the paired class"}, "PJT": {"action": "exclude", "reason": "y"},
+           "NEWC": {"action": "exclude", "reason": "new units"}, "RSI": {"action": "exclude", "reason": "The facts conflict. REVIEW."}}
+    hand = {"OWL": {"action": "keep", "reason": "read the filing"}}
+    lines = st.delta(old, new, hand)
+    joined = "\n".join(lines)
+    assert "GONE: removed" in joined and "returns to the site" in joined
+    assert "NEWC: added, exclude" in joined
+    assert "OWL: keep -> exclude" in joined and "OWL: the hand row says keep, the census says exclude" in joined and "the hand row stands" in joined
+    assert "RSI: added, exclude" in joined and "REVIEW" in joined
+    assert "PJT" not in joined, "an unchanged row is not a line"
+
+
+def test_the_stage_generates_keep_and_exclude_from_the_four_facts():
+    import partnerships_stage as st
+    import upc_census as U
+    doc_keep = ('<ownershipDocument><periodOfReport>2026-06-01</periodOfReport><issuer><issuerCik>0001</issuerCik></issuer>'
+                '<nonDerivativeHolding><securityTitle><value>Class B Common Stock</value></securityTitle><postTransactionAmounts><sharesOwnedFollowingTransaction><value>1000</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></nonDerivativeHolding>'
+                '<derivativeHolding><securityTitle><value>LLC Units</value></securityTitle><underlyingSecurity><underlyingSecurityTitle><value>Class A Common Stock</value></underlyingSecurityTitle></underlyingSecurity><postTransactionAmounts><sharesOwnedFollowingTransaction><value>1000</value></sharesOwnedFollowingTransaction></postTransactionAmounts></derivativeHolding></ownershipDocument>')
+    doc_excl = doc_keep.replace('<value>1000</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature>', '<value>0</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature>', 1)
+
+    class C:
+        def __init__(self, d): self.d = d
+        def submissions(self, cik): return {"_filings": [{"form": "4", "accessionNumber": "0000000001-26-000001", "filingDate": "2026-06-03", "reportDate": "2026-06-01", "primaryDocument": "d.xml"}]}
+        def filing_index(self, cik, acc): return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+        def get(self, url, use_cache=True): return self.d
+    panel = [{"ticker": "KEEP", "cik": "1", "owner_cik": "2", "company": "Keep Co", "ceo": "K"}]
+    out = st.generate(C(doc_keep), panel, {"KEEP": "us-gaap:CommonClassAMember|us-gaap:CommonClassBMember"})
+    assert out["KEEP"]["action"] == "keep" and "Units equal the paired class" in out["KEEP"]["reason"] and out["KEEP"]["by"] == "census"
+    assert out["KEEP"]["source"].startswith("https://www.sec.gov/Archives/edgar/data/1/000000000126000001/")
+    panel = [{"ticker": "EXCL", "cik": "1", "owner_cik": "2", "company": "Excl Co", "ceo": "E"}]
+    out = st.generate(C(doc_excl), panel, {"EXCL": "c-2"})
+    assert out["EXCL"]["action"] == "exclude" and "does not count" in out["EXCL"]["reason"]
+    assert st.generate(C("<ownershipDocument><issuer><issuerCik>1</issuerCik></issuer></ownershipDocument>"), panel, {}) == {}, "no unit rows: not in the register"

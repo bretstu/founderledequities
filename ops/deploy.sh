@@ -132,6 +132,12 @@ cp -r site-data/. public/
 # the trajectories (drafts/stakes-month.md) are written beside it, every
 # kind of filing, ranked by the move of the stake (ops/moves.py).
 if [ "$(date +%u)" = "6" ]; then
+  # THE PARTNERSHIP REGISTER, GENERATED FROM THE FILINGS (2026-09-15): the four
+  # structured facts per chief executive, keep only what is provable, exclude
+  # the rest; the delta is printed, written to drafts/, and mailed. Takes
+  # effect at the next nightly, whose diff shows the same companies added or
+  # dropped. About half an hour; the site is unaffected until then.
+  python3 ops/partnerships_stage.py || echo "  partnerships: the stage failed; last week's register stands"
   python3 ops/letter.py draft || echo "  letter: draft failed; the site is unaffected"
   python3 ops/moves.py week "$(date +%F)" || echo "  drafts: the week's moves failed"
   python3 ops/moves.py stakes "$(date +%F)" || echo "  drafts: the trajectories failed"

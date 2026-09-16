@@ -44,18 +44,18 @@ and the chief executive's units are in Table I, counted as they should be.
 import csv
 import os
 
-REGISTER = os.path.join("universe", "partnerships.csv")
+REGISTER = os.path.join("universe", "partnerships.csv")            # hand rows: a person's decisions, in git
+GENERATED = os.path.join("universe", "partnerships-auto.csv")      # the weekly stage's rows: data, beside the panel
 COLUMNS = ["ticker", "action", "structure", "company", "ceo", "cik", "cover_classes", "paired_class",
-           "units_reported", "reason", "source", "as_of"]
+           "units_reported", "reason", "source", "as_of", "by"]
 
 
 def path_for(universe_path: str) -> str:
-    """The register lives beside the universe file."""
+    """The hand register lives beside the universe file; the generated one beside it."""
     return os.path.join(os.path.dirname(os.path.abspath(universe_path)), "partnerships.csv")
 
 
-def read_register(path: str) -> dict:
-    """-> {TICKER: row}; {} when there is no register."""
+def _read_one(path: str, by: str) -> dict:
     if not path or not os.path.exists(path):
         return {}
     out = {}
@@ -64,8 +64,29 @@ def read_register(path: str) -> dict:
             tk = (row.get("ticker") or "").strip().upper()
             act = (row.get("action") or "").strip().lower()
             if tk and act in ("keep", "exclude"):
-                out[tk] = dict(row, ticker=tk, action=act)
+                out[tk] = dict(row, ticker=tk, action=act, by=row.get("by") or by)
     return out
+
+
+def read_register(path: str) -> dict:
+    """-> {TICKER: row}: THE GENERATED ROWS WITH THE HAND ROWS ON TOP
+    (2026-09-15). ops/partnerships_stage.py writes partnerships-auto.csv
+    every Saturday from the four structured facts; a person's row in
+    partnerships.csv overrides it for that ticker and is never overwritten.
+    `path` is the hand register; the generated file sits beside it."""
+    hand = _read_one(path, "hand")
+    auto = _read_one(os.path.join(os.path.dirname(os.path.abspath(path)), "partnerships-auto.csv"), "census") if path else {}
+    merged = dict(auto)
+    merged.update(hand)
+    return merged
+
+
+def read_hand(path: str) -> dict:
+    return _read_one(path, "hand")
+
+
+def read_generated(path: str) -> dict:
+    return _read_one(path, "census")
 
 
 def excluded(path: str) -> dict:

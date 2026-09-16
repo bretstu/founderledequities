@@ -34,3 +34,4 @@ weekly/
 price-history/
 og/
 drafts/
+universe/partnerships-auto.csv   # the weekly stage writes it; the hand file beside it is in git
