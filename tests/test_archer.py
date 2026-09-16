@@ -6,18 +6,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 
-def test_archer_a_convertible_class_b_survives_a_class_a_only_filing_and_the_final_conversion():
-    """ARCHER (2026-09-16), the three filings that took Goldstein's record to
-    zero, replayed with the class list the fixed cover reader builds for
-    2024 (two bare contexts, no member names). 18 Nov: a PRSU tranche
-    vests into Class B and 5.0M converts to Class A. 21 Nov: tax sales of
-    Class A, no Class B rows. 31 Dec: the charter converts every Class B
-    to Class A. With one class the walk wrote 34,357,457 / 2,154,416 / 0;
-    with two it keeps the Class B (Table II, convertible) as its own group,
-    carries it through the Class A-only filing, and lands the conversion
-    without loss."""
-    from fle.history import build_history
-    from fle.series import Series, Point
+def _archer_docs():
+    """The three real filings, and a client that serves them."""
     head = ('<ownershipDocument><periodOfReport>{p}</periodOfReport><issuer><issuerCik>0001824502</issuerCik></issuer>'
             '<reportingOwner><reportingOwnerId><rptOwnerCik>0001882604</rptOwnerCik><rptOwnerName>Goldstein Adam</rptOwnerName></reportingOwnerId>'
             '<reportingOwnerRelationship><isOfficer>1</isOfficer><officerTitle>CEO</officerTitle></reportingOwnerRelationship></reportingOwner>')
@@ -54,6 +44,22 @@ def test_archer_a_convertible_class_b_survives_a_class_a_only_filing_and_the_fin
             return next(v for k, v in docs.items() if k in url)
 
     mine = [{"form": "4", "accessionNumber": k, "filingDate": d, "reportDate": r, "primaryDocument": "d.xml"} for k, d, r in [("a1", "2024-11-19", "2024-11-18"), ("a2", "2024-11-22", "2024-11-19"), ("a3", "2025-01-03", "2024-12-31")]]
+    return docs, mine, _E
+
+
+def test_archer_a_convertible_class_b_survives_a_class_a_only_filing_and_the_final_conversion():
+    """ARCHER (2026-09-16), the three filings that took Goldstein's record to
+    zero, replayed with the class list the fixed cover reader builds for
+    2024 (two bare contexts, no member names). 18 Nov: a PRSU tranche
+    vests into Class B and 5.0M converts to Class A. 21 Nov: tax sales of
+    Class A, no Class B rows. 31 Dec: the charter converts every Class B
+    to Class A. With one class the walk wrote 34,357,457 / 2,154,416 / 0;
+    with two it keeps the Class B (Table II, convertible) as its own group,
+    carries it through the Class A-only filing, and lands the conversion
+    without loss."""
+    from fle.history import build_history
+    from fle.series import Series, Point
+    docs, mine, _E = _archer_docs()
     two = Series(points=[Point("2024-09-30", 425272673.0)], classes={"2024": {"c-4": 389161681.0, "c-5": 36110992.0}})
     got = [(s.date, round(s.shares), s.groups) for s in build_history(_E(), 1824502, "1882604", mine, series=two).snapshots]
     assert got == [("2024-11-18", 39359763, 2), ("2024-11-19", 36372347, 2), ("2024-12-31", 36372347, 2)], got
@@ -72,3 +78,23 @@ def test_archer_a_convertible_class_b_survives_a_class_a_only_filing_and_the_fin
         if saved is not None:
             L.names_another_letter = saved
             H.names_another_letter = saved
+
+
+def test_the_panels_ledger_reads_each_filing_under_the_classes_of_its_date():
+    """The same three Archer filings through build_ledger (the panel's path),
+    newest first, with today's cover saying one class: 0 before, 36,372,347
+    with classes_at giving 2024 its two classes."""
+    from fle.ledger import build_ledger
+    from fle.series import Series
+    docs, mine, _E = _archer_docs()
+    subs = {"_filings": [dict(f, form="4") for f in mine]}
+
+    class _C(_E):
+        def submissions(self, cik):
+            return subs if int(cik) == 1824502 else {"_filings": [dict(f) for f in mine]}
+
+    led = build_ledger(_C(), 1824502, owner_cik="1882604", share_classes=1, class_members={"c-5": 770023800.0})
+    assert round(led.total) == 0, "today's one class applied to 2024: the record's zero"
+    ser = Series(classes={"2024": {"c-4": 389161681.0, "c-5": 36110992.0}, "2025": {"c-5": 542470264.0}})
+    led = build_ledger(_C(), 1824502, owner_cik="1882604", share_classes=1, class_members={"c-5": 770023800.0}, classes_at=ser.classes_at)
+    assert round(led.total) == 36372347, "each filing under the classes of its date"

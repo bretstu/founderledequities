@@ -1170,8 +1170,17 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                  max_search: int | None = 500, fast: bool = False,
                  silences: int = 25, trace: bool = False, splits=None,
                  share_classes: int = 0, class_members=None, exclude=(),
-                 on_progress=None) -> Ledger:
-    """The newest filing that reports each group, summed. That is all."""
+                 on_progress=None, classes_at=None) -> Ledger:
+    """The newest filing that reports each group, summed. That is all.
+
+    `classes_at(date) -> members` (2026-09-16, Archer): the class list as it
+    stood on a document's date, the same per-year list the history walk
+    reads. Without it every filing is read under today's cover, and a
+    company whose structure changed is misread for its past: Archer's Class
+    B was abolished on 31 December 2024, the newest cover says one class,
+    and under one class the 2024 filings folded Goldstein's Class B into
+    Class A and wrote 0 for 36M shares. When given, it wins over
+    share_classes and class_members for each document."""
     led = Ledger(splits=splits)
     subs = client.submissions(issuer_cik)
     # Ordered by the period each filing REPORTS ON, not by the day it was
@@ -1376,6 +1385,12 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
         root = _parse(client, issuer_cik, f)
         if root is None:
             continue
+        if classes_at is not None:
+            # THE CLASSES AS THEY WERE ON THIS DOCUMENT'S DATE (see the docstring)
+            here_members = classes_at(f.get("reportDate") or f.get("filingDate") or "")
+            if here_members:
+                share_classes = len(here_members)
+                letters = class_letters(here_members)
 
         # A filing in their feed that names another company. Rapino is a
         # director of Sirius XM and chief executive of Live Nation; both sit
