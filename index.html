@@ -429,7 +429,12 @@ table.tape th.n,table.tape td.n{text-align:right;padding-right:28px}
 table.tape td{padding:9px 10px 9px 0;border-top:1px solid var(--line2);font-size:14px;vertical-align:middle;white-space:nowrap}
 table.tape tr.dayrow{cursor:pointer}
 table.tape tr.dayrow:hover td{background:var(--line2)}
-table.tape tr.dim td{color:var(--faint)}
+/* A ROW THAT MOVED NOTHING IS NOT GREYED OUT (2026-09-16): the kind's own
+   colour (Compensation faint, Planned muted) says how much it matters; every
+   other column reads like every other row, so the table stays one table.
+   The dim class remains on the row for the "Moved the stake" chip and the
+   note's count, and only the kind cell reads from it. */
+table.tape tr.dim td.kd .kind{color:var(--faint)}
 table.tape td.kd{}
 table.tape .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
 table.tape .kind.bought{color:var(--buy)}table.tape .kind.disc{color:#B23428}table.tape .kind.sold{color:#8C4A44}table.tape .kind.plan{color:var(--mut)}table.tape .kind.comp{color:var(--faint)}table.tape .kind.xfer{color:var(--mut)}
@@ -439,7 +444,7 @@ table.tape td.kd{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 table.tape td.kd .detail{font-size:12px;color:var(--mut);margin-left:7px}
 table.tape td.kd .detail a{color:inherit;text-decoration:none}table.tape td.kd .detail a:hover{text-decoration:underline}
 table.tape td.ch .plus{color:var(--buy)}table.tape td.ch .minus{color:#B23428}
-table.tape tr.dim td.ch .plus,table.tape tr.dim td.ch .minus{color:var(--faint)}
+
 table.tape .lowc{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:4px;cursor:help}
 /* ONE ROW OF CONTROLS (2026-09-15): when · who · what · how much, in
    reading order, wrapping on a narrow screen; the dashed chip sits after
