@@ -4067,3 +4067,21 @@ def test_archer_under_the_letter_rule_with_todays_one_class_cover():
     one = Series(points=[Point("2024-09-30", 425272673.0)], classes={"0000": {"c-4": 389161681.0}})
     got = [(s.date, round(s.shares), s.groups) for s in build_history(_E(), 1824502, "1882604", mine, series=one).snapshots]
     assert got == [("2024-11-18", 39359763, 2), ("2024-11-19", 36372347, 2), ("2024-12-31", 36372347, 2)], got
+
+
+def test_ownership_passes_only_keywords_the_ledger_accepts():
+    """2026-09-16: a package shipped ownership.py calling build_ledger with a
+    keyword the packaged ledger.py did not have, and six founders' rows went
+    blank. The two files are one interface; this pins it."""
+    import ast
+    import inspect
+    import fle.ledger as L
+    import fle.ownership as O
+    sig = set(inspect.signature(L.build_ledger).parameters)
+    tree = ast.parse(inspect.getsource(O))
+    passed = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and getattr(node.func, "id", "") == "build_ledger":
+            passed |= {kw.arg for kw in node.keywords if kw.arg}
+    assert passed, "ownership.build calls build_ledger with keywords"
+    assert passed <= sig, f"ownership passes keywords the ledger does not accept: {passed - sig}"

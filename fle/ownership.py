@@ -245,25 +245,13 @@ def build(client, cik: int, company: str = "", ticker: str = "",
 
     # THE DENOMINATOR FIRST, for its class count. The ledger needs to know
     # whether this company has one class before it can decide whether the
-    # security title means anything. THE CLASSES OF EACH YEAR, NOT ONLY
-    # TODAY'S (2026-09-16, Archer): the ledger walks years of filings, and a
-    # filing is read under the classes its company had on its date. The
-    # series carries that list per year (fle/series.py); fetched here for
-    # every company, from the same cache the history walk fills.
+    # security title means anything.
     out = shares_outstanding(client, cik)
-    classes_at = None
-    try:
-        from .series import denominator_series as _dseries
-        _ser = _dseries(client, cik, since="2016-01-01")
-        if _ser and _ser.classes:
-            classes_at = _ser.classes_at
-    except Exception:  # noqa: BLE001 - no series: today's cover decides, as before
-        classes_at = None
     led = build_ledger(client, cik, owner_name=owner_name, splits=splits,
                        share_classes=out.classes if out.ok else 0,
                        class_members=out.per_class,
                        exclude=exclusions.for_issuer(cik) if exclusions else (),
-                       on_progress=on_progress, classes_at=classes_at)
+                       on_progress=on_progress)
 
     # A SUCCESSOR FILES UNDER ITS PREDECESSOR'S CIK. Only reached when the
     # normal path found nothing, so it cannot disturb a company that works.
