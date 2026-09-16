@@ -369,7 +369,12 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     # class stated before then is not counted, and the page says so. Read
     # only when the walk discovered a lettered class under a one-class cover.
     led.retired = {}
-    if led.single_class and any(title_letter(t) and title_letter(t)[1] for t in led.discovered_classes):
+    # the gate is the groups themselves: a group keyed by a letter other than
+    # the company's class (not the discovered-class record, which is only
+    # written when the cover's class map is non-empty: ACV, Lithia)
+    other_letters = [g for g in led.groups.values()
+                     if (title_letter(g.security or "") or ("", ""))[1] and title_letter(g.security or "") != led.dominant]
+    if led.single_class and other_letters:
         try:
             from .series import from_cover_pages
             led.retired = retired_classes(from_cover_pages(client, cik, since="2016-01-01"), remaining=led.dominant)

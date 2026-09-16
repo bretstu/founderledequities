@@ -4202,3 +4202,14 @@ def test_bloom_the_single_class_is_decided_once_and_the_retired_class_closes():
     led.retired = retired_classes(covers, remaining=led.dominant)
     assert [(g.security, round(g.shares), cut) for _k, g, cut in closed_groups(led.groups, led.retired)] == [("Class B Common Stock", 1495749, "2024-02-12")]
     assert round(led.total) == 4511513
+
+
+def test_the_retirement_gate_is_the_groups_not_the_discovered_record():
+    """ACV, LITHIA (2026-09-16): their covers give an empty class map, so the
+    walk keyed the Class B row by its title without recording it as a
+    discovered class, and a gate on that record never read the covers.
+    The gate is a group keyed by a letter other than the company's class."""
+    import inspect
+    import fle.ownership as O
+    src = inspect.getsource(O.build)
+    assert "other_letters" in src and "led.discovered_classes" not in src.split("led.retired = {}")[1].split("closed_groups")[0]
