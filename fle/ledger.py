@@ -176,6 +176,26 @@ def dominant_letter(client, cik: int, docs: list) -> tuple | None:
     return max(counts, key=lambda g: (counts[g], -first[g]))
 
 
+def letters_seen(client, cik: int, docs: list) -> set:
+    """Every class letter this person's Table I share rows have ever named,
+    across `docs`. More than one under a one-class cover is the shape the
+    retirement rule exists for (a class the company since retired), and the
+    only case in which the cover pages are read for it."""
+    out = set()
+    for f in docs:
+        root = _parse(client, cik, f)
+        if root is None:
+            continue
+        for tag in ("nonDerivativeTransaction", "nonDerivativeHolding", "derivativeTransaction", "derivativeHolding"):
+            for node in root.iter(tag):
+                t = _t(node, "securityTitle")
+                if t and is_share_class(t):
+                    got = title_letter(t)
+                    if got is not None and got[1]:
+                        out.add(got)
+    return out
+
+
 def names_another_letter(title: str, letters: dict, dominant: tuple | None) -> bool:
     """WITH ONE CLASS, EVERY TITLE IS IT -- UNLESS THE TITLE SAYS OTHERWISE
     (2026-09-15, MoonLake). The cover page of an Up-C names one class, the
@@ -1104,7 +1124,7 @@ class Group:
         return f"{self.security} · {where}"
 
 
-def retired_classes(series) -> dict:
+def retired_classes(series, remaining=None) -> dict:
     """A CLASS THE COMPANY RETIRED IS CLOSED (2026-09-16, Bloom, Lithia,
     ACV Auctions). Under a one-class cover a title naming another letter is
     its own group (the letter rule, MoonLake and Archer), and that group is
@@ -1113,12 +1133,37 @@ def retired_classes(series) -> dict:
     convert by themselves), the group is carried forever: Sridhar's Class B
     of 2021, DeBoer's Class B of 2010, Chamoun's Class B stated two days
     after the conversion by a filing prepared before it. The company's own
-    cover pages say when the class stopped existing: an earlier cover listed
-    it, the newest does not. -> {(kind, letter): the as-of date of the first
-    cover without it}, for every class an earlier cover listed and the
-    newest cover lacks. A class no cover ever listed is not retired (the
-    cover omitted it, MoonLake's shape); a class the newest cover still
-    lists is not retired."""
+    cover pages say when the class stopped existing.
+
+    Read from the cover summary the series keeps year by year
+    (Series.cover_years): a letter some cover NAMED is retired at the first
+    later cover that (a) names classes and not that letter, or (b) carries
+    ONE count with no names, the company having one class now, unless the
+    letter is `remaining`, the class the walk keys as the single class (the
+    cover's letter, or the person's dominant one). -> {(kind, letter): the
+    counted date of that cover}. A class no cover ever named is not retired
+    (MoonLake's shape: the cover omitted it); a class the newest cover still
+    lists is not retired. Without a cover summary, the named class lists
+    alone decide."""
+    cy = getattr(series, "cover_years", None) or {}
+    if cy:
+        years = sorted(cy)
+        out = {}
+        for i, y in enumerate(years):
+            for key in class_letters(cy[y]["named"]):
+                if not key[1] or key in out or key == remaining:
+                    continue
+                for yy in years[i + 1:]:
+                    c = cy[yy]
+                    gone = (c["named"] and key not in class_letters(c["named"])) or (not c["named"] and c["count"] == 1)
+                    if gone:
+                        out[key] = c["counted"] or f"{yy}-01-01"
+                        break
+        newest = years[-1]
+        if cy[newest]["named"]:
+            for key in class_letters(cy[newest]["named"]):
+                out.pop(key, None)       # still listed by the newest cover: not retired
+        return out
     classes = getattr(series, "classes", None) or {}
     named = {y: m for y, m in classes.items() if y != "0000" and any(":" in str(k) for k in m)}
     if len(named) < 2:
@@ -1135,9 +1180,6 @@ def retired_classes(series) -> dict:
             if not later:
                 continue
             first_without = later[0]
-            # the class lists are keyed by filing year, and a cover's count is as of
-            # its filing (Point.counted): a 10-K for 31 December, filed in February,
-            # is the February cover, and its year is the February one
             p = next((p for p in points if ((getattr(p, "counted", "") or p.as_of) or "")[:4] == first_without), None)
             out[key] = (getattr(p, "counted", "") or p.as_of) if p else f"{first_without}-01-01"
     return out
@@ -1244,6 +1286,7 @@ class Ledger:
     mine: list = field(default_factory=list)
     single_class: bool = False    # the title was not used at all
     retired: dict = field(default_factory=dict)   # {(kind, letter): first cover without it} (retired_classes)
+    dominant: tuple | None = None                 # the class letter the walk keys as the single class
     classes: list = field(default_factory=list)   # letters the company names
     unnamed_class: dict = field(default_factory=dict)  # title -> most it held
     discovered_classes: set = field(default_factory=set)  # counted, absent from cover
@@ -1484,6 +1527,7 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                   reverse=True)
     todo = mine if max_filings is None else mine[:max_filings]
     dominant = dominant_letter(client, issuer_cik, todo) if share_classes == 1 else None
+    led.dominant = dominant
     for i, f in enumerate(todo):
         if on_progress:
             on_progress(led.filings_read + 1, len(todo))

@@ -50,6 +50,14 @@ class Series:
     points: list = field(default_factory=list)     # oldest first
     classes: dict = field(default_factory=dict)    # year -> {member: shares}
     note: str = ""
+    # THE COVER, YEAR BY YEAR, FOR THE RETIREMENT RULE ONLY (2026-09-16):
+    # year -> {"named": [members], "count": distinct counts, "counted": date}
+    # for every year the cover pages were read, whether or not the contexts
+    # name a class. Never used to key rows (that is `classes`, named years
+    # only; keying rows differently across years doubled fifty holdings when
+    # it was tried). Read by ledger.retired_classes to see when a class
+    # stopped appearing on the cover.
+    cover_years: dict = field(default_factory=dict)
 
     def at(self, when: str) -> Point | None:
         """The newest cover date at or before `when`.
@@ -248,6 +256,10 @@ def from_cover_pages(client, cik: int, since: str = "",
         if year and year not in seen_year and any(
                 m for m in per_class if ":" in str(m)):
             seen_year[year] = per_class
+        if year and year not in out.cover_years:
+            distinct = {(dates.get(ctx, ""), v) for ctx, v in facts.items()}
+            out.cover_years[year] = {"named": [m for m in per_class if ":" in str(m)], "count": len(distinct),
+                                     "counted": out.points[-1].counted}
     out.points.sort(key=lambda p: p.as_of)
     # The multi-class path sums several facts per cover page, so a filer's
     # scale error lands here too -- Edison International's 797 trillion came

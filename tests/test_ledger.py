@@ -4085,3 +4085,64 @@ def test_ownership_passes_only_keywords_the_ledger_accepts():
             passed |= {kw.arg for kw in node.keywords if kw.arg}
     assert passed, "ownership.build calls build_ledger with keywords"
     assert passed <= sig, f"ownership passes keywords the ledger does not accept: {passed - sig}"
+
+
+def test_the_retirement_rule_reads_the_cover_summary_including_bare_years():
+    """BLOOM: covers name Class A and B through 2023, then one bare count
+    from 2024 (the company has one class, tagged without a name): B retired
+    at the 2024 cover's counted date. ACV: named A and B in 2024, the 10-K
+    of February 2025 a bare single count: retired 2025-02-20, so a Class B
+    statement of 2 Jan 2025 closes. The remaining class (the letter the walk
+    keys as the single class) is never retired; a class the newest named
+    cover still lists is not; a class no cover ever named is not."""
+    from fle.ledger import retired_classes, closed_groups, Group
+    from fle.series import Series
+    A, B = "us-gaap:CommonClassAMember", "us-gaap:CommonClassBMember"
+    bloom = Series(cover_years={"2021": {"named": [A, B], "count": 2, "counted": "2021-08-02"},
+                                "2022": {"named": [A, B], "count": 2, "counted": "2022-08-01"},
+                                "2023": {"named": [A, B], "count": 2, "counted": "2023-08-08"},
+                                "2024": {"named": [], "count": 1, "counted": "2024-08-05"},
+                                "2026": {"named": [], "count": 1, "counted": "2026-08-05"}})
+    r = retired_classes(bloom, remaining=("class", "A"))
+    assert r == {("class", "B"): "2024-08-05"}, r
+    g = {"B": Group(security="Class B Common Stock", direct="D", shares=1495749, filed="2021-05-12"),
+         "A": Group(security="Class A Common Stock", direct="D", shares=4511513, filed="2026-02-27")}
+    assert [k for k, _g, _c in closed_groups(g, r)] == ["B"]
+    acv = Series(cover_years={"2024": {"named": [A, B], "count": 2, "counted": "2024-11-04"},
+                              "2025": {"named": [], "count": 1, "counted": "2025-02-20"}})
+    r = retired_classes(acv, remaining=("class", "A"))
+    assert r == {("class", "B"): "2025-02-20"}
+    assert [k for k, _g, _c in closed_groups({"B": Group(security="Class B Common Stock", direct="D", shares=861722, filed="2025-01-02")}, r)] == ["B"]
+    # the remaining class is never retired, even when a bare cover follows
+    assert retired_classes(Series(cover_years={"2020": {"named": [A], "count": 1, "counted": "2020-05-01"}, "2026": {"named": [], "count": 1, "counted": "2026-08-01"}}), remaining=("class", "A")) == {}
+    # still listed by the newest named cover: not retired
+    assert retired_classes(Series(cover_years={"2021": {"named": [A, B], "count": 2, "counted": "2021-08-01"}, "2026": {"named": [A, B], "count": 2, "counted": "2026-08-01"}}), remaining=("class", "A")) == {}
+    # a bare TWO-count cover after named years says nothing about which class is gone
+    assert retired_classes(Series(cover_years={"2021": {"named": [A, B], "count": 2, "counted": "2021-08-01"}, "2026": {"named": [], "count": 2, "counted": "2026-08-01"}}), remaining=("class", "A")) == {}
+    # never named on any cover: not retired (MoonLake's shape)
+    assert retired_classes(Series(cover_years={"2024": {"named": [A], "count": 1, "counted": "2024-08-01"}, "2026": {"named": [], "count": 1, "counted": "2026-08-01"}}), remaining=("class", "A")) == {}
+
+
+def test_from_cover_pages_keeps_a_cover_summary_for_every_year():
+    from fle.series import from_cover_pages
+
+    def cover(counts, named):
+        ctx = "".join(f'<xbrli:context id="c-{i}"><xbrli:entity><xbrli:identifier scheme="x">1</xbrli:identifier>'
+                      + (f'<xbrli:segment><xbrldi:explicitMember dimension="us-gaap:StatementClassOfStockAxis">{m}</xbrldi:explicitMember></xbrli:segment>' if m else '')
+                      + f'</xbrli:entity><xbrli:period><xbrli:instant>{d}</xbrli:instant></xbrli:period></xbrli:context>' for i, (d, _v, m) in enumerate(counts, 1))
+        facts = "".join(f'<ix:nonFraction name="dei:EntityCommonStockSharesOutstanding" contextRef="c-{i}" unitRef="shares" decimals="INF">{v:,}</ix:nonFraction>' for i, (_d, v, _m) in enumerate(counts, 1))
+        return f"<html><body>{ctx}{facts}</body></html>"
+
+    class C:
+        def __init__(self, docs, filings): self.docs, self.filings = docs, filings
+        def submissions(self, cik): return {"_filings": self.filings}
+        def primary_document(self, cik, acc, name): return self.docs[acc]
+        def filing_index(self, cik, acc): return {"directory": {"item": [{"name": "d.htm"}]}}
+    docs = {"q23": cover([("2023-08-08", 190405579, "us-gaap:CommonClassAMember"), ("2023-08-08", 15690518, "us-gaap:CommonClassBMember")], True),
+            "q24": cover([("2024-08-05", 228000000, "")], False)}
+    fl = [{"form": "10-Q", "accessionNumber": "q23", "filingDate": "2023-08-09", "reportDate": "2023-06-30", "primaryDocument": "d.htm"},
+          {"form": "10-Q", "accessionNumber": "q24", "filingDate": "2024-08-06", "reportDate": "2024-06-30", "primaryDocument": "d.htm"}]
+    s = from_cover_pages(C(docs, fl), 1664703, since="2023-01-01")
+    assert s.cover_years["2023"]["count"] == 2 and len(s.cover_years["2023"]["named"]) == 2 and s.cover_years["2023"]["counted"] == "2023-08-08"
+    assert s.cover_years["2024"] == {"named": [], "count": 1, "counted": "2024-08-05"}, s.cover_years["2024"]
+    assert list(s.classes) == ["2023"], "the keying list still holds named years only"

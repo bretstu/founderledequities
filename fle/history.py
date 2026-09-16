@@ -54,7 +54,7 @@ from dataclasses import dataclass, field
 import copy
 
 from .ledger import (SECTION16, Group, _merge_same_day, _parse, _rows, groups_total,
-                     displace_amended, retired_classes,
+                     displace_amended, retired_classes, letters_seen,
                      class_letters,
                      is_share_class, issuer_of, match_class, names_another_letter, dominant_letter, SINGLE_CLASS,
                      vehicle_keys, is_anonymous, base_of)
@@ -465,8 +465,18 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
     # document lands the same way in this walk and in the ledger's (MoonLake)
     dominant = dominant_letter(client, issuer_cik, ordered)
     # A CLASS THE COMPANY RETIRED closes at the first cover without it
-    # (ledger.retired_classes); read once from the cover pages' class lists
-    retired = retired_classes(series) if series else {}
+    # (ledger.retired_classes). The series on the API path carries no cover
+    # history, so when the person's rows name a letter other than the
+    # company's class the cover pages are read for it (cached), once.
+    retired = retired_classes(series, remaining=dominant) if series else {}
+    if not retired and series is not None and not getattr(series, "cover_years", None):
+        seen = letters_seen(client, issuer_cik, ordered)
+        if any(k != dominant for k in seen):
+            try:
+                from .series import from_cover_pages
+                retired = retired_classes(from_cover_pages(client, issuer_cik, since=since or "2016-01-01"), remaining=dominant)
+            except Exception:  # noqa: BLE001 - no covers to read: nothing is retired
+                retired = {}
     for i, f in enumerate(ordered, 1):
         if on_step:
             on_step(i, len(ordered))

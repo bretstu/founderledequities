@@ -56,7 +56,7 @@ from dataclasses import dataclass, field, asdict
 from .config import SETTINGS
 from .schedule13 import is_foreign_reporter, stake_from_schedule13
 from .identity import peo_from_certification
-from .ledger import build_ledger, retired_classes, closed_groups
+from .ledger import build_ledger, retired_classes, closed_groups, title_letter
 from .splits import fetch_splits
 from .successor import find_predecessor
 from .outstanding import shares_outstanding, jumped
@@ -365,14 +365,16 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     for _d, _f, why in splits.doubts:
         flag(CAUTION, f"a split the cover pages do not corroborate: {why}")
     # A CLASS THE COMPANY RETIRED IS CLOSED (ledger.retired_classes, 2026-09-16):
-    # the cover pages' class lists say when a class stopped existing; a group
-    # of that class stated before then is not counted, and the page says so
-    try:
-        from .series import denominator_series as _dseries
-        _ser = _dseries(client, cik, since="2016-01-01")
-        led.retired = retired_classes(_ser) if _ser else {}
-    except Exception:  # noqa: BLE001 - no covers to read: nothing is retired
-        led.retired = {}
+    # the cover pages say when a class stopped existing; a group of that
+    # class stated before then is not counted, and the page says so. Read
+    # only when the walk discovered a lettered class under a one-class cover.
+    led.retired = {}
+    if led.single_class and any(title_letter(t) and title_letter(t)[1] for t in led.discovered_classes):
+        try:
+            from .series import from_cover_pages
+            led.retired = retired_classes(from_cover_pages(client, cik, since="2016-01-01"), remaining=led.dominant)
+        except Exception:  # noqa: BLE001 - no covers to read: nothing is retired
+            led.retired = {}
     for _k, g, cut in closed_groups(led.groups, led.retired):
         flag(CAUTION, f"a class the company retired is not counted: {g.security} last stated {g.filed or g.as_of} "
                       f"({g.shares:,.0f} shares); the cover pages stop listing the class from {cut}")
