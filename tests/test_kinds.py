@@ -167,7 +167,8 @@ def test_the_weather_line_and_the_stamped_table(tmp_path):
     assert kinds.counts(sealed) == c, "the line is the same on both sides of the seal"
     assert all(kinds.move_of(r) is None and not kinds.dim(r) for r in sealed), "a sealed row has no move to rank or dim by, as on the page"
     t = kinds.table_html(kinds.sorted_rows(rows), {"OPEN": "Open Co", "SEAL": "Sealed Co"})
-    assert t.startswith(kinds.TAPE_HEAD) and '<th class="n">Change</th>' in t and t.count("<tr ") == 7
+    assert t.startswith(kinds.TAPE_HEAD) and 'data-key="ch">Change' in t and 'data-key="fd"' in t and t.count("<tr ") == 7
+    assert '<td class="fd"><span class="dt">2026-09-10</span></td>' in t, "the filed day is a column of the stamp too"
     assert '<span class="kind comp">Compensation</span><span class="detail">award granted</span>' in t
     assert '<span class="kind xfer">Transfer</span><span class="detail">gift</span>' in t
     assert '<td class="n v">$61.5M</td>' in t, "the sale inside an exercise shows the Form 4's number"

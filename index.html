@@ -9,14 +9,14 @@
   <meta property="og:site_name" content="Founder Led Equities">
   <meta property="og:url" content="https://founderledequities.com">
   <meta property="og:title" content="Founder Led Equities — what every CEO owns of the company they run">
-  <meta property="og:description" content="The stake every CEO of 2,100+ US public companies holds, computed from the filings they signed. Who bought, who sold, and where every stake is heading. The S&P 500 is open to everyone.">
+  <meta property="og:description" content="The stake every CEO of 2,000+ US public companies holds, computed from the filings they signed. Who bought, who sold, and where every stake is heading. The S&P 500 is open to everyone.">
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:image" content="https://founderledequities.com/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="How many CEOs own more than 5% of the company they run, computed from SEC filings">
   <meta name="twitter:image" content="https://founderledequities.com/og.png">
-  <meta name="description" content="CEO ownership for 2,100+ US public companies, computed from SEC filings — never estimated. Who bought, who sold, and where every stake is heading. S&P 500 current stakes are open.">
+  <meta name="description" content="CEO ownership for 2,000+ US public companies, computed from SEC filings — never estimated. Who bought, who sold, and where every stake is heading. S&P 500 current stakes are open.">
 <link rel="preload" href="/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/hanken.woff2" as="font" type="font/woff2" crossorigin>
 <style>
@@ -422,7 +422,8 @@ table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
 /* ONE SHAPE FOR BOTH TABLES: the name columns take the left half, the
    figures sit in narrow right-aligned columns near their labels, the
    last two columns are the move and its date. The CEO cell truncates. */
-.tw-kd{width:19%}.tw-co{width:22%}.tw-ceo{width:18%}.tw-v{width:10%}.tw-ch{width:9%}.tw-st{width:10%}.tw-td{width:12%}
+.tw-kind{width:17%}.tw-co{width:21%}.tw-ceo{width:16%}.tw-v{width:9%}.tw-ch{width:8%}.tw-st{width:9%}.tw-td{width:11%}.tw-fd{width:9%}
+table.tape th.sortable{cursor:pointer;user-select:none}table.tape th.sortable:hover{color:var(--ink)}table.tape td.fd{white-space:nowrap}
 table.tape th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
 table.tape th.n,table.tape td.n{text-align:right;padding-right:28px}
 table.tape td{padding:9px 10px 9px 0;border-top:1px solid var(--line2);font-size:14px;vertical-align:middle;white-space:nowrap}
@@ -832,7 +833,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,screen:"",sort:{key:"val",dir:-1},tbF:true,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,kind:"all",moved:false},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
+const state={q:"",min:0,screen:"",sort:{key:"val",dir:-1},tbF:true,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,kind:"all",moved:false,sort:{key:null,dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -1881,6 +1882,22 @@ function actRows(){
 /*@shared*/
 function actSorted(rows){
   const mv=e=>{const p=evMove(e);return p?Math.abs(p.v):null;};
+  const sk=(state.ev.sort||{}).key,sd=(state.ev.sort||{}).dir||-1;
+  if(sk&&sk!=="kind"){
+    /* a header sort: the column's value, sealed or unstated figures last whichever way it points */
+    const val=e=>{
+      if(sk==="co")return coOf(e.tk)||e.tk;if(sk==="ceo")return e.ceo||"";
+      if(sk==="v")return (e.c==="P"||e.c==="S")&&e.v&&!e.fl?e.v:null;
+      if(sk==="ch"){const p=evMove(e);return p?p.v:null;}
+      if(sk==="st")return e.mk?null:(e.po===null||e.po===undefined?null:e.po);
+      if(sk==="td")return e.td||e.fd;if(sk==="fd")return e.fd;return null;};
+    return [...rows].sort((a,b)=>{
+      const va=val(a),vb=val(b),na=va===null||va===undefined||va==="",nb=vb===null||vb===undefined||vb==="";
+      if(na&&nb)return 0;if(na)return 1;if(nb)return -1;
+      if(typeof va==="string")return sd<0?vb.localeCompare(va):va.localeCompare(vb);
+      return sd<0?vb-va:va-vb;
+    });
+  }
   return [...rows].sort((a,b)=>{
     const ka=KIND_ORDER[tapeKind(a)],kb=KIND_ORDER[tapeKind(b)];
     if(ka!==kb)return ka-kb;
@@ -1976,11 +1993,26 @@ function actRow(e){
     <td class="n v">${trade?link(amt,"the filing, on EDGAR"):amt}</td>
     <td class="n ch">${change}</td>
     <td class="n st">${stake}</td>
-    <td class="td"><span class="dt" title="${tapeManner(e)}; the transaction date${e.tf&&e.tf!==e.td?"s":""}; filed ${e.fd}${lagNote(e)}">${spanDay(e,shortDay)}</span></td>
+    <td class="td"><span class="dt" title="${tapeManner(e)}; the transaction date${e.tf&&e.tf!==e.td?"s":""}${lagNote(e)}">${spanDay(e,shortDay)}</span></td>
+    <td class="fd"><span class="dt" title="the day EDGAR accepted the form">${shortDay(e.fd)}</span></td>
   </tr>`;
 }
 /*@shared*/
-const TAPE_HEAD='<table class="tape"><colgroup><col class="tw-kd"><col class="tw-co"><col class="tw-ceo"><col class="tw-v"><col class="tw-ch"><col class="tw-st"><col class="tw-td"></colgroup><thead><tr><th>Kind</th><th>Company</th><th>CEO</th><th class="n">Amount</th><th class="n">Change</th><th class="n">New stake</th><th>Traded</th></tr></thead>';
+/* THE TAPE'S HEADERS SORT, LIKE THE SCOREBOARD'S (2026-09-16): a click on a
+   column sorts the table by it, a second click reverses, and Kind returns
+   the tape's own order (kind groups, the move within). Filed is the day
+   EDGAR accepted the form; Traded the day of the transaction. */
+/*@shared*/
+const TAPE_COLS=[["kind","Kind",""],["co","Company",""],["ceo","CEO",""],["v","Amount","n"],["ch","Change","n"],["st","New stake","n"],["td","Traded",""],["fd","Filed",""]];
+/*@shared*/
+function tapeHead(){
+  const sk=(state.ev.sort||{}).key,sd=(state.ev.sort||{}).dir;
+  return '<table class="tape"><colgroup>'+TAPE_COLS.map(c=>`<col class="tw-${c[0]}">`).join("")+'</colgroup><thead><tr>'
+    +TAPE_COLS.map(([k,label,cls])=>`<th class="sortable${cls?" "+cls:""}" data-key="${k}"${k==="fd"?' title="the day EDGAR accepted the form"':k==="td"?' title="the day of the transaction; a span when the form covers several"':""}>${label}<span class="arr">${sk===k?(sd<0?" ↓":" ↑"):""}</span></th>`).join("")
+    +'</tr></thead>';
+}
+/*@shared*/
+const TAPE_HEAD=tapeHead();
 /*@shared*/
 function renderActivity(){
   if(!$("#actwrap"))return;
@@ -2008,10 +2040,20 @@ function renderActivity(){
   const limit=typeof TAPE_LIMIT==="number"?TAPE_LIMIT:0;
   const shown=limit&&rows.length>limit?rows.slice(0,limit):rows;
   $("#actwrap").innerHTML=rows.length
-    ?`${TAPE_HEAD}<tbody>${shown.map(actRow).join("")}</tbody></table>`
+    ?`${tapeHead()}<tbody>${shown.map(actRow).join("")}</tbody></table>`
     :`<div class="dayempty">No filings of this kind in this window.</div>`;
+  document.querySelectorAll("#actwrap th.sortable").forEach(th=>th.addEventListener("click",()=>setTapeSort(th.dataset.key)));
   const excerpt=typeof TAPE_LIMIT==="number"&&TAPE_LIMIT>0;
   $("#actnote").innerHTML=`${shown.length<rows.length?`${shown.length} of `:""}${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${sealedN&&!excerpt?` · the change and the stake after are in <a onclick="openPro()" style="cursor:pointer">Pro</a> for the ${sealedN.toLocaleString()} from companies outside the S&P 500`:""}${dimN&&!excerpt?` · ${dimN.toLocaleString()} moved the stake by less than 1%, dimmed`:""}`;
+}
+/*@shared*/
+function setTapeSort(key){
+  /* Kind restores the tape's own order; another column sorts by it, a second click reverses */
+  const cur=state.ev.sort||{key:null,dir:-1};
+  if(key==="kind")state.ev.sort={key:null,dir:-1};
+  else if(cur.key===key)state.ev.sort={key,dir:-cur.dir};
+  else state.ev.sort={key,dir:(key==="co"||key==="ceo")?1:-1};
+  renderActivity();
 }
 /*@shared*/
 function setKind(g){state.ev.kind=g;renderActivity();}

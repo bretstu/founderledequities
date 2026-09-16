@@ -60,5 +60,5 @@ async function subscribe(ev){
   return false;
 }
 function openCompany(tk){location.href="/company/"+tk+"/";}
-state.ev={win:"7",f:true,kind:"all",moved:false};
+state.ev={win:"7",f:true,kind:"all",moved:false,sort:{key:null,dir:-1}};
 boot();

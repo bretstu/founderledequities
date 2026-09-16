@@ -72,7 +72,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setWin,actWindow,actRows,actRow,actSorted,actStats,tapeKind,tapeGroup,tapeDetail,tapeManner,evMove,evMoved,evDim,moveWhy,setKind,setMoved,tapeCounts,soldTickers,lastTrades,exportTable,cleanHist,renderTable,setScreen,fInfo,set TAPE_LIMIT(v){TAPE_LIMIT=v},get SCREEN_COUNTS(){return SCREEN_COUNTS},set SCREEN_COUNTS(v){SCREEN_COUNTS=v},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setWin,actWindow,actRows,actRow,actSorted,actStats,setTapeSort,tapeHead,tapeKind,tapeGroup,tapeDetail,tapeManner,evMove,evMoved,evDim,moveWhy,setKind,setMoved,tapeCounts,soldTickers,lastTrades,exportTable,cleanHist,renderTable,setScreen,fInfo,set TAPE_LIMIT(v){TAPE_LIMIT=v},get SCREEN_COUNTS(){return SCREEN_COUNTS},set SCREEN_COUNTS(v){SCREEN_COUNTS=v},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -135,7 +135,15 @@ const P=runPage();
     const html=els["#actwrap"]._html;
     renderActivity();
     assert(els["#actwrap"]._html.includes('class="tape"')&&(els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===rows.length,"one table row per filing, once the excerpt's limit is lifted");
-    assert(/<th>Kind<\/th><th>Company<\/th><th>CEO<\/th><th class="n">Amount<\/th><th class="n">Change<\/th><th class="n">New stake<\/th><th>Traded<\/th>/.test(html),"seven columns: the kind says the manner, the change is the number the tape ranks by, the date is its own");
+    assert(/data-key="kind">Kind<span class="arr">.*data-key="co">Company.*data-key="ceo">CEO.*data-key="v">Amount.*data-key="ch">Change.*data-key="st">New stake.*data-key="td"[^>]*>Traded.*data-key="fd"[^>]*>Filed/.test(html),"eight sortable columns: the kind says the manner, the change is the number the tape ranks by, traded and filed are their own");
+    assert(html.includes('<td class="fd"><span class="dt" title="the day EDGAR accepted the form">'),"every row carries the day EDGAR accepted the form");
+    // THE HEADERS SORT, LIKE THE SCOREBOARD'S; Kind restores the tape's own order
+    P.setTapeSort("v"); {const r=actSorted(actRows()); const vs=r.map(e=>((e.c==="P"||e.c==="S")&&e.v&&!e.fl)?e.v:null).filter(x=>x!==null); assert(vs.every((x,i)=>i===0||x<=vs[i-1]),"Amount sorts descending on the first click"); assert(els["#actwrap"]._html.includes('data-key="v">Amount<span class="arr"> ↓'),"and the header shows the arrow");}
+    P.setTapeSort("v"); {const r=actSorted(actRows()); const vs=r.map(e=>((e.c==="P"||e.c==="S")&&e.v&&!e.fl)?e.v:null).filter(x=>x!==null); assert(vs.every((x,i)=>i===0||x>=vs[i-1]),"a second click reverses");}
+    P.setTapeSort("fd"); {const r=actSorted(actRows()); const ds=r.map(e=>e.fd); assert(ds.every((x,i)=>i===0||x<=ds[i-1]),"Filed sorts newest first");}
+    P.setTapeSort("ceo"); {const r=actSorted(actRows()); const cs=r.map(e=>e.ceo||""); assert(cs.every((x,i)=>i===0||x.localeCompare(cs[i-1])>=0),"a name column sorts A to Z on the first click");}
+    P.setTapeSort("kind"); assert(state.ev.sort.key===null,"Kind is the tape's own order again");
+    assert(!idxsrc.includes("filed ${e.fd}"),"the filed day is a column, not a hover");
     assert(html.includes("openCompany(")&&html.includes("sec.gov"),"rows are doors and the amount links to the filing");
     assert(!html.includes("DISCRET."),"kinds are spelled out");
     {const full=els["#actwrap"]._html;assert(full.includes('class="kind comp"')&&/class="detail">(<a [^>]+>)?award granted/.test(full)&&full.includes('class="kind xfer"')&&/class="detail">(<a [^>]+>)?gift</.test(full),"a grant and a gift carry the badge and the filing's label in grey, the label linking to the filing");}
@@ -463,7 +471,7 @@ const P=runPage();
    assert(require("fs").existsSync("ops/og_image.py")&&require("fs").readFileSync("ops/deploy.sh","utf8").includes("og_image.py"),
      "and the deploy draws it from tonight's numbers");
    assert(!/S&P 500 CEO ownership/.test(head)&&!/Every S&P 500 chief executive/.test(head),"the title and descriptions no longer describe an S&P-only site");
-   assert(/2,100\+/.test(head),"and say how many companies the site covers");
+   assert(/2,000\+/.test(head)&&!/2,100\+/.test(head),"and say how many companies the site covers: 2,000+ since the partnership register (2026-09-16) took the site below 2,100");
    const box=idx.slice(idx.indexOf('id="promodal"'),idx.indexOf("</script>",idx.indexOf('id="promodal"')));
    assert(!box.includes("all 500 companies")&&box.includes('id="mcount"')&&box.includes("more companies"),
      "the Pro box sells the other companies, with the count filled from the data");
