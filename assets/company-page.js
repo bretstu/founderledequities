@@ -532,6 +532,11 @@ async function fetchText(paths){
   const pro=!!(me&&me.pro);
   state.pro=pro;   /* the shared renderers read state.pro (the archive note, the watch box's fine print): the session must be there, not only in a local (2026-09-14) */
   document.body.classList.toggle("pro",pro);
+  /* AN EXCLUDED COMPANY'S PAGE IS ITS EXPLANATION (fle/partnerships.py,
+     2026-09-15): the builder wrote it; there is no panel row, no history,
+     no trades to draw, and the script leaves the page as built, counted
+     and with its masthead */
+  if(window.COMPANY&&window.COMPANY.excluded)return;
   if(me&&me.pro){try{const w=await (await fetch("/api/watch?tk="+encodeURIComponent(C.tk),{cache:"no-store"})).json();if(w.watches&&w.watches.length)WATCHING=w.watches[0];}catch(e){}}
   let row=C.row?mapPanel([C.row])[0]:null;
   if(!row&&pro){

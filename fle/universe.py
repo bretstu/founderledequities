@@ -131,7 +131,10 @@ def write_universe(rows: list[Member], path: str) -> None:
             w.writerow(asdict(r))
 
 
-def read_universe(path: str) -> list[Member]:
+def read_universe(path: str, register: bool = True) -> list[Member]:
+    """The universe, less the companies the partnership register excludes
+    (fle/partnerships.py, 2026-09-15): dropped here, before the panel walks,
+    so nothing downstream ever sees them. Printed once per process."""
     out = []
     with open(path, newline="", encoding="utf-8-sig") as fh:
         for row in csv.DictReader(fh):
@@ -140,6 +143,16 @@ def read_universe(path: str) -> list[Member]:
                                   row.get("company", ""), row.get("added", "")))
             except (KeyError, ValueError):
                 continue
+    if register:
+        from .partnerships import excluded, path_for
+        drop = excluded(path_for(path))
+        if drop:
+            before = len(out)
+            out = [m for m in out if m.ticker.upper().replace(".", "-") not in drop and m.ticker.upper() not in drop]
+            if not getattr(read_universe, "_said", False):
+                print(f"  partnerships: {before - len(out)} excluded by universe/partnerships.csv "
+                      f"({', '.join(sorted(drop)[:8])}{'...' if len(drop) > 8 else ''})")
+                read_universe._said = True
     return out
 
 

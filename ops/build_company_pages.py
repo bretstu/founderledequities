@@ -687,11 +687,19 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     urls = []
     lastmods = {}
     index_rows = []
+    # THE PARTNERSHIP REGISTER (fle/partnerships.py, 2026-09-15): a kept
+    # company's page carries a note; an excluded company has left the
+    # universe before the panel walked and gets a page that says why
+    sys.path.insert(0, os.path.join(root, ""))
+    from fle.partnerships import read_register, note_for
+    register = read_register(os.path.join(os.path.dirname(os.path.abspath(sp_p)), "partnerships.csv"))   # beside the universe files
     n_open = n_sealed = 0
     for r in panel_rows:
         tk = (r.get("ticker") or "").upper()
         if not tk or not re.match(r"^[A-Z0-9.\-]{1,8}$", tk):
             continue
+        if tk in register and register[tk]["action"] == "exclude":
+            continue      # the register's decision wins over a panel row that has not yet been rebuilt without it
         is_sp = tk in sp
         price = prices.get(tk)
         title, desc = page_text(r, is_sp, price)
@@ -736,6 +744,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
             {"@type": "WebPage", "@id": f"{SITE}/company/{tk}/", "name": title, "description": desc,
              "dateModified": as_of, "isPartOf": {"@type": "WebSite", "name": "Founder Led Equities", "url": f"{SITE}/"},
              "about": {"@type": "Organization", "name": payload["co"], "tickerSymbol": tk}}]})
+        if tk in register and register[tk]["action"] == "keep":
+            body += f'<p class="sub structure-note">{html.escape(note_for(register[tk]))}</p>'
         page = (template
                 .replace('<div id="cbody"></div>', '<div id="cbody">' + body + '</div>')
                 .replace('<div id="cmore"></div>', '<div id="cmore">' + neighbours_html(tk, ranked, sp) + '</div>')
@@ -760,6 +770,37 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
             fh.write(page)
         urls.append(f"{SITE}/company/{tk}/")
+
+    # EXCLUDED COMPANIES: not deleted, explained. The page exists at the same
+    # address, says what the structure is and why no stake is shown, and
+    # links to the proxy, which states the stake as-converted.
+    for tk, row in sorted(register.items()):
+        if row["action"] != "exclude":
+            continue
+        co = row.get("company") or tk
+        title = f"{co} ({tk}): why this site shows no stake"
+        desc = f"{co} is structured as a partnership under a public corporation; its chief executive's ownership is held as exchangeable units the site does not count."
+        proxy = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={html.escape(row.get('cik') or '')}&type=DEF+14A&dateb=&owner=include&count=10"
+        body = (f'<h1 class="cname">{html.escape(co)}<span class="ctk">{html.escape(tk)}</span></h1>'
+                f'<div class="ceo-line">{html.escape(row.get("ceo") or "")}</div>'
+                f'<div class="excluded"><p class="lead">{html.escape(note_for(row))}</p>'
+                f'<p class="sub">{html.escape(row.get("reason") or "")}</p>'
+                f'<p class="sub">Read the <a href="{proxy}" rel="noopener">proxy statement on EDGAR</a>, or the '
+                f'<a href="{html.escape(row.get("source") or proxy)}" rel="noopener">filing this decision rests on</a>. '
+                f'Decided {html.escape(row.get("as_of") or "")}; every company&#8217;s structure is re-read from its filings monthly.</p></div>')
+        payload = {"tk": tk, "co": co, "ceo": row.get("ceo") or "", "sp": False, "excluded": True}
+        page = (template
+                .replace('<div id="cbody"></div>', '<div id="cbody">' + body + '</div>')
+                .replace('<div id="cmore"></div>', '<div id="cmore"></div>')
+                .replace("{{TITLE}}", html.escape(title)).replace("{{DESCRIPTION}}", html.escape(desc))
+                .replace("{{TICKER}}", html.escape(tk)).replace("{{MCAP}}", "").replace("{{COMPANY}}", html.escape(co))
+                .replace("{{COMPANY_JSON}}", json.dumps(payload).replace("</", "<\\/")))
+        d = os.path.join(out_dir, "company", tk)
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
+            fh.write(page)
+        urls.append(f"{SITE}/company/{tk}/")
+        lastmods[tk] = row.get("as_of") or ""
 
     companies_index(index_rows, founders, sp, out_dir, topnav, css_v)
     urls.append("https://founderledequities.com/companies/")

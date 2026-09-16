@@ -194,6 +194,17 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
          fresh_dir=None, perf_p="perf.csv", prices_dir=None) -> int:
     sp = {r["ticker"] for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
     panel = list(csv.DictReader(open(panel_p, encoding="utf-8-sig")))
+    # THE PARTNERSHIP REGISTER WINS (fle/partnerships.py, 2026-09-15): an
+    # excluded company leaves the universe at the next panel run; until
+    # then its stale row must not reach the site's lists
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from fle.partnerships import excluded as _excluded
+        drop = _excluded(os.path.join(os.path.dirname(os.path.abspath(sp_p)), "partnerships.csv"))
+        if drop:
+            panel = [r for r in panel if (r.get("ticker") or "").upper() not in drop]
+    except Exception:  # noqa: BLE001 - no register, no change
+        pass
 
     fresh = {}
     if fresh_dir:
