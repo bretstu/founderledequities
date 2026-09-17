@@ -20,7 +20,14 @@ registration, an old suspension) is not this and is not read as it.
 import csv
 import os
 
-DELISTING_FORMS = {"25", "25-NSE", "15", "15-12B", "15-12G", "15-15D"}
+# THE FORM 15 ONLY (2026-09-17, second try). A Form 25 is filed for whatever
+# leaves the exchange: AT&T's, Cheniere Partners', D-Wave's were for notes,
+# warrants and a preferred, and the first rule read them as the stock going
+# and dropped eight listed companies. A Form 15 terminates the registration:
+# the company stops reporting, which is what "gone" means, and no warrant
+# delisting produces one. The cost is days: Crinetics' 25 came on 3 Sept, its
+# 15 on the 15th.
+DELISTING_FORMS = {"15", "15-12B", "15-12G", "15-15D"}
 FILE = os.path.join("universe", "delisted.csv")
 
 

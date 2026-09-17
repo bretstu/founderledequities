@@ -21,7 +21,9 @@ class _C:
 
 def test_a_delisting_form_after_the_persons_newest_filing_is_the_signal():
     crnx = _C([{"form": "8-K", "filingDate": "2026-09-02"}, {"form": "25-NSE", "filingDate": "2026-09-03"}, {"form": "15-12B", "filingDate": "2026-09-15"}])
-    assert delisting(crnx, 1658247, after="2026-09-01") == ("25-NSE", "2026-09-03"), "the earliest delisting form on or after the last Form 4"
+    assert delisting(crnx, 1658247, after="2026-09-01") == ("15-12B", "2026-09-15"), "the Form 15, not the 25: the registration ending is the signal"
+    att = _C([{"form": "25-NSE", "filingDate": "2026-09-08"}])   # AT&T: a series of notes leaving the exchange
+    assert delisting(att, 732717, after="2026-09-01") is None, "a Form 25 alone is not the stock leaving (warrants, notes, a preferred)"
     assert delisting(crnx, 1658247, after="2026-09-16") is None, "nothing after the person's newest filing: still listed"
     old = _C([{"form": "15-15D", "filingDate": "2014-03-01"}])   # a subsidiary's notes deregistered years ago
     assert delisting(old, 1, after="2026-09-01") is None
@@ -34,7 +36,7 @@ def test_the_file_is_appended_once_and_the_universe_drops_the_tickers(tmp_path):
     u.write_text("cik,ticker,company,added\n1658247,CRNX,Crinetics,\n2081043,ATAI,AtaiBeckley,\n1318605,TSLA,Tesla,\n")
     p = path_for(str(u))
     assert p.endswith(os.path.join("universe", "delisted.csv"))
-    rows = [{"ticker": "CRNX", "cik": "1658247", "company": "Crinetics", "ceo": "R. Scott Struthers", "form": "25-NSE", "date": "2026-09-03", "noted": "2026-09-17"}]
+    rows = [{"ticker": "CRNX", "cik": "1658247", "company": "Crinetics", "ceo": "R. Scott Struthers", "form": "15-12B", "date": "2026-09-15", "noted": "2026-09-17"}]
     assert record(p, rows) == 1 and record(p, rows) == 0, "written once"
     assert set(read(p)) == {"CRNX"}
     assert [m.ticker for m in read_universe(str(u))] == ["ATAI", "TSLA"], "the delisted company is not a member"
