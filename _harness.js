@@ -144,7 +144,8 @@ const P=runPage();
     P.setTapeSort("ceo"); {const r=actSorted(actRows()); const cs=r.map(e=>e.ceo||""); assert(cs.every((x,i)=>i===0||x.localeCompare(cs[i-1])>=0),"a name column sorts A to Z on the first click");}
     P.setTapeSort("kind"); assert(state.ev.sort.key===null,"Kind is the tape's own order again");
     assert(!idxsrc.includes("filed ${e.fd}"),"the filed day is a column, not a hover");
-    assert(idxsrc.includes('data-key="ltf"')&&idxsrc.includes('class="c-ltf"')&&idxsrc.indexOf('data-key="ltf"')<idxsrc.indexOf('data-key="ltd" title'),"the scoreboard has a Filed column before Traded, as the tape does");
+    // THE SCOREBOARD IS AN OWNERSHIP TABLE (2026-09-17): the 12-month change in the stake and the as-of date, not the last trade
+    assert(idxsrc.includes('data-key="c12"')&&idxsrc.includes('class="n num c-c12"')&&idxsrc.includes('data-key="asof"')&&!idxsrc.includes('data-key="ltf"'),"the scoreboard shows the 12-month change and the as-of date, and no trade columns");
     assert(html.includes("openCompany(")&&html.includes("sec.gov"),"rows are doors and the amount links to the filing");
     assert(!html.includes("DISCRET."),"kinds are spelled out");
     {const full=els["#actwrap"]._html;assert(full.includes('class="kind comp"')&&/class="detail">(<a [^>]+>)?award granted/.test(full)&&full.includes('class="kind xfer"')&&/class="detail">(<a [^>]+>)?gift</.test(full),"a grant and a gift carry the badge and the filing's label in grey, the label linking to the filing");}
@@ -308,10 +309,11 @@ const P=runPage();
   {P.state.tbH=true;P.renderTable();const on=els["#tbody"]._html;
    assert(on.includes("openCompany('UPX')")&&on.includes("openCompany('NOH')")&&!on.includes("openCompany('DNX')"),"the Never sold switch keeps the one who never reduced a stake and the short record, drops the seller -- options cashed don't count");
    P.state.tbH=false;P.renderTable();}
-  assert(rowOf("DNX").includes('c-amt">$1M')&&/c-lt"><span class="kind (disc|plan)">(Discretionary|Planned)<\/span>/.test(rowOf("DNX")),"the last move is its kind (never Sold in red on a plan) and the amount sits in its own column: "+rowOf("DNX").slice(rowOf("DNX").indexOf("c-lt"),rowOf("DNX").indexOf("c-lt")+80));
-  assert(!tb.includes('class="asof'),"as-of left the table for the company page and the export");
-  assert(/c-lt"><span class="kind (disc|plan)">/.test(rowOf("DNX"))&&rowOf("UPX").includes('c-lt"><span class="kind bought">Bought')&&rowOf("UPX").includes('c-fd">Yes'),"the last trade that moved the stake, in words; the founder flag its own column");
-  assert(rowOf("NOH").includes("no trade that moved the public-company stake"),"and an honest dash where there is none");
+  // the last move's kind still sorts and screens (r.ltk) but is no longer a column (2026-09-17): the table is ownership, the tape is trades
+  assert(!rowOf("DNX").includes('class="c-lt"')&&!rowOf("DNX").includes('c-amt')&&rowOf("DNX").includes('c-c12')&&rowOf("DNX").includes('c-asof'),"the row carries the 12-month change and the as-of, no trade cells");
+  assert(tb.includes('class="c-asof"'),"the as-of date is back as an ownership column (2026-09-17)");
+  assert(!/c-lt"><span class="kind/.test(rowOf("DNX"))&&rowOf("UPX").includes('c-fd">Yes'),"no last-move words in the table; the founder flag its own column");
+  assert(rowOf("NOH").includes("less than a year on the record")||rowOf("NOH").includes(" pts"),"the 12-month column: a change in points, or an honest dash for a short record");
   state.tbH=true;P.renderTable();
   const held=[...els["#tbody"]._html.matchAll(/onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);
   assert(held.join(",")==="UPX,NOH","the Never sold switch keeps only those who never did: "+held.join(","));

@@ -248,10 +248,30 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
                 last_move[t] = (k, r)
         return last_move, ever_sold, set(hist_by_t)
 
-    LAST_COLS = ["lt_code", "lt_plan", "lt_value", "lt_flag", "lt_traded", "lt_filed", "never_sold"]
+    def change_12m():
+        """THE OWNERSHIP TABLE'S OWN NUMBER (2026-09-17): the stake twelve
+        months ago, so the table can say +0.4 pts / -2.1 pts. The last row of
+        the record on or before a year ago; blank when the record is younger
+        than a year. In percentage points of the company, the same unit as
+        the stake beside it."""
+        import datetime as _dt
+        cut = (_dt.date.today() - _dt.timedelta(days=365)).isoformat()
+        out = {}
+        for t, rows in hist_by_t.items():
+            prior = [r for r in rows if (r.get("date") or "") <= cut and r.get("pct") not in ("", None)]
+            if not prior:
+                continue
+            try:
+                out[t] = float(max(prior, key=lambda r: r.get("date", ""))["pct"])
+            except ValueError:
+                pass
+        return out
+
+    LAST_COLS = ["lt_code", "lt_plan", "lt_value", "lt_flag", "lt_traded", "lt_filed", "never_sold", "pct_12m_ago"]
 
     def write_list(path, mask_new):
         last_move, ever_sold, has_record = derived_facts()
+        ago = change_12m()
         with open(path, "w", newline="", encoding="utf-8") as fh:
             w = csv.writer(fh)
             w.writerow(LIST_COLS + ["ret_1y"] + RANK_COLS + LAST_COLS)
@@ -283,6 +303,9 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
                 else:
                     row.extend(["", "", "", "", "", ""])
                 row.append(1 if (r["ticker"] not in ever_sold and r["ticker"] in has_record) else 0)
+                # sealed with the stake outside the S&P: the change gives the stake away
+                pa = ago.get(r["ticker"])
+                row.append("" if (pa is None or masked) else f"{pa:.4f}")
                 w.writerow(row)
     n_px = write_price_shards(prices_dir, out_dir)
     print(f"  prices/<T>.csv       {n_px} daily series (public; the company page's price chart)")

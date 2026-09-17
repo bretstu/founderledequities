@@ -236,7 +236,7 @@ table.screen{table-layout:fixed;width:100%}
 table.screen td{overflow:hidden}   /* the two text columns truncate; a header never does */
 .tscroll{overflow-x:hidden}
 /* /companies/: eleven columns, widths that sum to 100 */
-.w-rk{width:4%}.w-co{width:15%}.w-ceo{width:13%}.w-fd{width:6%}.w-own{width:7%}.w-val{width:8%}.w-mc{width:8%}.w-r1{width:7%}.w-lt{width:11%}.w-amt{width:7%}.w-ltf{width:7%}.w-ltd{width:7%}
+.w-rk{width:4%}.w-co{width:20%}.w-ceo{width:17%}.w-fd{width:7%}.w-own{width:9%}.w-val{width:10%}.w-mc{width:10%}.w-r1{width:9%}.w-c12{width:8%}.w-asof{width:6%}
 .c-ltd .ltd,.c-ltf .ltd{font-family:var(--mono);font-size:11px;color:var(--faint);white-space:nowrap}   /* as the tape's Traded and Filed columns */
 table.screen thead th{letter-spacing:.06em}
 table.screen thead th .arr{width:auto}
@@ -254,7 +254,7 @@ td.ceo .fb{vertical-align:2px}
 .c-mc{white-space:nowrap}
 @media(max-width:1100px){.h-ltd,.c-ltd,.w-ltd,.h-ltf,.c-ltf,.w-ltf,.h-mc,.c-mc,.w-mc{display:none}.w-co{width:22%}}
 @media(max-width:980px){.h-mc,.c-mc,.w-mc{display:none}.w-lt{width:16%}}
-@media(max-width:760px){.h-conf,.c-conf,.w-conf,.h-lt,.c-lt,.w-lt,.h-ltd,.c-ltd,.w-ltd,.h-ltf,.c-ltf,.w-ltf,.h-d3,.c-d3,.w-d3,.h-mc,.c-mc,.w-mc{display:none}.w-co{width:34%}.w-ceo{width:26%}.w-own{width:20%}.w-val{width:14%}
+@media(max-width:760px){.h-conf,.c-conf,.w-conf,.h-lt,.c-lt,.w-lt,.h-ltd,.c-ltd,.w-ltd,.h-ltf,.c-ltf,.w-ltf,.h-asof,.c-asof,.w-asof,.h-d3,.c-d3,.w-d3,.h-mc,.c-mc,.w-mc{display:none}.w-co{width:34%}.w-ceo{width:26%}.w-own{width:20%}.w-val{width:14%}
   table.screen .tbar{display:none}table.screen .tpct{min-width:0}table.screen thead th,table.screen tbody td{padding-left:8px;padding-right:8px}}
 thead th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink);white-space:nowrap;position:sticky;top:0;background:var(--bg);z-index:1}
 /* A NUMBER SITS AWAY FROM THE NEXT COLUMN'S WORDS. Right-aligned figures
@@ -294,6 +294,9 @@ td.asof{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:
 td.src a{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 td.src a:hover{color:var(--blue)}
 .c-lt .up{color:var(--buy);font-weight:600}.c-lt .down{color:#c22a2a;font-weight:600}
+/* THE 12-MONTH CHANGE (2026-09-17): points, coloured by direction like the tape's change; a dash for a record younger than a year */
+.c-c12 .up{color:var(--buy)}.c-c12 .down{color:#c22a2a}.c-c12 .flat{color:var(--mut)}
+.c-asof .ltd{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 td.c-fd,td.c-man{font-size:12.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* a right-aligned number beside a left-aligned word reads as one token; the
    word column gets a gutter so the two groups (numbers, then the trade)
@@ -325,7 +328,7 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:0}
    it does not carry are removed from the DOM at first paint (pruneHome),
    not hidden: a fixed-layout grid counts a hidden <col> inconsistently. */
 .tablesec.home td.rk,.tablesec.home .c-fd,.tablesec.home .c-mc,.tablesec.home .c-r1,.tablesec.home .c-amt{display:none}
-.tablesec.home .w-co{width:26%}.tablesec.home .w-ceo{width:22%}.tablesec.home .w-own{width:12%}.tablesec.home .w-val{width:12%}.tablesec.home .w-lt{width:14%}.tablesec.home .w-ltf{width:10%}.tablesec.home .w-ltd{width:10%}
+.tablesec.home .w-co{width:30%}.tablesec.home .w-ceo{width:26%}.tablesec.home .w-own{width:12%}.tablesec.home .w-val{width:12%}.tablesec.home .w-c12{width:11%}.tablesec.home .w-asof{width:9%}
 .tablesec.home td.c-lt .dt{display:none}   /* the date is its own column, as on the tape */
 .tablesec.home td.ceo .cn{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
 td.c-lt .dt{display:none;font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:8px}
@@ -705,7 +708,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
   <div class="tscroll">
   <table class="screen">
     <colgroup>
-      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-fd"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-r1"><col class="w-lt"><col class="w-amt"><col class="w-ltf"><col class="w-ltd">
+      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-fd"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-r1"><col class="w-c12"><col class="w-asof">
     </colgroup>
     <thead><tr>
       <th class="n">№</th>
@@ -716,10 +719,8 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
       <th class="sortable n" data-key="val" title="the stake's value: shares held at the latest close">Value<span class="arr"></span></th>
       <th class="sortable n h-mc" data-key="mcap" title="market capitalization: shares outstanding at the latest close">Mkt cap<span class="arr"></span></th>
       <th class="sortable n h-r1" data-key="r1" title="the stock's price return over the last twelve months">1Y return<span class="arr"></span></th>
-      <th class="sortable h-lt" data-key="ltk" title="the newest trade that moved the stake: bought on the open market, sold at discretion, or sold under a pre-set plan">Last move<span class="arr"></span></th>
-      <th class="sortable n h-amt" data-key="lt" title="what that trade was worth">Amount<span class="arr"></span></th>
-      <th class="sortable h-ltf" data-key="ltf" title="the day EDGAR accepted the form for that trade">Filed<span class="arr"></span></th>
-      <th class="sortable h-ltd" data-key="ltd" title="the day that trade happened">Traded<span class="arr"></span></th>
+      <th class="sortable n h-c12" data-key="c12" title="the stake's change over the last twelve months, in percentage points of the company">12-mo change<span class="arr"></span></th>
+      <th class="sortable h-asof" data-key="asof" title="the filing the stake is as of">As of<span class="arr"></span></th>
     </tr></thead>
     <tbody id="tbody"></tbody>
   </table>
@@ -977,6 +978,9 @@ function mapPanel(recs){
     pct:num(r.pct), sh:num(r.shares), out:num(r.outstanding),
     asof:r.shares_as_of||"", oasof:r.outstanding_as_of||"", cover:r.cover_url||"", conf:(r.confidence||"").toLowerCase()||"medium",
     cik:num(r.cik)||0, form4:r.form4_url||"", r1:num(r.ret_1y),
+    /* THE OWNERSHIP TABLE'S TWO COLUMNS (2026-09-17): the stake's change over
+       twelve months, in points, and the date the stake is as of */
+    c12:(num(r.pct)!==null&&num(r.pct_12m_ago)!==null)?num(r.pct)-num(r.pct_12m_ago):null,
     /* the last move and never-sold, computed at build (build_site_data):
        the screener needs no history or events file to draw its columns */
     plt:r.lt_code?{c:r.lt_code,pl:r.lt_plan||"",v:num(r.lt_value),fl:!!(r.lt_flag),td:r.lt_traded||"",fd:r.lt_filed||"",
@@ -1432,7 +1436,7 @@ function renderTable(){
     /* a company with no three-year record sorts below every real change,
        whichever way the column points */
     if(key==="ns"||key==="fd"){va=va?1:0;vb=vb?1:0;}
-    if(key==="r1"||key==="mcap"||key==="val"||key==="lt"){const na=va===null||va===undefined,nb=vb===null||vb===undefined;
+    if(key==="r1"||key==="mcap"||key==="val"||key==="lt"||key==="c12"){const na=va===null||va===undefined,nb=vb===null||vb===undefined;
       if(na!==nb)return na?1:-1;if(na)return 0;}
     if(typeof va==="string"||typeof vb==="string")
       return String(va||"").localeCompare(String(vb||""))*dir;
@@ -1453,10 +1457,8 @@ function renderTable(){
      <td class="n num">${r.masked?LOCK("in Pro","$00.0M"):r.val?money(r.val):""}</td>
      <td class="n num c-mc">${r.mcap?money(r.mcap):""}</td>
      <td class="n num c-r1">${r.r1===null||r.r1===undefined?`<span class="nopr"></span>`:`<span class="${r.r1>=0?"up":"down"}">${r.r1>=0?"+":""}${r.r1.toFixed(1)}%</span>`}</td>
-     <td class="c-lt">${r.ltev?`<span class="kind ${r.ltk==="bought"?"bought":r.ltk==="planned"?"plan":r.ltk==="sold"?"sold":"disc"}">${r.man}</span><span class="dt">${shortDay(r.ltev.td||r.ltev.fd)}</span>`:`<span class="nopr" title="no trade that moved the public-company stake on record"></span>`}</td>
-     <td class="n num c-amt">${r.ltev&&r.ltev.mk?LOCK("in Pro","$0.0M"):r.ltev&&r.ltev.v&&!r.ltev.fl?money(r.ltev.v):`<span class="nopr"></span>`}</td>
-     <td class="c-ltf">${r.ltev?`<span class="ltd" title="the day EDGAR accepted the form">${shortDay(r.ltev.fd)}</span>`:`<span class="nopr"></span>`}</td>
-     <td class="c-ltd">${r.ltev?`<span class="ltd" title="traded ${r.ltev.td||r.ltev.fd}${lagNote(r.ltev)}">${shortDay(r.ltev.td||r.ltev.fd)}</span>`:`<span class="nopr"></span>`}</td>
+     <td class="n num c-c12">${r.masked?LOCK("in Pro","+0.0 pts"):r.c12===null||r.c12===undefined?`<span class="nopr" title="less than a year on the record">&mdash;</span>`:`<span class="${Math.abs(r.c12)<0.005?"flat":r.c12>0?"up":"down"}">${r.c12>0?"+":r.c12<0?"\u2212":""}${Math.abs(r.c12).toFixed(Math.abs(r.c12)<1?2:1)} pts</span>`}</td>
+     <td class="c-asof">${r.asof?`<span class="ltd" title="the stake is as of the filing dated ${r.asof}">${shortDay(r.asof)}</span>`:`<span class="nopr"></span>`}</td>
     </tr>`}).join("");
   const sealedN=PANEL.filter(r=>r.masked).length;
   /* THE FREE SCREEN SAYS HOW MUCH OF THE ANSWER IS SEALED. Under a share
