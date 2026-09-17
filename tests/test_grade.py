@@ -131,3 +131,16 @@ def test_history_names_a_retirements_closing_as_explained():
     assert _newly_closed(groups, retired, "2025-03-01", "2025-02-14", None) == 0, "already closed before: nothing new"
     assert _newly_closed(groups, retired, "2025-01-10", "2025-01-02", None) == 0, "before the cut: still open"
     assert _newly_closed(groups, {}, "2025-02-14", "2025-01-02", None) == 0
+
+
+def test_history_counts_a_table_ii_only_settlement_as_the_days_transaction():
+    """NAMS, MQ, MMED (2026-09-17): a vest reported only in Table II raised the
+    balance with no Table I transaction; history read it as an open step and
+    the grade failed the chain. The day's tally now includes it."""
+    import inspect
+    import fle.history as H
+    src = inspect.getsource(H.build_history)
+    assert "settlements_only_in_table_ii(root, _day_rows" in src
+    # the balance of the position is untouched by the synthetic lines: they feed the tally only
+    i = src.index("settlements_only_in_table_ii(root, _day_rows")
+    assert "doc_rows = _with_supplements(" in src[i:], "the position still reads the filing's own rows"

@@ -53,7 +53,7 @@ from dataclasses import dataclass, field
 
 import copy
 
-from .ledger import (SECTION16, Group, _merge_same_day, _parse, _rows, groups_total,
+from .ledger import (SECTION16, Group, _merge_same_day, _parse, _rows, groups_total, settlements_only_in_table_ii,
                      displace_amended, retired_classes, letters_seen,
                      class_letters,
                      is_share_class, issuer_of, match_class, names_another_letter, dominant_letter, single_class_letter, SINGLE_CLASS,
@@ -533,7 +533,14 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
         #
         # Accumulated across every filing made on this date, because the day
         # may carry several and only the last one emits a snapshot.
-        for r in _with_supplements(root, f.get("form") or "", when, acc, exclude):
+        # A SETTLEMENT REPORTED ONLY IN TABLE II counts as the day's
+        # acquisition here too (fle/ledger.settlements_only_in_table_ii,
+        # 2026-09-17): without it the vest read as "the stake rose with no
+        # transaction", an open step the grade failed the chain on (NAMS, MQ,
+        # MMED). For the tally only: the lines carry no balance and must not
+        # enter the position
+        _day_rows = _with_supplements(root, f.get("form") or "", when, acc, exclude)
+        for r in _day_rows + settlements_only_in_table_ii(root, _day_rows, when, acc, f.get("form") or "4"):
             if not r.code:
                 continue
             # The codes label the day, and a day can be split across two
