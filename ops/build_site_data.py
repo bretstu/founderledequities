@@ -279,7 +279,8 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
             filings = [r for r in mine if (r.get("form") or "").startswith(("3", "4", "5"))]
             try:
                 ps = float(shares_of.get(t) or 0)
-                hs = float(max(filings, key=lambda r: r.get("date", ""))["shares"] or 0) if filings else ps
+                _last = max(filings, key=lambda r: r.get("date", "")) if filings else None
+                hs = float((_last.get("shares_split_adjusted") or _last.get("shares") or 0)) if _last else ps
             except (ValueError, TypeError):
                 ps, hs = 0.0, 0.0
             if ps and abs(hs - ps) / ps > 0.01:

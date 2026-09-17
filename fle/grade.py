@@ -96,7 +96,13 @@ def disagreement(hist_rows: list, owner_cik: str, panel_shares) -> tuple[str, st
     if not rows:
         return None
     last = max(rows, key=lambda h: (h.get("date") or "", h.get("accession") or ""))
-    hs = _num(last.get("shares"))
+    # IN TODAY'S SHARES: the panel is in today's basis; history's `shares` is
+    # as reported and `shares_split_adjusted` is the same figure carried
+    # through every split since (Coca-Cola Consolidated's 10-for-1 read as a
+    # tenfold disagreement until this)
+    hs = _num(last.get("shares_split_adjusted"))
+    if hs is None:
+        hs = _num(last.get("shares"))
     if hs is None:
         return None
     if abs(hs - panel_shares) / max(abs(panel_shares), 1.0) > 0.01:

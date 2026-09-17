@@ -168,3 +168,12 @@ def test_a_partial_statement_restored_within_the_year_is_not_an_open_step():
     # a drop not yet restored (the trailing edge) is still an open step
     open_rows = [_h("2026-01-10", 1000000, 0), _h("2026-09-01", 200000, -800000)]
     assert chain(open_rows, "1", TODAY, 200000)[0] == "fail"
+
+
+def test_the_disagreement_is_judged_in_todays_shares():
+    """COCA-COLA CONSOLIDATED (2026-09-17): history's as-reported 1,395,014 is
+    13,950,140 in today's shares after the 10-for-1; the panel says the same."""
+    from fle.grade import disagreement
+    rows = [dict(_h("2026-06-01", 1395014, 0), shares_split_adjusted="13950140")]
+    assert disagreement(rows, "1", 13950140) is None
+    assert disagreement(rows, "1", 1395014)[0] == "fail", "the panel in old shares would be the disagreement"
