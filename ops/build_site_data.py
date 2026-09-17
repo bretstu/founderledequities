@@ -262,8 +262,15 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
         # reads as accumulation
         owner_of = {r["ticker"]: (r.get("owner_cik") or "") for r in panel}
         shares_of = {r["ticker"]: r.get("shares") for r in panel}
+        # NO FIGURE WHERE THE CHAIN FAILS (fle/grade, 2026-09-17): a record with
+        # an open step this year cannot say what the stake was a year ago;
+        # Palvella's 2025 rows carried one line of the holding and 2026's all
+        # of it, and the column read the difference as accumulation
+        chain_fails = {r["ticker"] for r in panel if (r.get("chain") or "").startswith("fail")}
         out = {}
         for t, rows in hist_by_t.items():
+            if t in chain_fails:
+                continue
             owner = owner_of.get(t, "")
             mine = [r for r in rows if (not owner or (r.get("owner_cik") or owner) == owner)]
             # NO FIGURE WHERE THE TWO WALKS DISAGREE (fle/grade.disagreement): a
