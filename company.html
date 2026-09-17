@@ -164,24 +164,25 @@
     .ctrades th.f,.ctrades td.f{text-align:right;padding-right:0}
     /* the receipt */
     /* the watch box */
-    .cwatch{margin-top:16px;border:1px solid var(--ink);padding:16px 20px 14px}
-    .cwatch .wk{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
-    .cwatch .wrow{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
-    .cwatch .wtext{font-size:15px;line-height:1.45;max-width:52ch}
-    .cwatch .wform{display:flex;gap:8px;align-items:center}
-    .cwatch input{font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;width:220px}
-    .cwatch .wbtn{font:inherit;font-size:14px;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:0;padding:9px 18px;cursor:pointer}
-    .cwatch .wbtn:disabled,.cwatch input:disabled{opacity:.55;cursor:default}
-    .cwatch .wstate{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--buy);border:1px solid var(--buy);padding:7px 12px}
-    .cwatch .wsaid{margin:4px 0 16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
-    .cwatch .wsaid-h{font-family:var(--disp);font-weight:500;font-size:24px;letter-spacing:-.01em;line-height:1.15}
-    .cwatch .wsaid-p{font-size:14px;color:var(--mut);margin-top:6px}
-    .cwatch .wlink{font:inherit;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);background:none;border:0;border-bottom:1px solid var(--line);padding:0;margin-left:10px;cursor:pointer}
-    .cwatch .wmsg{font-size:13.5px;color:var(--mut);margin-top:10px;min-height:1.2em}
-    .cwatch .wmsg:empty{display:none}
-    .cwatch .wfine{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:10px}
-    .cwatch .wfine a{color:var(--faint)}
-    .cwatch .factmsg{color:var(--mut);margin-left:6px}
+    /* THE FOURTH CARD: the watch (2026-09-17). Same box as the numbers,
+       left-aligned inside: a label, a switch, one line of fine print. */
+    .cband.four>div.wcard{align-items:flex-start;text-align:left;justify-content:space-between;padding:14px 16px 12px;gap:8px}
+    .wcard .wtog{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+    .wcard .wtog input{position:absolute;opacity:0;width:0;height:0}
+    .wcard .wsw{flex:none;width:34px;height:20px;border-radius:10px;background:var(--line);position:relative;transition:background .15s}
+    .wcard .wsw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:8px;background:var(--bg);transition:left .15s}
+    .wcard .wtog input:checked+.wsw{background:var(--ink)}
+    .wcard .wtog input:checked+.wsw::after{left:16px}
+    .wcard .wtog input:focus-visible+.wsw{outline:2px solid var(--ink);outline-offset:2px}
+    .wcard .wlab{font-size:13.5px;font-weight:600;line-height:1.2}
+    .wcard.on .wlab{color:var(--buy)}
+    .wcard .wfine{font-size:11.5px;color:var(--mut);line-height:1.35}
+    .wcard .wfine a{color:var(--mut)}
+    .wcard .wform{display:flex;gap:6px;align-items:center}
+    .wcard input[type=email]{font:inherit;font-size:12.5px;padding:6px 8px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;min-width:0;flex:1}
+    .wcard .wbtn{font:inherit;font-size:12px;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:0;padding:6px 10px;cursor:pointer}
+    .wcard .wbtn:disabled{opacity:.55;cursor:default}
+    .factmsg{color:var(--mut);margin-left:6px}
     .cwhy{margin-top:40px;padding:16px 20px;background:var(--panel);border-radius:2px;font-size:14px;line-height:1.55;color:var(--mut)}
     .cwhy .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
     .cwhy q{color:var(--ink)}

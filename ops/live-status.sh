@@ -39,4 +39,4 @@ python3 ops/live.py --show 2>/dev/null | grep -E "FOUNDER|Form 4 filings" || ech
 
 echo "== the mail rule =="
 echo "  a founder's open-market buy or discretionary sale, any size;"
-echo "  a founder's plan or compensation moving the holding >= ${LIVE_MIN_MOVE:-2}% or worth >= \$${LIVE_MIN_AMOUNT:-10000000}"
+echo "  any other filing by a founder that moves the holding >= ${LIVE_MIN_MOVE:-1}% (the tape's chip; the per-company watch uses the same rule)"

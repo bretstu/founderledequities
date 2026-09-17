@@ -278,7 +278,7 @@ def test_the_band_uses_the_tables_words_and_has_no_three_year_cell():
     assert "kick.innerHTML" in band and "1Y" not in band, "beside the name: the ticker and the market cap, nothing else of the stock's"
     assert "3-year" not in band[band.index("function band("):] and "trajStats" not in js
     assert "never estimated" not in band, "the answer needs no sentence beside it"
-    assert 'class="cband three">' in band and 'class="cstat"' in band, "three cards of one width"
+    assert 'class="cband four">' in band and 'class="cstat"' in band and "${watchCard(r)}" in band, "four cards of one width: the three numbers and the watch (2026-09-17)"
     assert "confidence</summary>" not in band, "confidence is not on the card; the reasons block below the chart carries it"
     assert 'r.conf' not in band, "the band carries no confidence word; the reasons block below the chart does"
     assert "\u2014" not in js, "no em dashes"
@@ -431,7 +431,13 @@ def test_the_watches_have_a_box_a_page_and_two_ways_to_stop(tmp_path):
     for f in ("functions/api/letter.js", "functions/api/logout.js"):
         assert os.path.exists(os.path.join(ROOT, f)), f
     page_js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
-    assert "function watchBlock(" in page_js and "band(r)+watchBlock(r)+recordBlock(r)" in page_js, "the box sits under the cards, before the chart, on every page"
+    # THE WATCH IS THE FOURTH CARD (2026-09-17), not a band under the numbers: a switch with the person's name and
+    # one line of fine print, "An email when the stake moves."; the definition lives on the About page and the hover
+    assert "function watchCard(" in page_js and "function watchBlock(" not in page_js and "band(r)+recordBlock(r)" in page_js
+    assert "An email when the stake moves." in page_js and "Never for a plan" not in page_js and "Email me if" not in page_js
+    assert 'id="wsw"' in page_js and "toggleWatch(" in page_js, "a switch, on every page"
+    about = open(os.path.join(ROOT, "about.html"), encoding="utf-8").read()
+    assert "What counts as a move" in about and "1% or more" in about, "the definition is stated once, on the About page"
     assert "Stopped. No more emails about" in page_js and "No more emails about anyone" in page_js, "the box says what a stop link did"
     assert "One founder watch is free" not in page_js and "Copy the sentence" not in page_js, "the box carries no fine print for a free reader"
     w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()

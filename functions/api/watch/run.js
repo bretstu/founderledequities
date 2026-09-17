@@ -21,6 +21,12 @@ const money = (v) => {
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 function line(e) {
+  // THE SENTENCE COMES FROM THE TAPE (ops/alerts.py, 2026-09-17): a watch mails
+  // any filing that moved the stake, and the words are the tape's words
+  if (e.sentence) {
+    const stake = e.pct_after != null && e.pct_after !== "" ? ` They now own ${Number(e.pct_after).toFixed(Number(e.pct_after) < 1 ? 3 : 2)}%.` : "";
+    return `${e.sentence}${stake}`;
+  }
   const what = e.code === "P" ? "bought" : "sold";
   const amt = e.value ? ` ${money(e.value)} of` : "";
   const how = e.code === "P" ? "on the open market" : "at their own discretion";
@@ -33,7 +39,7 @@ export async function onRequestPost({ request, env }) {
   let body = {};
   try { body = await request.json(); } catch { return json({ error: "bad json" }, 400); }
   if (!body.key || body.key !== env.ALERTS_KEY) return json({ error: "refused" }, 401);
-  const events = (Array.isArray(body.events) ? body.events : []).filter((e) => e && e.tk && e.accession && (e.code === "P" || e.code === "S"));
+  const events = (Array.isArray(body.events) ? body.events : []).filter((e) => e && e.tk && e.accession && (e.sentence || e.code === "P" || e.code === "S"));
   if (!events.length) return json({ ok: true, sent: 0, watchers: 0 });
   const tks = [...new Set(events.map((e) => String(e.tk).toUpperCase()))];
   const marks = tks.map((_, i) => `?${i + 1}`).join(",");

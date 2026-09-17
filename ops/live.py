@@ -17,10 +17,9 @@ every one runs the targeted refresh so the page carries it within
 minutes. WHAT IS MAILED to LIVE_TO from .env, once the run has published
 the number, is what is worth a post:
   - a founder's open-market purchase or discretionary sale, any size;
-  - a founder's plan or compensation filing that moved their holding by
-    LIVE_MIN_MOVE percent or more (2, of the holding, not of the company)
-    or was worth LIVE_MIN_AMOUNT or more (10,000,000: the name and the
-    amount are the post when the percentage is not);
+  - any other filing by a founder that moved their holding by LIVE_MIN_MOVE
+    percent or more (1, of the holding, not of the company: the tape's
+    "Moved the stake" chip, and the rule a reader's own watch uses);
 Everything else is written down and left for the tape. Hired chief
 executives are not watched; the nightly carries their filings.
 
@@ -304,8 +303,10 @@ def worth_a_post(u, r):
                 ch = abs(a - b) / b * 100
         except ValueError:
             pass
-    min_move = float(os.environ.get("LIVE_MIN_MOVE", "2"))
-    min_amt = float(os.environ.get("LIVE_MIN_AMOUNT", "10000000"))
+    # ONE DEFINITION OF A MOVE (2026-09-17): a decision of any size, or any
+    # other filing that moved the holding by one per cent or more, the same
+    # as the tape's chip and the per-company watch (ops/alerts.py)
+    min_move = float(os.environ.get("LIVE_MIN_MOVE", "1"))
     decision = code in ("P", "S") and not plan and not comp
     if not u.get("founder"):
         return ""
@@ -317,8 +318,6 @@ def worth_a_post(u, r):
     what = "plan" if plan else kinds.detail_of(r)
     if ch >= min_move:
         return f"{what} that moved the holding {ch:.1f}%"
-    if v >= min_amt:
-        return f"{what} worth {money(v)}"
     return ""
 
 

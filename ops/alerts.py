@@ -33,27 +33,65 @@ COMPENSATION = kinds.COMP_LABELS  # the page's set (ops/kinds.py), one copy for 
 MARK = os.path.join(ROOT, "weekly", "alerts-last.txt")
 
 
+MIN_MOVE = 1.0   # per cent of the holding: the tape's "Moved the stake" chip, one definition for the site
+
+
+def sentence(r, value):
+    """What the mail says happened, in the tape's words (ops/kinds.py)."""
+    tk, ceo, code = r["ticker"].upper(), r.get("ceo") or "", r.get("code") or ""
+    amt = f" {kinds.money(value)} of" if value else ""
+    plan = (r.get("plan") or "") == "plan"
+    when = r.get("traded") or r.get("filed") or ""
+    if code == "P":
+        return f"{ceo} bought{amt} {tk} on the open market on {when}."
+    if code == "S" and not plan:
+        return f"{ceo} sold{amt} {tk} at their own discretion on {when}."
+    if code == "S":
+        return f"{ceo} sold{amt} {tk} under a pre-set plan on {when}."
+    what = kinds.detail_of(r) or "a filing"
+    try:
+        mv = float(r.get("pct_of_holding") or 0)
+    except ValueError:
+        mv = 0.0
+    return f"{ceo}: {what} moved the {tk} stake {mv:+.1f}% on {when}."
+
+
 def decisions(events_p, since):
-    """Open-market purchases and discretionary sales filed after `since`."""
+    """WHAT A WATCH MAILS (2026-09-17): the stake moved. An open-market
+    purchase or a discretionary sale of any size (the site's two decisions),
+    or any other filing that moved the holding by MIN_MOVE per cent or more
+    (a planned sale, a grant, a gift, an exercise). One definition, the same
+    as the tape's "Moved the stake" chip and the site-wide founder mail;
+    the About page states it. Pre-IPO filings and share-count restatements
+    are not moves."""
     out = []
     with open(events_p, encoding="utf-8-sig", newline="") as fh:
         for r in csv.DictReader(fh):
             filed = r.get("filed") or ""
-            if filed <= since or r.get("code") not in ("P", "S"):
+            code = r.get("code") or ""
+            if filed <= since or not code:
                 continue
-            if (r.get("label") or "") in COMPENSATION or (r.get("pre_ipo") or "") in ("1", "true", "True"):
+            if (r.get("pre_ipo") or "") in ("1", "true", "True"):
                 continue
-            if r["code"] == "S" and (r.get("plan") or "") == "plan":
+            plan = (r.get("plan") or "") == "plan"
+            comp = (r.get("label") or "") in COMPENSATION
+            decision = code in ("P", "S") and not plan and not comp
+            try:
+                mv = abs(float(r.get("pct_of_holding") or 0))
+            except ValueError:
+                mv = 0.0
+            if not decision and mv < MIN_MOVE:
                 continue
             try:
                 value = float(r.get("value") or 0) or None
             except ValueError:
                 value = None
-            out.append({"tk": r["ticker"].upper(), "ceo": r.get("ceo") or "", "code": r["code"],
-                        "value": value if not (r.get("price_flag") or "") else None,
-                        "pct_after": r.get("pct_after") or "", "traded": r.get("traded") or "",
-                        "filed": filed, "accession": r.get("accession") or f"{r['ticker']}:{filed}:{r['code']}",
-                        "url": r.get("url") or ""})
+            value = value if not (r.get("price_flag") or "") else None
+            out.append({"tk": r["ticker"].upper(), "ceo": r.get("ceo") or "", "code": code,
+                        "value": value, "pct_after": r.get("pct_after") or "", "traded": r.get("traded") or "",
+                        "filed": filed, "accession": r.get("accession") or f"{r['ticker']}:{filed}:{code}",
+                        "url": r.get("url") or "", "kind": "decision" if decision else "move",
+                        "sentence": sentence(r, value)})
     return out
 
 
@@ -75,8 +113,8 @@ def main(argv):
         print(f"  alerts: nothing filed since {since or 'the start'}")
         return 0
     newest = max(e["filed"] for e in evs)
-    print(f"  alerts: {len(evs)} decisions filed {since or 'ever'} < filed <= {newest} "
-          f"({sum(1 for e in evs if e['code'] == 'P')} buys, {sum(1 for e in evs if e['code'] == 'S')} discretionary sales)")
+    print(f"  alerts: {len(evs)} moves filed {since or 'ever'} < filed <= {newest} "
+          f"({sum(1 for e in evs if e['kind'] == 'decision')} decisions, {sum(1 for e in evs if e['kind'] == 'move')} other moves of {MIN_MOVE:g}% or more)")
     if dry:
         for e in evs[:12]:
             print(f"    {e['filed']} {e['tk']:6} {e['ceo']} {'bought' if e['code'] == 'P' else 'sold'} {e['value'] or ''}")

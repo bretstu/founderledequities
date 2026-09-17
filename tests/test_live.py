@@ -61,7 +61,11 @@ def test_what_is_worth_a_post():
     plan_small = {"code": "S", "value": "800000", "plan": "plan", "label": "scheduled sale", "pct_of_holding": "-0.3", "price_flag": ""}
     assert live.worth_a_post(f, plan_small) == ""
     assert live.worth_a_post(f, dict(plan_small, pct_of_holding="-23.2")) == "plan that moved the holding 23.2%"
-    assert live.worth_a_post(f, dict(plan_small, value="38400000")) == "plan worth $38.4M", "the name and the amount are the post"
+    # ONE DEFINITION OF A MOVE (2026-09-17): the amount alone no longer makes a post; a 0.3% planned sale is
+    # not a move whatever it is worth, and a 1% one is (the tape's chip, and the per-company watch's rule)
+    assert live.worth_a_post(f, dict(plan_small, value="38400000")) == "", "worth alone is not a move"
+    assert live.worth_a_post(f, dict(plan_small, pct_of_holding="-1.0")) == "plan that moved the holding 1.0%"
+    assert live.worth_a_post(f, dict(plan_small, pct_of_holding="-0.9")) == ""
     comp = {"code": "S", "value": "5000000", "plan": "plan", "label": "exercise and sell", "pct_of_holding": "0", "price_flag": ""}
     assert live.worth_a_post(f, comp) == ""
     assert live.worth_a_post(h, {"code": "S", "value": "90000000", "plan": "discretionary", "label": "discretionary sale", "pct_of_holding": "-40", "price_flag": ""}) == "", "a hired CEO's sale is the ordinary state of the world"

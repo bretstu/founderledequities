@@ -62,10 +62,11 @@ function band(r){
   /* the ticker and the market cap beside the name */
   const kick=$("#ctk");
   if(kick)kick.innerHTML=`${esc(r.tk)}${mcap?` · ${money(mcap)}`:""}`;
-  return `<div class="cband three">
+  return `<div class="cband four">
     <div>${big}</div>
     ${stat("Shares held",r.masked?BLUR("00,000,000"):r.sh!==null?fmt(r.sh):"&mdash;","",r.masked?"":tabled,"shares held, per the latest filing")}
     ${stat("Worth",r.masked?BLUR("$0.0B"):r.val?money(r.val):"&mdash;","","",`the stake's value: shares held at the ${asof} close${r.price?` of $${r.price.toFixed(2)}`:""}`)}
+    ${watchCard(r)}
   </div>`;
 }
 
@@ -415,55 +416,58 @@ function tradesBlock(r){
    The box sits under the record on every page, sealed or open: what a
    person does is not behind the seal, only what they own. */
 let WATCHING=null;   /* the signed-in reader's watch on this company, once known */
-function watchBlock(r){
+/* THE FOURTH CARD (2026-09-17). The watch used to be a band under the
+   numbers, taller than they were and louder than anything else on the
+   page. It is now the last of the four cards: a label, a switch with the
+   person's name, one line of fine print. The rule is the site's one
+   definition of a move (the About page states it: a buy or a discretionary
+   sale of any size, or any other filing that moves the stake 1% or more);
+   the card says only "An email when the stake moves." A signed-out reader
+   flips the switch and is asked for an email in the same card. */
+function watchCard(r){
   const who=r.ceo||C.ceo||"this chief executive";
-  const on=WATCHING&&WATCHING.tk===r.tk;
+  const on=!!(WATCHING&&WATCHING.tk===r.tk);
   const q=new URLSearchParams(location.search).get("watch");
-  const role=(fInfo(r.tk)||{}).f==="yes"?"founder":"chief executive";
-  /* THE STATE IS THE BOX. After a click from an email the box says what
-     happened, in the serif, where a reader cannot miss it; then how to
-     undo it. */
-  const said={on:`You're watching ${who}.`,off:`Stopped. No more emails about ${who}.`,alloff:"Stopped. No more emails about anyone.",expired:"That link expired."}[q];
-  const under={on:"An email when they buy on the open market or sell at discretion. Never for a plan or compensation.",
-               off:`Change your mind? Watch ${who} again below.`,alloff:"Every watch is off. Any name can be watched again from its page.",expired:"Ask again below."}[q];
-  const banner=said?`<div class="wsaid"><div class="wsaid-h">${said}</div><div class="wsaid-p">${under}</div></div>`:"";
-  const form=on?`<div class="wstate">Watching <button class="wlink" onclick="unwatchThis('${r.tk}')">stop</button></div>`:state.pro
-        ?`<button class="wbtn" onclick="watchThis('${r.tk}')">Watch</button>`
-        :`<form class="wform" onsubmit="return watchThis('${r.tk}',event)"><input type="email" id="wemail" placeholder="you@example.com" required autocomplete="email"><button class="wbtn" type="submit">Watch</button></form>`;
-  return `<div class="csec cwatch" id="cwatch">
-    <div class="wk">Watch this ${role}</div>
-    ${banner}
-    ${q==="on"&&!on?"":`<div class="wrow">
-      <div class="wtext">Email me if <b>${who}</b> buys on the open market or makes a discretionary sale. Never for a plan or compensation.</div>
-      ${form}
-    </div>`}
-    <div class="wmsg" id="wmsg"></div>
-    ${state.pro?`<div class="wfine"><a href="/account/">Your watches &rarr;</a></div>`:""}
+  const said={on:`You're watching ${who}.`,off:`Stopped. No more emails about ${who}.`,alloff:"Stopped. No more emails about anyone.",expired:"That link expired; ask again here."}[q];
+  const fine=on?`You'll get an email when the stake moves.`:`An email when the stake moves.`;
+  return `<div class="wcard${on?" on":""}" id="cwatch" title="a buy or a discretionary sale of any size, or any other filing that moves the stake 1% or more">
+    <div class="k">Alerts</div>
+    <label class="wtog"><input type="checkbox" id="wsw" ${on?"checked":""} onchange="toggleWatch('${r.tk}',this)"><span class="wsw" aria-hidden="true"></span><span class="wlab">${on?"Watching":`Watch ${esc(who)}`}</span></label>
+    <div class="wfine" id="wfine">${said?`<b>${esc(said)}</b> `:""}${fine}${state.pro?` <a href="/account/">Your watches &rarr;</a>`:""}</div>
   </div>`;
 }
+function toggleWatch(tk,sw){
+  if(sw.checked){
+    if(state.pro){watchThis(tk);return;}
+    /* signed out: the switch asks for an email in the same card */
+    const f=$("#wfine");
+    f.innerHTML=`<form class="wform" onsubmit="return watchThis('${tk}',event)"><input type="email" id="wemail" placeholder="you@example.com" required autocomplete="email"><button class="wbtn" type="submit">Send</button></form>`;
+    const e=$("#wemail");if(e)e.focus();
+    sw.checked=false;
+  } else unwatchThis(tk);
+}
 async function unwatchThis(tk){
-  const m=$("#wmsg");
+  const f=$("#wfine"),sw=$("#wsw");
   try{
     const q=await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk,remove:true})});
     const j=await q.json();
     if(j.ok){WATCHING=null;history.replaceState(null,"",location.pathname+"?watch=off");renderOpen(PANEL[0],{animate:false});}
-    else m.textContent=j.message||"";
-  }catch(e){m.textContent="Something went wrong; write to hello@founderledequities.com.";}
+    else{if(sw)sw.checked=true;if(f)f.textContent=j.message||"";}
+  }catch(e){if(sw)sw.checked=true;if(f)f.textContent="Something went wrong; write to hello@founderledequities.com.";}
 }
 async function watchThis(tk,ev){
   if(ev)ev.preventDefault();
-  const m=$("#wmsg"),btn=document.querySelector("#cwatch .wbtn");
+  const f=$("#wfine"),btn=document.querySelector("#cwatch .wbtn"),sw=$("#wsw");
   const email=$("#wemail")?($("#wemail").value||"").trim():"";
   if(!state.pro&&!email)return false;
   if(btn){btn.disabled=true;btn.textContent="…";}
   try{
     const q=await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk,ceo:C.ceo||"",email})});
     const j=await q.json();
-    m.innerHTML=j.pro?`${j.message} <a href="/pro/">The plan &rarr;</a>`:(j.message||"");
-    if(j.ok&&j.watching){const row=document.querySelector("#cwatch .wrow");if(row)row.innerHTML=`<div class="wtext">Email me if <b>${C.ceo||tk}</b> buys on the open market or makes a discretionary sale. Never for a plan or compensation.</div><div class="wstate">Watching</div>`;}
-    else if(j.ok){if($("#wemail"))$("#wemail").disabled=true;if(btn)btn.textContent="Sent";}
-    else if(btn){btn.disabled=false;btn.textContent="Watch";}
-  }catch(e){m.textContent="Something went wrong; write to hello@founderledequities.com.";if(btn){btn.disabled=false;btn.textContent="Watch";}}
+    if(j.ok&&j.watching){WATCHING={tk};renderOpen(PANEL[0],{animate:false});}
+    else if(j.ok){if(f)f.innerHTML=`<b>Sent.</b> ${esc(j.message||"Confirm from the email and the watch is on.")}`;}
+    else{if(sw)sw.checked=false;if(f)f.innerHTML=j.pro?`${esc(j.message||"")} <a href="/pro/">The plan &rarr;</a>`:esc(j.message||"That didn't work.");}
+  }catch(e){if(sw)sw.checked=false;if(f)f.textContent="Something went wrong; write to hello@founderledequities.com.";}
   return false;
 }
 /* THE SENTENCE, COPYABLE (distribution): the stake as of the filing, the
@@ -509,7 +513,7 @@ function renderOpen(r,{animate=true}={}){
   window._lastRow=r;
   /* the watch sits under the cards, before the chart: it is the page's
      conversion, and under the trades table it was missed */
-  $("#cbody").innerHTML=band(r)+watchBlock(r)+recordBlock(r)+tradesBlock(r)+whyBlock(r);
+  $("#cbody").innerHTML=band(r)+recordBlock(r)+tradesBlock(r)+whyBlock(r);
   const cr=$("#creport");if(cr)cr.innerHTML="";   /* the footer says where the numbers come from; the sentence that stood here was the same sentence */
   const svg=document.querySelector(".cchart svg.fchart");
   if(svg){attachHover(svg);if(animate)drawIn(svg);}

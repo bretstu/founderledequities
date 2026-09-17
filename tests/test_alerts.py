@@ -31,3 +31,37 @@ def test_only_decisions_are_posted(tmp_path):
     assert [e["accession"] for e in out] == ["0001-A", "0001-B", "0001-G"]
     assert out[0]["value"] == 1e9 and out[1]["code"] == "S" and out[2]["value"] is None, "a flagged price is not a value"
     assert out[0]["url"] == "https://www.sec.gov/a" and out[0]["pct_after"] == "28.44"
+
+
+def test_a_watch_mails_any_move_of_the_stake(tmp_path):
+    """ONE DEFINITION OF A MOVE (2026-09-17): buys and discretionary sales of
+    any size; anything else at 1% of the holding or more; nothing for a
+    0.3% planned sale, a pre-IPO row, or a share-count restatement."""
+    import csv
+    import os
+    import sys
+    sys.path.insert(0, os.path.join(str(ROOT), "ops"))
+    import alerts
+    p = tmp_path / "events.csv"
+    cols = ["ticker", "ceo", "filed", "traded", "code", "label", "value", "pct_of_holding", "pct_after", "plan", "price_flag", "pre_ipo", "accession", "url"]
+    rows = [
+        {"ticker": "UPST", "ceo": "Paul Gu", "filed": "2026-09-10", "traded": "2026-09-10", "code": "P", "label": "purchase", "value": "1300000", "pct_of_holding": "3.9", "pct_after": "1.38"},
+        {"ticker": "BOX", "ceo": "Aaron Levie", "filed": "2026-09-11", "traded": "2026-09-10", "code": "S", "label": "sale", "value": "513660", "pct_of_holding": "-0.52", "plan": "plan"},
+        {"ticker": "DBX", "ceo": "Andrew W. Houston", "filed": "2026-09-14", "traded": "2026-09-10", "code": "S", "label": "sale", "value": "13400000", "pct_of_holding": "-1.4", "plan": "plan"},
+        {"ticker": "SECZ", "ceo": "Carlos Domingo", "filed": "2026-09-14", "traded": "2026-09-10", "code": "A", "label": "award granted", "value": "", "pct_of_holding": "5.0"},
+        {"ticker": "PCVX", "ceo": "Grant Pickering", "filed": "2026-09-09", "traded": "2026-09-08", "code": "F", "label": "withheld for tax", "value": "", "pct_of_holding": "-0.4"},
+        {"ticker": "CMPR", "ceo": "Robert S. Keane", "filed": "2026-09-15", "traded": "2026-09-11", "code": "S", "label": "sale", "value": "2400000", "pct_of_holding": "-0.3"},
+        {"ticker": "NEWCO", "ceo": "X", "filed": "2026-09-15", "traded": "2026-09-15", "code": "P", "label": "purchase", "value": "100", "pct_of_holding": "99", "pre_ipo": "1"},
+    ]
+    with open(p, "w", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, fieldnames=cols); w.writeheader()
+        for r in rows: w.writerow({c: r.get(c, "") for c in cols})
+    got = {e["tk"]: e for e in alerts.decisions(str(p), since="2026-09-01")}
+    assert set(got) == {"UPST", "DBX", "SECZ", "CMPR"}, sorted(got)
+    assert got["UPST"]["kind"] == "decision" and "bought $1.3M of UPST on the open market" in got["UPST"]["sentence"]
+    assert got["CMPR"]["kind"] == "decision" and "at their own discretion" in got["CMPR"]["sentence"], "a discretionary sale of any size"
+    assert got["DBX"]["kind"] == "move" and "under a pre-set plan" in got["DBX"]["sentence"], "a planned sale that moved the stake 1.4%"
+    assert got["SECZ"]["kind"] == "move" and "award granted moved the SECZ stake +5.0%" in got["SECZ"]["sentence"]
+    assert "BOX" not in got and "PCVX" not in got, "under 1%: not a move"
+    run = open(os.path.join(str(ROOT), "functions", "api", "watch", "run.js"), encoding="utf-8").read()
+    assert "e.sentence" in run and '(e.sentence || e.code === "P" || e.code === "S")' in run, "the mail says what the tape says"

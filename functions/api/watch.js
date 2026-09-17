@@ -96,7 +96,7 @@ export async function onRequestPost({ request, env }) {
   await send(env, email, `Confirm: watch ${ceo || tk}`,
     `One click and you're watching ${ceo || tk} (${tk}): an email when they buy on the open market or make a discretionary sale.\n\n${link}\n\nIf you didn't ask for this, ignore it and nothing happens.`,
     shell(`One click and you're watching ${ceo || tk}.`,
-      `<p style="font-size:14px;line-height:1.5;color:#5F5B55;margin:0;">An email when they buy on the open market or make a discretionary sale. Never for a plan or compensation.</p>${button(link, "Confirm &rarr;")}`,
+      `<p style="font-size:14px;line-height:1.5;color:#5F5B55;margin:0;">An email when the stake moves: a buy or a discretionary sale of any size, or any other filing that moves the holding by 1% or more.</p>${button(link, "Confirm &rarr;")}`,
       "If you didn't ask for this, ignore it and nothing happens."));
   return json({ ok: true, watching: false, message: "Check your inbox: one click confirms it." });
 }
