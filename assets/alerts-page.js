@@ -28,7 +28,7 @@ async function render(){
       ${sw("fsw",live,live?"On":"Turn on","setLive")}
       <div class="fine" id="ffine">${ME&&ME.pro?"":`Pro. <a href="/pro/">The plan &rarr;</a>`}</div></div>
     <div class="lcard"><div class="k">A name</div><h2>Your watches</h2><div class="d">Any company, founder-led or not, from the switch under its numbers. One is free; a list is Pro.</div>
-      ${signed?(names.length?`<div class="wlist">${names.map(w=>`<div class="row"><span><span class="tk"><a href="/company/${esc(w.tk)}/" style="color:inherit;text-decoration:none">${esc(w.tk)}</a></span>${esc(w.ceo||"")}</span><button class="stop" onclick="stopWatch('${esc(w.tk)}')">stop</button></div>`).join("")}</div>`:`<div class="fine">You are not watching anyone yet. <a href="/companies/">Find a company &rarr;</a></div>`):`<div class="fine"><a href="/companies/">Find a company &rarr;</a></div>`}
+      ${signed?(names.length?`<div class="wlist"><div class="fine" style="margin-bottom:4px">${names.length} ${names.length===1?"name":"names"}</div>${names.slice(0,4).map(w=>`<div class="row"><span><span class="tk"><a href="/company/${esc(w.tk)}/" style="color:inherit;text-decoration:none">${esc(w.tk)}</a></span>${esc(w.ceo||"")}</span><button class="stop" onclick="stopWatch('${esc(w.tk)}')">stop</button></div>`).join("")}${names.length>4?`<div class="fine" style="margin-top:6px">and ${names.length-4} more &middot; <a href="/account/">Your account &rarr;</a></div>`:""}</div>`:`<div class="fine">You are not watching anyone yet. <a href="/companies/">Find a company &rarr;</a></div>`):`<div class="fine"><a href="/companies/">Find a company &rarr;</a></div>`}
     </div>
   </div>`;
 }

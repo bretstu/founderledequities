@@ -40,7 +40,8 @@
     .lbtn{font:inherit;font-size:12px;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:0;padding:7px 11px;cursor:pointer}
     .lbtn:disabled{opacity:.55;cursor:default}
     .wlist{font-size:13.5px;line-height:1.8}
-    .wlist .row{display:flex;justify-content:space-between;gap:10px}
+    .wlist .row{display:flex;justify-content:space-between;gap:10px;white-space:nowrap;overflow:hidden}
+    .wlist .row>span{overflow:hidden;text-overflow:ellipsis}
     .wlist .tk{font-family:var(--mono);font-weight:600;margin-right:8px}
     .wlist .stop{font:inherit;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);background:none;border:0;cursor:pointer;padding:0}
     .lk{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin:0 0 10px}
