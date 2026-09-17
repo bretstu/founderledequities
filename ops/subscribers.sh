@@ -9,7 +9,8 @@
 #   ops/subscribers.sh --emails   # the same with the addresses
 set -e
 cd "$(dirname "$0")/.."
-[ -f .env ] && set -a && . ./.env && set +a
+# only the one key, read by name: .env holds values with spaces and is not a shell script
+RESEND_API_KEY="${RESEND_API_KEY:-$(grep -E '^RESEND_API_KEY=' .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d '"' | tr -d "'")}"
 DB="${FLE_HITS_DB:-$(wrangler d1 list --json 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin)[0]['name'])")}"
 q() { wrangler d1 execute "$DB" --remote --json --command "$1" 2>/dev/null | python3 -c '
 import sys,json
