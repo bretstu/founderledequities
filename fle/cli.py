@@ -348,7 +348,8 @@ def cmd_ledger(args) -> int:
     fl = led.flows
     if fl.sourced:
         print(f"\n  where the stake came from, over their whole filing history")
-        for label, amt in [("already held at their Form 3", fl.opening),
+        for label, amt in [("already held at their Form 3" if getattr(led, "opening_source", "") != "oldest filing read"
+                            else f"already held at the oldest filing read ({led.form3_date})", fl.opening),
                            ("bought on the open market", fl.bought),
                            ("granted by the company", fl.granted),
                            ("from options or units", fl.from_derivative),

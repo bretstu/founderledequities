@@ -965,6 +965,45 @@ def supplement_rows(root, rows: list, form: str, when: str, acc: str, entries) -
     return out
 
 
+def settlements_only_in_table_ii(root, rows: list, when: str, acc: str, form: str = "4") -> list[Line]:
+    """A SETTLEMENT REPORTED ONLY IN TABLE II (2026-09-17, Vaxcyte). Some
+    filers show an RSU vesting as the derivative disposed (code M, the
+    underlying common stock and its share count named) and in Table I only
+    the withholding; the balance carries the vested shares, so the holding
+    is right, but the flows and the tape see "-6,289 withheld" on a day the
+    holding rose 126,926. Where Table II disposes a derivative under M, C
+    or X into a share class and Table I reports no acquisition under that
+    code on that day, the underlying shares are the acquisition, as a line
+    Table I should have carried. Where Table I does report it, nothing is
+    added: the compliant filing is not double-counted."""
+    out = []
+    have = {(r.code, (r.as_of or when)[:10]) for r in rows if r.table == "I" and r.acquired and r.code in ("M", "C", "X")}
+    for node in root.iter("derivativeTransaction"):
+        code = (_t(node, "transactionCoding/transactionCode") or "").strip().upper()[:1]
+        if code not in ("M", "C", "X"):
+            continue
+        if (_t(node, "transactionAmounts/transactionAcquiredDisposedCode") or "").strip().upper() != "D":
+            continue
+        under = _t(node, "underlyingSecurity/underlyingSecurityTitle") or ""
+        if not is_share_class(under):
+            continue
+        try:
+            n = float(_t(node, "underlyingSecurity/underlyingSecurityShares") or "")
+        except ValueError:
+            continue
+        if not n or n != n:
+            continue
+        day = (_t(node, "transactionDate") or when)[:10]
+        if (code, day) in have:
+            continue
+        direct = (_t(node, "ownershipNature/directOrIndirectOwnership") or "D").strip().upper()[:1] or "D"
+        nature = _t(node, "ownershipNature/natureOfOwnership") or None
+        out.append(Line(security=under.strip(), direct=direct, nature=nature, notes="settled in Table II only",
+                        code=code, moved=n, price=None, acquired=True, shares=0.0,   # no balance of its own: the position is history's
+                        as_of=day, accession=acc, form=form, table="I"))
+    return out
+
+
 def _rows(root, form: str, when: str, acc: str) -> list[Line]:
     """Table I in document order, then Table II's share classes."""
     out = []
@@ -1286,6 +1325,9 @@ class Ledger:
     note: str = ""
     trace: list = field(default_factory=list)
     form3_date: str = ""          # the initial statement, read for the flows
+    opening_source: str = ""      # "Form 3", or "oldest filing read" when there is none (2026-09-17)
+    oldest_before: float | None = None   # the position before the oldest filing's own transactions
+    oldest_date: str = ""
     # The person's filings for this issuer. Exposed so a history walk reads
     # exactly the documents the ledger read -- if the two ever disagree on
     # which filings count, they will disagree on the answer.
@@ -1577,13 +1619,16 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
 
         # Flows are a different question -- every transaction ever, not a
         # position -- so they read every filing, not just the settling one.
-        for r in rows:
+        net_here = 0.0     # this filing's own movement, for the opening-from-the-oldest-filing below
+        for r in rows + settlements_only_in_table_ii(root, rows, when, f.get("accessionNumber") or "", form):
             if not r.code:
                 continue
             if r.table == "II" and not is_share_class(r.security):
                 continue
             led.flows.add(r.code, r.acquired, r.moved,
                           r.as_of, r.security, r.direct, splits)
+            if r.moved == r.moved and r.moved:
+                net_here += r.moved if r.acquired else -r.moved
 
         if trace:
             for r in rows:
@@ -1735,6 +1780,13 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
             g.rows += 1
         for g in here.values():
             g.shares = sum(g.last_txn.values()) + g.holdings
+        # THE POSITION BEFORE THIS FILING'S OWN TRANSACTIONS (2026-09-17). The
+        # walk runs newest first, so the last filing through here is the
+        # oldest read; what it stated, less what it moved, is the position
+        # the flows start from when there is no Form 3 to read (a founder
+        # whose initial statement predates EDGAR's XML, or the window).
+        led.oldest_before = sum(g.shares for g in here.values()) - net_here
+        led.oldest_date = when
 
         # A HOLDING THE COMPANY ITSELF SAYS IS NOT THEIRS. Curated, sourced,
         # and one class at one issuer -- see fle/exclusions.py for why there
@@ -1802,7 +1854,22 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
             opening += (splits.adjust(r.shares, when) if splits else r.shares)
         led.flows.opening = opening
         led.form3_date = when
+        led.opening_source = "Form 3"
         break
+    # NO FORM 3 TO READ: THE OLDEST FILING IS THE CHAIN'S START (2026-09-17).
+    # Caporella's initial statement at National Beverage is decades before
+    # EDGAR's XML; Sabel's Venture Global position arrived in a filing the
+    # walk read whole. The flows then started from zero and reported the
+    # whole holding as unexplained: a fact about the window, not the number.
+    # The position stated by the oldest filing read, less that filing's own
+    # transactions, is the opening; every transaction from that filing on
+    # is a flow. (In that filing's units: the flows adjust for splits from
+    # the same date.)
+    if not led.form3_date and led.oldest_date and led.oldest_before is not None:
+        ob = max(led.oldest_before, 0.0)
+        led.flows.opening = splits.adjust(ob, led.oldest_date) if splits else ob
+        led.form3_date = led.oldest_date
+        led.opening_source = "oldest filing read"
 
     led.settled = bool(led.groups)
     led.source = (f"read {led.filings_read} of their filings; each group is "

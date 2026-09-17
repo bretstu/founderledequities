@@ -4236,3 +4236,81 @@ def test_an_empty_discovered_class_is_not_a_denominator_problem():
     src = inspect.getsource(O.build)
     seg = src.split("class(es) counted from the person's filings but absent")[0]
     assert "if g.shares" in seg.split("absent = sorted")[0][-400:] and "if t in held" in seg[-400:]
+
+
+def _docs_client(docs):
+    class _E:
+        def submissions(self, cik):
+            return {"_filings": [{"form": f, "accessionNumber": k, "filingDate": d, "reportDate": d, "primaryDocument": "d.xml"} for k, (f, d) in docs["meta"].items()]}
+
+        def filing_index(self, cik, acc):
+            return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+
+        def get(self, url, use_cache=True):
+            return next(v for k, v in docs["xml"].items() if f"/{k.replace('-', '')}/" in url or f"/{k}/" in url)
+    return _E()
+
+
+_HEAD = ('<ownershipDocument><periodOfReport>{p}</periodOfReport><issuer><issuerCik>0001649094</issuerCik></issuer>'
+         '<reportingOwner><reportingOwnerId><rptOwnerCik>0001</rptOwnerCik><rptOwnerName>Pickering Grant</rptOwnerName></reportingOwnerId>'
+         '<reportingOwnerRelationship><isOfficer>1</isOfficer><officerTitle>CEO</officerTitle></reportingOwnerRelationship></reportingOwner>')
+
+
+def _tx(t, code, sh, ad, after, d, price=""):
+    return (f'<nonDerivativeTransaction><securityTitle><value>{t}</value></securityTitle><transactionDate><value>{d}</value></transactionDate><transactionCoding><transactionCode>{code}</transactionCode></transactionCoding>'
+            f'<transactionAmounts><transactionShares><value>{sh}</value></transactionShares><transactionPricePerShare><value>{price}</value></transactionPricePerShare><transactionAcquiredDisposedCode><value>{ad}</value></transactionAcquiredDisposedCode></transactionAmounts>'
+            f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></nonDerivativeTransaction>')
+
+
+def _rsu(units, after, d, under_shares):
+    return (f'<derivativeTransaction><securityTitle><value>Restricted Stock Units</value></securityTitle><transactionDate><value>{d}</value></transactionDate><transactionCoding><transactionCode>M</transactionCode></transactionCoding>'
+            f'<transactionAmounts><transactionShares><value>{units}</value></transactionShares><transactionAcquiredDisposedCode><value>D</value></transactionAcquiredDisposedCode></transactionAmounts>'
+            f'<underlyingSecurity><underlyingSecurityTitle><value>Common Stock</value></underlyingSecurityTitle><underlyingSecurityShares><value>{under_shares}</value></underlyingSecurityShares></underlyingSecurity>'
+            f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></derivativeTransaction>')
+
+
+def test_a_settlement_reported_only_in_table_ii_is_the_days_acquisition():
+    """VAXCYTE (2026-09-17): the RSUs disposed in Table II under M, the
+    underlying 126,926 common named; Table I carries only the 6,289 withheld
+    and a balance that rose. The flows and the tape now count the vesting."""
+    from fle.ledger import build_ledger, settlements_only_in_table_ii, _rows
+    import xml.etree.ElementTree as ET
+    vest = _HEAD.format(p="2026-06-15") + _tx("Common Stock", "F", 6289, "D", 1120637, "2026-06-15", "41.20") + _rsu(126926, 0, "2026-06-15", 126926) + '</ownershipDocument>'
+    root = ET.fromstring(vest)
+    rows = _rows(root, "4", "2026-06-15", "a1")
+    extra = settlements_only_in_table_ii(root, rows, "2026-06-15", "a1")
+    assert len(extra) == 1 and extra[0].code == "M" and extra[0].acquired and extra[0].moved == 126926 and extra[0].security == "Common Stock"
+    # the compliant filing reports the same vest in Table I too: nothing is added
+    compliant = _HEAD.format(p="2026-06-15") + _tx("Common Stock", "M", 126926, "A", 1126926, "2026-06-15") + _tx("Common Stock", "F", 6289, "D", 1120637, "2026-06-15", "41.20") + _rsu(126926, 0, "2026-06-15", 126926) + '</ownershipDocument>'
+    r2 = ET.fromstring(compliant)
+    assert settlements_only_in_table_ii(r2, _rows(r2, "4", "2026-06-15", "a2"), "2026-06-15", "a2") == []
+    # through the ledger: the flows see the vesting
+    docs = {"meta": {"0001-26-000001": ("4", "2026-06-15")}, "xml": {"0001-26-000001": vest}}
+    led = build_ledger(_docs_client(docs), 1649094, owner_cik="1", share_classes=1, class_members={"c-2": 100000000.0})
+    assert round(led.total) == 1120637 and round(led.flows.from_derivative) == 126926 and round(led.flows.surrendered) == 6289
+    # through the tape: one event, a vest with tax withheld
+    from fle.events import build_events
+    evs = build_events(_docs_client(docs), 1649094, owner_cik="1")
+    e = [x for x in evs if x.code == "M"]
+    assert e and e[0].label == "shares vested, tax withheld" and e[0].vested, [(x.code, x.label) for x in evs]
+
+
+def test_the_opening_is_the_oldest_filing_read_when_there_is_no_form_3():
+    """CAPORELLA, SABEL (2026-09-17): no Form 3 in the window, so the flows
+    started at zero and called the whole holding unexplained. The position the
+    oldest filing states, less its own transactions, is the opening."""
+    from fle.ledger import build_ledger
+    old = _HEAD.format(p="2016-03-01") + _tx("Common Stock", "S", 10000, "D", 990000, "2016-03-01", "10.00") + '</ownershipDocument>'
+    new = _HEAD.format(p="2026-09-01") + _tx("Common Stock", "P", 5000, "A", 995000, "2026-09-01", "12.00") + '</ownershipDocument>'
+    docs = {"meta": {"0001-26-000002": ("4", "2026-09-01"), "0001-16-000001": ("4", "2016-03-01")}, "xml": {"0001-16-000001": old, "0001-26-000002": new}}   # EDGAR lists newest first
+    led = build_ledger(_docs_client(docs), 1649094, owner_cik="1", share_classes=1, class_members={"c-2": 100000000.0})
+    assert round(led.total) == 995000
+    assert led.opening_source == "oldest filing read" and led.form3_date == "2016-03-01"
+    assert round(led.flows.opening) == 1000000, "990,000 stated after selling 10,000: the opening is 1,000,000"
+    residual, share = led.flows.reconcile(led.total)
+    assert abs(residual) < 1 and share < 0.01, "opening + bought - sold reconciles to the holding"
+    # with a Form 3 present, it is still the Form 3
+    f3 = _HEAD.format(p="2015-01-01") + '<nonDerivativeHolding><securityTitle><value>Common Stock</value></securityTitle><postTransactionAmounts><sharesOwnedFollowingTransaction><value>1000000</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></nonDerivativeHolding></ownershipDocument>'
+    docs2 = {"meta": {"0001-26-000002": ("4", "2026-09-01"), "0001-16-000001": ("4", "2016-03-01"), "0001-15-000001": ("3", "2015-01-01")}, "xml": {"0001-15-000001": f3, "0001-16-000001": old, "0001-26-000002": new}}
+    led2 = build_ledger(_docs_client(docs2), 1649094, owner_cik="1", share_classes=1, class_members={"c-2": 100000000.0})
+    assert led2.opening_source == "Form 3" and round(led2.flows.opening) == 1000000

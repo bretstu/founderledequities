@@ -82,9 +82,10 @@ document is worth less than a wrong one they can.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
-from .ledger import (SECTION16, _doc_url, _parse, _rows,
+from .ledger import (SECTION16, _doc_url, _parse, _rows, _t, settlements_only_in_table_ii,
                      displace_amended, period_end, issuer_of, is_share_class)
 from .history import COVER_FORMS
 
@@ -160,6 +161,7 @@ class Event:
     day_net: float | None = None        # what the day did on record, all its filings and any residue, from history
     residue: float | None = None        # history's `unexplained` for the day
     other_codes: str = ""              # A/M/F/C/G in the same filing
+    vested: bool = False               # the M was units settling (RSUs, PSUs), not an option exercised (2026-09-17)
     price_flag: str = ""
     url: str = ""
     registered: str = ""               # the issuer's first Section 16 filing date
@@ -198,6 +200,8 @@ class Event:
             # a filing with no trade: named for its principal code (see
             # COMP_CODES); an exercise that came with withholding says so
             base = COMP_LABELS.get(self.code, "other transaction")
+            if self.code == "M" and self.vested:
+                base = "shares vested"     # units settled into stock, not an option exercised
             if self.code in ("M", "A") and "F" in self.other_codes:
                 base += ", tax withheld"
             return base
@@ -543,8 +547,17 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
         lines = _rows(root, form, when, acc)
         if not lines:
             continue
+        # A SETTLEMENT REPORTED ONLY IN TABLE II is the day's acquisition
+        # (fle/ledger.settlements_only_in_table_ii, 2026-09-17): without it
+        # the tape read Vaxcyte's vesting days as "withheld for tax" while
+        # the holding rose
+        lines = lines + settlements_only_in_table_ii(root, lines, when, acc, form)
         plan = plan_state(root)
         others = sorted({r.code for r in lines if r.code in COMPANY_CODES})
+        vested = any((_t(n, "transactionCoding/transactionCode") or "").strip().upper()[:1] == "M"
+                     and re.search(r"\bunits?\b|\bRSU|\bPSU", _t(n, "securityTitle") or "", re.I)
+                     and not re.search(r"\boption", _t(n, "securityTitle") or "", re.I)
+                     for n in root.iter("derivativeTransaction"))
         # the day history stated this filing's position on
         period = period_end(client, issuer_cik, f, ends)
 
@@ -628,6 +641,7 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                 holding_after=after, net_change=net, day_net=day_net, residue=resid,
                 outstanding=outstanding, pct_after=pct_after,
                 other_codes="".join(others),
+                vested=vested,
                 url=_doc_url(issuer_cik, acc, f.get("primaryDocument") or ""),
                 registered=registered,
             ))
