@@ -36,13 +36,16 @@ async function boot(){
     fetchText(["/prices.csv"]),
   ]);
   if(p){PANEL=mapPanel(parseCSV(p));state.live.panel=true;}
-  state.live.events=true;   /* the never-sold switch reads the list's facts */
+  /* NO NEVER-SOLD SWITCH HERE (2026-09-17): the "Never sold" screen chip above
+     the table is the same filter; two controls for one idea confused the
+     page. The list's never-sold fact still feeds the chip (r.pns). */
   /* THE PRICES MAKE THE VALUE AND THE MARKET CAP. Without them the two
      columns were blank on this page (2026-09-14). */
   if(pr){const m={};let asof="";for(const r of parseCSV(pr)){const c=num(r.close);if(r.ticker&&c){m[r.ticker.toUpperCase()]=c;asof=r.as_of||asof;}}
     if(Object.keys(m).length){PRICES=m;PRICES_ASOF=asof;state.live.prices=true;}}
   applyPrices();
-  if(f)for(const r of parseCSV(f)){if(r.ticker)FOUNDERS[r.ticker.toUpperCase()]={f:(r.founder||"").toLowerCase(),ev:r.evidence||"",src:r.source||""};}
+  if(f){for(const r of parseCSV(f)){if(r.ticker)FOUNDERS[r.ticker.toUpperCase()]={f:(r.founder||"").toLowerCase(),ev:r.evidence||"",src:r.source||""};}
+    state.live.founders=true;   /* the Founders only switch shows once the file is here (it was never set on this page: 2026-09-17) */}
   if(c){try{SCREEN_COUNTS=JSON.parse(c);}catch(x){}}
   const q=$("#q");if(q)q.addEventListener("input",()=>{state.q=q.value;renderTable();});
   document.querySelectorAll("[data-min]").forEach(b=>b.addEventListener("click",()=>{state.min=+b.dataset.min;document.querySelectorAll("[data-min]").forEach(x=>x.classList.toggle("on",x===b));renderTable();}));

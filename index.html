@@ -1362,7 +1362,7 @@ const SCREENS={
     test:r=>!!r.ns},
   "over-10":{name:"Own more than 10%",desc:"CEOs who own more than a tenth of the company they run",
     test:r=>r.pct!==null&&r.pct>=10},
-  "bought-this-year":{name:"Bought this year",desc:"CEOs whose most recent stake-moving trade was an open-market purchase in the last twelve months",
+  "bought-this-year":{name:"Bought this year",desc:"CEOs whose last stake-moving trade was an open-market buy, within a year",
     test:r=>r.ltk==="bought"&&!!r.ltd&&r.ltd>=new Date(Date.now()-365*86400e3).toISOString().slice(0,10)},
   "hired-under-1":{name:"Hired, under 1%",desc:"CEOs the proxy does not name as founders, owning less than 1% of the company they run",
     test:r=>!r.fd&&r.pct!==null&&r.pct<1},
