@@ -25,9 +25,9 @@ async function render(){
         <button class="abtn${letter.on?"":" primary"}" onclick="setLetter(${letter.on?"false":"true"})">${letter.on?"Stop":"Join"}</button></div>
     </div>
     <div class="ablock"><h2>Watches</h2>
-      ${watches.length?watches.map(w=>`<div class="arow"><div class="l"><span class="tk"><a href="/company/${esc(w.tk)}/" style="color:inherit;text-decoration:none">${esc(w.tk)}</a></span><span>${esc(w.ceo||"")}</span></div><button class="abtn" onclick="stopWatch('${esc(w.tk)}')">Remove</button></div>`).join("")
+      ${watches.length?watches.map(w=>w.tk==="FOUNDERS"?`<div class="arow"><div class="l"><span>Live founder alerts</span><span class="mut">every founder's move, as it is filed</span></div><button class="abtn" onclick="stopWatch('FOUNDERS')">Turn off</button></div>`:`<div class="arow"><div class="l"><span class="tk"><a href="/company/${esc(w.tk)}/" style="color:inherit;text-decoration:none">${esc(w.tk)}</a></span><span>${esc(w.ceo||"")}</span></div><button class="abtn" onclick="stopWatch('${esc(w.tk)}')">Remove</button></div>`).join("")
         :`<div class="anote">You are not watching anyone. Open any company page and press Watch under its numbers.</div>`}
-      <div class="anote">An email the morning after any of them buys on the open market or sells at their own discretion. <a href="/companies/">Watch another &rarr;</a>${watches.length>1?` &middot; <a href="#" onclick="stopAll();return false">Stop all</a>`:""}</div>
+      <div class="anote">An email when the stake moves. <a href="/alerts/">The alerts &rarr;</a> &middot; <a href="/companies/">Watch another &rarr;</a>${watches.length>1?` &middot; <a href="#" onclick="stopAll();return false">Stop all</a>`:""}</div>
     </div>
     <div class="ablock"><h2>Pro</h2>
       <div class="arow"><div class="l"><span>${ME.pro?"$15 a month":"Not a subscriber"}</span><span class="mut">${ME.pro?"every company, the archive, the tape at every window, export, a list of watches":"S&P 500 current stakes and the last twelve months are open"}</span></div>

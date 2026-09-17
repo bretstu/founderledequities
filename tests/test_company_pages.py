@@ -108,8 +108,8 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert 'src="/company.js?v=' in tsla and 'href="/site.css?v=' in tsla, "a new script is a new address"
     assert os.path.exists(os.path.join(out, "site.css"))
     sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
-    assert sm.count("<loc>") == 7 and "/company/SEALD/" in sm and "/companies/" in sm and "/tape/" in sm and "/pro/" in sm, \
-        "every company is in the sitemap: the open ones with the answer, the sealed ones with the question"
+    assert sm.count("<loc>") == 8 and "/company/SEALD/" in sm and "/companies/" in sm and "/tape/" in sm and "/pro/" in sm and "/alerts/" in sm, \
+        "every company is in the sitemap: the open ones with the answer, the sealed ones with the question; and the alerts page (2026-09-17)"
     robots = open(os.path.join(out, "robots.txt"), encoding="utf-8").read()
     assert "Sitemap:" in robots
     # the Pro page is indexable; the data beneath the prefix is not (2026-09-16, Search Console)
@@ -427,7 +427,7 @@ def test_the_watches_have_a_box_a_page_and_two_ways_to_stop(tmp_path):
     assert os.path.exists(os.path.join(out, "account", "index.html")) and os.path.exists(os.path.join(out, "account.js")), "the account page is the control panel"
     assert "url=/account/" in open(os.path.join(out, "watches", "index.html"), encoding="utf-8").read(), "the old watches address lands on the account"
     nav = bcp.extract_topnav(open(os.path.join(ROOT, "index.html"), encoding="utf-8").read())
-    assert "Weekly tape, free" not in nav and "navwatches" not in nav and 'class="gopro"' in nav, "the header is where you are: three pages and one button"
+    assert "Weekly tape, free" not in nav and "navwatches" not in nav and 'class="gopro"' in nav and 'href="/alerts/">Alerts' in nav, "the header is where you are: four pages and one button (Alerts, 2026-09-17)"
     for f in ("functions/api/letter.js", "functions/api/logout.js"):
         assert os.path.exists(os.path.join(ROOT, f)), f
     page_js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
@@ -501,3 +501,22 @@ console.log("loaded "+process.argv.slice(2).length+" scripts");process.exit(0);
     p = subprocess.run([node, drv] + scripts, capture_output=True, text=True, timeout=60)
     assert p.returncode == 0, p.stderr[-1500:]
     assert f"loaded {len(scripts)} scripts" in p.stdout, p.stdout
+
+
+def test_the_alerts_page_is_built_with_three_switches_on_one_rule(tmp_path):
+    """THE ALERTS PAGE (2026-09-17): one rule stated once, three grains of one
+    stream (the letter, live founder alerts, the watches), a sample email;
+    the live alert is a watch on the reserved name FOUNDERS."""
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    page = open(os.path.join(out, "alerts", "index.html"), encoding="utf-8").read()
+    assert "When a founder" in page and "1% or more" in page and "within about ten minutes of the SEC filing" in page
+    assert page.count('class="lcard') == 3 and "The letter" in page and "Live founder alerts" in page and "Your watches" in page
+    assert "Paul Gu bought $1.3M of UPST" in page, "a sample email shows what arrives"
+    assert 'href="/alerts/">Alerts' in page, "the page carries the nav with itself in it"
+    js = open(os.path.join(out, "alerts.js"), encoding="utf-8").read()
+    assert 'tk:"FOUNDERS"' in js and "/api/letter" in js and "/api/subscribe" in js and "/api/watch" in js
+    w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
+    assert 'tk === "FOUNDERS"' in w and "Live founder alerts are Pro" in w
+    run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
+    assert "tk = 'FOUNDERS'" in run and "e.founder" in run and "b.accs" in run, "FOUNDERS matches founder events; one email per event per address"

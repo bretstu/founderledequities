@@ -43,30 +43,34 @@ export async function onRequestPost({ request, env }) {
   if (!events.length) return json({ ok: true, sent: 0, watchers: 0 });
   const tks = [...new Set(events.map((e) => String(e.tk).toUpperCase()))];
   const marks = tks.map((_, i) => `?${i + 1}`).join(",");
-  const rows = await env.HITS.prepare(`SELECT id, email, tk, ceo, token FROM watches WHERE confirmed = 1 AND tk IN (${marks})`).bind(...tks).all();
+  // LIVE FOUNDER ALERTS (2026-09-17): the reserved name FOUNDERS is a watch on
+  // every founder; it matches every event the tape marks as a founder's
+  const rows = await env.HITS.prepare(`SELECT id, email, tk, ceo, token FROM watches WHERE confirmed = 1 AND (tk IN (${marks}) OR tk = 'FOUNDERS')`).bind(...tks).all();
   const watches = rows.results || [];
   if (!watches.length) return json({ ok: true, sent: 0, watchers: 0 });
 
-  // what each watcher has not yet been told
+  // what each watcher has not yet been told; ONE EMAIL PER EVENT PER ADDRESS,
+  // however many of a reader's watches it matches (a name and FOUNDERS both)
   const byEmail = new Map();
   for (const w of watches) {
-    const mine = events.filter((e) => String(e.tk).toUpperCase() === w.tk);
+    const mine = w.tk === "FOUNDERS" ? events.filter((e) => e.founder) : events.filter((e) => String(e.tk).toUpperCase() === w.tk);
     for (const e of mine) {
       const seen = await env.HITS.prepare("SELECT 1 FROM alerts_sent WHERE watch_id = ?1 AND accession = ?2").bind(w.id, e.accession).first();
       if (seen) continue;
-      if (!byEmail.has(w.email)) byEmail.set(w.email, { items: [], watches: new Map() });
+      if (!byEmail.has(w.email)) byEmail.set(w.email, { items: [], watches: new Map(), accs: new Set() });
       const b = byEmail.get(w.email);
-      b.items.push({ e, w });
       b.watches.set(w.id, w);
+      if (b.accs.has(e.accession)) continue;
+      b.accs.add(e.accession);
+      b.items.push({ e, w });
     }
   }
   let sent = 0;
   for (const [email, b] of byEmail) {
     b.items.sort((x, y) => (y.e.value || 0) - (x.e.value || 0));
     const first = b.items[0].e;
-    const subject = b.items.length === 1
-      ? `${first.ceo} ${first.code === "P" ? "bought" : "sold"} ${first.tk}`
-      : `${first.ceo} ${first.code === "P" ? "bought" : "sold"} ${first.tk}, and ${b.items.length - 1} more`;
+    const short = (e) => e.sentence ? e.sentence.replace(/ on \d{4}-\d{2}-\d{2}\.$/, "") : `${e.ceo} ${e.code === "P" ? "bought" : "sold"} ${e.tk}`;
+    const subject = b.items.length === 1 ? short(first) : `${short(first)}, and ${b.items.length - 1} more`;
     const anyToken = [...b.watches.values()][0].token;
     const stopLinks = [...b.watches.values()].map((w) => `<a href="${site(env)}/api/watch?stop=${w.token}" style="color:#8C8880;">stop watching ${esc(w.ceo || w.tk)}</a>`).join(" &middot; ")
       + ` &middot; <a href="${site(env)}/api/watch?stopall=${anyToken}" style="color:#8C8880;">stop all my watches</a>`;

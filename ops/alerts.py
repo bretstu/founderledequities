@@ -56,7 +56,16 @@ def sentence(r, value):
     return f"{ceo}: {what} moved the {tk} stake {mv:+.1f}% on {when}."
 
 
-def decisions(events_p, since):
+def founders_of(root=ROOT) -> set:
+    """The founder-led tickers (founders.csv): the live alert's scope."""
+    p = os.path.join(root, "founders.csv")
+    if not os.path.exists(p):
+        return set()
+    with open(p, encoding="utf-8-sig", newline="") as fh:
+        return {(r.get("ticker") or "").upper() for r in csv.DictReader(fh) if (r.get("founder") or "").lower() == "yes"}
+
+
+def decisions(events_p, since, founders=None):
     """WHAT A WATCH MAILS (2026-09-17): the stake moved. An open-market
     purchase or a discretionary sale of any size (the site's two decisions),
     or any other filing that moved the holding by MIN_MOVE per cent or more
@@ -65,6 +74,7 @@ def decisions(events_p, since):
     the About page states it. Pre-IPO filings and share-count restatements
     are not moves."""
     out = []
+    founders = founders_of() if founders is None else founders
     with open(events_p, encoding="utf-8-sig", newline="") as fh:
         for r in csv.DictReader(fh):
             filed = r.get("filed") or ""
@@ -91,6 +101,7 @@ def decisions(events_p, since):
                         "value": value, "pct_after": r.get("pct_after") or "", "traded": r.get("traded") or "",
                         "filed": filed, "accession": r.get("accession") or f"{r['ticker']}:{filed}:{code}",
                         "url": r.get("url") or "", "kind": "decision" if decision else "move",
+                        "founder": r["ticker"].upper() in founders,     # the live alert's scope (functions/api/watch/run.js)
                         "sentence": sentence(r, value)})
     return out
 

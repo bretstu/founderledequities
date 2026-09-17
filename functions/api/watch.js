@@ -70,6 +70,16 @@ export async function onRequestPost({ request, env }) {
   const email = (s.email || clean(body.email, 120)).trim().toLowerCase();
   if (!EMAIL.test(email)) return json({ ok: false, message: "An email address is needed." }, 400);
   const now = new Date().toISOString();
+  // LIVE FOUNDER ALERTS (2026-09-17): a watch on the reserved name FOUNDERS
+  // means every founder's move, as filed. Pro only, and a signed-in Pro
+  // reader has proved the address, so it is confirmed at once; the run
+  // matches it to every founder event (functions/api/watch/run.js).
+  if (tk === "FOUNDERS") {
+    if (!s.pro) return json({ ok: false, pro: true, message: "Live founder alerts are Pro." });
+    await env.HITS.prepare("INSERT INTO watches (email, tk, ceo, token, confirmed, created) VALUES (?1, ?2, ?3, ?4, 1, ?5) ON CONFLICT(email, tk) DO UPDATE SET confirmed = 1")
+      .bind(email, "FOUNDERS", "every founder", token(), now).run();
+    return json({ ok: true, watching: true, message: "On. Every founder's move, as it is filed." });
+  }
 
   // ONE WATCH IS FREE (PLAN.md section 3, moment four): a second confirmed
   // watch on another name is where the list becomes Pro

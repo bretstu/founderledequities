@@ -582,6 +582,22 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         co_js = header + shared + "\n\n" + open(co_js_p, encoding="utf-8").read()
         with open(os.path.join(out_dir, "companies.js"), "w", encoding="utf-8") as fh:
             fh.write(co_js)
+    # THE ALERTS PAGE (2026-09-17): one rule, three switches; built like the
+    # account page, with the shared block for the view beacon
+    a_tpl_p = os.path.join(root, "alerts.html")
+    a_js_p = os.path.join(root, "assets", "alerts-page.js")
+    if os.path.exists(a_tpl_p) and os.path.exists(a_js_p):
+        a_js = header + shared + "\n\n" + open(a_js_p, encoding="utf-8").read()
+        with open(os.path.join(out_dir, "alerts.js"), "w", encoding="utf-8") as fh:
+            fh.write(a_js)
+        a_v = hashlib.sha256(a_js.encode("utf-8")).hexdigest()[:10]
+        a_html = (open(a_tpl_p, encoding="utf-8").read()
+                  .replace("{{TOPNAV}}", extract_topnav(index_html))
+                  .replace('href="/site.css"', f'href="/site.css?v={css_v}"')
+                  .replace('src="/alerts.js"', f'src="/alerts.js?v={a_v}"'))
+        os.makedirs(os.path.join(out_dir, "alerts"), exist_ok=True)
+        with open(os.path.join(out_dir, "alerts", "index.html"), "w", encoding="utf-8") as fh:
+            fh.write(a_html)
     # THE ACCOUNT PAGE: the control panel (the letter, the watches, the
     # plan), a static shell with its own small script and the masthead
     w_tpl_p = os.path.join(root, "account.html")
@@ -777,6 +793,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     # holds the facts should it ever be asked for.
     companies_index(index_rows, founders, sp, out_dir, topnav, css_v)
     urls.append("https://founderledequities.com/companies/")
+    if os.path.exists(os.path.join(out_dir, "alerts", "index.html")):
+        urls.append(f"{SITE}/alerts/")
     with open(os.path.join(out_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
         fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
         today = datetime.date.today().isoformat()
