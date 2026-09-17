@@ -86,6 +86,7 @@ class History:
     snapshots: list = field(default_factory=list)
     read: int = 0
     skipped_issuer: int = 0
+    final: dict = field(default_factory=dict)   # the fold's groups at the end, for reading a disagreement with the ledger (2026-09-17)
     matches_panel: bool | None = None
     note: str = ""
 
@@ -947,6 +948,7 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
             codes="".join(codes),
             groups=len(groups),
             classes="|".join(sorted(members)) if members else ""))
+    hist.final = {k: g for k, g in groups.items()}
     add_cover_points(hist, series, splits, since)
     return hist
 
