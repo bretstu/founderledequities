@@ -66,6 +66,10 @@ COLUMNS = [
     "single_class", "classes", "unnamed_class",
     "excluded_shares", "excluded_detail",
     "delisted",
+    # THE CHAIN, FOR SIZING (2026-09-17): where the opening came from, every
+    # outflow, the residual, how many filings were read, the split note
+    "opening_source", "sold", "surrendered", "gifted_out", "other_in", "other_out",
+    "flow_residual", "flows_reconcile", "filings_read", "splits", "split_note", "gap_days",
 ]
 
 
@@ -137,7 +141,7 @@ def feed_fingerprint(client, cik: int, owner_cik=None) -> str:
 # the night the `remarks` field was added, had no remark to test the curated
 # addition against and the addition was reported lapsed; this is what makes
 # such a row recompute instead.
-SCHEMA_FIELDS = ("remarks", "addition_key")
+SCHEMA_FIELDS = ("remarks", "addition_key", "opening_source")
 
 
 def _addition_current(row: dict, exclusions) -> bool:

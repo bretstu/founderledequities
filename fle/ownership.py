@@ -105,6 +105,10 @@ class Ownership:
     # million, so these answer "how did they come by stock", not "what do
     # they still hold".
     held_at_start: float = 0.0     # on the Form 3 -- a founding stake
+    opening_source: str = ""       # "Form 3", or "oldest filing read" (2026-09-17)
+    gifted_out: float = 0.0
+    other_in: float = 0.0          # codes the flows do not classify (J, and an exchange's inflow)
+    other_out: float = 0.0
     founded_share: float | None = None
     bought: float = 0.0            # code P, their own money
     granted: float = 0.0           # code A, the company's
@@ -183,7 +187,11 @@ def _flows(rec: "Ownership", led) -> None:
     rec.from_derivative = fl.from_derivative
     rec.sold = fl.sold
     rec.surrendered = fl.surrendered
+    rec.gifted_out = fl.gifted_out
+    rec.other_in = fl.other_in
+    rec.other_out = fl.other_out
     rec.held_at_start = fl.opening
+    rec.opening_source = getattr(led, "opening_source", "") or ""
     rec.founded_share = fl.founded_share
     rec.bought_share = fl.bought_share
     rec.codes = fl.tally()
