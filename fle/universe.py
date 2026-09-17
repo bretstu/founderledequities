@@ -145,6 +145,14 @@ def read_universe(path: str, register: bool = True) -> list[Member]:
                 continue
     if register:
         from .partnerships import excluded, path_for
+        from .delisted import read as _delisted, path_for as _dpath
+        gone = _delisted(_dpath(path))
+        if gone:
+            before = len(out)
+            out = [m for m in out if m.ticker.upper() not in gone]
+            if before != len(out) and not getattr(read_universe, "_said_gone", False):
+                print(f"  delisted: {before - len(out)} left the universe (universe/delisted.csv: {', '.join(sorted(gone)[:6])}{'...' if len(gone) > 6 else ''})")
+                read_universe._said_gone = True
         drop = excluded(path_for(path))
         if drop:
             before = len(out)

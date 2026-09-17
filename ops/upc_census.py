@@ -38,7 +38,7 @@ from fle.edgar import EdgarClient                      # noqa: E402
 from fle.ledger import (_parse, _t, _num, PARTNERSHIP_MARKER, is_share_class,   # noqa: E402
                         title_letter, SECTION16, displace_amended)
 
-UNIT_TITLE = re.compile(PARTNERSHIP_MARKER.pattern + r"|\bLLC\s+units?\b|\bclass\s+[A-Z](-\d)?\s+(common\s+)?units?\b|\bOpCo\b|"
+UNIT_TITLE = re.compile(PARTNERSHIP_MARKER.pattern + r"|\bLLC\s+units?\b|\bclass\s+[A-Z](-\d)?\s+(\w+\s+)?units?\b|\bOpCo\b|"
                         r"\bHoldings?\s+(partnership\s+)?units?\b|\bpartnership\s+(interest|units?)\b|\bcommon\s+units?\b|"
                         r"\bunits?\s+of\s+[A-Z][\w.,&' ]+(LLC|L\.P\.|LP|Holdings|Group)\b", re.I)
 PAY_TITLE = re.compile(r"restricted|performance|phantom|deferred|dividend equivalent|stock unit|\bRSU|\bPSU|\bLTIP|incentive|profits? interest|appreciation|option|warrant|growth unit", re.I)

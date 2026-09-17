@@ -580,6 +580,16 @@ def cmd_panel(args) -> int:
         _clear()
         print("  interrupted; the checkpoint keeps every finished company")
         return 130
+    # ACQUIRED COMPANIES LEAVE THE PANEL (fle/delisted.py, 2026-09-17)
+    gone = [r for r in rows if r.get("delisted")]
+    if gone:
+        from .delisted import record as _record_delisted, path_for as _delisted_path
+        import datetime as _dt
+        today = _dt.date.today().isoformat()
+        n = _record_delisted(_delisted_path(args.universe) if getattr(args, "universe", None) else os.path.join("universe", "delisted.csv"),
+                             [dict(r, form=(r["delisted"].split() + [""])[0], date=(r["delisted"].split() + ["", ""])[1], noted=today) for r in gone])
+        print(f"  delisted: {len(gone)} left the panel ({n} new): " + ", ".join(f"{r['ticker']} {r['delisted']}" for r in gone[:8]) + ("..." if len(gone) > 8 else ""))
+        rows = [r for r in rows if not r.get("delisted")]
     write_csv(rows, args.out)
     s = summarise(rows)
     print(f"\n  {s['with_a_figure']} of {s['total']} produced a figure"

@@ -65,6 +65,7 @@ COLUMNS = [
     # Whether the security title was read at all. One class means it was not.
     "single_class", "classes", "unnamed_class",
     "excluded_shares", "excluded_detail",
+    "delisted",
 ]
 
 

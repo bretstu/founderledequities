@@ -143,6 +143,7 @@ class Ownership:
     # assertions; with them it is a worksheet.
     form4_url: str = ""
     remarks: str = ""              # the newest filing's remark, verbatim (structural presence; prose never parsed)
+    delisted: str = ""             # "25-NSE 2026-09-03": the issuer filed a delisting form after the person's newest filing (fle/delisted.py)
     shares_tabled: float | None = None   # when a supplement was injected: what the tables alone report
     cover_url: str = ""
 
@@ -432,6 +433,15 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     rec.filings_read = led.filings_read
     rec.settled = led.settled
     rec.form4_url = led.last_url
+    # ACQUIRED AND GONE (fle/delisted.py): a Form 25 or 15 by the issuer on or
+    # after the person's newest filing; the panel drops the row on publish
+    try:
+        from .delisted import delisting
+        newest = max((f.get("filingDate") or "" for f in (led.mine or [])), default="")
+        gone = delisting(client, cik, newest)
+        rec.delisted = f"{gone[0]} {gone[1]}" if gone else ""
+    except Exception:  # noqa: BLE001
+        rec.delisted = ""
     rec.remarks = led.last_remarks
 
     if led.excluded:
