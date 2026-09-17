@@ -19,15 +19,20 @@ async function render(){
   let letter={on:false},watches=[];
   try{const q=await fetch("/api/letter",{cache:"no-store"});if(q.ok)letter=await q.json();}catch(e){}
   try{const q=await fetch("/api/watch",{cache:"no-store"});if(q.ok)watches=(await q.json()).watches||[];}catch(e){}
+  const live=watches.some(w=>w.tk==="FOUNDERS"),names=watches.filter(w=>w.tk!=="FOUNDERS");
   body.innerHTML=`
-    <div class="ablock"><h2>Monday letter</h2>
-      <div class="arow"><div class="l"><span>${letter.on?"On":"Off"}</span><span class="mut">${letter.on?"the week's tape, every Monday morning":"you are not on the list"}</span></div>
+    <div class="ablock"><h2>The letter</h2>
+      <div class="arow"><div class="l"><span>${letter.on?"On":"Off"}</span><span class="mut">${letter.on?"everything founders did this week, Saturday morning":"you are not on the list"}</span></div>
         <button class="abtn${letter.on?"":" primary"}" onclick="setLetter(${letter.on?"false":"true"})">${letter.on?"Stop":"Join"}</button></div>
     </div>
+    <div class="ablock"><h2>Live founder alerts</h2>
+      <div class="arow"><div class="l"><span>${live?(ME.pro?"On":"Paused"):"Off"}</span><span class="mut">${live?(ME.pro?"every founder's move, within about ten minutes of the filing":"the subscription ended; start it again and the alerts resume"):(ME.pro?"every founder's move, within about ten minutes of the filing":"Pro: every founder's move, within about ten minutes of the filing")}</span></div>
+        ${live?`<button class="abtn" onclick="stopWatch('FOUNDERS')">Turn off</button>`:ME.pro?`<button class="abtn primary" onclick="startLive()">Turn on</button>`:`<a class="abtn primary" href="/pro/">Start trial</a>`}</div>
+    </div>
     <div class="ablock"><h2>Watches</h2>
-      ${watches.length?watches.map(w=>w.tk==="FOUNDERS"?`<div class="arow"><div class="l"><span>Live founder alerts</span><span class="mut">${ME.pro?"every founder's move, as it is filed":"paused: the subscription ended"}</span></div><button class="abtn" onclick="stopWatch('FOUNDERS')">${ME.pro?"Turn off":"Remove"}</button></div>`:`<div class="arow"><div class="l"><span class="tk"><a href="/company/${esc(w.tk)}/" style="color:inherit;text-decoration:none">${esc(w.tk)}</a></span><span>${esc(w.ceo||"")}</span></div><button class="abtn" onclick="stopWatch('${esc(w.tk)}')">Remove</button></div>`).join("")
-        :`<div class="anote">You are not watching anyone. Open any company page and press Watch under its numbers.</div>`}
-      <div class="anote">An email when the stake moves. <a href="/alerts/">The alerts &rarr;</a> &middot; <a href="/companies/">Watch another &rarr;</a>${watches.length>1?` &middot; <a href="#" onclick="stopAll();return false">Stop all</a>`:""}</div>
+      ${names.length?names.map(w=>`<div class="arow"><div class="l"><span class="tk"><a href="/company/${esc(w.tk)}/" style="color:inherit;text-decoration:none">${esc(w.tk)}</a></span><span>${esc(w.ceo||"")}</span></div><button class="abtn" onclick="stopWatch('${esc(w.tk)}')">Remove</button></div>`).join("")
+        :`<div class="anote">You are not watching any company. Open a company page and flip the switch under its numbers.</div>`}
+      <div class="anote">An email when the stake moves. <a href="/alerts/">The alerts &rarr;</a> &middot; <a href="/companies/">Watch another &rarr;</a>${names.length>1?` &middot; <a href="#" onclick="stopAll();return false">Stop all</a>`:""}</div>
     </div>
     <div class="ablock"><h2>Pro</h2>
       <div class="arow"><div class="l"><span>${ME.pro?"$15 a month":"Not a subscriber"}</span><span class="mut">${ME.pro?"every company, the archive, the tape at every window, export, a list of watches":"S&P 500 current stakes and the last twelve months are open"}</span></div>
@@ -37,5 +42,6 @@ async function render(){
 }
 async function setLetter(on){await fetch("/api/letter",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({on})});render();}
 async function stopWatch(tk){await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk,remove:true})});render();}
-async function stopAll(){if(!confirm("Stop every watch? Any name can be watched again from its page."))return;await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk:"*",remove:true})});render();}
+async function startLive(){await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk:"FOUNDERS",ceo:"every founder"})});render();}
+async function stopAll(){if(!confirm("Stop every watch? Any name can be watched again from its page."))return;await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk:"*",remove:true,names_only:true})});render();}
 boot();

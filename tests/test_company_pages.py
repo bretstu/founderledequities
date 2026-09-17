@@ -520,6 +520,9 @@ def test_the_alerts_page_is_built_with_three_switches_on_one_rule(tmp_path):
     assert 'tk:"FOUNDERS"' in js and "/api/letter" in js and "/api/subscribe" in js and "/api/watch" in js
     # NO FAKE SWITCH (2026-09-17): a reader who is not Pro sees a trial button where the switch would be
     assert "Start a 14-day trial" in js and 'ME&&ME.pro?sw("fsw"' in js and "Already Pro?" in js
+    assert "names.slice(0,2)" in js and "Manage all" in js, "the watches card stays compact: two names and the account for the rest"
+    acct = open(os.path.join(ROOT, "assets", "account-page.js"), encoding="utf-8").read()
+    assert "<h2>Live founder alerts</h2>" in acct and "Saturday morning" in acct and "Monday" not in acct and "names_only:true" in acct
     w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
     assert 'tk === "FOUNDERS"' in w and "Live founder alerts are Pro" in w
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()

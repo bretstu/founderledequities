@@ -60,7 +60,10 @@ export async function onRequestPost({ request, env }) {
   if (body.remove) {
     const who = await readCookie(env, request);
     if (!who) return json({ ok: false, message: "Sign in first." }, 401);
-    if (tk === "*") await env.HITS.prepare("DELETE FROM watches WHERE email = ?1").bind(who.toLowerCase()).run();
+    // the account's "Stop all" under Watches clears the names and leaves the live founder alert alone (names_only);
+    // the email's "stop everything" clears everything
+    if (tk === "*" && body.names_only) await env.HITS.prepare("DELETE FROM watches WHERE email = ?1 AND tk != 'FOUNDERS'").bind(who.toLowerCase()).run();
+    else if (tk === "*") await env.HITS.prepare("DELETE FROM watches WHERE email = ?1").bind(who.toLowerCase()).run();
     else await env.HITS.prepare("DELETE FROM watches WHERE email = ?1 AND tk = ?2").bind(who.toLowerCase(), tk).run();
     return json({ ok: true, watching: false, message: tk === "*" ? "All watches stopped." : "Stopped." });
   }
