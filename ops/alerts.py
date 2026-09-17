@@ -3,6 +3,7 @@
 
     python3 ops/alerts.py            # post every decision filed since the last run
     python3 ops/alerts.py --dry-run  # say what would be posted, post nothing
+    python3 ops/alerts.py --test     # re-send the newest founder move to the live founder alert watchers
 
 After the events file is rebuilt, the filings that a watcher asked about
 (an open-market purchase, or a sale made at the person's own discretion)
@@ -106,11 +107,48 @@ def decisions(events_p, since, founders=None):
     return out
 
 
+def post(site, key, evs):
+    """POST the events to the run endpoint; -> (ok, body)."""
+    req = urllib.request.Request(f"{site}/api/watch/run", data=json.dumps({"key": key, "events": evs}).encode(),
+                                 headers={"Content-Type": "application/json", "User-Agent": "founderledequities-alerts/1"}, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=120) as r:
+            return True, json.loads(r.read().decode() or "{}")
+    except urllib.error.HTTPError as e:
+        print(f"  alerts: refused: {e.code} {e.read().decode(errors='replace')[:200]}")
+    except urllib.error.URLError as e:
+        print(f"  alerts: no connection: {e.reason}")
+    return False, {}
+
+
+def test_mail(site, key):
+    """--test (2026-09-17): re-send the newest founder move on the tape to every
+    live founder alert watcher, under a test accession so the sent-record
+    does not stop it. What a subscriber gets, seen by the owner."""
+    import time
+    evs = [e for e in decisions(os.path.join(ROOT, "events.csv"), since="2000-01-01") if e["founder"]]
+    if not evs:
+        print("  alerts: no founder move on the tape to send")
+        return 1
+    e = max(evs, key=lambda x: x["filed"])
+    e = dict(e, accession=f"test-{int(time.time())}-{e['accession']}", sentence=f"Test: {e['sentence']}")
+    print(f"  alerts: test mail: {e['sentence']}")
+    ok, body = post(site, key, [e])
+    if ok:
+        print(f"  alerts: {body.get('sent', 0)} email(s) to {body.get('watchers', 0)} watcher(s)")
+    return 0 if ok else 1
+
+
 def main(argv):
     dry = "--dry-run" in argv
     site = os.environ.get("SITE_URL", "https://founderledequities.com").rstrip("/")
     key = os.environ.get("ALERTS_KEY", "")
     since = ""
+    if "--test" in argv:
+        if not key:
+            print("  alerts: ALERTS_KEY is not set (.env); nothing posted")
+            return 2
+        return test_mail(site, key)
     if os.path.exists(MARK):
         since = open(MARK, encoding="utf-8").read().strip()
     if not since:
@@ -133,16 +171,8 @@ def main(argv):
     if not key:
         print("  alerts: ALERTS_KEY is not set (.env); nothing posted")
         return 2
-    req = urllib.request.Request(f"{site}/api/watch/run", data=json.dumps({"key": key, "events": evs}).encode(),
-                                 headers={"Content-Type": "application/json", "User-Agent": "founderledequities-alerts/1"}, method="POST")
-    try:
-        with urllib.request.urlopen(req, timeout=120) as r:
-            body = json.loads(r.read().decode() or "{}")
-    except urllib.error.HTTPError as e:
-        print(f"  alerts: refused: {e.code} {e.read().decode(errors='replace')[:200]}")
-        return 1
-    except urllib.error.URLError as e:
-        print(f"  alerts: no connection: {e.reason}")
+    ok, body = post(site, key, evs)
+    if not ok:
         return 1
     print(f"  alerts: {body.get('sent', 0)} email(s) to {body.get('watchers', 0)} watcher(s)")
     os.makedirs(os.path.dirname(MARK), exist_ok=True)
