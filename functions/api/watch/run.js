@@ -101,8 +101,7 @@ export async function onRequestPost({ request, env }) {
       : ws.map((w) => `<a href="${site(env)}/api/watch?stop=${w.token}" style="color:#8C8880;">stop ${w.tk === "FOUNDERS" ? "live founder alerts" : "watching " + esc(w.ceo || w.tk)}</a>`).join(" &middot; ");
     const blocks = b.items.map(({ e }) => `
 <h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-size:26px;line-height:1.2;margin:16px 0 12px;">${esc(short(e))}.</h1>
-<p style="font-size:15px;line-height:1.55;margin:0 0 4px;">${esc(dayLine(e))}</p>
-<p style="font-size:15px;line-height:1.55;margin:0 0 14px;">${esc(stakeLine(e))}</p>
+<p style="font-size:15px;line-height:1.6;margin:0 0 16px;">${esc(e.body || `${dayLine(e)} ${stakeLine(e)}`.trim())}</p>
 <p style="font-size:15px;line-height:1.5;margin:0 0 22px;"><a href="${site(env)}/company/${esc(e.tk)}/" style="color:#1A1A1A;font-weight:bold;text-decoration:none;">${esc(e.company || e.tk)} on Founder Led Equities &rarr;</a></p>`).join("");
     const html = `<!doctype html><html><body style="margin:0;padding:0;background:#ECE9E2;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ECE9E2;"><tr><td align="center" style="padding:20px 10px;">
@@ -113,7 +112,7 @@ ${blocks}
 <div style="border-top:1px solid #D6D1C7;margin:4px 0 12px;"></div>
 <p style="font-size:11px;line-height:1.6;color:#8C8880;margin:0;">${from}<br>${stopThese} &middot; <a href="${site(env)}/api/watch?stopall=${anyToken}" style="color:#8C8880;">Stop everything</a> &middot; Nothing here is investment advice.</p>
 </td></tr></table></td></tr></table></body></html>`;
-    const text = b.items.map(({ e }) => `${short(e)}.\n${dayLine(e)}\n${stakeLine(e)}\n${site(env)}/company/${e.tk}/`).join("\n\n")
+    const text = b.items.map(({ e }) => `${short(e)}.\n${e.body || `${dayLine(e)} ${stakeLine(e)}`.trim()}\n${site(env)}/company/${e.tk}/`).join("\n\n")
       + `\n\n${from.replace(/<[^>]+>/g, "")}\nStop these: ` + ws.map((w) => `${site(env)}/api/watch?stop=${w.token}`).join(" ")
       + `\nStop everything: ${site(env)}/api/watch?stopall=${anyToken}`;
     const r = await fetch(`${RESEND(env)}/emails`, {

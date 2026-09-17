@@ -61,14 +61,21 @@ def test_a_watch_mails_any_move_of_the_stake(tmp_path):
     assert got["UPST"]["kind"] == "decision" and "bought $1.3M of UPST on the open market." == got["UPST"]["sentence"].split(" ", 2)[2], got["UPST"]["sentence"]
     assert got["UPST"]["shares"] == "" and got["UPST"]["move"] == "3.9" and got["UPST"]["company"] == "UPST", "no panel here: the ticker stands for the name"
     assert got["CMPR"]["kind"] == "decision" and "at their own discretion" in got["CMPR"]["sentence"], "a discretionary sale of any size"
-    assert got["DBX"]["kind"] == "move" and "under a pre-set plan" in got["DBX"]["sentence"], "a planned sale that moved the stake 1.4%"
-    assert got["SECZ"]["kind"] == "move" and "award granted moved the SECZ stake +5.0%." in got["SECZ"]["sentence"]
+    assert got["DBX"]["kind"] == "move" and got["DBX"]["sentence"].endswith("of DBX on a plan."), "a planned sale that moved the stake 1.4%, in the site's words"
+    assert got["SECZ"]["kind"] == "move" and got["SECZ"]["sentence"] == "Carlos Domingo\u2019s SECZ stake rose 5.0%: award granted."
     assert "BOX" not in got and "PCVX" not in got, "under 1%: not a move"
     assert got["UPST"]["founder"] and got["SECZ"]["founder"] is False, "the founder flag is the live alert's scope"
     run = open(os.path.join(str(ROOT), "functions", "api", "watch", "run.js"), encoding="utf-8").read()
     assert "e.sentence" in run and '(e.sentence || e.code === "P" || e.code === "S")' in run, "the mail says what the tape says"
     # THE MAIL (2026-09-17): the day and the size, the stake after and before, one link, a footer naming the alert
-    assert "function dayLine" in run and "function stakeLine" in run and "on Founder Led Equities" in run and "Stop everything" in run
+    assert "e.body" in run and "on Founder Led Equities" in run and "Stop everything" in run
+    # THE BODY: three sentences, the ticker in the details, the role stated, "they" (2026-09-17)
+    r = {"ticker": "OUST", "ceo": "Angus Pacala", "code": "S", "plan": "plan", "label": "sale", "shares": "30385", "value": "1000000", "pct_of_holding": "-2.8",
+         "pct_after": "1.44", "holding_after": "1000000", "net_change": "-30385", "outstanding": "69169000", "traded": "2026-09-14", "filed": "2026-09-16"}
+    assert alerts.sentence(r, 1e6, "Ouster") == "Angus Pacala sold $1M of Ouster on a plan."
+    assert alerts.body(r, 1e6, True) == ("On Monday, September 14, OUST\u2019s founder and chief executive sold 30,385 shares under a plan set in advance, "
+                                         "about $1M at the reported price. That is 2.8% of what they held; their stake in OUST goes from 1.49% to 1.44%. Filed Wednesday, September 16.")
+    assert alerts.body(dict(r, code="P", plan="", pct_of_holding="3.0"), 1e6, False).startswith("On Monday, September 14, OUST\u2019s chief executive bought 30,385 shares"), "a hired CEO is not called a founder"
     assert "The filing." not in run and "plans and compensation never come this way" not in run
     from alerts import short_name, before_pct
     assert short_name("Upstart Holdings, Inc.", "UPST") == "Upstart" and short_name("", "X") == "X"

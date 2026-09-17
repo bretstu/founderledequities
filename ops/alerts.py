@@ -58,8 +58,9 @@ def companies(root=ROOT) -> dict:
 
 
 def sentence(r, value, name=None):
-    """What the mail says happened, in the tape's words (ops/kinds.py). No
-    date in it: the mail says the day on its own line."""
+    """THE HEADLINE, in the tape's words (ops/kinds.py): the company by name,
+    the kind as the site says it (on a plan, at their own discretion, on the
+    open market; otherwise the tape's label). No date in it."""
     tk, ceo, code = r["ticker"].upper(), r.get("ceo") or "", r.get("code") or ""
     who = name or tk
     amt = f" {kinds.money(value)} of" if value else ""
@@ -69,13 +70,75 @@ def sentence(r, value, name=None):
     if code == "S" and not plan:
         return f"{ceo} sold{amt} {who} at their own discretion."
     if code == "S":
-        return f"{ceo} sold{amt} {who} under a pre-set plan."
+        return f"{ceo} sold{amt} {who} on a plan."
     what = kinds.detail_of(r) or "a filing"
+    mv = _num(r.get("pct_of_holding")) or 0.0
+    return f"{ceo}\u2019s {who} stake {'rose' if mv > 0 else 'fell'} {abs(mv):.1f}%: {what}."
+
+
+_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+
+
+def long_day(iso: str) -> str:
+    """2026-09-14 -> Monday, September 14"""
+    import datetime as _dt
     try:
-        mv = float(r.get("pct_of_holding") or 0)
+        d = _dt.date.fromisoformat((iso or "")[:10])
     except ValueError:
-        mv = 0.0
-    return f"{ceo}: {what} moved the {who} stake {mv:+.1f}%."
+        return iso or ""
+    return f"{d.strftime('%A')}, {_MONTHS[d.month - 1]} {d.day}"
+
+
+def _did(r, code, plan, shares):
+    """The verb phrase of the body's first sentence, by kind."""
+    n = f"{shares:,.0f} shares" if shares else "shares"
+    if code == "P":
+        return f"bought {n}"
+    if code == "S" and plan:
+        return f"sold {n} under a plan set in advance"
+    if code == "S":
+        return f"sold {n} at their own discretion"
+    what = (kinds.detail_of(r) or "").lower()
+    if "award" in what or "granted" in what:
+        return f"was granted {n}"
+    if "withheld" in what:
+        return f"had {n} withheld for tax"
+    if "option" in what or "exercis" in what:
+        return f"exercised options for {n}"
+    if "gift" in what:
+        return f"gave {n} away"
+    if "convert" in what:
+        return f"converted {n}"
+    return f"{what or 'filed'}: {n}"
+
+
+def body(r, value, founder: bool):
+    """THE BODY (2026-09-17): three sentences. The transaction (day, shares,
+    value from the filing's own price); what it did to the holding (the
+    move as a share of what they held, the stake before and after, by
+    ticker); the filing date. "They": the record carries no pronoun."""
+    tk, code = r["ticker"].upper(), r.get("code") or ""
+    plan = (r.get("plan") or "") == "plan"
+    shares = abs(_num(r.get("shares")) or 0)
+    role = "founder and chief executive" if founder else "chief executive"
+    first = f"On {long_day(r.get('traded') or r.get('filed'))}, {tk}\u2019s {role} {_did(r, code, plan, shares)}"
+    first += f", about {kinds.money(value)} at the reported price." if value else "."
+    mv = _num(r.get("pct_of_holding"))
+    after, before = _num(r.get("pct_after")), before_pct(r)
+    f = lambda x: f"{x:.3f}%" if x < 1 else f"{x:.2f}%"  # noqa: E731
+    second = ""
+    if mv is not None and mv != 0:
+        second = f"That {'adds' if mv > 0 else 'is'} {abs(mv):.1f}% {'to' if mv > 0 else 'of'} what they held"
+        if after is not None and before is not None and abs(after - before) > 0.0005:
+            second += f"; their stake in {tk} goes from {f(before)} to {f(after)}."
+        elif after is not None:
+            second += f"; they now own {f(after)} of {tk}."
+        else:
+            second += "."
+    elif after is not None:
+        second = f"They now own {f(after)} of {tk}."
+    third = f"Filed {long_day(r.get('filed'))}." if r.get("filed") else ""
+    return " ".join(x for x in (first, second, third) if x)
 
 
 def _num(v):
@@ -145,7 +208,8 @@ def decisions(events_p, since, founders=None, names=None):
                         "accession": r.get("accession") or f"{tk}:{filed}:{code}",
                         "url": r.get("url") or "", "kind": "decision" if decision else "move",
                         "founder": tk in founders,     # the live alert's scope (functions/api/watch/run.js)
-                        "sentence": sentence(r, value, name)})
+                        "sentence": sentence(r, value, name),
+                        "body": body(r, value, tk in founders)})
     return out
 
 
