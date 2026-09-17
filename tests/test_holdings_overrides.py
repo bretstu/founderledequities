@@ -149,7 +149,7 @@ def test_an_edited_entry_makes_the_carried_row_stale():
     assert _addition_current({"ticker": "TSLA"}, ex), "no entry, none before: carry"
     old = {"fingerprint": "abc", "error": "", "settled": "1"}
     assert not _reusable(old), "a row from before the fields existed walks again once"
-    assert _reusable(dict(old, remarks="", addition_key="", opening_source=""))
+    assert _reusable(dict(old, remarks="", addition_key="", opening_source="", lines_stated=""))
 
 
 def test_stake_source_reaches_the_csv():

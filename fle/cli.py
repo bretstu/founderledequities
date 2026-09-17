@@ -1611,6 +1611,16 @@ def _refresh(args, log) -> int:
                 f"whose newest filing does not reconcile")
     except Exception as exc:  # noqa: BLE001 - never fail a run over a caveat
         log(f"edge confidence skipped: {exc.__class__.__name__}")
+    # 3.6 -- THE GRADE (fle/grade.py, 2026-09-17): four checks over the panel
+    # and the history that judged it, before either is live
+    try:
+        from .grade import apply_grades
+        g = apply_grades(path("panel.csv"), path("history.csv"))
+        t = g["tally"]
+        log(f"graded: {t.get('high', 0)} high, {t.get('medium', 0)} medium, {t.get('low', 0)} low, {t.get('none', 0)} none"
+            + (f"; {len(g['moved'])} changed grade" if g["moved"] else ""))
+    except Exception as exc:  # noqa: BLE001 - never fail a run over the grade
+        log(f"grade skipped: {exc.__class__.__name__}: {exc}")
 
     # 4 -- prices
     run("prices", lambda: cmd_prices(ns(

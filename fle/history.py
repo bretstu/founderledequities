@@ -135,6 +135,23 @@ def _bridge(hist, splits, bal, dropped_when, row_index, seen_when) -> None:
     # the row after the gap reconciles against the raised balance on its own
 
 
+def _newly_closed(groups, retired, when: str, prev_when: str, splits) -> float:
+    """The shares of the groups a retirement closes at `when` that were still
+    open at `prev_when`: the size of the step the retirement rule itself
+    makes on the first row on or after the cover date."""
+    if not retired:
+        return 0.0
+    from .ledger import closed_groups
+    now = {k: (g, cut) for k, g, cut in closed_groups(groups, retired, when)}
+    before = {k for k, _g, _c in closed_groups(groups, retired, prev_when)} if prev_when else set()
+    total = 0.0
+    for k, (g, _cut) in now.items():
+        if k in before:
+            continue
+        total += splits.adjust(g.shares, when) if splits else g.shares
+    return total
+
+
 def _chain_into(acc, g) -> None:
     """Fold one period filing into the period's accumulated state.
 
@@ -887,6 +904,11 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
             unexplained=((adj_total - prev_adj) - (splits.adjust(
                 day_traded.get(when, 0.0), when) if splits
                 else day_traded.get(when, 0.0))
+                # A RETIRED CLASS CLOSING IS A KNOWN CAUSE, NOT AN OPEN STEP
+                # (2026-09-17): the group counts until the first cover
+                # without its class and stops on it, by our own rule; the
+                # drop on that row is explained by the rule that made it
+                + _newly_closed(groups, retired, when, hist.snapshots[-1].date if hist.snapshots else "", splits)
                 if prev_adj is not None else 0.0),
             codes="".join(codes),
             groups=len(groups),

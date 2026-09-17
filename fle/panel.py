@@ -70,6 +70,9 @@ COLUMNS = [
     # outflow, the residual, how many filings were read, the split note
     "opening_source", "sold", "surrendered", "gifted_out", "other_in", "other_out",
     "flow_residual", "flows_reconcile", "filings_read", "splits", "split_note", "gap_days",
+    # THE GRADE (fle/grade.py, 2026-09-17): four checks, filled after the
+    # history stage; and the fact the statement check reads
+    "lines_stated", "chain", "statement", "classes", "denominator",
 ]
 
 
@@ -141,7 +144,7 @@ def feed_fingerprint(client, cik: int, owner_cik=None) -> str:
 # the night the `remarks` field was added, had no remark to test the curated
 # addition against and the addition was reported lapsed; this is what makes
 # such a row recompute instead.
-SCHEMA_FIELDS = ("remarks", "addition_key", "opening_source")
+SCHEMA_FIELDS = ("remarks", "addition_key", "opening_source", "lines_stated")
 
 
 def _addition_current(row: dict, exclusions) -> bool:

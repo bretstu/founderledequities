@@ -106,6 +106,7 @@ class Ownership:
     # they still hold".
     held_at_start: float = 0.0     # on the Form 3 -- a founding stake
     opening_source: str = ""       # "Form 3", or "oldest filing read" (2026-09-17)
+    lines_stated: str = ""         # "2026-09-01|2021-05-10": when each counted line was last stated (the statement check)
     gifted_out: float = 0.0
     other_in: float = 0.0          # codes the flows do not classify (J, and an exchange's inflow)
     other_out: float = 0.0
@@ -192,6 +193,11 @@ def _flows(rec: "Ownership", led) -> None:
     rec.other_out = fl.other_out
     rec.held_at_start = fl.opening
     rec.opening_source = getattr(led, "opening_source", "") or ""
+    try:
+        closed = {k for k, _g, _c in closed_groups(led.groups, getattr(led, "retired", {}) or {})}
+        rec.lines_stated = "|".join(sorted(((g.filed or g.as_of or "") for k, g in led.groups.items() if k not in closed and g.shares), reverse=True))
+    except Exception:  # noqa: BLE001
+        rec.lines_stated = ""
     rec.founded_share = fl.founded_share
     rec.bought_share = fl.bought_share
     rec.codes = fl.tally()
