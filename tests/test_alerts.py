@@ -102,3 +102,21 @@ def test_the_mark_is_inclusive_so_a_days_later_filings_are_posted():
     finally:
         os.remove(p)
     assert got == {"SOUN"}, "filed on the mark's day: posted; the day before: not"
+
+
+def test_the_alert_names_a_restated_holding_instead_of_a_false_before_and_after():
+    """EVERCOMMERCE (2026-09-17): a $6K sale on a filing that restated the
+    holding from 4.09% to 2.83%. The alert says the filing restated the
+    holding and points at the page; it does not pair the sale with a change
+    it did not cause."""
+    import os
+    import sys
+    sys.path.insert(0, os.path.join(str(ROOT), "ops"))
+    import alerts
+    r = {"ticker": "EVCM", "ceo": "Eric Remer", "code": "S", "label": "sale", "shares": "600", "value": "6000", "pct_of_holding": "-0.01",
+         "pct_after": "2.83", "holding_after": "5400000", "net_change": "-600", "outstanding": "190000000", "residue": "-2400000",
+         "traded": "2026-09-15", "filed": "2026-09-17"}
+    b = alerts.body(r, 6000, True)
+    assert "restated the holding lower than the transaction explains" in b and "2.83% of EVCM" in b and "goes from" not in b
+    clean = dict(r, residue="0")
+    assert "restated" not in alerts.body(clean, 6000, True)

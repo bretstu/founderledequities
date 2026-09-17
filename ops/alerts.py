@@ -126,6 +126,19 @@ def body(r, value, founder: bool):
     mv = _num(r.get("pct_of_holding"))
     after, before = _num(r.get("pct_after")), before_pct(r)
     f = lambda x: f"{x:.3f}%" if x < 1 else f"{x:.2f}%"  # noqa: E731
+    # A FILING THAT MOVED THE STAKE BEYOND ITS OWN TRANSACTION (2026-09-17,
+    # EverCommerce: a $6K sale on a filing that restated the holding from
+    # 4.09% to 2.83%). The residue is history's; when it is large against
+    # the holding, the alert says so instead of pairing the sale with a
+    # before-and-after it did not cause, and points at the page, where the
+    # grade's sentence says why.
+    res, held = _num(r.get("residue")), _num(r.get("holding_after"))
+    if res and held and abs(res) / max(abs(held) + abs(res), 1.0) > 0.02:
+        second = (f"The same filing restated the holding {'lower' if res < 0 else 'higher'} than the transaction explains; "
+                  f"the stake now reads {f(after)} of {tk}, and the company page says why.") if after is not None else \
+                 "The same filing restated the holding beyond what the transaction explains; the company page says why."
+        third = f"Filed {long_day(r.get('filed'))}." if r.get("filed") else ""
+        return " ".join(x for x in (first, second, third) if x)
     second = ""
     if mv is not None and mv != 0:
         second = f"That {'adds' if mv > 0 else 'is'} {abs(mv):.1f}% {'to' if mv > 0 else 'of'} what they held"

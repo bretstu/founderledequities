@@ -79,7 +79,7 @@ def test_a_blank_move_is_judged_by_the_stakes_before_and_after():
     r = {"code": "S", "value": "2275611", "plan": "plan", "label": "scheduled sale", "pct_of_holding": "", "pct_after": "4.5825", "price_flag": ""}
     assert live.worth_a_post(u, r).startswith("plan that moved the holding 19.")
     t = live.sentence(u, r)
-    assert "Now owns 4.58%." in t and "Stake 5.72% before this filing, 4.58% after: more than the sale alone explains; read the record before posting." in t
+    assert "Now owns 4.58%." in t and "The same filing restated the holding lower than the sale explains: 5.72% before, 4.58% after. Read the record before posting." in t
     small = dict(r, pct_after="5.70")
     assert live.worth_a_post(u, small) == "", "a blank move with the stake barely changed is not a post"
 

@@ -275,8 +275,8 @@ def sentence(u, r):
         try:
             b = float(u["pct"])
             if b > 0 and abs(a - b) / b >= 0.02:
-                caveat = (f" Stake {b:.2f}% before this filing, {a:.2f}% after: more than the "
-                          f"{'sale' if code == 'S' else 'purchase'} alone explains; read the record before posting.")
+                caveat = (f" The same filing restated the holding {'lower' if a < b else 'higher'} than the "
+                          f"{'sale' if code == 'S' else 'purchase'} explains: {b:.2f}% before, {a:.2f}% after. Read the record before posting.")
         except ValueError:
             pass
     return f"{u['ceo']} {verb}{amt} of {u['tk']} {how}{mv}.{after}{caveat}\n{SITE}/company/{u['tk']}/"
