@@ -425,7 +425,8 @@ def mark_restated_rows(rows: list) -> None:
 
 def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                   series=None, splits=None, exclude=(), since: str = "",
-                  on_step=None) -> History:
+                  on_step=None, share_classes: int | None = None,
+                  class_members: dict | None = None) -> History:
     """One snapshot per filing, oldest first.
 
     `mine` is the person's filings for this issuer -- the same list the
@@ -494,6 +495,17 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                 retired = retired_classes(from_cover_pages(client, issuer_cik, since=since or "2016-01-01"), remaining=dominant)
             except Exception:  # noqa: BLE001 - no covers to read: nothing is retired
                 retired = {}
+    # THE SCHEME, DECIDED ONCE (see the note at the keying below): the
+    # ledger's own facts when the walk passes them, else today's cover
+    if share_classes is None:
+        newest = max(series.classes) if (series and series.classes) else ""
+        _members = series.classes_at(newest) if newest else {}
+        share_classes = 1 if len(_members) <= 1 else len(_members)
+        class_members = _members
+    letters_today = class_letters(class_members or {})
+    one_class_today = share_classes == 1
+    the_class_today = single_class_letter(letters_today, dominant)
+
     for i, f in enumerate(ordered, 1):
         if on_step:
             on_step(i, len(ordered))
@@ -512,12 +524,27 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
         acc = f.get("accessionNumber") or ""
         hist.read += 1
 
-        # THE CLASS LIST AS IT WAS THEN. Block's "Common Stock" was the class
-        # in 2019 and is not one now; keying on today's list would drop the
-        # whole position.
-        members = series.classes_at(when) if series else {}
-        letters = class_letters(members)
-        one_class = len(members) == 1
+        # ONE KEYING FOR EVERY YEAR (2026-09-17). Until today each filing was
+        # keyed against ITS year's class list ("the class list as it was
+        # then": Block's "Common Stock" was the class in 2019 and is not one
+        # now). The cost was Bloom: 2021's "Class A Common Stock" keyed as
+        # the Class A line under that year's two-class cover, 2026's
+        # "Common Stock" as the single class under this year's one-class
+        # cover, two lines for one holding, and a timeline reading 9.3M
+        # against a panel of 4.5M. A line is the same line whatever the
+        # cover called the company's classes that year; the scheme is
+        # decided ONCE, from today's cover and the person's dominant letter,
+        # exactly as the ledger decides it (build_ledger), so the two walks
+        # cannot key one row two ways. Time is handled where it belongs: the
+        # denominator on each date comes from that date's cover
+        # (classes_at, below), and a class the covers stop naming is closed
+        # from that date (retired_classes). The old worry -- a pre-recap
+        # "Common Stock" under today's lettered cover -- is met by the
+        # raw-title fallback below, which keeps the line until the filer
+        # empties it (Robinhood's J-codes), as it always did.
+        letters = letters_today
+        one_class = one_class_today
+        members = series.classes_at(when) if series else {}   # the cover's classes on this date: the row's `classes` column only
 
         here: dict = {}
         # WHAT THE DAY'S TRADES WERE WORTH.
@@ -575,7 +602,7 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                 continue
             if r.table == "II" and not is_share_class(r.security):
                 continue
-            if one_class and not names_another_letter(r.security, single_class_letter(letters, dominant)):
+            if one_class and not names_another_letter(r.security, the_class_today):
                 title = SINGLE_CLASS      # unless the title names a letter other than the company's one class (MoonLake, Bloom)
             elif letters:
                 title = match_class(r.security, letters)

@@ -177,3 +177,42 @@ def test_the_disagreement_is_judged_in_todays_shares():
     rows = [dict(_h("2026-06-01", 1395014, 0), shares_split_adjusted="13950140")]
     assert disagreement(rows, "1", 13950140) is None
     assert disagreement(rows, "1", 1395014)[0] == "fail", "the panel in old shares would be the disagreement"
+
+
+def test_the_history_keys_every_year_with_the_ledgers_scheme_bloom():
+    """BLOOM (2026-09-17): 2021's "Class A Common Stock" and 2026's "Common
+    Stock" are one line. Keyed against each year's cover they were two, and
+    the timeline read 9.3M against the panel's 4.5M. One scheme, decided
+    once as the ledger decides it: 2021 counts A and B together; the Class B
+    line closes at the 2024 cover; the last row equals the ledger."""
+    from fle.history import build_history
+    from fle.ledger import build_ledger
+    from fle.series import Series
+    from test_ledger import _docs_client, _HEAD, _tx, _rsu  # noqa: F401
+    A, B = "Class A Common Stock", "Class B Common Stock"
+
+    def dtx(t, code, sh, after, d, under):
+        return (f'<derivativeTransaction><securityTitle><value>{t}</value></securityTitle><transactionDate><value>{d}</value></transactionDate><transactionCoding><transactionCode>{code}</transactionCode></transactionCoding>'
+                f'<transactionAmounts><transactionShares><value>{sh}</value></transactionShares></transactionAmounts><underlyingSecurity><underlyingSecurityTitle><value>{under}</value></underlyingSecurityTitle><underlyingSecurityShares><value>{sh}</value></underlyingSecurityShares></underlyingSecurity>'
+                f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></derivativeTransaction>')
+    apr = _HEAD.format(p="2021-04-06") + _tx(A, "M", 71000, "A", 519767, "2021-04-06") + dtx(B, "M", 71000, 0, "2021-04-06", A) + dtx(B, "C", 71000, 1495749, "2021-04-06", A) + '</ownershipDocument>'
+    sep = _HEAD.format(p="2026-09-01") + _tx("Common Stock", "S", 10000, "D", 4511513, "2026-09-01", "20.00") + '</ownershipDocument>'
+    docs = {"meta": {"0001-26-000009": ("4", "2026-09-01"), "0001-21-000004": ("4", "2021-04-06")}, "xml": {"0001-21-000004": apr, "0001-26-000009": sep}}
+    client = _docs_client(docs)
+    Am, Bm = "us-gaap:CommonClassAMember", "us-gaap:CommonClassBMember"
+    from fle.series import Point
+    series = Series(points=[Point(as_of="2023-12-31", shares=225000000.0, counted="2023-02-14"), Point(as_of="2025-12-31", shares=230000000.0, counted="2026-02-02")],
+                    classes={"2021": {Am: 1.0, Bm: 1.0}, "2023": {Am: 1.0, Bm: 1.0}},
+                    cover_years={"2023": {"named": [Am, Bm], "count": 2, "counted": "2023-02-14"}, "2024": {"named": [], "count": 1, "counted": "2024-02-12"}})
+    # the ledger's reading, with today's one-class cover
+    led = build_ledger(client, 1649094, owner_cik="1", share_classes=1, class_members={"c-2": 230000000.0})
+    led.retired = {("class", "B"): "2024-02-12"}
+    assert round(led.total) == 4511513
+    # the history, keyed with the same scheme
+    mine = client.submissions(1649094)["_filings"]
+    hist = build_history(client, 1649094, "1", mine, series=series, share_classes=1, class_members={"c-2": 230000000.0})
+    rows = [s for s in hist.snapshots if not s.cover]
+    by = {s.date: s for s in rows}
+    assert round(by["2021-04-06"].shares) == 519767 + 1495749, "2021 counts Class A and Class B together"
+    assert round(by["2026-09-01"].shares) == 4511513, "2026's Common Stock replaces 2021's Class A line; Class B is closed by the 2024 cover"
+    assert round(rows[-1].shares) == round(led.total), "the last row is the panel"

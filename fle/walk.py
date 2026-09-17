@@ -100,9 +100,14 @@ def walk_company(job: dict) -> dict:
         if sp is not None and sp.events:
             sp.disown_before_first_cover(series)   # a predecessor's event on the same ticker is not this registrant's
             sp.corroborate(series)     # the cover pages judge the feed (splits.corroborate)
+        # THE SAME SCHEME THE LEDGER KEYED WITH (2026-09-17): one keying for
+        # both walks, so a disagreement between them can only be traversal
+        o = out_pre if walk_cik != cik else out
         hist = build_history(client, walk_cik, led.owner_cik, led.mine,
                              series=series, splits=sp,
-                             exclude=excl.for_issuer(cik), since=job["since"])
+                             exclude=excl.for_issuer(cik), since=job["since"],
+                             share_classes=o.classes if o.ok else 0,
+                             class_members=o.per_class)
         mark_restated(hist.snapshots)
         # the person's last filing, not a cover page after it: a split
         # between the two would put the cover row in a different basis
