@@ -56,13 +56,20 @@ def test_a_watch_mails_any_move_of_the_stake(tmp_path):
     with open(p, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=cols); w.writeheader()
         for r in rows: w.writerow({c: r.get(c, "") for c in cols})
-    got = {e["tk"]: e for e in alerts.decisions(str(p), since="2026-09-01", founders={"UPST", "DBX", "CMPR"})}
+    got = {e["tk"]: e for e in alerts.decisions(str(p), since="2026-09-01", founders={"UPST", "DBX", "CMPR"}, names={})}
     assert set(got) == {"UPST", "DBX", "SECZ", "CMPR"}, sorted(got)
-    assert got["UPST"]["kind"] == "decision" and "bought $1.3M of UPST on the open market" in got["UPST"]["sentence"]
+    assert got["UPST"]["kind"] == "decision" and "bought $1.3M of UPST on the open market." == got["UPST"]["sentence"].split(" ", 2)[2], got["UPST"]["sentence"]
+    assert got["UPST"]["shares"] == "" and got["UPST"]["move"] == "3.9" and got["UPST"]["company"] == "UPST", "no panel here: the ticker stands for the name"
     assert got["CMPR"]["kind"] == "decision" and "at their own discretion" in got["CMPR"]["sentence"], "a discretionary sale of any size"
     assert got["DBX"]["kind"] == "move" and "under a pre-set plan" in got["DBX"]["sentence"], "a planned sale that moved the stake 1.4%"
-    assert got["SECZ"]["kind"] == "move" and "award granted moved the SECZ stake +5.0%" in got["SECZ"]["sentence"]
+    assert got["SECZ"]["kind"] == "move" and "award granted moved the SECZ stake +5.0%." in got["SECZ"]["sentence"]
     assert "BOX" not in got and "PCVX" not in got, "under 1%: not a move"
     assert got["UPST"]["founder"] and got["SECZ"]["founder"] is False, "the founder flag is the live alert's scope"
     run = open(os.path.join(str(ROOT), "functions", "api", "watch", "run.js"), encoding="utf-8").read()
     assert "e.sentence" in run and '(e.sentence || e.code === "P" || e.code === "S")' in run, "the mail says what the tape says"
+    # THE MAIL (2026-09-17): the day and the size, the stake after and before, one link, a footer naming the alert
+    assert "function dayLine" in run and "function stakeLine" in run and "on Founder Led Equities" in run and "Stop everything" in run
+    assert "The filing." not in run and "plans and compensation never come this way" not in run
+    from alerts import short_name, before_pct
+    assert short_name("Upstart Holdings, Inc.", "UPST") == "Upstart" and short_name("", "X") == "X"
+    assert round(before_pct({"holding_after": "1000", "net_change": "100", "outstanding": "100000"}), 3) == 0.9

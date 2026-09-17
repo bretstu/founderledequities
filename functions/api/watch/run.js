@@ -20,18 +20,28 @@ const money = (v) => {
 };
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-function line(e) {
-  // THE SENTENCE COMES FROM THE TAPE (ops/alerts.py, 2026-09-17): a watch mails
-  // any filing that moved the stake, and the words are the tape's words
-  if (e.sentence) {
-    const stake = e.pct_after != null && e.pct_after !== "" ? ` They now own ${Number(e.pct_after).toFixed(Number(e.pct_after) < 1 ? 3 : 2)}%.` : "";
-    return `${e.sentence}${stake}`;
-  }
-  const what = e.code === "P" ? "bought" : "sold";
-  const amt = e.value ? ` ${money(e.value)} of` : "";
-  const how = e.code === "P" ? "on the open market" : "at their own discretion";
-  const stake = e.pct_after != null && e.pct_after !== "" ? ` They now own ${Number(e.pct_after).toFixed(Number(e.pct_after) < 1 ? 3 : 2)}%.` : "";
-  return `${e.ceo} ${what}${amt} ${e.tk} ${how} on ${e.traded || e.filed}.${stake}`;
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+function longDay(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+  if (!m) return iso || "";
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  return `${DAYS[d.getUTCDay()]}, ${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+}
+const num = (v) => (v === "" || v == null || isNaN(Number(v)) ? null : Number(v));
+function dayLine(e) {
+  const when = longDay(e.traded || e.filed);
+  const sh = num(e.shares), mv = num(e.move);
+  const bits = [];
+  if (sh) bits.push(`${Math.round(Math.abs(sh)).toLocaleString("en-US")} shares`);
+  if (mv != null && mv !== 0) bits.push(`${Math.abs(mv).toFixed(1)}% of their holding`);
+  return bits.length ? `${when} \u00b7 ${bits.join(", ")}.` : `${when}.`;
+}
+function stakeLine(e) {
+  const a = num(e.pct_after), bf = num(e.pct_before);
+  const f = (x) => `${x.toFixed(x < 1 ? 3 : 2)}%`;
+  if (a == null) return "";
+  return bf != null && Math.abs(bf - a) > 0.0005 ? `They now own ${f(a)}, from ${f(bf)}.` : `They now own ${f(a)}.`;
 }
 
 export async function onRequestPost({ request, env }) {
@@ -77,26 +87,35 @@ export async function onRequestPost({ request, env }) {
   for (const [email, b] of byEmail) {
     b.items.sort((x, y) => (y.e.value || 0) - (x.e.value || 0));
     const first = b.items[0].e;
-    const short = (e) => e.sentence ? e.sentence.replace(/ on \d{4}-\d{2}-\d{2}\.$/, "") : `${e.ceo} ${e.code === "P" ? "bought" : "sold"} ${e.tk}`;
+    const short = (e) => (e.sentence || `${e.ceo} ${e.code === "P" ? "bought" : "sold"} ${e.tk}.`).replace(/ on \d{4}-\d{2}-\d{2}\.$/, ".").replace(/\.$/, "");
     const subject = b.items.length === 1 ? short(first) : `${short(first)}, and ${b.items.length - 1} more`;
     const anyToken = [...b.watches.values()][0].token;
-    const stopLinks = [...b.watches.values()].map((w) => `<a href="${site(env)}/api/watch?stop=${w.token}" style="color:#8C8880;">stop watching ${esc(w.ceo || w.tk)}</a>`).join(" &middot; ")
-      + ` &middot; <a href="${site(env)}/api/watch?stopall=${anyToken}" style="color:#8C8880;">stop all my watches</a>`;
-    const paras = b.items.map(({ e }) => `<p style="font-size:15px;line-height:1.5;margin:0 0 12px;">${esc(line(e))}${e.url ? ` <a href="${esc(e.url)}" style="color:#1A1A1A;">The filing.</a>` : ""} <a href="${site(env)}/company/${esc(e.tk)}/" style="color:#1A1A1A;">The record.</a></p>`).join("");
+    // THE MAIL (2026-09-17): the headline, the day and the size of the move in
+    // the person's own terms, the stake after and before, one link to the
+    // page. The footer names the alert it came from and how to stop it.
+    const ws = [...b.watches.values()];
+    const liveW = ws.find((w) => w.tk === "FOUNDERS");
+    const from = liveW && ws.length === 1 ? "Live founder alerts: every founder\u2019s move, as it is filed."
+      : `Your watch on ${ws.filter((w) => w.tk !== "FOUNDERS").map((w) => esc(w.ceo || w.tk)).join(", ")}${liveW ? ", and live founder alerts" : ""}.`;
+    const stopThese = ws.length === 1 ? `<a href="${site(env)}/api/watch?stop=${ws[0].token}" style="color:#8C8880;">Stop these</a>`
+      : ws.map((w) => `<a href="${site(env)}/api/watch?stop=${w.token}" style="color:#8C8880;">stop ${w.tk === "FOUNDERS" ? "live founder alerts" : "watching " + esc(w.ceo || w.tk)}</a>`).join(" &middot; ");
+    const blocks = b.items.map(({ e }) => `
+<h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-size:26px;line-height:1.2;margin:16px 0 12px;">${esc(short(e))}.</h1>
+<p style="font-size:15px;line-height:1.55;margin:0 0 4px;">${esc(dayLine(e))}</p>
+<p style="font-size:15px;line-height:1.55;margin:0 0 14px;">${esc(stakeLine(e))}</p>
+<p style="font-size:15px;line-height:1.5;margin:0 0 22px;"><a href="${site(env)}/company/${esc(e.tk)}/" style="color:#1A1A1A;font-weight:bold;text-decoration:none;">${esc(e.company || e.tk)} on Founder Led Equities &rarr;</a></p>`).join("");
     const html = `<!doctype html><html><body style="margin:0;padding:0;background:#ECE9E2;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ECE9E2;"><tr><td align="center" style="padding:20px 10px;">
 <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#F7F4EE;font-family:Helvetica,Arial,sans-serif;color:#1A1A1A;">
-<tr><td style="padding:28px;">
-<div style="font-family:Menlo,Consolas,monospace;font-size:10px;letter-spacing:.14em;color:#8C8880;">FOUNDER LED EQUITIES &middot; WATCH</div>
-<h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-size:28px;line-height:1.15;margin:18px 0 14px;">${esc(subject)}.</h1>
-${paras}
-<div style="border-top:1px solid #D6D1C7;margin:22px 0 12px;"></div>
-<p style="font-size:11px;line-height:1.5;color:#8C8880;margin:0;">You asked to be told when this person buys on the open market or sells at discretion; plans and compensation never come this way. ${stopLinks}. Nothing here is investment advice.</p>
+<tr><td style="padding:26px 28px 22px;">
+<div style="font-family:Menlo,Consolas,monospace;font-size:10px;letter-spacing:.14em;color:#8C8880;">FOUNDER LED EQUITIES</div>
+${blocks}
+<div style="border-top:1px solid #D6D1C7;margin:4px 0 12px;"></div>
+<p style="font-size:11px;line-height:1.6;color:#8C8880;margin:0;">${from}<br>${stopThese} &middot; <a href="${site(env)}/api/watch?stopall=${anyToken}" style="color:#8C8880;">Stop everything</a> &middot; Nothing here is investment advice.</p>
 </td></tr></table></td></tr></table></body></html>`;
-    const text = b.items.map(({ e }) => line(e) + (e.url ? ` ${e.url}` : "") + ` ${site(env)}/company/${e.tk}/`).join("\n\n")
-      + `\n\nYou asked to be told when this person buys on the open market or sells at discretion. Stop watching: `
-      + [...b.watches.values()].map((w) => `${site(env)}/api/watch?stop=${w.token}`).join(" ")
-      + `\nStop all my watches: ${site(env)}/api/watch?stopall=${anyToken}`;
+    const text = b.items.map(({ e }) => `${short(e)}.\n${dayLine(e)}\n${stakeLine(e)}\n${site(env)}/company/${e.tk}/`).join("\n\n")
+      + `\n\n${from.replace(/<[^>]+>/g, "")}\nStop these: ` + ws.map((w) => `${site(env)}/api/watch?stop=${w.token}`).join(" ")
+      + `\nStop everything: ${site(env)}/api/watch?stopall=${anyToken}`;
     const r = await fetch(`${RESEND(env)}/emails`, {
       method: "POST",
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },

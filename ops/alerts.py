@@ -18,6 +18,7 @@ records each (watch, filing) it sent, so even a stale mark cannot double
 a message.
 """
 import csv
+import re
 import json
 import os
 import sys
@@ -37,24 +38,59 @@ MARK = os.path.join(ROOT, "weekly", "alerts-last.txt")
 MIN_MOVE = 1.0   # per cent of the holding: the tape's "Moved the stake" chip, one definition for the site
 
 
-def sentence(r, value):
-    """What the mail says happened, in the tape's words (ops/kinds.py)."""
+_SUFFIX = re.compile(r"[,\s]+(inc\.?|incorporated|corp\.?|corporation|co\.?|company|ltd\.?|limited|plc|l\.?p\.?|n\.?v\.?|s\.?a\.?|holdings?|group)\s*$", re.I)
+
+
+def short_name(company: str, tk: str) -> str:
+    """"Ouster, Inc." -> "Ouster"; the ticker when there is no name."""
+    n = (company or "").strip()
+    for _ in range(2):
+        n = _SUFFIX.sub("", n).strip(" ,")
+    return n or tk
+
+
+def companies(root=ROOT) -> dict:
+    p = os.path.join(root, "panel.csv")
+    if not os.path.exists(p):
+        return {}
+    with open(p, encoding="utf-8-sig", newline="") as fh:
+        return {(r.get("ticker") or "").upper(): r.get("company") or "" for r in csv.DictReader(fh)}
+
+
+def sentence(r, value, name=None):
+    """What the mail says happened, in the tape's words (ops/kinds.py). No
+    date in it: the mail says the day on its own line."""
     tk, ceo, code = r["ticker"].upper(), r.get("ceo") or "", r.get("code") or ""
+    who = name or tk
     amt = f" {kinds.money(value)} of" if value else ""
     plan = (r.get("plan") or "") == "plan"
-    when = r.get("traded") or r.get("filed") or ""
     if code == "P":
-        return f"{ceo} bought{amt} {tk} on the open market on {when}."
+        return f"{ceo} bought{amt} {who} on the open market."
     if code == "S" and not plan:
-        return f"{ceo} sold{amt} {tk} at their own discretion on {when}."
+        return f"{ceo} sold{amt} {who} at their own discretion."
     if code == "S":
-        return f"{ceo} sold{amt} {tk} under a pre-set plan on {when}."
+        return f"{ceo} sold{amt} {who} under a pre-set plan."
     what = kinds.detail_of(r) or "a filing"
     try:
         mv = float(r.get("pct_of_holding") or 0)
     except ValueError:
         mv = 0.0
-    return f"{ceo}: {what} moved the {tk} stake {mv:+.1f}% on {when}."
+    return f"{ceo}: {what} moved the {who} stake {mv:+.1f}%."
+
+
+def _num(v):
+    try:
+        return float(v) if v not in (None, "") else None
+    except ValueError:
+        return None
+
+
+def before_pct(r):
+    """The stake before this filing: the holding after less the net change, over the count."""
+    after, net, out = _num(r.get("holding_after")), _num(r.get("net_change")), _num(r.get("outstanding"))
+    if after is None or net is None or not out:
+        return None
+    return (after - net) / out * 100
 
 
 def founders_of(root=ROOT) -> set:
@@ -66,7 +102,7 @@ def founders_of(root=ROOT) -> set:
         return {(r.get("ticker") or "").upper() for r in csv.DictReader(fh) if (r.get("founder") or "").lower() == "yes"}
 
 
-def decisions(events_p, since, founders=None):
+def decisions(events_p, since, founders=None, names=None):
     """WHAT A WATCH MAILS (2026-09-17): the stake moved. An open-market
     purchase or a discretionary sale of any size (the site's two decisions),
     or any other filing that moved the holding by MIN_MOVE per cent or more
@@ -76,6 +112,7 @@ def decisions(events_p, since, founders=None):
     are not moves."""
     out = []
     founders = founders_of() if founders is None else founders
+    names = companies() if names is None else names
     with open(events_p, encoding="utf-8-sig", newline="") as fh:
         for r in csv.DictReader(fh):
             filed = r.get("filed") or ""
@@ -98,12 +135,17 @@ def decisions(events_p, since, founders=None):
             except ValueError:
                 value = None
             value = value if not (r.get("price_flag") or "") else None
-            out.append({"tk": r["ticker"].upper(), "ceo": r.get("ceo") or "", "code": code,
-                        "value": value, "pct_after": r.get("pct_after") or "", "traded": r.get("traded") or "",
-                        "filed": filed, "accession": r.get("accession") or f"{r['ticker']}:{filed}:{code}",
+            tk = r["ticker"].upper()
+            name = short_name(names.get(tk, ""), tk)
+            b = before_pct(r)
+            out.append({"tk": tk, "ceo": r.get("ceo") or "", "code": code, "company": name,
+                        "value": value, "pct_after": r.get("pct_after") or "", "pct_before": f"{b:.2f}" if b is not None else "",
+                        "shares": r.get("shares") or "", "move": r.get("pct_of_holding") or "",
+                        "traded": r.get("traded") or "", "filed": filed,
+                        "accession": r.get("accession") or f"{tk}:{filed}:{code}",
                         "url": r.get("url") or "", "kind": "decision" if decision else "move",
-                        "founder": r["ticker"].upper() in founders,     # the live alert's scope (functions/api/watch/run.js)
-                        "sentence": sentence(r, value)})
+                        "founder": tk in founders,     # the live alert's scope (functions/api/watch/run.js)
+                        "sentence": sentence(r, value, name)})
     return out
 
 

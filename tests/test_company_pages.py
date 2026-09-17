@@ -443,7 +443,7 @@ def test_the_watches_have_a_box_a_page_and_two_ways_to_stop(tmp_path):
     w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
     assert "A list of names is Pro" in w and "stopall" in w and "confirm=" in w
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
-    assert "stop all my watches" in run and "alerts_sent" in run and "env.ALERTS_KEY" in run
+    assert "Stop everything" in run and "alerts_sent" in run and "env.ALERTS_KEY" in run
 
 
 def test_the_display_name_is_the_one_a_person_types():
@@ -514,7 +514,7 @@ def test_the_alerts_page_is_built_with_three_switches_on_one_rule(tmp_path):
     assert page.count('class="lcard') == 3 and "The letter" in page and "Live founder alerts" in page and "Your watches" in page
     assert "Everything founders did this week" in page and "Pick any company" in page and 'class="pro">Pro' in page, "the three sentences and the Pro mark (2026-09-17)"
     assert 'class="k"' not in page.split('id="lbody"')[1].split("What one looks like")[0], "no small labels above the card titles"
-    assert "Paul Gu bought $1.3M of UPST" in page, "a sample email shows what arrives"
+    assert "Paul Gu bought $1.3M of Upstart" in page and "They now own 1.38%, from 1.33%" in page and "Upstart on Founder Led Equities" in page, "the sample is the email as it arrives"
     assert 'href="/alerts/">Alerts' in page, "the page carries the nav with itself in it"
     js = open(os.path.join(out, "alerts.js"), encoding="utf-8").read()
     assert 'tk:"FOUNDERS"' in js and "/api/letter" in js and "/api/subscribe" in js and "/api/watch" in js
