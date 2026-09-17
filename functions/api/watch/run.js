@@ -5,7 +5,7 @@
 // watcher with everything of theirs that moved, and records each (watch,
 // filing) so a filing is never sent twice. A plan or a compensation filing
 // never reaches here: the pipeline does not post them.
-import { site, json } from "../../_shared.js";
+import { site, json, subFor, PRO_STATUSES } from "../../_shared.js";
 
 const FROM = "Founder Led Equities <tape@founderledequities.com>";
 const RESEND = (env) => env.RESEND_API_BASE || "https://api.resend.com";
@@ -52,7 +52,15 @@ export async function onRequestPost({ request, env }) {
   // what each watcher has not yet been told; ONE EMAIL PER EVENT PER ADDRESS,
   // however many of a reader's watches it matches (a name and FOUNDERS both)
   const byEmail = new Map();
+  const proNow = new Map();   // address -> still Pro? (a FOUNDERS watch outlives a lapsed trial only on paper)
   for (const w of watches) {
+    if (w.tk === "FOUNDERS") {
+      if (!proNow.has(w.email)) {
+        const sub = await subFor(env, w.email);
+        proNow.set(w.email, !!sub && PRO_STATUSES.has(sub.status));
+      }
+      if (!proNow.get(w.email)) continue;    // the subscription ended: the switch reads off, and nothing is sent
+    }
     const mine = w.tk === "FOUNDERS" ? events.filter((e) => e.founder) : events.filter((e) => String(e.tk).toUpperCase() === w.tk);
     for (const e of mine) {
       const seen = await env.HITS.prepare("SELECT 1 FROM alerts_sent WHERE watch_id = ?1 AND accession = ?2").bind(w.id, e.accession).first();

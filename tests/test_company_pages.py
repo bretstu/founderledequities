@@ -516,7 +516,10 @@ def test_the_alerts_page_is_built_with_three_switches_on_one_rule(tmp_path):
     assert 'href="/alerts/">Alerts' in page, "the page carries the nav with itself in it"
     js = open(os.path.join(out, "alerts.js"), encoding="utf-8").read()
     assert 'tk:"FOUNDERS"' in js and "/api/letter" in js and "/api/subscribe" in js and "/api/watch" in js
+    # NO FAKE SWITCH (2026-09-17): a reader who is not Pro sees a trial button where the switch would be
+    assert "Start a 14-day trial" in js and 'ME&&ME.pro?sw("fsw"' in js and "Already Pro? Sign in" in js
     w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
     assert 'tk === "FOUNDERS"' in w and "Live founder alerts are Pro" in w
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
     assert "tk = 'FOUNDERS'" in run and "e.founder" in run and "b.accs" in run, "FOUNDERS matches founder events; one email per event per address"
+    assert "PRO_STATUSES.has(sub.status)" in run and "proNow" in run, "a FOUNDERS watch mails only while the address is Pro (a lapsed trial stops)"

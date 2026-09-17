@@ -25,8 +25,10 @@ async function render(){
       ${signed?sw("lsw",LETTER.on,LETTER.on?"Subscribed":"Subscribe","setLetter"):`<form class="lform" onsubmit="return joinLetter(event)"><input type="email" id="lemail" placeholder="you@example.com" required autocomplete="email"><button class="lbtn" type="submit">Send it</button></form>`}
       <div class="fine" id="lfine"></div></div>
     <div class="lcard pro"><div class="k">Every founder &middot; Pro</div><h2>Live founder alerts</h2><div class="d">Every founder&#8217;s move, within about ten minutes of the SEC filing.</div>
-      ${sw("fsw",live,live?"On":"Turn on","setLive")}
-      <div class="fine" id="ffine">${ME&&ME.pro?"":`Pro. <a href="/pro/">The plan &rarr;</a>`}</div></div>
+      ${ME&&ME.pro?sw("fsw",live,live?"On":"Turn on","setLive")
+        :signed?`<a class="lbtn" href="/pro/">Start a 14-day trial</a>`
+        :`<div class="lform"><a class="lbtn" href="/pro/">Start a 14-day trial</a><a class="lsign" href="/#signin">Already Pro? Sign in</a></div>`}
+      <div class="fine" id="ffine"></div></div>
     <div class="lcard"><div class="k">A name</div><h2>Your watches</h2><div class="d">Any company, founder-led or not, from the switch under its numbers. One is free; a list is Pro.</div>
       ${signed?(names.length?`<div class="wlist"><div class="fine" style="margin-bottom:4px">${names.length} ${names.length===1?"name":"names"}</div>${names.slice(0,4).map(w=>`<div class="row"><span><span class="tk"><a href="/company/${esc(w.tk)}/" style="color:inherit;text-decoration:none">${esc(w.tk)}</a></span>${esc(w.ceo||"")}</span><button class="stop" onclick="stopWatch('${esc(w.tk)}')">stop</button></div>`).join("")}${names.length>4?`<div class="fine" style="margin-top:6px">and ${names.length-4} more &middot; <a href="/account/">Your account &rarr;</a></div>`:""}</div>`:`<div class="fine">You are not watching anyone yet. <a href="/companies/">Find a company &rarr;</a></div>`):`<div class="fine"><a href="/companies/">Find a company &rarr;</a></div>`}
     </div>
