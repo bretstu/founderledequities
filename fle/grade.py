@@ -82,8 +82,34 @@ def _date(s):
         return None
 
 
-def chain(hist_rows: list, owner_cik: str, today: dt.date) -> tuple[str, str]:
+def disagreement(hist_rows: list, owner_cik: str, panel_shares) -> tuple[str, str] | None:
+    """THE TWO WALKS MUST AGREE (2026-09-17, Palvella): the panel's ledger and
+    the history read the same filings; where the history's newest filing row
+    and the panel's holding differ by more than 1%, one of them keyed a class
+    or a line differently (Palvella's custom cover member kept one line of
+    thirty-six in the history), and the record is not consistent with itself."""
+    if panel_shares in (None, 0):
+        return None
+    rows = [h for h in hist_rows
+            if (h.get("form") or "").startswith(("3", "4", "5"))
+            and (not owner_cik or (h.get("owner_cik") or owner_cik) == owner_cik)]
+    if not rows:
+        return None
+    last = max(rows, key=lambda h: (h.get("date") or "", h.get("accession") or ""))
+    hs = _num(last.get("shares"))
+    if hs is None:
+        return None
+    if abs(hs - panel_shares) / max(abs(panel_shares), 1.0) > 0.01:
+        return FAIL, (f"the record disagrees with itself: the history reads the newest filing as {hs:,.0f} shares, "
+                      f"the panel as {panel_shares:,.0f}")
+    return None
+
+
+def chain(hist_rows: list, owner_cik: str, today: dt.date, panel_shares=None) -> tuple[str, str]:
     """hist_rows: this ticker's history rows (dicts), any order."""
+    dis = disagreement(hist_rows, owner_cik, panel_shares)
+    if dis:
+        return dis
     since = (today - dt.timedelta(days=30 * CHAIN_MONTHS)).isoformat()
     rows = [h for h in hist_rows
             if (h.get("date") or "") >= since
@@ -91,8 +117,21 @@ def chain(hist_rows: list, owner_cik: str, today: dt.date) -> tuple[str, str]:
             and (not owner_cik or (h.get("owner_cik") or owner_cik) == owner_cik)]
     if not rows:
         return PASS, ""
+    # A PARTIAL STATEMENT AND ITS RESTORATION ARE ONE KNOWN EVENT (2026-09-17):
+    # history marks the depressed rows (mark_restated) and the first row after
+    # the marked run is the reversal; neither is an open step here. Alphabet,
+    # Walmart, AT&T, Aon: the January partial and the February restatement
+    # read as "the stake rose N% with no transaction" until this. A drop not
+    # yet restored stays open, and the statement check names it.
+    rows.sort(key=lambda h: ((h.get("date") or ""), (h.get("accession") or "")))
     worst, worst_row = 0.0, None
+    prev_marked = False
     for h in rows:
+        marked = (h.get("restated") or "").upper() == "TRUE"
+        exit_of_marked = prev_marked and not marked
+        prev_marked = marked
+        if marked or exit_of_marked:
+            continue
         u = _num(h.get("unexplained")) or 0.0
         if abs(u) < 1:
             continue
@@ -180,7 +219,7 @@ def grade_row(row: dict, hist_rows: list, today: dt.date | None = None) -> dict:
     if row.get("pct") in ("", None) or _num(row.get("shares")) is None:
         return {"confidence": "none", "chain": "", "statement": "", "classes": "", "denominator": "", "reason": ""}
     results = {
-        "chain": chain(hist_rows, row.get("owner_cik") or "", today),
+        "chain": chain(hist_rows, row.get("owner_cik") or "", today, _num(row.get("shares"))),
         "statement": statement(row, today),
         "classes": classes(row),
         "denominator": denominator(row, today),

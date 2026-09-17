@@ -22,8 +22,8 @@ def _row(**kw):
     return base
 
 
-def _h(date, shares, unexplained, form="4", owner="1"):
-    return {"ticker": "X", "date": date, "form": form, "shares": str(shares), "unexplained": str(unexplained), "owner_cik": owner, "accession": date}
+def _h(date, shares, unexplained, form="4", owner="1", restated=""):
+    return {"ticker": "X", "date": date, "form": form, "shares": str(shares), "unexplained": str(unexplained), "owner_cik": owner, "accession": date, "restated": restated}
 
 
 def test_the_chain_is_the_last_year_filing_to_filing():
@@ -79,7 +79,7 @@ def test_the_grade_is_the_worst_check_and_the_reason_is_its_sentence():
     g = grade_row(_row(cautions="convertible class counted (Class B Common Stock); confirm the ratio is 1:1"), clean, TODAY)
     assert g["confidence"] == "medium" and g["classes"].startswith("warn") and "one for one" in g["reason"]
     # Amplitude: the chain fails and the statement warns; the reason is the fail's sentence
-    g = grade_row(_row(cautions=FEWER_LINES, lines_stated="2026-09-01"), clean + [_h("2026-09-01", 190000, -800000)], TODAY)
+    g = grade_row(_row(shares="190000", cautions=FEWER_LINES, lines_stated="2026-09-01"), clean + [_h("2026-09-01", 190000, -800000)], TODAY)
     assert g["confidence"] == "low" and g["chain"].startswith("fail") and g["statement"].startswith("warn") and "does not close" in g["reason"]
     # Ubiquiti: an old numerator alone is a statement fail (a line last stated nine years ago), the count itself fine
     g = grade_row(_row(lines_stated="2017-06-01"), [], TODAY)
@@ -144,3 +144,27 @@ def test_history_counts_a_table_ii_only_settlement_as_the_days_transaction():
     # the balance of the position is untouched by the synthetic lines: they feed the tally only
     i = src.index("settlements_only_in_table_ii(root, _day_rows")
     assert "doc_rows = _with_supplements(" in src[i:], "the position still reads the filing's own rows"
+
+
+def test_the_chain_fails_when_the_history_and_the_panel_disagree():
+    """PALVELLA (2026-09-17): the history kept 44,410 of a 1,607,228 holding
+    (a custom cover member the Form 4 titles never matched); the panel had it
+    whole. Two readings of one filing: the record is not consistent."""
+    from fle.grade import chain, disagreement
+    rows = [_h("2026-02-05", 44410, 0)]
+    assert disagreement(rows, "1", 1607228)[0] == "fail" and "44,410" in disagreement(rows, "1", 1607228)[1]
+    assert disagreement(rows, "1", 44410) is None and disagreement(rows, "1", 44600) is None, "within 1%: agreed"
+    assert chain(rows, "1", TODAY, 1607228)[0] == "fail" and chain(rows, "1", TODAY, 44410) == ("pass", "")
+    assert chain([_h("2026-02-05", 999, 0, owner="9")], "1", TODAY, 1607228) == ("pass", ""), "another person's rows do not count"
+
+
+def test_a_partial_statement_restored_within_the_year_is_not_an_open_step():
+    """ALPHABET, WALMART, AT&T (2026-09-17): the January filing named fewer
+    lines (a marked drop), the February one restated them (the reversal).
+    history pairs them; the chain must not count the rise as a fresh step."""
+    from fle.grade import chain
+    rows = [_h("2026-01-10", 1000000, 0), _h("2026-01-29", 200000, -800000, restated="TRUE"), _h("2026-02-24", 1000000, 800000), _h("2026-06-01", 990000, 0)]
+    assert chain(rows, "1", TODAY, 990000) == ("pass", ""), "a marked drop and its exit are one known event"
+    # a drop not yet restored (the trailing edge) is still an open step
+    open_rows = [_h("2026-01-10", 1000000, 0), _h("2026-09-01", 200000, -800000)]
+    assert chain(open_rows, "1", TODAY, 200000)[0] == "fail"

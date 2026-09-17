@@ -256,9 +256,28 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
         the stake beside it."""
         import datetime as _dt
         cut = (_dt.date.today() - _dt.timedelta(days=365)).isoformat()
+        # THIS PERSON'S ROWS ONLY (Palvella): the company's history keeps the
+        # previous chief executive's rows under their own filer id, and the
+        # stake a year ago must be the same person's, or a change of CEO
+        # reads as accumulation
+        owner_of = {r["ticker"]: (r.get("owner_cik") or "") for r in panel}
+        shares_of = {r["ticker"]: r.get("shares") for r in panel}
         out = {}
         for t, rows in hist_by_t.items():
-            prior = [r for r in rows if (r.get("date") or "") <= cut and r.get("pct") not in ("", None)]
+            owner = owner_of.get(t, "")
+            mine = [r for r in rows if (not owner or (r.get("owner_cik") or owner) == owner)]
+            # NO FIGURE WHERE THE TWO WALKS DISAGREE (fle/grade.disagreement): a
+            # history that reads the newest filing differently from the panel
+            # cannot say what the stake was a year ago either
+            filings = [r for r in mine if (r.get("form") or "").startswith(("3", "4", "5"))]
+            try:
+                ps = float(shares_of.get(t) or 0)
+                hs = float(max(filings, key=lambda r: r.get("date", ""))["shares"] or 0) if filings else ps
+            except (ValueError, TypeError):
+                ps, hs = 0.0, 0.0
+            if ps and abs(hs - ps) / ps > 0.01:
+                continue
+            prior = [r for r in mine if (r.get("date") or "") <= cut and r.get("pct") not in ("", None)]
             if not prior:
                 continue
             try:
