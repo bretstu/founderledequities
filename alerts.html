@@ -15,15 +15,15 @@
        The week (the letter, free), every founder (live, Pro), a name (the
        watches). Each card is one sentence and one switch; the definition is
        stated once above them; a sample email shows what arrives. */
-    .lpage{max-width:880px;margin:0 auto;padding:56px clamp(20px,3.5vw,48px) 80px}
+    .lpage{max-width:var(--max);margin:0 auto;padding:clamp(36px,4.5vw,60px) clamp(20px,3.5vw,48px) 80px}
     .lpage h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(36px,5vw,56px);margin:0 0 10px}
     .lpage .lead{font-size:16px;line-height:1.55;color:var(--mut);max-width:60ch;margin:0 0 28px}
     .lgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:28px}
     @media(max-width:820px){.lgrid{grid-template-columns:1fr}}
     .lcard{border:1px solid var(--line);border-radius:2px;background:var(--panel);padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px;min-height:200px}
     .lcard.pro{border-color:var(--ink);background:var(--bg)}
-    .lcard .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
-    .lcard h2{font-family:var(--disp);font-weight:500;font-size:22px;letter-spacing:-.01em;line-height:1.15;margin:0}
+    .lcard h2{font-family:var(--disp);font-weight:500;font-size:24px;letter-spacing:-.01em;line-height:1.15;margin:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+    .lcard h2 .pro{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--bg);background:var(--ink);padding:3px 6px;border-radius:2px;position:relative;top:-3px}
     .lcard .d{font-size:14px;line-height:1.5;color:var(--mut);flex:1}
     .wtog{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
     .wtog input{position:absolute;opacity:0;width:0;height:0}
@@ -39,8 +39,7 @@
     .lform input{font:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;min-width:0;flex:1}
     .lbtn{font:inherit;font-size:12px;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:0;padding:7px 11px;cursor:pointer}
     .lbtn:disabled{opacity:.55;cursor:default}
-    a.lbtn{text-decoration:none;display:inline-block}
-    .lsign{font-size:12px;color:var(--mut);margin-left:10px;white-space:nowrap}
+    a.lbtn{text-decoration:none;display:inline-block;white-space:nowrap;padding:9px 14px;font-size:13px}
     .wlist{font-size:13.5px;line-height:1.8}
     .wlist .row{display:flex;justify-content:space-between;gap:10px;white-space:nowrap;overflow:hidden}
     .wlist .row>span{overflow:hidden;text-overflow:ellipsis}
@@ -60,7 +59,7 @@
 <main class="lpage">
   <h1>When a founder&#8217;s stake moves.</h1>
   <p class="lead">One rule for every alert: an open-market purchase or a discretionary sale of any size, or any other filing that moves the holding by 1% or more. Pick how much of it you want.</p>
-  <div id="lbody"><div class="lgrid"><div class="lcard"><div class="k">The week</div><h2>The letter</h2><div class="d">Every founder move of the week in one email, Saturday morning. Free.</div></div><div class="lcard pro"><div class="k">Every founder &middot; Pro</div><h2>Live founder alerts</h2><div class="d">Every founder&#8217;s move, within about ten minutes of the SEC filing.</div></div><div class="lcard"><div class="k">A name</div><h2>Your watches</h2><div class="d">Any company, founder-led or not, from the switch under its numbers. One is free; a list is Pro.</div></div></div></div>
+  <div id="lbody"><div class="lgrid"><div class="lcard"><h2>The letter</h2><div class="d">Everything founders did this week, in one email on Saturday morning. Free.</div></div><div class="lcard pro"><h2>Live founder alerts <span class="pro">Pro</span></h2><div class="d">Every founder&#8217;s move, within about ten minutes of the SEC filing.</div></div><div class="lcard"><h2>Your watches</h2><div class="d">Pick any company and get an email when its chief executive&#8217;s stake moves. One company is free; more is Pro.</div></div></div></div>
   <div class="lk">What one looks like</div>
   <div class="sample">
     <div class="from">Founder Led Equities &middot; 2:41 p.m.</div>

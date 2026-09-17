@@ -512,12 +512,14 @@ def test_the_alerts_page_is_built_with_three_switches_on_one_rule(tmp_path):
     page = open(os.path.join(out, "alerts", "index.html"), encoding="utf-8").read()
     assert "When a founder" in page and "1% or more" in page and "within about ten minutes of the SEC filing" in page
     assert page.count('class="lcard') == 3 and "The letter" in page and "Live founder alerts" in page and "Your watches" in page
+    assert "Everything founders did this week" in page and "Pick any company" in page and 'class="pro">Pro' in page, "the three sentences and the Pro mark (2026-09-17)"
+    assert 'class="k"' not in page.split('id="lbody"')[1].split("What one looks like")[0], "no small labels above the card titles"
     assert "Paul Gu bought $1.3M of UPST" in page, "a sample email shows what arrives"
     assert 'href="/alerts/">Alerts' in page, "the page carries the nav with itself in it"
     js = open(os.path.join(out, "alerts.js"), encoding="utf-8").read()
     assert 'tk:"FOUNDERS"' in js and "/api/letter" in js and "/api/subscribe" in js and "/api/watch" in js
     # NO FAKE SWITCH (2026-09-17): a reader who is not Pro sees a trial button where the switch would be
-    assert "Start a 14-day trial" in js and 'ME&&ME.pro?sw("fsw"' in js and "Already Pro? Sign in" in js
+    assert "Start a 14-day trial" in js and 'ME&&ME.pro?sw("fsw"' in js and "Already Pro?" in js
     w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
     assert 'tk === "FOUNDERS"' in w and "Live founder alerts are Pro" in w
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
