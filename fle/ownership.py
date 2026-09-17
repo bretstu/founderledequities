@@ -360,7 +360,16 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     if led.match_score and (led.match_score < 0.9 or led.margin < 0.15):
         flag(CAUTION, f"insider matched at {led.match_score:.2f}"
                       + (f", next best {led.runner_up:.2f}" if led.runner_up else ""))
-    for _d, _f, why in splits.disowned:
+    # A DISOWNED EVENT IS WORTH A CAUTION ONLY IF IT COULD HAVE TOUCHED THIS
+    # PERSON'S FILINGS (2026-09-17): Teradyne's feed carries splits from 1982
+    # that predate every cover page and every filing here; declining them
+    # changes nothing, and three lines about them bury the caution that
+    # matters. An event before the person's first filing at the issuer is
+    # declined silently.
+    first_filing = min((f.get("filingDate") or "" for f in (led.mine or []) if f.get("filingDate")), default="")
+    for d, _f, why in splits.disowned:
+        if first_filing and d < first_filing:
+            continue
         flag(CAUTION, f"a split in the feed was not applied: {why}")
     for _d, _f, why in splits.doubts:
         flag(CAUTION, f"a split the cover pages do not corroborate: {why}")
@@ -381,6 +390,8 @@ def build(client, cik: int, company: str = "", ticker: str = "",
         except Exception:  # noqa: BLE001 - no covers to read: nothing is retired
             led.retired = {}
     for _k, g, cut in closed_groups(led.groups, led.retired):
+        if not g.shares:
+            continue      # the filing had already zeroed it (Archer's conversion): confirming that is not a caution
         flag(CAUTION, f"a class the company retired is not counted: {g.security} last stated {g.filed or g.as_of} "
                       f"({g.shares:,.0f} shares); the cover pages stop listing the class from {cut}")
     rec.shares = led.total

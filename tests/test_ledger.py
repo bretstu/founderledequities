@@ -4213,3 +4213,14 @@ def test_the_retirement_gate_is_the_groups_not_the_discovered_record():
     import fle.ownership as O
     src = inspect.getsource(O.build)
     assert "other_letters" in src and "led.discovered_classes" not in src.split("led.retired = {}")[1].split("closed_groups")[0]
+
+
+def test_noise_cautions_are_not_written():
+    """2026-09-17: a retirement that closes a group already at zero, and a
+    feed split older than the person's first filing, change nothing and are
+    not cautions (Archer's conversion; Teradyne's 1982 splits)."""
+    import inspect
+    import fle.ownership as O
+    src = inspect.getsource(O.build)
+    assert "if not g.shares:" in src.split("closed_groups(led.groups, led.retired)")[1].split("flag(CAUTION")[0]
+    assert "first_filing" in src and "d < first_filing" in src
