@@ -1988,8 +1988,10 @@ function actRow(e){
   const k=tapeKind(e),dim=evDim(e),trade=e.c==="P"||e.c==="S";
   const detail=(k==="comp"||k==="xfer"||k==="sold")?tapeDetail(e):"";
   const link=(inner,title)=>e.u&&!e.mk?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${title}">${inner}</a>`:inner;
-  const conf=(PANEL.find(p=>p.tk===e.tk)||{}).conf||"";
-  const low=conf==="low"&&!e.mk?`<span class="lowc" title="the site's confidence in this company's stake is low: the newest filing may state fewer lines than the one before it, and the stake may be understated until the next complete filing; the company page says why">?</span>`:"";
+  const pr=PANEL.find(p=>p.tk===e.tk)||{};
+  /* THE "?" SAYS WHY (2026-09-17): the company's own first problem or caution, the sentence the page shows, not a guess */
+  const why=(pr.flags||"").split("\n")[0]||"the record could not settle on a figure";
+  const low=pr.conf==="low"&&!e.mk?`<span class="lowc" title="${("the site's confidence in this stake is low: "+why).replace(/"/g,"&quot;").replace(/</g,"&lt;").slice(0,300)}">?</span>`:"";
   const stake=e.mk?LOCK("the stake after the filing is in Pro","0.00%"):(e.po!==null&&e.po!==undefined)?e.po.toFixed(e.po<1?3:2)+"%"+low:`<span class="nopr">&mdash;</span>`;
   const p=evMove(e);
   const change=e.mk?LOCK("what the filing did to the stake is in Pro","−0.0%")

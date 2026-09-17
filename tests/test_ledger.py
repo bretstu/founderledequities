@@ -4224,3 +4224,15 @@ def test_noise_cautions_are_not_written():
     src = inspect.getsource(O.build)
     assert "if not g.shares:" in src.split("closed_groups(led.groups, led.retired)")[1].split("flag(CAUTION")[0]
     assert "first_filing" in src and "d < first_filing" in src
+
+
+def test_an_empty_discovered_class_is_not_a_denominator_problem():
+    """EQUIPMENTSHARE (2026-09-17): the pre-IPO "Common Stock" of a January
+    filing, converted at the listing, left an empty group the grader read as
+    "a class absent from the cover page" and marked the stake low. A class
+    that holds nothing cannot be miscounted; only classes with shares can."""
+    import inspect
+    import fle.ownership as O
+    src = inspect.getsource(O.build)
+    seg = src.split("class(es) counted from the person's filings but absent")[0]
+    assert "if g.shares" in seg.split("absent = sorted")[0][-400:] and "if t in held" in seg[-400:]

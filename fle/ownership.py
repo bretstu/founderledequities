@@ -449,8 +449,15 @@ def build(client, cik: int, company: str = "", ticker: str = "",
                    f"curated list: " + " | ".join(
                        f"{lab} ({src})" for lab, (_, _, src) in
                        led.excluded.items()))
-    if getattr(led, "discovered_classes", None):
-        names = ", ".join(sorted(led.discovered_classes)[:3])
+    # A DISCOVERED CLASS THAT HOLDS NOTHING IS NOT A PROBLEM (2026-09-17,
+    # EquipmentShare): the pre-IPO "Common Stock" of a January filing, converted
+    # at the listing, leaves an empty group; an empty group cannot be
+    # miscounted in the numerator or the denominator. Only classes that
+    # still carry shares can put the denominator in doubt.
+    held = {g.security for g in led.groups.values() if g.shares}
+    absent = sorted(t for t in (getattr(led, "discovered_classes", None) or set()) if t in held)
+    if absent:
+        names = ", ".join(absent[:3])
         flag("problem",
              f"class(es) counted from the person's filings but absent from "
              f"the cover page: {names}; the denominator may not include them")

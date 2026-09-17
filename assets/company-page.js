@@ -51,7 +51,7 @@ function band(r){
   const big=r.masked?`<h2 class="p"><span class="k">${esc(C.ceo||"The chief executive")} owns</span>${BLUR("0.00%")}</h2>`
     :r.units?`${who}<div class="p s">partnership units</div><div class="pl">Exchangeable units rather than common stock, so a percent of common shares cannot describe the stake.</div>`
     :r.pct===null?`${who}<div class="p s">a stake not measured</div><div class="pl">${esc(r.flags||"the record could not settle on a figure")}</div>`
-    :`<h2 class="p"><span class="k">${esc(C.ceo||"The chief executive")} owns</span>${r.pct.toFixed(r.pct<1?3:2)}%</h2>`;
+    :`<h2 class="p"><span class="k">${esc(C.ceo||"The chief executive")} owns</span>${r.pct.toFixed(r.pct<1?3:2)}%${r.conf==="low"?`<span class="lowc" title="${esc("the site's confidence in this stake is low: "+((r.flags||"").split("\n")[0]||"the record could not settle on a figure"))}">?</span>`:""}</h2>${r.conf==="low"?`<div class="pl">${esc((r.flags||"").split("\n")[0]||"the record could not settle on a figure")}</div>`:""}`;
   const asof=PRICES_ASOF||"latest";
   const tabled=r.tabled!==null&&r.sh!==null&&r.out?`${fmt(r.tabled)} in the filing tables; the rest stated in a remark`:"";
   /* THREE CARDS, ONE SUBJECT. The page is about what this person owns of
