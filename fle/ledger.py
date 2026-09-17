@@ -125,12 +125,26 @@ def class_letters(members) -> dict:
     return out
 
 
+_GLUED = re.compile(r"\b(class|series)([A-Z])\b", re.I)
+
+
+def unglue(title: str) -> str:
+    """"ClassA Common" -> "Class A Common" (2026-09-17, Boston Beer): a 2004
+    filing glued the designator to its letter, and the title read as no
+    class at all. The history kept it as its own line for twenty years
+    (684,656 shares never restated under that spelling); the ledger did not
+    count it. Read as the letter it names, it is the Class A line, and the
+    2023 statement replaces it in both walks."""
+    return _GLUED.sub(lambda m: f"{m.group(1)} {m.group(2)}", title or "")
+
+
 def title_letter(title: str) -> tuple | None:
     """-> (kind, letter) the title names, ("", "") for none, None if unclear.
 
     The letter is a lone token rather than the word after "Class", which is
     why "Clas A Common Stock" still reads as A.
     """
+    title = unglue(title)
     # "V-1" / "V1" is one designator, not a letter near a stray digit
     numbered = re.findall(r"\b([A-Z])[-\u2011]?([0-9])\b", title or "")
     if len(numbered) == 1:
@@ -313,7 +327,7 @@ def is_partnership_unit(title: str) -> bool:
 
 def is_share_class(title: str) -> bool:
     """Is this Table II row a convertible share class, or an option?"""
-    t = title or ""
+    t = unglue(title or "")
     return bool(IS_A_SHARE.search(t)) and not NOT_A_SHARE.search(t)
 
 

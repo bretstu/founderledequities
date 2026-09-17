@@ -4314,3 +4314,15 @@ def test_the_opening_is_the_oldest_filing_read_when_there_is_no_form_3():
     docs2 = {"meta": {"0001-26-000002": ("4", "2026-09-01"), "0001-16-000001": ("4", "2016-03-01"), "0001-15-000001": ("3", "2015-01-01")}, "xml": {"0001-15-000001": f3, "0001-16-000001": old, "0001-26-000002": new}}
     led2 = build_ledger(_docs_client(docs2), 1649094, owner_cik="1", share_classes=1, class_members={"c-2": 100000000.0})
     assert led2.opening_source == "Form 3" and round(led2.flows.opening) == 1000000
+
+
+def test_a_glued_class_designator_reads_as_its_letter():
+    """BOSTON BEER (2026-09-17): a 2004 filing titled "ClassA Common". Read as
+    no class, the history kept it as its own line for twenty years and the
+    ledger did not count it; read as Class A it is the line the 2023
+    statement replaces, in both walks."""
+    from fle.ledger import title_letter, is_share_class, match_class, class_letters, unglue
+    assert unglue("ClassA Common") == "Class A Common" and unglue("Classic Shares") == "Classic Shares"
+    assert title_letter("ClassA Common") == ("class", "A") and is_share_class("ClassA Common")
+    L = class_letters({"us-gaap:CommonClassAMember": 1.0, "us-gaap:CommonClassBMember": 1.0})
+    assert match_class("ClassA Common", L) == match_class("Class A Common Stock", L) == L[("class", "A")]

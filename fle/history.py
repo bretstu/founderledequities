@@ -740,9 +740,16 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
             chained.filed = when
 
             prev = period_prev[key]
+            # A TRANSACTION FILING STATES THE CLASS WHOLE; A HOLDINGS-ONLY ONE
+            # DOES NOT (Form 4's instruction, and Huang's quiet January 2021
+            # filing). The ledger takes a class from any filing that mentions
+            # it, which is a simplification; this fold keeps the instruction's
+            # distinction. Where the two read a holdings-only filing
+            # differently (Hims, 12 Nov 2025: a transfer between vehicles
+            # stated only at the destination), the grade says the record
+            # disagrees with itself, which is the honest verdict. Considered
+            # and kept on 2026-09-17.
             if prev is None or chained.moved_here:
-                # A transaction was reported in this class, so the period's
-                # filings jointly state the whole of it.
                 if prev is not None:
                     have = chained.vehicles()
                     # AN ANONYMOUS VEHICLE IS COVERED BY ARITHMETIC, NOT BY
