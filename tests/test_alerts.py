@@ -80,3 +80,25 @@ def test_a_watch_mails_any_move_of_the_stake(tmp_path):
     from alerts import short_name, before_pct
     assert short_name("Upstart Holdings, Inc.", "UPST") == "Upstart" and short_name("", "X") == "X"
     assert round(before_pct({"holding_after": "1000", "net_change": "100", "outstanding": "100000"}), 3) == 0.9
+
+
+def test_the_mark_is_inclusive_so_a_days_later_filings_are_posted():
+    """2026-09-17, evening: the mark held today's date after the first run;
+    three founder discretionary sales filed later the same day were skipped.
+    On or after the mark; the run endpoint's sent-record refuses repeats."""
+    import csv
+    import os
+    import sys
+    sys.path.insert(0, os.path.join(str(ROOT), "ops"))
+    import alerts
+    p = os.path.join(str(ROOT), "_tmp_events_mark.csv")
+    cols = ["ticker", "ceo", "filed", "traded", "code", "label", "value", "pct_of_holding", "pct_after", "plan", "price_flag", "pre_ipo", "accession", "url"]
+    with open(p, "w", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, fieldnames=cols); w.writeheader()
+        w.writerow({c: "" for c in cols} | {"ticker": "SOUN", "ceo": "Keyvan Mohajer", "filed": "2026-09-17", "traded": "2026-09-16", "code": "S", "label": "sale", "value": "869000", "pct_of_holding": "-0.76", "accession": "a1"})
+        w.writerow({c: "" for c in cols} | {"ticker": "OLD", "ceo": "X", "filed": "2026-09-16", "traded": "2026-09-15", "code": "S", "label": "sale", "value": "100000", "pct_of_holding": "-5", "accession": "a0"})
+    try:
+        got = {e["tk"] for e in alerts.decisions(p, since="2026-09-17", founders={"SOUN", "OLD"}, names={})}
+    finally:
+        os.remove(p)
+    assert got == {"SOUN"}, "filed on the mark's day: posted; the day before: not"

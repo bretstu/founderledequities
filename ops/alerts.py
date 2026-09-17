@@ -180,7 +180,14 @@ def decisions(events_p, since, founders=None, names=None):
         for r in csv.DictReader(fh):
             filed = r.get("filed") or ""
             code = r.get("code") or ""
-            if filed <= since or not code:
+            # ON OR AFTER THE MARK (2026-09-17). The mark is a DATE, and the
+            # comparison was strict: after the first run of a day, every
+            # later filing of the same day read as already posted, and three
+            # founder discretionary sales one evening went unmailed. The run
+            # endpoint keeps the sent-record per watch and accession, so
+            # re-posting a day's earlier events is harmless; skipping its
+            # later ones was not.
+            if filed < since or not code:
                 continue
             if (r.get("pre_ipo") or "") in ("1", "true", "True"):
                 continue
@@ -268,7 +275,7 @@ def main(argv):
         print(f"  alerts: nothing filed since {since or 'the start'}")
         return 0
     newest = max(e["filed"] for e in evs)
-    print(f"  alerts: {len(evs)} moves filed {since or 'ever'} < filed <= {newest} "
+    print(f"  alerts: {len(evs)} moves filed {since or 'ever'} <= filed <= {newest} "
           f"({sum(1 for e in evs if e['kind'] == 'decision')} decisions, {sum(1 for e in evs if e['kind'] == 'move')} other moves of {MIN_MOVE:g}% or more)")
     if dry:
         for e in evs[:12]:
