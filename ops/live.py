@@ -198,10 +198,11 @@ def describe(client, uni, cik, acc):
 LAST_MAIL_ERROR = ""
 
 
-def send_mail(to, subject, text):
+def send_mail(to, subject, text, attachment=None):
     """One email through Resend. On failure the reason is kept in
     LAST_MAIL_ERROR and printed, never swallowed (2026-09-14: a silent
-    False hid whatever Resend said)."""
+    False hid whatever Resend said). `attachment`: a (filename, bytes) to
+    send along (the post card, 2026-09-18)."""
     global LAST_MAIL_ERROR
     key = os.environ.get("RESEND_API_KEY")
     if not key:
@@ -210,9 +211,13 @@ def send_mail(to, subject, text):
     if not to:
         LAST_MAIL_ERROR = "LIVE_TO is not set in .env"
         return False
+    body = {"from": os.environ.get("LIVE_FROM", "Founder Led Equities <tape@founderledequities.com>"),
+            "to": [to], "subject": subject, "text": text}
+    if attachment:
+        import base64
+        body["attachments"] = [{"filename": attachment[0], "content": base64.b64encode(attachment[1]).decode()}]
     req = urllib.request.Request("https://api.resend.com/emails",
-                                 data=json.dumps({"from": os.environ.get("LIVE_FROM", "Founder Led Equities <tape@founderledequities.com>"),
-                                                  "to": [to], "subject": subject, "text": text}).encode(),
+                                 data=json.dumps(body).encode(),
                                  headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json",
                                           "User-Agent": "founderledequities-live/1"}, method="POST")
     try:
@@ -225,6 +230,38 @@ def send_mail(to, subject, text):
         LAST_MAIL_ERROR = f"{e.__class__.__name__}: {str(e)[:120]}"
     print(f"  mail failed: {LAST_MAIL_ERROR}")
     return False
+
+
+def post_block(u, ev):
+    """-> (text, (filename, png bytes) or None). The X post's three lines
+    (ops/post_card.post_text) and the reply line, and the card drawn from
+    the same event. Never fails the mail: a card that cannot be drawn is
+    simply not attached."""
+    try:
+        sys.path.insert(0, HERE)
+        import post_card
+        kind = post_card.post_kind(ev)
+        founder = bool(u.get("founder"))
+        minutes = None
+        text = post_card.post_text(u["tk"], u.get("ceo") or "", founder, kind, ev.get("value") or "",
+                                   ev.get("pct_of_holding") or "", ev.get("pct_after") or "", minutes)
+        block = ("POST (paste as the post; attach the card; put the link in the first reply)\n"
+                 + "-" * 40 + "\n" + text + "\n" + "-" * 40
+                 + f"\nReply: Every filing on record: https://founderledequities.com/company/{u['tk']}/")
+        card = None
+        try:
+            import tempfile
+            fd, path = tempfile.mkstemp(suffix=".png")
+            os.close(fd)
+            if post_card.from_event(u["tk"], path, ev.get("accession")):
+                card = (f"{u['tk']}-{(ev.get('filed') or 'card')}.png", open(path, "rb").read())
+            os.remove(path)
+        except Exception as e:  # noqa: BLE001
+            print(f"  post card not drawn for {u['tk']}: {e.__class__.__name__}: {str(e)[:80]}")
+        return block, card
+    except Exception as e:  # noqa: BLE001
+        print(f"  post block skipped for {u['tk']}: {e.__class__.__name__}: {str(e)[:80]}")
+        return "", None
 
 
 def published_event(acc):
@@ -356,8 +393,15 @@ def publish_and_mail(pending, uni):
             continue
         text = sentence(u, ev)
         why = worth_a_post(u, ev)
+        # THE POST, READY (2026-09-18): the three lines in the site's words and
+        # the card as an attachment, so the owner's copy is the whole workflow:
+        # paste, attach, post, reply with the link
+        post, card = post_block(u, ev)
+        if post:
+            text = text + "\n\n" + post
         sent = bool(why) and send_mail(os.environ.get("LIVE_TO", ""),
-                                       f"{u['ceo']} {'bought' if ev.get('code') == 'P' else 'sold'} {u['tk']}: the page is live ({why})", text)
+                                       f"{u['ceo']} {'bought' if ev.get('code') == 'P' else 'sold'} {u['tk']}: the page is live ({why})", text,
+                                       attachment=card)
         lines.append(f"- {dt.datetime.now().strftime('%H:%M')} published · {text.replace(chr(10), ' · ')}"
                      + (f"  ← mailed: {why}" if sent
                         else f"  ← WORTH A POST ({why}) BUT THE MAIL FAILED: {LAST_MAIL_ERROR}" if why
