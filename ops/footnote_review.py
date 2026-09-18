@@ -37,7 +37,7 @@ def golden():
     sys.path.insert(0, ROOT)
     from fle.edgar import EdgarClient
     from fle.ledger import _parse
-    from fle.footnotes import lines_of, line_key, classify
+    from fle.footnotes import lines_of, line_key, line_id, classify
     if not os.path.exists(REVIEWED) or not os.path.exists(READS):
         print("  nothing reviewed yet")
         return 0
@@ -48,6 +48,14 @@ def golden():
                 key_env = line.split("=", 1)[1].strip().strip('"').strip("'")
     reviewed = {r["key"]: r for r in csv.DictReader(open(REVIEWED, encoding="utf-8-sig"))}
     reads = {r["key"]: r for r in csv.DictReader(open(READS, encoding="utf-8-sig"))}
+    # VERDICTS ATTACH TO A FILING AND A ROW (2026-09-18), not to the footnote
+    # hash: a structural change that alters which footnotes attach re-keys
+    # the reading but not the line you ruled on. A verdict whose exact key
+    # is gone is matched by its filing-and-row id, with a note that the
+    # footnote text has changed since the ruling.
+    by_id = {}
+    for k, r in reads.items():
+        by_id["|".join(k.split("|")[:3])] = r
     # the expected label from the verdict: ok -> the flagged label stands; no -> economic; read -> any
     client = EdgarClient()
     P = {r["ticker"]: r for r in csv.DictReader(open(os.path.join(ROOT, "panel.csv"), encoding="utf-8-sig"))}
@@ -55,8 +63,14 @@ def golden():
     cache = {}
     for k, v in reviewed.items():
         r = reads.get(k)
+        changed = False
+        if not r:
+            r = by_id.get("|".join(k.split("|")[:3]))
+            changed = r is not None
         if not r or v["verdict"] not in ("ok", "no"):
             continue
+        if changed:
+            print(f"  (footnotes changed since the ruling on {r['ticker']} {r['security'][:20]} {r['nature'][:30]}; comparing anyway)")
         # ok: the label recorded when the verdict was given (a flag label when
         # the record predates that column); no: economic (unclear also accepted)
         recorded = (v.get("label") or "").strip()
@@ -77,7 +91,8 @@ def golden():
         root = cache[(cik, acc)]
         if root is None:
             continue
-        line = next((l for l in lines_of(root, acc) if line_key(r["owner_cik"], l) == k), None)
+        want_id = "|".join(k.split("|")[:3])
+        line = next((l for l in lines_of(root, acc) if line_key(r["owner_cik"], l) == k or line_id(r["owner_cik"], l) == want_id), None)
         if line is None:
             continue
         got = classify(line, key_env)
@@ -125,8 +140,9 @@ def main(argv):
         return 0
     allrows = list(csv.DictReader(open(READS, encoding="utf-8-sig")))
     rows = [r for r in allrows if r["label"] in ("disclaimed", "partial")]
+    reviewed_ids = {"|".join(k.split("|")[:3]) for k in reviewed}
     if "--all" not in argv:
-        rows = [r for r in rows if r["key"] not in reviewed]
+        rows = [r for r in rows if r["key"] not in reviewed and "|".join(r["key"].split("|")[:3]) not in reviewed_ids]
     if not rows:
         print("  nothing to review")
         return 0

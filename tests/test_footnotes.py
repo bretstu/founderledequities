@@ -111,3 +111,10 @@ def test_a_transaction_footnote_is_not_sent_with_the_line():
     lines = F.lines_of(F.parse_doc(doc), "a")
     assert [l["nature"] for l in lines] == ["By Foundation"], "the gift's footnote hangs on the transaction, not the line"
     assert lines[0]["footnote_ids"] == ["F3"] and [k for k, _ in lines[0]["context"]] == ["F1", "F2"]
+
+
+def test_the_line_id_survives_a_footnote_change_and_the_prompt_is_versioned():
+    root = F.parse_doc(DOC)
+    line = F.lines_of(root, "a")[0]
+    assert F.line_id("1548760", line) == "1548760|a|1" and F.line_key("1548760", line).startswith("1548760|a|1|")
+    assert F.PROMPT_VERSION.startswith("v") and "prompt" in F.READ_COLUMNS

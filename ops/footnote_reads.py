@@ -22,7 +22,7 @@ sys.path.insert(0, ROOT)
 from fle.edgar import EdgarClient  # noqa: E402
 from fle.ledger import build_ledger, _parse  # noqa: E402
 from fle.outstanding import shares_outstanding  # noqa: E402
-from fle.footnotes import lines_of, line_key, classify, load_reads, write_reads  # noqa: E402
+from fle.footnotes import lines_of, line_key, classify, load_reads, write_reads, PROMPT_VERSION  # noqa: E402
 
 READS = os.path.join(ROOT, "universe", "footnote-reads.csv")
 
@@ -112,7 +112,7 @@ def main(argv):
                 reads[k] = {"key": k, "ticker": tk, "ceo": r["ceo"], "owner_cik": r["owner_cik"], "accession": acc, "row": line["row"],
                             "security": line["security"], "direct": line["direct"], "nature": line["nature"], "shares": line["shares"],
                             "label": v["label"], "fraction": "" if v["fraction"] is None else v["fraction"], "basis": v.get("basis", ""), "quote": v["quote"],
-                            "reason": v["reason"], "footnote_ids": " ".join(line["footnote_ids"]), "model": v["model"], "read_on": today, "url": url}
+                            "reason": v["reason"], "footnote_ids": " ".join(line["footnote_ids"]), "model": v["model"], "prompt": PROMPT_VERSION, "read_on": today, "url": url}
                 if only:
                     who = "D" if line["direct"] == "D" else f"I: {line['nature'][:40]}"
                     print(f"  {tk} [{v['label']:10}] {line['security'][:22]:22} {who:44} {float(line['shares'] or 0):>13,.0f}")

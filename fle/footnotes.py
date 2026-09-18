@@ -44,6 +44,7 @@ from .founders import ANTHROPIC_MODEL, _post, quote_is_verbatim
 
 MAX_TOKENS = 400
 LABELS = ("economic", "disclaimed", "partial", "unclear")
+PROMPT_VERSION = "v265"   # bumped whenever SYSTEM or EXAMPLES change; recorded on every reading
 
 SYSTEM = """You classify ONE holding line from an SEC Form 3, 4 or 5, using ONLY the footnote text provided.
 
@@ -245,7 +246,14 @@ def classify(line: dict, api_key: str, model: str = ANTHROPIC_MODEL) -> dict:
 
 
 READ_COLUMNS = ["key", "ticker", "ceo", "owner_cik", "accession", "row", "security", "direct", "nature", "shares",
-                "label", "fraction", "basis", "quote", "reason", "footnote_ids", "model", "read_on", "url"]
+                "label", "fraction", "basis", "quote", "reason", "footnote_ids", "model", "prompt", "read_on", "url"]
+
+
+def line_id(owner_cik: str, line: dict) -> str:
+    """The filing-and-row identity of a line, without the footnote hash: what a
+    verdict attaches to. The key adds the hash so a changed footnote is
+    re-read; the id stays the same across that."""
+    return f"{owner_cik}|{line['accession']}|{line['row']}"
 
 
 def load_reads(path: str) -> dict:
