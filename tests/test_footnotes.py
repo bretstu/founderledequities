@@ -124,7 +124,7 @@ def test_the_prompt_separates_a_spouse_from_a_gift_to_a_child():
     assert "a marriage is one household" in F.SYSTEM and "GIFT COMPLETED" in F.SYSTEM
     assert "INDEPENDENT trustee" in F.SYSTEM and "Sage Resources" in F.EXAMPLES and "Descendants' Trust" in F.EXAMPLES
     assert "the person is trustee: holds the strings" in F.EXAMPLES and "Start Small" in F.EXAMPLES
-    assert F.PROMPT_VERSION == "v269" and "THE FORMULA NEVER DECIDES ON ITS OWN" in F.SYSTEM
+    assert F.PROMPT_VERSION == "v271" and "THE FORMULA NEVER DECIDES ON ITS OWN" in F.SYSTEM and "GRAT REMAINDER" in F.SYSTEM
 
 
 def test_the_prompt_is_sent_as_a_cached_block(monkeypatch):
@@ -149,3 +149,12 @@ def test_the_content_key_is_the_same_question_and_only_that():
     assert F.content_key("1", a) != F.content_key("1", dict(a, footnotes=[("F2", "other words")])), "different words: a different question"
     assert F.content_key("1", a) != F.content_key("2", a), "another person: a different question"
     assert "content" in F.READ_COLUMNS
+
+
+def test_a_quote_from_the_filings_other_footnotes_is_verified_too(monkeypatch):
+    root = F.parse_doc(DOC)
+    line = F.lines_of(root, "a")[0]          # attached: F2; context: F3
+    monkeypatch.setattr(F, "_post", lambda body, key: {"content": [{"type": "tool_use", "input": {"label": "economic", "quote": "Mr. Zuckerberg is the sole member of CZI Holdings, LLC.", "basis": "statement"}}]})
+    assert F.classify(line, "k")["verified"], "the filing's own words, from a context footnote, verify"
+    monkeypatch.setattr(F, "_post", lambda body, key: {"content": [{"type": "tool_use", "input": {"label": "economic", "quote": "words from nowhere in this filing", "basis": "statement"}}]})
+    assert not F.classify(line, "k")["verified"]

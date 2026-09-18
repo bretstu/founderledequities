@@ -44,7 +44,7 @@ from .founders import ANTHROPIC_MODEL, _post, quote_is_verbatim
 
 MAX_TOKENS = 400
 LABELS = ("economic", "disclaimed", "partial", "unclear")
-PROMPT_VERSION = "v269"   # bumped whenever SYSTEM or EXAMPLES change; recorded on every reading
+PROMPT_VERSION = "v271"   # bumped whenever SYSTEM or EXAMPLES change; recorded on every reading
 
 SYSTEM = """You classify ONE holding line from an SEC Form 3, 4 or 5, using ONLY the footnote text provided.
 
@@ -52,6 +52,7 @@ The question: does the reporting person have a PECUNIARY INTEREST in these share
 
 - economic: nothing in the footnotes says otherwise. This INCLUDES the standard hedge "disclaims beneficial ownership except to the extent of his/her pecuniary interest" (that is a hedge, not a disclaimer); trusts for the person or their family, INCLUDING an irrevocable trust for children where the person or the spouse is trustee, or where no trustee is stated; entities the person owns or controls (an LLC the person is sole member or manager of, a holding company, a family partnership), whatever the entity's purpose; a spouse's or a family member's shares, a custodial account for a minor, a trust for the person's own benefit; and ALWAYS shares held by or for a SPOUSE (a spouse's separate-property trust, a joint filing's lines), EVEN WHEN the footnote fully disclaims beneficial ownership of them -- a marriage is one household, and that is the rule here.
   The ONLY family case that is disclaimed is a GIFT COMPLETED, and the footnote must show it: an irrevocable trust or vehicle FOR CHILDREN OR DESCENDANTS with an INDEPENDENT trustee or manager stated (a corporate trustee, a named third party, "legal counsel" -- not the person, not the spouse), OR a vehicle stated to be for the children with a FULL disclaimer and no hedge ("not an admission that the reporting person is the beneficial owner"). The person's power to replace an independent trustee does not undo the gift. Without one of those, a family trust is economic.
+  Three refinements. (a) "over which the Reporting Person has voting or investment power": the person holds the strings, whoever the trustee is -- economic. (b) An independent trustee with NO statement of who benefits (no children, descendants or family named anywhere in the filing's footnotes) is unclear, not disclaimed: the gift is not shown. (c) A GRAT REMAINDER trust with an independent trustee is a gift completed (the annuity is over; what remains is the family's, held by a third party): disclaimed. A GRAT itself, or an "annuity trust" the person or spouse is trustee of, stays economic.
   THE FORMULA NEVER DECIDES ON ITS OWN. "Disclaims beneficial ownership... not an admission that the reporting person is the beneficial owner" counts ONLY when the vehicle is stated to be for children or descendants. On a trust for the person's own benefit, on a spouse's shares, or on an unspecified "family member", the same words change nothing: economic.
 - disclaimed: the footnote says the person has NO pecuniary interest, or the shares are held by a charity, foundation, non-profit, private foundation or donor-advised fund, or are held for unrelated third parties, or by an entity in which the person states no economic interest.
 - partial: the footnote states the person's pecuniary interest is a FRACTION of the line (a partnership percentage, an LLC percentage, a charitable remainder or charitable lead trust where a CHARITY takes the other part). Give the fraction as a number between 0 and 1 if the footnote states one; otherwise null. A GRAT (grantor retained annuity trust) is NOT partial: the annuity returns to the grantor and the remainder goes to family, so it is economic.
@@ -105,6 +106,9 @@ economic: line "By family member"; footnote "The Reporting Person disclaims bene
 economic: "The shares are held of record by Start Small, LLC, for which the Reporting Person is the sole member." -> economic (an LLC the person owns, whatever its purpose; not a foundation)
 economic: "Shares held in the Gift Trust, an irrevocable trust established for the benefit of a minor child of the reporting person." -> economic (no trustee stated: the person holds the strings until shown otherwise)
 disclaimed: "These shares are held by the Field 2021 Descendants Trust, of which Bryn Mawr Trust Company of Delaware serves as trustee and may be replaced at the discretion of the Reporting Person." -> disclaimed, basis statement (a corporate trustee: a gift completed; the power to replace the trustee does not undo it)
+disclaimed: "These shares are held by the Field 2024 GRAT Remainder Trust, of which A7P Trust Company serves as trustee." -> disclaimed, basis statement (a GRAT remainder trust with an independent trustee: the annuity is over, the remainder is the family's)
+economic: "Consists of shares held by Jordan Park Trust Company, LLC, Trustee of The Biswas Trust I, over which the Reporting Person has voting or investment power." -> economic (a corporate trustee, but the person has voting or investment power: holds the strings)
+unclear: "The shares are held by the Aloha Trust, for which William Gheen III serves as trustee." -> unclear (an independent trustee, but nothing says who benefits: the gift is not shown)
 disclaimed: "Shares are held by DLF 2020 LLC for the benefit of the Reporting Person's children. The Reporting Person disclaims beneficial ownership of these shares, and the filing of this report is not an admission that the Reporting Person is the beneficial owner." -> disclaimed, basis statement (a children's vehicle with a full, unhedged disclaimer: a gift completed)
 disclaimed: "These shares are held by The Ehrsam 2014 Irrevocable Trust, of which the Reporting Person is trustee. The Reporting Person disclaims beneficial ownership except to the extent of his pecuniary interest, if any." -> disclaimed, basis name (trustee of ANOTHER family's trust: control, no interest)
 disclaimed: "The shares are held by a charitable foundation. The reporting persons are officers of the charitable foundation and share voting and dispositive power for the foundation. The reporting persons disclaim beneficial ownership of the shares, except to the extent of their pecuniary interest therein." -> disclaimed ("a charitable foundation" is a statement of what the holder is; the hedge cannot create a pecuniary interest in a charity)
@@ -261,7 +265,11 @@ def classify(line: dict, api_key: str, model: str = ANTHROPIC_MODEL) -> dict:
         return {"label": "none", "fraction": None, "quote": "", "reason": "no tool reply", "verified": False, "model": model}
     label = str(got.get("label") or "").strip().lower()
     quote = str(got.get("quote") or "").strip()
-    windows = [v for _k, v in line["footnotes"]] + ([line["remarks"]] if line.get("remarks") else [])
+    # the quote must be the filing's words: the attached footnotes first, the
+    # filing's other footnotes and remarks too (a GRAT's description hangs on
+    # the contribution row, not the holding line; quoting it is right)
+    windows = ([v for _k, v in line["footnotes"]] + [v for _k, v in line.get("context", [])]
+               + ([line["remarks"]] if line.get("remarks") else []))
     ok = label in LABELS and quote_in_footnotes(quote, windows)
     frac = got.get("fraction")
     try:
