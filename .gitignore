@@ -45,3 +45,4 @@ history-state.*.json
 universe/delisted.csv
 universe/footnote-reads.csv
 universe/footnote-done.json
+universe/footnote-reads.prev.csv

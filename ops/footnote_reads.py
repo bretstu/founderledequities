@@ -71,6 +71,11 @@ def main(argv):
     done_state = json.load(open(done_p)) if os.path.exists(done_p) else {}
     reads = load_reads(READS)
     if reread and only:
+        # the previous readings are kept beside the file: the golden set diffs
+        # EVERY line against them, not only the ones a person has ruled on
+        import shutil
+        if os.path.exists(READS):
+            shutil.copy(READS, READS.replace(".csv", ".prev.csv"))
         reads = {k: v for k, v in reads.items() if v.get("ticker", "").upper() not in only}
     calls = 0
     today = dt.date.today().isoformat()

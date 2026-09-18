@@ -108,7 +108,25 @@ def golden():
             flipped += 1
             print(f"  FLIPPED {tk} {r['security'][:20]} {r['nature'][:30]}: expected {expect}, read {got['label']} -- \"{got['quote'][:100]}\"")
     print(f"  golden set: {checked} reviewed line(s) re-read, {flipped} flipped, {unverified} unverified")
-    return 1 if flipped else 0
+    # THE NEGATIVES (2026-09-18): every line of the previous accepted reading
+    # against the current one. A prompt change that turns economic lines into
+    # flags shows up here as a count and a list, before it reads anything new.
+    prev_p = READS.replace(".csv", ".prev.csv")
+    moved = 0
+    if os.path.exists(prev_p):
+        prev = {"|".join(r["key"].split("|")[:3]): r for r in csv.DictReader(open(prev_p, encoding="utf-8-sig"))}
+        cur = {"|".join(r["key"].split("|")[:3]): r for r in reads.values()}
+        changes = {}
+        for i, r in cur.items():
+            p = prev.get(i)
+            if p and p["label"] != r["label"]:
+                changes.setdefault((p["label"], r["label"]), []).append(r)
+        for (a, b), rs in sorted(changes.items(), key=lambda kv: -len(kv[1])):
+            print(f"  label change {a} -> {b}: {len(rs)} line(s)  e.g. " + "; ".join(f"{x['ticker']} {x['nature'][:24]}" for x in rs[:4]))
+        newly = [x for (a, b), rs in changes.items() if a not in ("disclaimed", "partial") and b in ("disclaimed", "partial") for x in rs]
+        moved = len(newly)
+        print(f"  negatives: {moved} line(s) newly flagged against the previous reading" + ("" if moved else "  (clean)"))
+    return 1 if (flipped or moved) else 0
 
 
 def main(argv):

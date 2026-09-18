@@ -44,14 +44,14 @@ from .founders import ANTHROPIC_MODEL, _post, quote_is_verbatim
 
 MAX_TOKENS = 400
 LABELS = ("economic", "disclaimed", "partial", "unclear")
-PROMPT_VERSION = "v267"   # bumped whenever SYSTEM or EXAMPLES change; recorded on every reading
+PROMPT_VERSION = "v268"   # bumped whenever SYSTEM or EXAMPLES change; recorded on every reading
 
 SYSTEM = """You classify ONE holding line from an SEC Form 3, 4 or 5, using ONLY the footnote text provided.
 
 The question: does the reporting person have a PECUNIARY INTEREST in these shares -- would they profit or lose on them? Answer with exactly one label:
 
-- economic: nothing in the footnotes says otherwise. This INCLUDES the standard hedge "disclaims beneficial ownership except to the extent of his/her pecuniary interest" (that is a hedge, not a disclaimer); trusts the person controls or funded with a retained interest (a revocable trust, a trust the person is trustee of, a GRAT); entities the person owns or controls for their own benefit (an LLC, a holding company, a family partnership, a partnership "owned by the reporting person's family"); and ALWAYS shares held by or for a SPOUSE (a spouse's separate-property trust, a joint filing's lines), EVEN WHEN the footnote fully disclaims beneficial ownership of them -- a marriage is one household, and that is the rule here.
-  A trust for CHILDREN or descendants is economic while the person still holds the strings (trustee, grantor with a retained interest, revocable, or nothing said about its terms). It is DISCLAIMED when the footnote shows the person let go: an IRREVOCABLE trust with an INDEPENDENT trustee (not the person or the spouse) and a disclaimer WITHOUT the hedge -- a gift completed; the child benefits, the person does not.
+- economic: nothing in the footnotes says otherwise. This INCLUDES the standard hedge "disclaims beneficial ownership except to the extent of his/her pecuniary interest" (that is a hedge, not a disclaimer); trusts for the person or their family, INCLUDING an irrevocable trust for children where the person or the spouse is trustee, or where no trustee is stated; entities the person owns or controls (an LLC the person is sole member or manager of, a holding company, a family partnership), whatever the entity's purpose; a spouse's or a family member's shares, a custodial account for a minor, a trust for the person's own benefit; and ALWAYS shares held by or for a SPOUSE (a spouse's separate-property trust, a joint filing's lines), EVEN WHEN the footnote fully disclaims beneficial ownership of them -- a marriage is one household, and that is the rule here.
+  The ONLY family case that is disclaimed is a GIFT COMPLETED, and the footnote must show it: an irrevocable trust or vehicle for children or descendants with an INDEPENDENT trustee or manager stated (a corporate trustee, a named third party, "legal counsel" -- not the person, not the spouse), OR a vehicle for the children with a FULL disclaimer and no hedge ("not an admission that the reporting person is the beneficial owner"). The person's power to replace an independent trustee does not undo the gift. Without one of those, a family trust is economic.
 - disclaimed: the footnote says the person has NO pecuniary interest, or the shares are held by a charity, foundation, non-profit, private foundation or donor-advised fund, or are held for unrelated third parties, or by an entity in which the person states no economic interest.
 - partial: the footnote states the person's pecuniary interest is a FRACTION of the line (a partnership percentage, an LLC percentage, a charitable remainder or charitable lead trust where a CHARITY takes the other part). Give the fraction as a number between 0 and 1 if the footnote states one; otherwise null. A GRAT (grantor retained annuity trust) is NOT partial: the annuity returns to the grantor and the remainder goes to family, so it is economic.
 - unclear: the footnotes concern something else (a trading plan, a price, a conversion ratio, a vesting schedule), refer the reader to another filing, or do not say.
@@ -96,6 +96,15 @@ unclear: line held directly; footnote "Gift to a charitable organization." -> un
 disclaimed: "Represents shares held through an irrevocable non-grantor trust, of which the Reporting Person's legal counsel is the sole trustee and the Reporting Person's child is the beneficiary. The Reporting Person disclaims beneficial ownership of the shares." -> disclaimed, basis statement (irrevocable, an independent trustee, no hedge: a gift completed)
 economic: "Represents shares held of record by Sage Resources, Ltd., a limited partnership owned by the reporting person's family, including the reporting person." -> economic (a family partnership: the household)
 economic: "53.26% of which is held on behalf of Mr. Ostrover, 21.74% on behalf of his spouse, and 25.00% on behalf of the Descendants' Trust." -> economic (spouse and a descendants' trust with nothing said about its terms: the household; not partial)
+economic: "Shares held by the Houston 2012 Irrevocable Children's Trust, for which the Reporting Person serves as trustee." -> economic (the person is trustee: holds the strings)
+economic: "The Reporting Person is the Co-Administrative Trustee and Co-Investment Trustee of the Irrevocable Trust." -> economic (co-trustee)
+economic: "Shares held by the David M. Overton 2011 Gift Trust for the benefit of the reporting person's son. The reporting person's spouse is trustee of the trust. The reporting person disclaims beneficial ownership." -> economic (the spouse is trustee: the household, whatever the disclaimer)
+economic: "These shares are held in a trust for the benefit of the reporting person. The reporting person disclaims beneficial ownership." -> economic (for the person's own benefit)
+economic: "The shares are held of record by Start Small, LLC, for which the Reporting Person is the sole member." -> economic (an LLC the person owns, whatever its purpose; not a foundation)
+economic: "Shares held in the Gift Trust, an irrevocable trust established for the benefit of a minor child of the reporting person." -> economic (no trustee stated: the person holds the strings until shown otherwise)
+disclaimed: "These shares are held by the Field 2021 Descendants Trust, of which Bryn Mawr Trust Company of Delaware serves as trustee and may be replaced at the discretion of the Reporting Person." -> disclaimed, basis statement (a corporate trustee: a gift completed; the power to replace the trustee does not undo it)
+disclaimed: "Shares are held by DLF 2020 LLC for the benefit of the Reporting Person's children. The Reporting Person disclaims beneficial ownership of these shares, and the filing of this report is not an admission that the Reporting Person is the beneficial owner." -> disclaimed, basis statement (a children's vehicle with a full, unhedged disclaimer: a gift completed)
+disclaimed: "These shares are held by The Ehrsam 2014 Irrevocable Trust, of which the Reporting Person is trustee. The Reporting Person disclaims beneficial ownership except to the extent of his pecuniary interest, if any." -> disclaimed, basis name (trustee of ANOTHER family's trust: control, no interest)
 disclaimed: "The shares are held by a charitable foundation. The reporting persons are officers of the charitable foundation and share voting and dispositive power for the foundation. The reporting persons disclaim beneficial ownership of the shares, except to the extent of their pecuniary interest therein." -> disclaimed ("a charitable foundation" is a statement of what the holder is; the hedge cannot create a pecuniary interest in a charity)
 economic: "Mr. Ergen established the Ergen Two-Year May 2025 GRAT and contributed 26,000,000 Class B shares to it. Mrs. Ergen serves as trustee." -> economic (a GRAT: annuity to the grantor, remainder to family)
 economic: "The shares of Class V-1 Common Stock have no economic rights and are paired with an equal number of Symbotic Holdings units held by the reporting person." -> economic (paired with units)
@@ -217,7 +226,10 @@ def classify(line: dict, api_key: str, model: str = ANTHROPIC_MODEL) -> dict:
     footnotes sent."""
     body = json.dumps({
         "model": model, "max_tokens": MAX_TOKENS, "temperature": 0,
-        "system": SYSTEM + "\n\n" + EXAMPLES,
+        # THE PROMPT IS CACHED (2026-09-18): identical on every call of a run,
+        # so it is billed once every few minutes and at a tenth of the price
+        # after; a run's cost is mostly the lines themselves
+        "system": [{"type": "text", "text": SYSTEM + "\n\n" + EXAMPLES, "cache_control": {"type": "ephemeral"}}],
         "tools": [VERDICT_TOOL],
         "tool_choice": {"type": "tool", "name": "record_reading"},
         "messages": [{"role": "user", "content": packet_text(line)}],

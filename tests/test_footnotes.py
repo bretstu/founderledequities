@@ -121,6 +121,20 @@ def test_the_line_id_survives_a_footnote_change_and_the_prompt_is_versioned():
 
 
 def test_the_prompt_separates_a_spouse_from_a_gift_to_a_child():
-    assert "a marriage is one household" in F.SYSTEM and "a gift completed" in F.SYSTEM
+    assert "a marriage is one household" in F.SYSTEM and "GIFT COMPLETED" in F.SYSTEM
     assert "INDEPENDENT trustee" in F.SYSTEM and "Sage Resources" in F.EXAMPLES and "Descendants' Trust" in F.EXAMPLES
-    assert F.PROMPT_VERSION == "v267"
+    assert "the person is trustee: holds the strings" in F.EXAMPLES and "Start Small" in F.EXAMPLES
+    assert F.PROMPT_VERSION == "v268"
+
+
+def test_the_prompt_is_sent_as_a_cached_block(monkeypatch):
+    import json
+    root = F.parse_doc(DOC)
+    line = F.lines_of(root, "a")[0]
+    seen = {}
+    def fake_post(body, key):
+        seen.update(json.loads(body))
+        return {"content": [{"type": "tool_use", "input": {"label": "unclear", "quote": "no pecuniary interest in them", "basis": "statement"}}]}
+    monkeypatch.setattr(F, "_post", fake_post)
+    F.classify(line, "k")
+    assert isinstance(seen["system"], list) and seen["system"][0]["cache_control"] == {"type": "ephemeral"}
