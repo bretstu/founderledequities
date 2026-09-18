@@ -4345,3 +4345,45 @@ def test_a_forward_contract_delivery_beside_a_plan_sale_is_named_on_the_tape():
     evs = build_events(_docs_client(docs), 1554795, owner_cik="1")
     e = [x for x in evs if x.code == "S"]
     assert e and round(e[0].shares) == 150000 and round(e[0].also_shares) == -750000 and e[0].also_detail == "delivered on a forward sale contract", [(x.code, x.shares, x.also_shares, x.also_detail) for x in evs]
+
+
+def _hold(t, after, d, di="D", nat=""):
+    return (f'<nonDerivativeHolding><securityTitle><value>{t}</value></securityTitle>'
+            f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts>'
+            f'<ownershipNature><directOrIndirectOwnership><value>{di}</value></directOrIndirectOwnership><natureOfOwnership><value>{nat}</value></natureOfOwnership></ownershipNature></nonDerivativeHolding>')
+
+
+def _txn(t, code, sh, ad, after, d, di="D", nat=""):
+    return (f'<nonDerivativeTransaction><securityTitle><value>{t}</value></securityTitle><transactionDate><value>{d}</value></transactionDate><transactionCoding><transactionCode>{code}</transactionCode></transactionCoding>'
+            f'<transactionAmounts><transactionShares><value>{sh}</value></transactionShares><transactionAcquiredDisposedCode><value>{ad}</value></transactionAcquiredDisposedCode></transactionAmounts>'
+            f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>{di}</value></directOrIndirectOwnership><natureOfOwnership><value>{nat}</value></natureOfOwnership></ownershipNature></nonDerivativeTransaction>')
+
+
+def test_a_holdings_only_filing_lays_over_the_whole_statement_it_follows():
+    """HUANG, 6 JANUARY 2021 (2026-09-18): a Form 4 listing one annuity trust
+    at 747,390 and nothing else. Taken whole, the ledger would publish
+    747,390 against 18 million. A holdings-only filing updates the vehicles
+    it names; the class stands from the last filing that stated it whole."""
+    from fle.ledger import build_ledger
+    head = _HEAD
+    # the whole statement: a sale, the direct line and two trusts
+    whole = (head.format(p="2020-12-15") + _txn("Common Stock", "S", 10000, "D", 10000000, "2020-12-15")
+             + _hold("Common Stock", 7000000, "2020-12-15", "I", "By Trust A") + _hold("Common Stock", 800000, "2020-12-15", "I", "By Annuity Trust")
+             + '</ownershipDocument>')
+    # the quiet filing, newer: the annuity trust restated lower, nothing else
+    quiet = head.format(p="2021-01-06") + _hold("Common Stock", 747390, "2021-01-06", "I", "By Annuity Trust") + '</ownershipDocument>'
+    docs = {"meta": {"0001-21-000001": ("4", "2021-01-06"), "0001-20-000009": ("4", "2020-12-15")}, "xml": {"0001-21-000001": quiet, "0001-20-000009": whole}}
+    led = build_ledger(_docs_client(docs), 1649094, owner_cik="1", share_classes=1, class_members={"c-2": 600000000.0})
+    assert round(led.total) == 10000000 + 7000000 + 747390, "the quiet filing updates its trust; the rest of the class stands"
+    g = next(iter(led.groups.values()))
+    assert g.filed == "2021-01-06", "stated as of the newest filing that touched it"
+    # a class only ever stated by holdings-only filings is what they say
+    docs2 = {"meta": {"0001-21-000001": ("4", "2021-01-06")}, "xml": {"0001-21-000001": quiet}}
+    led2 = build_ledger(_docs_client(docs2), 1649094, owner_cik="1", share_classes=1, class_members={"c-2": 600000000.0})
+    assert round(led2.total) == 747390
+    # a newer whole statement still wins outright, as before
+    newer = head.format(p="2021-02-01") + _txn("Common Stock", "S", 5000, "D", 9995000, "2021-02-01") + '</ownershipDocument>'
+    docs3 = {"meta": {"0001-21-000002": ("4", "2021-02-01"), "0001-21-000001": ("4", "2021-01-06"), "0001-20-000009": ("4", "2020-12-15")},
+             "xml": {"0001-21-000002": newer, "0001-21-000001": quiet, "0001-20-000009": whole}}
+    led3 = build_ledger(_docs_client(docs3), 1649094, owner_cik="1", share_classes=1, class_members={"c-2": 600000000.0})
+    assert round(led3.total) == 9995000, "the February transaction filing states the class whole: the direct line only"
