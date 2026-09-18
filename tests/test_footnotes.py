@@ -85,3 +85,11 @@ def test_the_prompt_carries_the_grat_the_paired_units_and_the_name_rules():
 def test_the_statement_versus_name_pair_and_contiguous_quotes_are_in_the_prompt():
     assert "ONE CONTIGUOUS passage" in F.SYSTEM and "A STATEMENT of what the holder is decides" in F.SYSTEM
     assert "a charitable foundation\" is a statement" in F.EXAMPLES or "is a statement of what the holder is" in F.EXAMPLES
+
+
+def test_a_shortened_quote_passes_when_every_segment_is_the_footnotes_words():
+    w = ["The Reporting Person is the sole manager of Blue Media, LLC and a trustee of each of Lefkofsky Family Foundation and Vas.org Foundation."]
+    assert F.quote_in_footnotes("The Reporting Person is ... a trustee of each of Lefkofsky Family Foundation", w)
+    assert not F.quote_in_footnotes("The Reporting Person is ... a trustee of the Ford Foundation", w), "an invented segment fails"
+    assert not F.quote_in_footnotes("a trustee of each of Lefkofsky ... The Reporting Person is", w), "segments out of order fail"
+    assert "never disclaimed" in F.SYSTEM and "describes the class" in F.EXAMPLES

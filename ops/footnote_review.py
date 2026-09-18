@@ -39,13 +39,16 @@ def golden():
     # the expected label from the verdict: ok -> the flagged label stands; no -> economic; read -> any
     client = EdgarClient()
     P = {r["ticker"]: r for r in csv.DictReader(open(os.path.join(ROOT, "panel.csv"), encoding="utf-8-sig"))}
-    checked = flipped = 0
+    checked = flipped = unverified = 0
     cache = {}
     for k, v in reviewed.items():
         r = reads.get(k)
         if not r or v["verdict"] not in ("ok", "no"):
             continue
-        expect = r["label"] if v["verdict"] == "ok" else "economic"
+        # ok: the label recorded when the verdict was given (a flag label when
+        # the record predates that column); no: economic (unclear also accepted)
+        recorded = (v.get("label") or "").strip()
+        expect = (recorded or "flag") if v["verdict"] == "ok" else "economic"
         tk, acc = r["ticker"], r["accession"]
         cik = int(P[tk]["cik"]) if tk in P else None
         if cik is None:
@@ -67,11 +70,17 @@ def golden():
             continue
         got = classify(line, key_env)
         checked += 1
-        ok = (got["label"] == expect) or (expect == "economic" and got["label"] in ("economic", "unclear"))
+        if got["label"] == "none":
+            unverified += 1
+            print(f"  unverified {tk} {r['security'][:20]} {r['nature'][:30]}: the quote was not the footnote's words -- \"{got['quote'][:100]}\"")
+            continue
+        ok = ((expect == "flag" and got["label"] in ("disclaimed", "partial"))
+              or got["label"] == expect
+              or (expect == "economic" and got["label"] in ("economic", "unclear")))
         if not ok:
             flipped += 1
             print(f"  FLIPPED {tk} {r['security'][:20]} {r['nature'][:30]}: expected {expect}, read {got['label']} -- \"{got['quote'][:100]}\"")
-    print(f"  golden set: {checked} reviewed line(s) re-read, {flipped} flipped")
+    print(f"  golden set: {checked} reviewed line(s) re-read, {flipped} flipped, {unverified} unverified")
     return 1 if flipped else 0
 
 
@@ -84,12 +93,15 @@ def main(argv):
     if "--reviewed" in argv:
         i = argv.index("--reviewed")
         key, verdict = argv[i + 1], (argv[i + 2] if len(argv) > i + 2 else "ok")
+        label_now = ""
+        if os.path.exists(READS):
+            label_now = next((r["label"] for r in csv.DictReader(open(READS, encoding="utf-8-sig")) if r["key"] == key), "")
         new = not os.path.exists(REVIEWED)
         with open(REVIEWED, "a", newline="", encoding="utf-8") as fh:
             w = csv.writer(fh)
             if new:
-                w.writerow(["key", "verdict", "note"])
-            w.writerow([key, verdict, " ".join(argv[i + 3:])])
+                w.writerow(["key", "verdict", "note", "label"])
+            w.writerow([key, verdict, " ".join(argv[i + 3:]), label_now])
         print(f"  marked {key}: {verdict}")
         return 0
     reviewed = {}

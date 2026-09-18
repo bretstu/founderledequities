@@ -54,7 +54,7 @@ The question: does the reporting person have a PECUNIARY INTEREST in these share
 - partial: the footnote states the person's pecuniary interest is a FRACTION of the line (a partnership percentage, an LLC percentage, a charitable remainder or charitable lead trust where a CHARITY takes the other part). Give the fraction as a number between 0 and 1 if the footnote states one; otherwise null. A GRAT (grantor retained annuity trust) is NOT partial: the annuity returns to the grantor and the remainder goes to family, so it is economic.
 - unclear: the footnotes concern something else (a trading plan, a price, a conversion ratio, a vesting schedule), refer the reader to another filing, or do not say.
 
-Also economic: VOTING SHARES PAIRED WITH UNITS in an "Up-C" structure. When a footnote says shares of a class are "non-economic" or "have no economic rights" because they are paired with (or exchangeable together with) partnership or LLC units held by the same person, the person's economic interest is those units, one per share: label economic, and say "paired with units" in the reason.
+Also economic: VOTING SHARES PAIRED WITH UNITS in an "Up-C" structure. When a footnote says shares of a class are "non-economic" or "have no economic rights" because they are paired with (or exchangeable together with) partnership or LLC units held by the same person, the person's economic interest is those units, one per share: label economic, and say "paired with units" in the reason. When a footnote calls shares "non-economic" or "voting shares" and says NOTHING about units, the label is unclear, never disclaimed: the economics sit in units the filing reports elsewhere, and "non-economic" describes the class, not the person's interest.
 
 Rules:
 1. Use only the footnote text. Do NOT infer from the name of the entity: "Foundation", "Charitable", "Trust" or "Biohub" in a name decides nothing on its own; only what the footnote SAYS does. A footnote that merely names "the X Foundation" and adds the hedge is unclear, not disclaimed.
@@ -89,7 +89,8 @@ unclear: "The sales reported in this Form 4 were effected pursuant to a Rule 10b
 unclear: "These shares are owned indirectly by the Hayne Foundation. Mr. Hayne disclaims beneficial ownership of these shares, except to the extent of any pecuniary interest therein." -> unclear (a name is not a statement; nothing here says charity or no interest)
 disclaimed: "The shares are held by a charitable foundation. The reporting persons are officers of the charitable foundation and share voting and dispositive power for the foundation. The reporting persons disclaim beneficial ownership of the shares, except to the extent of their pecuniary interest therein." -> disclaimed ("a charitable foundation" is a statement of what the holder is; the hedge cannot create a pecuniary interest in a charity)
 economic: "Mr. Ergen established the Ergen Two-Year May 2025 GRAT and contributed 26,000,000 Class B shares to it. Mrs. Ergen serves as trustee." -> economic (a GRAT: annuity to the grantor, remainder to family)
-economic: "The shares of Class V-1 Common Stock have no economic rights and are paired with an equal number of Symbotic Holdings units held by the reporting person." -> economic (paired with units)"""
+economic: "The shares of Class V-1 Common Stock have no economic rights and are paired with an equal number of Symbotic Holdings units held by the reporting person." -> economic (paired with units)
+unclear: "Represents voting, non-economic shares of Class D Common Stock of the Issuer held by the Reporting Person." -> unclear ("non-economic" describes the class; nothing here says the person has no interest)"""
 
 
 def _t(node, path):
@@ -160,6 +161,36 @@ def line_key(owner_cik: str, line: dict) -> str:
     return f"{owner_cik}|{line['accession']}|{line['row']}|{h}"
 
 
+def quote_in_footnotes(quote: str, windows: list) -> bool:
+    """The founder stage's verbatim test, applied per segment: a quote the
+    model shortened with "..." passes when EVERY segment is verbatim and the
+    segments appear in order within one footnote. Shortening is allowed;
+    invention is not."""
+    if quote_is_verbatim(quote, windows):
+        return True
+    segs = [x.strip() for x in re.split(r"\s*(?:\.\.\.|\u2026)\s*", quote or "") if x.strip()]
+    if len(segs) < 2:
+        return False
+    from .founders import _norm
+    for w in windows:
+        nw = _norm(w)
+        pos = 0
+        good = True
+        for seg in segs:
+            ns = _norm(seg)
+            if len(ns) < 8:
+                good = False
+                break
+            i = nw.find(ns, pos)
+            if i < 0:
+                good = False
+                break
+            pos = i + len(ns)
+        if good:
+            return True
+    return False
+
+
 def classify(line: dict, api_key: str, model: str = ANTHROPIC_MODEL) -> dict:
     """-> {'label', 'fraction', 'quote', 'reason', 'verified', 'model'}; the
     label is 'none' when the reply is malformed or the quote is not in the
@@ -185,7 +216,7 @@ def classify(line: dict, api_key: str, model: str = ANTHROPIC_MODEL) -> dict:
     label = str(got.get("label") or "").strip().lower()
     quote = str(got.get("quote") or "").strip()
     windows = [v for _k, v in line["footnotes"]] + ([line["remarks"]] if line.get("remarks") else [])
-    ok = label in LABELS and quote_is_verbatim(quote, windows)
+    ok = label in LABELS and quote_in_footnotes(quote, windows)
     frac = got.get("fraction")
     try:
         frac = float(frac) if frac is not None else None
