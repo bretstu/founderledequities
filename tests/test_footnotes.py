@@ -118,3 +118,9 @@ def test_the_line_id_survives_a_footnote_change_and_the_prompt_is_versioned():
     line = F.lines_of(root, "a")[0]
     assert F.line_id("1548760", line) == "1548760|a|1" and F.line_key("1548760", line).startswith("1548760|a|1|")
     assert F.PROMPT_VERSION.startswith("v") and "prompt" in F.READ_COLUMNS
+
+
+def test_the_prompt_separates_a_spouse_from_a_gift_to_a_child():
+    assert "a marriage is one household" in F.SYSTEM and "a gift completed" in F.SYSTEM
+    assert "INDEPENDENT trustee" in F.SYSTEM and "Sage Resources" in F.EXAMPLES and "Descendants' Trust" in F.EXAMPLES
+    assert F.PROMPT_VERSION == "v267"
