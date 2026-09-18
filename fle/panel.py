@@ -72,7 +72,7 @@ COLUMNS = [
     "flow_residual", "flows_reconcile", "filings_read", "splits", "split_note", "gap_days",
     # THE GRADE (fle/grade.py, 2026-09-17): four checks, filled after the
     # history stage; and the fact the statement check reads
-    "lines_stated", "chain", "statement", "classes", "denominator", "proxy", "proxy_date", "proxy_shares",
+    "lines_stated", "chain", "statement", "classes", "denominator",
 ]
 
 
