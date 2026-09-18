@@ -819,7 +819,9 @@ def event_row(e) -> list:
         "" if e.outstanding is None else f"{e.outstanding:.0f}",
         "" if e.pct_after is None else f"{e.pct_after:.4f}",
         "" if e.residue is None else f"{e.residue:.0f}",
-        e.plan, e.other_codes, e.rows, e.unpriced_rows, e.securities,
+        e.plan, e.other_codes,
+        "" if getattr(e, "also_shares", None) is None else f"{e.also_shares:.0f}", getattr(e, "also_detail", "") or "",
+        e.rows, e.unpriced_rows, e.securities,
         e.direct, e.form, e.accession, e.price_flag, e.url,
         e.registered, "1" if e.pre_registration else "",
         "" if e.avg_price_adjusted is None else f"{e.avg_price_adjusted:.4f}",
@@ -829,7 +831,7 @@ def event_row(e) -> list:
 EVENT_COLUMNS = ["ticker", "cik", "ceo", "owner_cik", "filed", "traded",
                  "code", "label", "shares", "value", "avg_price",
                  "pct_of_holding", "pct_approx", "net_change", "day_net", "holding_after", "outstanding", "pct_after", "residue",
-                 "plan", "other_codes", "rows", "unpriced_rows", "securities",
+                 "plan", "other_codes", "also_shares", "also_detail", "rows", "unpriced_rows", "securities",
                  "direct", "form", "accession", "price_flag", "url",
                  "registered", "pre_ipo", "avg_price_adjusted", "traded_from", "first_buy"]
 

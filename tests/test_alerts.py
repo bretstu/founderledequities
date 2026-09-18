@@ -144,3 +144,26 @@ def test_the_alert_facts_are_three_lines_and_a_note_when_the_holding_was_restate
     assert "e.facts" in run and "${first.tk} \\u00b7" in run, "the mail lays the facts out and the subject leads with the ticker"
     page = open(os.path.join(str(ROOT), "alerts.html"), encoding="utf-8").read()
     assert 'class="facts"' in page and "Transaction date" in page and "09/10/2026" in page, "the sample is the mail"
+
+
+def test_the_days_other_disposition_is_named_and_the_percentage_is_the_transactions():
+    """RED CAT (2026-09-18): a 150,000 plan sale beside a 750,000 delivery under
+    a forward sale contract. The alert names the second on its own line and
+    the stake's parenthetical says "in all"; the tape's detail carries it."""
+    import os
+    import sys
+    sys.path.insert(0, os.path.join(str(ROOT), "ops"))
+    import alerts
+    import kinds
+    r = {"ticker": "RCAT", "ceo": "Jeffrey Thompson", "code": "S", "plan": "plan", "label": "scheduled sale", "shares": "150000", "value": "1200000",
+         "pct_of_holding": "-7.1359", "pct_after": "7.67", "holding_after": "11712202", "net_change": "-900000", "outstanding": "152714362",
+         "also_shares": "-750000", "also_detail": "delivered on a forward sale contract", "traded": "2026-09-15", "filed": "2026-09-17"}
+    f = dict(alerts.facts(r, 1.2e6, True))
+    assert f["Also filed"] == "750,000 shares delivered on a forward sale contract" and f["Stake"].endswith("(-7.1% of the holding in all)")
+    assert kinds.detail_of(r) == "pre-set plan + 750,000 delivered on a forward sale contract"
+    plain = dict(r, also_shares="", also_detail="", net_change="-150000", holding_after="12612202", pct_of_holding="-1.1753")
+    g = dict(alerts.facts(plain, 1.2e6, True))
+    assert "Also filed" not in g and g["Stake"].endswith("(-1.2% of the holding)")
+    # the event reader: a J beside a trade, with a Forward Sale Contract in Table II, is named
+    from fle.events import Event
+    assert hasattr(Event, "also_shares") and hasattr(Event, "also_detail")

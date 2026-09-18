@@ -447,7 +447,7 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     # the walk, is the seal. The filing link stays sealed with the record.
     EV_MASK = ("avg_price", "avg_price_adjusted", "shares", "pct_of_holding", "pct_approx",
                "net_change", "day_net", "holding_after", "pct_after", "residue", "url",
-               "rows", "unpriced_rows", "securities")
+               "rows", "unpriced_rows", "securities", "also_shares")   # the other disposition's size is the seal's too
     def masked_row(r):
         m = dict(r)
         for c in EV_MASK:

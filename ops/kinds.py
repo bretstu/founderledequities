@@ -84,6 +84,18 @@ def group_of(e):
     return "sold" if k in ("disc", "plan", "sold") else k
 
 
+def _with_also(e, detail):
+    """RED CAT (2026-09-18): the day's other disposition rides on the trade's
+    detail, so "pre-set plan" reads "pre-set plan + 750,000 delivered on a
+    forward sale contract" and the change column's -7.1% has its reason."""
+    try:
+        n = abs(float(e.get("also_shares") or 0))
+    except (TypeError, ValueError):
+        n = 0.0
+    d = (e.get("also_detail") or "").strip()
+    return f"{detail} + {n:,.0f} {d}" if n >= 1 and d else detail
+
+
 def detail_of(e):
     """The grey word after the badge, the filing's label in the site's words."""
     if _pre(e):
@@ -92,9 +104,9 @@ def detail_of(e):
     if k == "bought":
         return "pre-set plan" if (e.get("plan") or "") == "plan" else "open market"
     if k == "disc":
-        return "open market"
+        return _with_also(e, "open market")
     if k == "plan":
-        return "pre-set plan"
+        return _with_also(e, "pre-set plan")
     if k == "sold":
         return "not stated"
     return KIND_DETAIL.get(e.get("label") or "", "compensation" if k == "comp" else "other transaction")

@@ -1055,6 +1055,7 @@ function mapEvents(recs){
     mk:String(r.masked||"")==="1",
     fb:String(r.first_buy||"")==="1",   /* this person's first open-market purchase on record */
     rs:num(r.residue),pl:r.plan||"unknown",u:r.url||"",fl:r.price_flag||"",acc:r.accession||"",
+    als:num(r.also_shares),ald:r.also_detail||"",   /* the day's other disposition beside the trade (Red Cat, 2026-09-18) */
     pre:String(r.pre_ipo||"")==="1",reg:r.registered||""
   })).filter(e=>e.tk&&e.fd).sort((a,b)=>a.fd<b.fd?1:-1);
 }
@@ -1795,12 +1796,13 @@ const KIND_DETAIL={"exercise and sell":"options cashed","exercise, part sold":"o
   "award granted":"award granted","award granted, tax withheld":"award granted, tax withheld","forfeited":"forfeited",
   "converted":"converted","gift":"gift","shares withheld for tax":"withheld for tax","other transaction":"other transaction"};
 /*@shared*/
+function withAlso(e,d){return (e.als&&Math.abs(e.als)>=1&&e.ald)?`${d} + ${Math.round(Math.abs(e.als)).toLocaleString("en-US")} ${e.ald}`:d;}
 function tapeDetail(e){
   if(e.pre)return "pre-IPO";
   const k=tapeKind(e);
-  if(k==="bought")return e.pl==="plan"?"pre-set plan":"open market";
-  if(k==="disc")return "open market";
-  if(k==="plan")return "pre-set plan";
+  if(k==="bought")return withAlso(e,e.pl==="plan"?"pre-set plan":"open market");
+  if(k==="disc")return withAlso(e,"open market");
+  if(k==="plan")return withAlso(e,"pre-set plan");
   if(k==="sold")return "not stated";
   return KIND_DETAIL[e.lb]||(k==="comp"?"compensation":"other transaction");
 }

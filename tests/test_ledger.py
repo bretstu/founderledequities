@@ -4326,3 +4326,22 @@ def test_a_glued_class_designator_reads_as_its_letter():
     assert title_letter("ClassA Common") == ("class", "A") and is_share_class("ClassA Common")
     L = class_letters({"us-gaap:CommonClassAMember": 1.0, "us-gaap:CommonClassBMember": 1.0})
     assert match_class("ClassA Common", L) == match_class("Class A Common Stock", L) == L[("class", "A")]
+
+
+def test_a_forward_contract_delivery_beside_a_plan_sale_is_named_on_the_tape():
+    """RED CAT, 15 Sept 2026: Table I has a J disposal of 750,000 and an S of
+    150,000; Table II's "Forward Sale Contract (obligation to sell)" goes to
+    zero. The event names the delivery and its size beside the sale."""
+    from fle.events import build_events
+    head = ('<ownershipDocument><periodOfReport>2026-09-15</periodOfReport><issuer><issuerCik>0001554795</issuerCik></issuer>'
+            '<reportingOwner><reportingOwnerId><rptOwnerCik>0001</rptOwnerCik><rptOwnerName>Thompson Jeffrey</rptOwnerName></reportingOwnerId>'
+            '<reportingOwnerRelationship><isOfficer>1</isOfficer><officerTitle>CEO</officerTitle></reportingOwnerRelationship></reportingOwner>')
+    fwd = ('<derivativeTransaction><securityTitle><value>Forward Sale Contract (obligation to sell)</value></securityTitle><transactionDate><value>2026-09-15</value></transactionDate><transactionCoding><transactionCode>J</transactionCode></transactionCoding>'
+           '<transactionAmounts><transactionShares><value>750000</value></transactionShares><transactionAcquiredDisposedCode><value>D</value></transactionAcquiredDisposedCode></transactionAmounts>'
+           '<underlyingSecurity><underlyingSecurityTitle><value>Common Stock</value></underlyingSecurityTitle><underlyingSecurityShares><value>750000</value></underlyingSecurityShares></underlyingSecurity>'
+           '<postTransactionAmounts><sharesOwnedFollowingTransaction><value>0</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></derivativeTransaction>')
+    doc = head + _tx("Common Stock", "J", 750000, "D", 11862202, "2026-09-15") + _tx("Common Stock", "S", 150000, "D", 11712202, "2026-09-15", "7.75") + fwd + '</ownershipDocument>'
+    docs = {"meta": {"0001-26-000191": ("4", "2026-09-17")}, "xml": {"0001-26-000191": doc}}
+    evs = build_events(_docs_client(docs), 1554795, owner_cik="1")
+    e = [x for x in evs if x.code == "S"]
+    assert e and round(e[0].shares) == 150000 and round(e[0].also_shares) == -750000 and e[0].also_detail == "delivered on a forward sale contract", [(x.code, x.shares, x.also_shares, x.also_detail) for x in evs]

@@ -161,6 +161,15 @@ class Event:
     day_net: float | None = None        # what the day did on record, all its filings and any residue, from history
     residue: float | None = None        # history's `unexplained` for the day
     other_codes: str = ""              # A/M/F/C/G in the same filing
+    # THE DAY'S OTHER DISPOSITION OR ACQUISITION (2026-09-18, Red Cat): a
+    # J-coded delivery of 750,000 shares under a forward sale contract sat
+    # beside a 150,000 plan sale, was counted in the day's net and never
+    # named; the tape called the day "planned, $1.2M, -7.1%". The shares the
+    # non-trade codes moved (signed), and what they were where a structured
+    # field says (a derivative titled "Forward Sale Contract" is the contract
+    # settling; the code alone is "other transaction").
+    also_shares: float | None = None
+    also_detail: str = ""
     vested: bool = False               # the M was units settling (RSUs, PSUs), not an option exercised (2026-09-17)
     price_flag: str = ""
     url: str = ""
@@ -558,6 +567,30 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                      and re.search(r"\bunits?\b|\bRSU|\bPSU", _t(n, "securityTitle") or "", re.I)
                      and not re.search(r"\boption", _t(n, "securityTitle") or "", re.I)
                      for n in root.iter("derivativeTransaction"))
+        also = [r for r in lines if r.code and r.code not in TRADE_CODES and r.table == "I" and r.moved == r.moved and r.moved]
+        also_shares = sum((r.moved if r.acquired else -r.moved) for r in also) if also else None
+        also_detail = ""
+        if also:
+            big = max(also, key=lambda r: r.moved)
+            titles = " ".join((_t(n, "securityTitle") or "") for n in root.iter("derivativeTransaction"))
+            if big.code == "J" and re.search(r"\bforward\b", titles, re.I):
+                also_detail = "delivered on a forward sale contract" if not big.acquired else "received on a forward contract"
+            elif big.code == "J":
+                also_detail = "other transaction"
+            elif big.code == "G":
+                also_detail = "given as a gift" if not big.acquired else "received as a gift"
+            elif big.code == "F":
+                also_detail = "withheld for tax"
+            elif big.code == "A":
+                also_detail = "granted"
+            elif big.code == "M":
+                also_detail = "vested" if vested else "exercised"
+            elif big.code == "C":
+                also_detail = "converted"
+            elif big.code == "D":
+                also_detail = "disposed to the issuer"
+            else:
+                also_detail = f"code {big.code}"
         # the day history stated this filing's position on
         period = period_end(client, issuer_cik, f, ends)
 
@@ -642,6 +675,8 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
                 outstanding=outstanding, pct_after=pct_after,
                 other_codes="".join(others),
                 vested=vested,
+                also_shares=also_shares if has_trade else None,   # beside a trade; a filing with no trade is already named by its own code
+                also_detail=also_detail if has_trade else "",
                 url=_doc_url(issuer_cik, acc, f.get("primaryDocument") or ""),
                 registered=registered,
             ))

@@ -158,11 +158,24 @@ def facts(r, value, founder: bool) -> list:
     if how:
         bits.append(how)
     out = [(verb, " \u00b7 ".join(bits))]
+    # THE DAY'S OTHER DISPOSITION (Red Cat): named on its own line, and the
+    # transaction's share of the holding is the transaction's, not the day's
+    also, also_detail = _num(r.get("also_shares")), (r.get("also_detail") or "").strip()
+    if also and also_detail:
+        out.append(("Also filed", f"{abs(also):,.0f} shares {also_detail}"))
     when, filed = mdy(r.get("traded") or r.get("filed")), mdy(r.get("filed"))
     out.append(("Transaction date", when))
     out.append(("Filing date", filed))
-    mv = _num(r.get("pct_of_holding"))
     after, before = _num(r.get("pct_after")), before_pct(r)
+    mv = _num(r.get("pct_of_holding"))
+    held_after, net = _num(r.get("holding_after")), _num(r.get("net_change"))
+    if shares and held_after is not None and net is not None and (held_after - net) > 0:
+        own = shares / (held_after - net) * 100 * (1 if code == "P" or (code not in ("S",) and (net or 0) > 0) else -1)
+        mv_txt = f"{own:+.1f}% of the holding" + (" in all" if also and abs(also) >= 1 else "")
+        if also and abs(also) >= 1 and mv is not None:
+            mv_txt = f"{mv:+.1f}% of the holding in all"
+    else:
+        mv_txt = f"{mv:+.1f}% of the holding" if mv else ""
     f = lambda x: f"{x:.3f}%" if x < 1 else f"{x:.2f}%"  # noqa: E731
     res, held = _num(r.get("residue")), _num(r.get("holding_after"))
     if res and held and abs(res) / max(abs(held) + abs(res), 1.0) > 0.02:
@@ -171,7 +184,7 @@ def facts(r, value, founder: bool) -> list:
         return out
     if after is not None and before is not None and abs(after - before) > 0.0005:
         arrow = f"{f(before)} \u2192 {f(after)}"
-        out.append(("Stake", arrow + (f"  ({mv:+.1f}% of the holding)" if mv else "")))
+        out.append(("Stake", arrow + (f"  ({mv_txt})" if mv_txt else "")))
     elif after is not None:
         out.append(("Stake", f(after)))
     return out
