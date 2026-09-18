@@ -179,6 +179,8 @@ def statement(row: dict, today: dt.date) -> tuple[str, str]:
 def classes(row: dict) -> tuple[str, str]:
     flags = " | ".join(x for x in (row.get("problems") or "", row.get("cautions") or "") if x)
     low = flags.lower()
+    if "in existence: a line is counted twice" in flags:
+        return FAIL, "a class is counted above the number of shares in existence; a line is counted twice"
     if "absent from the cover page" in flags:
         return FAIL, "a class with shares that the cover page does not count; the denominator may not include them"
     if "walk did not settle" in flags:

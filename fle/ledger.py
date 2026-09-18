@@ -1339,7 +1339,6 @@ class Ledger:
     note: str = ""
     trace: list = field(default_factory=list)
     form3_date: str = ""          # the initial statement, read for the flows
-    overlays: dict = field(default_factory=dict)   # holdings-only statements awaiting a whole one (2026-09-18)
     opening_source: str = ""      # "Form 3", or "oldest filing read" when there is none (2026-09-17)
     oldest_before: float | None = None   # the position before the oldest filing's own transactions
     oldest_date: str = ""
@@ -1817,34 +1816,28 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                 del here[key]
         for key, g in here.items():
             g.filed = when
-            # A HOLDINGS-ONLY FILING DOES NOT STATE THE CLASS WHOLE (2026-09-18).
-            # Form 4's instruction: a filing that reports a transaction in a
-            # class states the person's whole ownership of that class; a
-            # filing that only lists holdings makes no such claim (Huang's
-            # quiet 6 January 2021 Form 4 listed one annuity trust, 747,390
-            # shares, and nothing else; taken whole it would have published
-            # him at 747,390 against 18 million). The history has always kept
-            # this distinction; the ledger took the class from whichever
-            # filing mentioned it first. Now, walking newest-first: a
-            # holdings-only statement is held as an OVERLAY of the vehicles
-            # it names until the next older filing that states the class
-            # whole (a transaction in it, or a Form 3), and is laid over
-            # that: the overlay's vehicles are newer and win, the rest of the
-            # whole statement stands. A class that only ever appears in
-            # holdings-only filings is what those filings say.
-            whole = g.moved_here or (form or "").startswith("3")
-            if key not in led.groups and not whole:
-                ov = led.overlays.get(key)
-                if ov is None:
-                    led.overlays[key] = g
-                else:
-                    _merge_same_day(ov, g, newest_first=True)   # newer vehicles already there win
-                continue
+            # A FILING THAT STATES A CLASS STATES IT WHOLE, HOLDINGS-ONLY OR NOT
+            # (2026-09-18, decided twice). Form 4's instruction says a
+            # holdings-only filing makes no claim about the whole class, and
+            # for a day this walk honoured that: a holdings-only statement was
+            # laid over the last whole one, its vehicles winning and the rest
+            # standing. Two real filings said otherwise. Plank's 26 Aug 2026
+            # filing restated Class B through the five LLCs the shares had
+            # been moved INTO, and never the direct line they came OUT OF;
+            # "the rest stands" kept that line, and he held 63,960,624 of a
+            # class with 34,450,000 in existence. Dudum's 12 Nov 2025 filing
+            # did the same with a GRAT and the trust that received its
+            # shares. Filers use holdings-only filings to restate a class
+            # after moving shares between their own vehicles, and the source
+            # is not restated. Taken whole, both read to the share against
+            # an outside source. The cost is Huang's quiet January 2021 kind
+            # (one trust listed, nothing else), which understates VISIBLY --
+            # the chain and statement checks flag it -- where the overlay
+            # overstated silently. Understate visibly; never overstate
+            # silently. The same-day pairing below handles the case Huang's
+            # actually was. The per-class cap (ownership.build) now catches
+            # any class counted above its cover count by any route.
             if key not in led.groups:
-                ov = led.overlays.pop(key, None)
-                if ov is not None:
-                    _merge_same_day(g, ov, newest_first=False)  # the newer holdings lay over the whole statement
-                    g.filed = ov.filed or when
                 led.groups[key] = g
                 if g.table == "II":
                     led.converted.append(g.security)
@@ -1867,14 +1860,6 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
 
         if not led.options:
             led.options, led.option_titles, led.partnership_units = _options(root)
-
-    # a class stated only ever by holdings-only filings is what they say
-    for key, ov in list(led.overlays.items()):
-        if key not in led.groups:
-            led.groups[key] = ov
-            if ov.table == "II":
-                led.converted.append(ov.security)
-    led.overlays.clear()
 
     # THE FORM 3, FOR THE FLOWS ONLY. The position no longer needs it -- a
     # filing states each group whole, so nothing is carried and there is

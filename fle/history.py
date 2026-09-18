@@ -740,16 +740,16 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
             chained.filed = when
 
             prev = period_prev[key]
-            # A TRANSACTION FILING STATES THE CLASS WHOLE; A HOLDINGS-ONLY ONE
-            # DOES NOT (Form 4's instruction, and Huang's quiet January 2021
-            # filing). The ledger takes a class from any filing that mentions
-            # it, which is a simplification; this fold keeps the instruction's
-            # distinction. Where the two read a holdings-only filing
-            # differently (Hims, 12 Nov 2025: a transfer between vehicles
-            # stated only at the destination), the grade says the record
-            # disagrees with itself, which is the honest verdict. Considered
-            # and kept on 2026-09-17.
-            if prev is None or chained.moved_here:
+            # A FILING THAT STATES A CLASS STATES IT WHOLE, HOLDINGS-ONLY OR
+            # NOT (2026-09-18, the ledger's rule; see build_ledger for the
+            # two filings that decided it: Plank's Class B counted at
+            # 63,960,624 against 34,450,000 in existence, Dudum's GRAT
+            # counted beside the trust that received its shares). The merge
+            # this replaces -- "the named vehicles update, the rest of the
+            # class stands" -- was Form 4's instruction and double-counted
+            # both. Huang's quiet filing, which the merge was written for,
+            # is a same-day pair and is merged as one below either way.
+            if True:
                 if prev is not None:
                     have = chained.vehicles()
                     # AN ANONYMOUS VEHICLE IS COVERED BY ARITHMETIC, NOT BY
@@ -832,21 +832,6 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
                             if not any(abs(w[0] - u_bal) < 0.5 for w in slot):
                                 slot.append((u_bal, when, len(hist.snapshots)))
                 groups[key] = chained
-            else:
-                # Holdings only: no claim to the total. The named vehicles
-                # update; the rest of the class stands. An anonymous line
-                # restates every anonymous vehicle of its text, segments
-                # included (Group.covers): the trusts a transaction filing
-                # told apart are the trusts this filing lists as one text.
-                merged = copy.deepcopy(prev)
-                for u in list(merged.vehicles()):
-                    if u not in chained.hold_by_vehicle and chained.covers(u):
-                        for d in (merged.hold_by_vehicle, merged.last_txn, merged.opening):
-                            d.pop(u, None)
-                merged.holdings = sum(merged.hold_by_vehicle.values())
-                _merge_same_day(merged, chained, newest_first=False)
-                merged.filed = when
-                groups[key] = merged
 
         if since and when < since:
             continue                 # read it, do not emit it

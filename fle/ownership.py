@@ -56,7 +56,7 @@ from dataclasses import dataclass, field, asdict
 from .config import SETTINGS
 from .schedule13 import is_foreign_reporter, stake_from_schedule13
 from .identity import peo_from_certification
-from .ledger import build_ledger, retired_classes, closed_groups, title_letter
+from .ledger import build_ledger, retired_classes, closed_groups, title_letter, class_letters
 from .splits import fetch_splits
 from .successor import find_predecessor
 from .outstanding import shares_outstanding, jumped
@@ -463,6 +463,34 @@ def build(client, cik: int, company: str = "", ticker: str = "",
                    f"curated list: " + " | ".join(
                        f"{lab} ({src})" for lab, (_, _, src) in
                        led.excluded.items()))
+    # NO ONE HOLDS MORE OF A CLASS THAN EXISTS (2026-09-18, Under Armour).
+    # The cover names each class's count; where the person's lines of a
+    # lettered class add to more than that, a line is counted twice (a
+    # holdings-only filing restated the vehicles shares were moved INTO and
+    # never the line they came OUT OF: Plank at 63,960,624 of a class with
+    # 34,450,000 in existence). Neither walk can see this from the filings;
+    # the cover can. A problem, and the grade's classes check fails on it.
+    try:
+        by_letter = {}
+        for _k, g in led.groups.items():
+            if not g.shares:
+                continue
+            tl = title_letter(g.security or "")
+            if tl and tl[1]:
+                by_letter[tl] = by_letter.get(tl, 0.0) + g.shares
+        counts = {}
+        for m, n in (out.per_class or {}).items():
+            tl_m = next(iter(class_letters({m: n}).keys()), None)
+            if tl_m and tl_m[1] and n:
+                counts[tl_m] = n
+        for tl, held in by_letter.items():
+            n = counts.get(tl)
+            if n and held > n * 1.001:
+                flag("problem", f"the record counts {held:,.0f} shares of {tl[0].title()} {tl[1]} against {n:,.0f} in existence: "
+                                f"a line is counted twice (a vehicle restated after shares moved out of another)")
+    except Exception:  # noqa: BLE001
+        pass
+
     # A DISCOVERED CLASS THAT HOLDS NOTHING IS NOT A PROBLEM (2026-09-17,
     # EquipmentShare): the pre-IPO "Common Stock" of a January filing, converted
     # at the listing, leaves an empty group; an empty group cannot be

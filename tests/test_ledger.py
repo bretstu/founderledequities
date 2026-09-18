@@ -867,13 +867,16 @@ def test_the_history_ends_where_the_panel_does():
     # the same 250 shares over the new denominator (add_cover_points)
     assert got == [("2016-02-01", 100.0), ("2019-05-01", 250.0),
                    ("2024-01-01", 250.0),
-                   ("2024-08-01", 400.0), ("2025-01-01", 475.0)]
+                   ("2024-08-01", 400.0), ("2025-01-01", 75.0)]
     assert [s.cover for s in hist.snapshots] == [False, False, True, False, False]
     assert hist.snapshots[2].outstanding == 2000.0 and hist.snapshots[2].pct == 12.5
 
-    # the last snapshot is direct 400 + indirect 75, which is what a
-    # newest-first walk over the same filings would settle on
-    assert hist.snapshots[-1].shares == 475.0
+    # THE LAST SNAPSHOT IS THE NEWEST FILING'S WHOLE STATEMENT (2026-09-18):
+    # the 2025 holdings-only filing lists the indirect 75 and nothing else,
+    # so the class is 75, in both walks. (Until today the history merged it
+    # onto the 400: 475, a number the panel never showed. Plank and Dudum
+    # decided it: see build_ledger.)
+    assert hist.snapshots[-1].shares == 75.0
 
     # and the denominator is the one in force at each date, not today's
     assert hist.snapshots[0].outstanding == 1000.0
@@ -2116,22 +2119,24 @@ def test_two_running_balances_for_one_vehicle_keep_only_the_last():
     assert hist.snapshots[0].shares == 411_062_076
 
 
-def test_a_holdings_only_filing_still_cannot_restate_the_class():
-    """The obligation to state a class total attaches to a class in which a
-    transaction was reported. A filing that only restates some holdings
-    updates those vehicles and leaves the rest standing -- otherwise Huang's
-    quiet January filing would erase his position all over again."""
+def test_a_holdings_only_filing_states_the_class_whole_unless_it_is_a_same_day_pair():
+    """DECIDED 2026-09-18 (Plank, Dudum): a filing that states a class states
+    it whole, holdings-only or not. Huang's quiet January 2021 filing was
+    the second of a same-day pair, and a pair is merged as one statement;
+    the same quiet filing on a LATER day restates the class as what it
+    lists, in both walks, and the chain check says the stake fell."""
     full = _h4v([("Common Stock", "D", None, 1_260_004, "S"),
                  ("Common Stock", "I", "By Trust", 15_639_909, None),
                  ("Common Stock", "I", "By Partnership", 1_237_239, None)],
-                "2020-12-11")
+                "2021-01-06")
     quiet = _h4v([("Common Stock", "I", "By Annuity Trust", 747_390, None)],
                  "2021-01-06")
     hist = _walk_priced({"h1": full, "h2": quiet},
-                        [("h1", "2020-12-11"), ("h2", "2021-01-06")])
-    assert hist.snapshots[0].shares == 18_137_152
-    # the quiet filing adds a vehicle; it does not delete the others
-    assert hist.snapshots[-1].shares == 18_137_152 + 747_390
+                        [("h1", "2021-01-06"), ("h2", "2021-01-06")])
+    assert hist.snapshots[-1].shares == 18_137_152 + 747_390, "the same-day pair is one statement"
+    later = _h4v([("Common Stock", "I", "By Annuity Trust", 747_390, None)], "2021-02-06")
+    hist2 = _walk_priced({"h1": full, "h2": later}, [("h1", "2021-01-06"), ("h2", "2021-02-06")])
+    assert hist2.snapshots[0].shares == 18_137_152 and hist2.snapshots[-1].shares == 747_390, "a later holdings-only filing is the whole statement: visibly low, never silently high"
 
 
 def test_direct_and_indirect_lines_of_one_class_still_add():
@@ -4359,31 +4364,3 @@ def _txn(t, code, sh, ad, after, d, di="D", nat=""):
             f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>{di}</value></directOrIndirectOwnership><natureOfOwnership><value>{nat}</value></natureOfOwnership></ownershipNature></nonDerivativeTransaction>')
 
 
-def test_a_holdings_only_filing_lays_over_the_whole_statement_it_follows():
-    """HUANG, 6 JANUARY 2021 (2026-09-18): a Form 4 listing one annuity trust
-    at 747,390 and nothing else. Taken whole, the ledger would publish
-    747,390 against 18 million. A holdings-only filing updates the vehicles
-    it names; the class stands from the last filing that stated it whole."""
-    from fle.ledger import build_ledger
-    head = _HEAD
-    # the whole statement: a sale, the direct line and two trusts
-    whole = (head.format(p="2020-12-15") + _txn("Common Stock", "S", 10000, "D", 10000000, "2020-12-15")
-             + _hold("Common Stock", 7000000, "2020-12-15", "I", "By Trust A") + _hold("Common Stock", 800000, "2020-12-15", "I", "By Annuity Trust")
-             + '</ownershipDocument>')
-    # the quiet filing, newer: the annuity trust restated lower, nothing else
-    quiet = head.format(p="2021-01-06") + _hold("Common Stock", 747390, "2021-01-06", "I", "By Annuity Trust") + '</ownershipDocument>'
-    docs = {"meta": {"0001-21-000001": ("4", "2021-01-06"), "0001-20-000009": ("4", "2020-12-15")}, "xml": {"0001-21-000001": quiet, "0001-20-000009": whole}}
-    led = build_ledger(_docs_client(docs), 1649094, owner_cik="1", share_classes=1, class_members={"c-2": 600000000.0})
-    assert round(led.total) == 10000000 + 7000000 + 747390, "the quiet filing updates its trust; the rest of the class stands"
-    g = next(iter(led.groups.values()))
-    assert g.filed == "2021-01-06", "stated as of the newest filing that touched it"
-    # a class only ever stated by holdings-only filings is what they say
-    docs2 = {"meta": {"0001-21-000001": ("4", "2021-01-06")}, "xml": {"0001-21-000001": quiet}}
-    led2 = build_ledger(_docs_client(docs2), 1649094, owner_cik="1", share_classes=1, class_members={"c-2": 600000000.0})
-    assert round(led2.total) == 747390
-    # a newer whole statement still wins outright, as before
-    newer = head.format(p="2021-02-01") + _txn("Common Stock", "S", 5000, "D", 9995000, "2021-02-01") + '</ownershipDocument>'
-    docs3 = {"meta": {"0001-21-000002": ("4", "2021-02-01"), "0001-21-000001": ("4", "2021-01-06"), "0001-20-000009": ("4", "2020-12-15")},
-             "xml": {"0001-21-000002": newer, "0001-21-000001": quiet, "0001-20-000009": whole}}
-    led3 = build_ledger(_docs_client(docs3), 1649094, owner_cik="1", share_classes=1, class_members={"c-2": 600000000.0})
-    assert round(led3.total) == 9995000, "the February transaction filing states the class whole: the direct line only"

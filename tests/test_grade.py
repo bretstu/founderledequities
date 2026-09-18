@@ -216,3 +216,17 @@ def test_the_history_keys_every_year_with_the_ledgers_scheme_bloom():
     assert round(by["2021-04-06"].shares) == 519767 + 1495749, "2021 counts Class A and Class B together"
     assert round(by["2026-09-01"].shares) == 4511513, "2026's Common Stock replaces 2021's Class A line; Class B is closed by the 2024 cover"
     assert round(rows[-1].shares) == round(led.total), "the last row is the panel"
+
+
+def test_a_class_counted_above_its_cover_count_fails_the_classes_check():
+    """UNDER ARMOUR (2026-09-18): Plank's Class B counted at 63,960,624 against
+    34,450,000 in existence. Neither walk can see a double count; the cover
+    can, and the classes check fails on the sentence the panel writes."""
+    from fle.grade import classes
+    r = _row(problems="the record counts 63,960,624 shares of Class B against 34,450,000 in existence: a line is counted twice (a vehicle restated after shares moved out of another)")
+    lvl, text = classes(r)
+    assert lvl == "fail" and "counted twice" in text
+    import inspect
+    import fle.ownership as O
+    src = inspect.getsource(O.build)
+    assert "in existence" in src and "by_letter" in src, "the panel stage computes the cap per lettered class from the cover"
