@@ -63,7 +63,7 @@ CHAIN_MONTHS = 12
 CHAIN_WARN, CHAIN_FAIL = 1.0, 10.0          # per cent of the position at the time
 LINE_WARN_DAYS, LINE_FAIL_DAYS = 548, 1826  # 18 months, 5 years
 COUNT_WARN_DAYS, COUNT_FAIL_DAYS = 150, 365
-CHECKS = ("chain", "statement", "classes", "denominator")
+CHECKS = ("chain", "statement", "classes", "denominator", "proxy")
 
 FEWER_LINES = "the newest filing names fewer lines than the one before it"
 
@@ -221,16 +221,33 @@ def identity(row: dict) -> tuple[str, str]:
     return PASS, ""
 
 
-def grade_row(row: dict, hist_rows: list, today: dt.date | None = None) -> dict:
-    """-> {'confidence', 'chain', 'statement', 'classes', 'denominator', 'reason'}"""
+def proxy(row: dict, check: dict | None) -> tuple:
+    """THE FIFTH CHECK (2026-09-18): the company's own beneficial-ownership
+    table against the history on the record date (fle/proxy.py). The check
+    file says pass/warn/fail/none and why; a company with no check, or a
+    proxy that could not be read, says nothing and costs nothing."""
+    if not check:
+        return PASS, ""
+    lvl = (check.get("level") or "").strip().lower()
+    text = (check.get("sentence") or "").strip()
+    if lvl == "fail":
+        return FAIL, text
+    if lvl == "warn":
+        return WARN, text
+    return PASS, ""
+
+
+def grade_row(row: dict, hist_rows: list, today: dt.date | None = None, check: dict | None = None) -> dict:
+    """-> {'confidence', 'chain', 'statement', 'classes', 'denominator', 'proxy', 'reason'}"""
     today = today or dt.date.today()
     if row.get("pct") in ("", None) or _num(row.get("shares")) is None:
-        return {"confidence": "none", "chain": "", "statement": "", "classes": "", "denominator": "", "reason": ""}
+        return {"confidence": "none", "chain": "", "statement": "", "classes": "", "denominator": "", "proxy": "", "reason": ""}
     results = {
         "chain": chain(hist_rows, row.get("owner_cik") or "", today, _num(row.get("shares"))),
         "statement": statement(row, today),
         "classes": classes(row),
         "denominator": denominator(row, today),
+        "proxy": proxy(row, check),
     }
     ident = identity(row)
     levels = [lvl for lvl, _ in results.values()] + [ident[0]]
@@ -268,16 +285,26 @@ def apply_grades(panel_path: str, history_path: str, today: dt.date | None = Non
         reader = csv.DictReader(fh)
         cols = list(reader.fieldnames or [])
         rows = list(reader)
-    for c in ("chain", "statement", "classes", "denominator"):
+    for c in ("chain", "statement", "classes", "denominator", "proxy", "proxy_date", "proxy_shares"):
         if c not in cols:
             cols.append(c)
+    # the proxy checks, written by ops/proxy_check.py beside the panel
+    checks = {}
+    try:
+        from .proxy import load_checks
+        checks = load_checks(os.path.join(os.path.dirname(os.path.abspath(panel_path)), "universe", "proxy-checks.csv"))
+    except Exception:  # noqa: BLE001
+        checks = {}
     tally = defaultdict(int)
     moved = []
     for row in rows:
         before = row.get("confidence") or ""
-        g = grade_row(row, hist.get(row.get("ticker") or "", []), today)
-        for c in ("chain", "statement", "classes", "denominator"):
+        ck = checks.get(row.get("ticker") or "")
+        g = grade_row(row, hist.get(row.get("ticker") or "", []), today, ck)
+        for c in ("chain", "statement", "classes", "denominator", "proxy"):
             row[c] = g[c]
+        row["proxy_date"] = (ck or {}).get("record_date", "") or ""
+        row["proxy_shares"] = (ck or {}).get("proxy_shares", "") or ""
         row["confidence"] = g["confidence"]
         if g["reason"]:
             field = "problems" if g["confidence"] == "low" else "cautions"
