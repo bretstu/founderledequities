@@ -33,5 +33,7 @@ echo "== watches by name (confirmed) =="
 q "SELECT tk, ceo, count(*) AS watchers FROM watches WHERE tk!='FOUNDERS' AND confirmed=1 GROUP BY tk, ceo ORDER BY watchers DESC, tk LIMIT 40"
 q "SELECT count(DISTINCT email) AS readers_with_a_watch, count(*) AS watches, sum(confirmed=0) AS unconfirmed FROM watches WHERE tk!='FOUNDERS'"
 [ "$1" = "--emails" ] && q "SELECT email, tk, confirmed, created FROM watches WHERE tk!='FOUNDERS' ORDER BY created DESC LIMIT 60"
-echo "== alert emails sent since $WEEK =="
-q "SELECT date(sent) AS day, count(*) AS emails, count(DISTINCT watch_id) AS watches FROM alerts_sent WHERE sent >= '$WEEK' GROUP BY day ORDER BY day"
+echo "== alert emails sent since $WEEK (Eastern) =="
+# sent is stamped in UTC by the run endpoint; shown here in Eastern (EDT: -4h; EST: -5h)
+OFF=$(date +%Z | grep -q EDT && echo '-4 hours' || echo '-5 hours')
+q "SELECT date(datetime(sent, '$OFF')) AS day, count(*) AS emails, count(DISTINCT watch_id) AS watches FROM alerts_sent WHERE sent >= '$WEEK' GROUP BY day ORDER BY day"
