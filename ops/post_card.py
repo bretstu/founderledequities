@@ -52,17 +52,20 @@ def money(v):
         v = float(v)
     except (TypeError, ValueError):
         return ""
-    if v >= 1e9:
+    if v >= 999.5e6:
         return f"${v / 1e9:.1f}B".replace(".0B", "B")
-    if v >= 1e6:
+    if v >= 999.5e3:
         return f"${v / 1e6:.1f}M".replace(".0M", "M")
     if v >= 1e3:
         return f"${v / 1e3:.0f}K"
     return f"${v:,.0f}"
 
 
-def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_after, series, fonts_dir=None):
+def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_after, series, fonts_dir=None, height=None, sealed=False):
+    """1200 x `height` (560 for a post, 630 for the page's link card). A
+    sealed company shows no stake and no trade line."""
     from PIL import Image, ImageDraw
+    H = height or 560
     fonts = Fonts(fonts_dir or os.path.join(HERE, "fonts"))
     im = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(im)
@@ -84,16 +87,22 @@ def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_aft
         d.text((x + bw / 2, y + 2 + bh / 2), "FOUNDER", font=fonts.mono(16), fill=PAPER, anchor="mm")
     # the kind line and the stake, at the foot
     color = KIND_COLOR.get(kind, MUT)
-    kl = KIND_WORD.get(kind, "TRADE") + (f"  ·  {money(amount)}" if amount else "") + (f"  ·  {mdy(when)}" if when else "")
-    d.text((pad, H - 176), kl, font=fonts.mono(26), fill=color)
     f = lambda x: f"{x:.3f}%" if x < 1 else f"{x:.2f}%"  # noqa: E731
-    if pct_before is not None and pct_after is not None:
-        stake = f"{f(pct_before)}  →  {f(pct_after)}"
-    elif pct_after is not None:
-        stake = f"Now owns {f(pct_after)}"
+    # the trade line is the filing's own facts, shown sealed or not; the stake
+    # before and after is the site's number, which a subscription buys
+    if kind:
+        kl = KIND_WORD.get(kind, "TRADE") + (f"  ·  {money(amount)}" if amount else "") + (f"  ·  {mdy(when)}" if when else "")
+        d.text((pad, H - 176), kl, font=fonts.mono(26), fill=color)
+    if sealed:
+        d.text((pad, H - 136), "The stake is in Pro", font=fonts.disp(40, 500), fill=MUT)
     else:
-        stake = ""
-    d.text((pad, H - 136), stake, font=fonts.disp(76, 500), fill=INK)
+        if pct_before is not None and pct_after is not None and abs(pct_before - pct_after) > 0.0005 and kind:
+            stake = f"{f(pct_before)}  →  {f(pct_after)}"
+        elif pct_after is not None:
+            stake = f"Owns {f(pct_after)}"
+        else:
+            stake = ""
+        d.text((pad, H - 136), stake, font=fonts.disp(76, 500), fill=INK)
     # the sparkline, right third
     if series:
         pts = series[-260:]
@@ -155,7 +164,7 @@ def post_text(tk, ceo, founder, kind, amount, pct_of_holding, pct_after, filed_m
     f = lambda x: f"{x:.3f}%" if x < 1 else f"{x:.2f}%"  # noqa: E731
     line2 = f"{mv}Now owns {f(float(pct_after))}." if pct_after not in (None, "") else mv.strip()
     line3 = f"Filed {filed_minutes} minutes ago." if filed_minutes is not None else "Filed today."
-    return f"{line1}\n\n{line2}\n{line3}"
+    return f"{line1}\n{line2}\n{line3}"
 
 
 if __name__ == "__main__":

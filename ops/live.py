@@ -245,20 +245,12 @@ def post_block(u, ev):
         minutes = None
         text = post_card.post_text(u["tk"], u.get("ceo") or "", founder, kind, ev.get("value") or "",
                                    ev.get("pct_of_holding") or "", ev.get("pct_after") or "", minutes)
-        block = ("POST (paste as the post; attach the card; put the link in the first reply)\n"
-                 + "-" * 40 + "\n" + text + "\n" + "-" * 40
-                 + f"\nReply: Every filing on record: https://founderledequities.com/company/{u['tk']}/")
-        card = None
-        try:
-            import tempfile
-            fd, path = tempfile.mkstemp(suffix=".png")
-            os.close(fd)
-            if post_card.from_event(u["tk"], path, ev.get("accession")):
-                card = (f"{u['tk']}-{(ev.get('filed') or 'card')}.png", open(path, "rb").read())
-            os.remove(path)
-        except Exception as e:  # noqa: BLE001
-            print(f"  post card not drawn for {u['tk']}: {e.__class__.__name__}: {str(e)[:80]}")
-        return block, card
+        # THE LINK IS THE CARD (2026-09-18): the page's own OG image is the
+        # compact card with this trade on it, so the post is text plus the
+        # link and X draws the card; nothing to attach
+        block = ("POST (paste as is; the link renders the card)\n"
+                 + "-" * 40 + "\n" + text + f"\nhttps://founderledequities.com/company/{u['tk']}/\n" + "-" * 40)
+        return block, None
     except Exception as e:  # noqa: BLE001
         print(f"  post block skipped for {u['tk']}: {e.__class__.__name__}: {str(e)[:80]}")
         return "", None

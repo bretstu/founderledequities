@@ -30,6 +30,8 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from og_image import money  # noqa: E402  (one formatter, shared)
 
 W, H = 1200, 630
@@ -91,9 +93,18 @@ def load_inputs(panel_p, sp_p, prices_p, founders_p, events_p):
             apa = float(r.get("avg_price_adjusted") or 0) or None
         except ValueError:
             apa = None
+        try:
+            h, n, o = float(r.get("holding_after") or 0), float(r.get("net_change") or 0), float(r.get("outstanding") or 0)
+            before = (h - n) / o * 100 if o else None
+        except ValueError:
+            before = None
         events.setdefault(tk, []).append({
             "d": (r.get("traded") or r.get("filed") or "")[:10], "c": r["code"],
-            "v": v, "apa": apa, "sh": float(r.get("shares") or 0)})
+            "v": v, "apa": apa, "sh": float(r.get("shares") or 0),
+            # for the trade line on the card (2026-09-18): the kind, the stake before and after
+            "plan": r.get("plan") or "", "label": r.get("label") or "", "pre_ipo": r.get("pre_ipo") or "",
+            "filed": (r.get("filed") or "")[:10],
+            "after": float(r["pct_after"]) if r.get("pct_after") else None, "before": before})
     panel = list(csv.DictReader(open(panel_p, encoding="utf-8-sig")))
     return sp, prices, founders, events, panel
 
@@ -139,128 +150,25 @@ class Fonts:
 
 
 def draw_card(out, fonts, tk, co, ceo, founder, sealed, pct, value, shares, series, evs, price_asof):
-    """The name above, the chart below, and nothing to read in between.
-
-    A card is seen for a second in a feed. The version this replaces
-    carried a stake sentence, a value line and a caption; the picture is
-    the point, and the page it links to has the words. The percentage
-    stays, top right, for an open company: it is the one figure a reader
-    would share the card for. A sealed company's card shows the name, the
-    person, and the public price line, and no dots."""
-    from PIL import Image, ImageDraw
-    im = Image.new("RGB", (W, H), PAPER)
-    d = ImageDraw.Draw(im, "RGBA")
-
-    # ---- the top: wordmark, address
-    d.text((64, 46), "Founder Led Equities", font=fonts.disp(22, 700), fill=INK)
-    d.text((W - 64, 50), "founderledequities.com", font=fonts.mono(15), fill=FAINT, anchor="ra")
-
-    # ---- the company and the person
-    name_f = fonts.disp(52, 700)
-    title = co
-    # leave room for the percentage on the right when there is one
-    room = W - 128 - (300 if (pct is not None and not sealed) else 0)
-    while d.textlength(title, font=name_f) > room and len(title) > 8:
-        title = title[:-2].rstrip() + "\u2026"
-    d.text((64, 100), title, font=name_f, fill=INK)
-    y = 172
-    who = ceo or "chief executive not identified"
-    d.text((64, y), who, font=fonts.ui(23, 700), fill=INK)
-    x = 64 + d.textlength(who, font=fonts.ui(23, 700)) + 10
-    d.text((x, y + 1), "\u00b7 CEO", font=fonts.ui(22, 500), fill=MUT)
-    x += d.textlength("\u00b7 CEO", font=fonts.ui(22, 500)) + 14
-    if founder == "yes":
-        bf = fonts.mono(12)
-        bw = d.textlength("FOUNDER", font=bf) + 18
-        d.rounded_rectangle((x, y + 4, x + bw, y + 25), radius=5, fill=INK)
-        d.text((x + 9, y + 8), "FOUNDER", font=bf, fill="white")
-
-    # ---- the answer, top right, only when it is public
-    if not sealed and pct is not None:
-        d.text((W - 64, 100), f"{pct:.2f}%", font=fonts.disp(52, 700), fill=BLUE, anchor="ra")
-        d.text((W - 64, 172), "of the company", font=fonts.ui(20, 500), fill=MUT, anchor="ra")
-
-    # ---- the chart
-    top, bottom, left, right = 250, 572, 84, W - 40
-    if len(series) < 2:
-        d.text((64, 300), "No price record for this company yet.", font=fonts.ui(18), fill=FAINT)
-        im.save(out, "PNG", optimize=True)
-        return
-    t0 = _day(series[0][0])
-    t1 = max(_day(series[-1][0]), t0 + 1)
-    drawn = [] if sealed else [e for e in evs if series[0][0] <= e["d"] <= series[-1][0]]
-    lo = min(c for _, c in series)
-    hi = max(c for _, c in series)
-    for e in drawn:
-        if e["apa"]:
-            lo, hi = min(lo, e["apa"]), max(hi, e["apa"])
-    lo = max(lo, 1e-3)
-    L0 = math.log(lo) - (math.log(hi) - math.log(lo)) * 0.08
-    L1 = math.log(hi) + (math.log(hi) - math.log(lo)) * 0.14
-
-    def X(day):
-        return left + (_day(day) - t0) / (t1 - t0) * (right - left)
-
-    def Y(v):
-        return bottom - (math.log(v) - L0) / ((L1 - L0) or 1) * (bottom - top)
-
-    # gridlines at round prices, at most five
-    ticks = []
-    for e in range(int(math.floor(math.log10(lo))) - 1, int(math.ceil(math.log10(hi))) + 1):
-        for m in (1, 1.5, 2, 3, 5, 7):
-            v = m * 10 ** e
-            if L0 < math.log(v) < L1:
-                ticks.append(v)
-    while len(ticks) > 5:
-        del ticks[-2::-2]
-    for v in ticks:
-        yy = Y(v)
-        d.line((left, yy, right, yy), fill=LINE, width=1)
-        d.text((left - 10, yy), dollars(v), font=fonts.mono(13), fill=FAINT, anchor="rm")
-    y0, y1 = int(series[0][0][:4]), int(series[-1][0][:4])
-    for yr in range(y0 + 1, y1 + 1):
-        xx = X(f"{yr}-01-01")
-        if left <= xx <= right:
-            d.text((xx, H - 24), str(yr), font=fonts.mono(13), fill=FAINT, anchor="mm")
-    # the line, thinned to the pixel, and the shading under it
-    pts, lastx = [], -9
-    for day, c in series:
-        xx = X(day)
-        if pts and xx - lastx < 0.8:
-            continue
-        lastx = xx
-        pts.append((xx, Y(c)))
-    poly = pts + [(pts[-1][0], bottom), (pts[0][0], bottom)]
-    d.polygon(poly, fill=(27, 52, 224, 22))
-    d.line(pts, fill=INK, width=2, joint="curve")
-    # the trades, largest first so small ones sit on top
-    vmax = max([e["v"] for e in drawn] + [1.0])
-
-    def close_at(day):
-        v = series[0][1]
-        for dd, c in series:
-            if dd <= day:
-                v = c
-            else:
-                break
-        return v
-    for e in sorted(drawn, key=lambda e: -e["v"]):
-        yv = e["apa"] if e["apa"] else close_at(e["d"])
-        xx, yy = X(e["d"]), Y(yv)
-        r = 4 + 7 * math.sqrt(e["v"] / vmax)
-        col = BUY if e["c"] == "P" else SELL
-        d.ellipse((xx - r - 1.5, yy - r - 1.5, xx + r + 1.5, yy + r + 1.5), fill=PAPER)
-        d.ellipse((xx - r, yy - r, xx + r, yy + r), fill=col)
-    # the last close
-    lx, ly = pts[-1]
-    d.text((lx - 4, ly - 12), dollars(series[-1][1]), font=fonts.mono(15), fill=INK, anchor="rs")
-    # the key: two words, only when there are dots
-    if drawn:
-        d.ellipse((left, H - 32, left + 10, H - 22), fill=BUY)
-        d.text((left + 16, H - 33), "bought", font=fonts.mono(13), fill=MUT)
-        d.ellipse((left + 86, H - 32, left + 96, H - 22), fill=SELL)
-        d.text((left + 102, H - 33), "sold", font=fonts.mono(13), fill=MUT)
-    im.save(out, "PNG", optimize=True)
+    """THE LINK CARD IS THE POST CARD (2026-09-18). A card is seen for a
+    second in a feed, most often under an X post about a founder move; it
+    shows the company, the person, the newest trade in its colour with the
+    amount and the date, the stake before and after as the largest thing
+    on it, and a year of closes as a sparkline with the day marked. A
+    sealed company's card shows the name, the person and the price line,
+    no stake and no trade: those are what a subscription buys."""
+    import post_card
+    latest = None
+    if evs:
+        trades = [e for e in evs if e.get("c") in ("P", "S") and not e.get("pre_ipo")]
+        if trades:
+            latest = max(trades, key=lambda e: (e.get("filed") or "", e.get("d") or ""))
+    kind = post_card.post_kind({"code": latest["c"], "plan": latest.get("plan", ""), "label": latest.get("label", ""), "pre_ipo": ""}) if latest else None
+    return post_card.draw(out, tk, co, ceo, bool(founder), kind, latest["v"] if latest else None,
+                          latest["d"] if latest else None,
+                          latest.get("before") if latest else None,
+                          (latest.get("after") if latest and latest.get("after") is not None else pct) if not sealed else None,
+                          series, fonts_dir=fonts.dir, height=H, sealed=sealed)
 
 
 def _day(s):
