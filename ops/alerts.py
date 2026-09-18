@@ -112,6 +112,71 @@ def _did(r, code, plan, shares):
     return f"{what or 'filed'}: {n}"
 
 
+def mdy(iso: str) -> str:
+    """2026-09-15 -> 09/15/2026"""
+    try:
+        y, m, d = (iso or "")[:10].split("-")
+        return f"{m}/{d}/{y}"
+    except ValueError:
+        return iso or ""
+
+
+def facts(r, value, founder: bool) -> list:
+    """THE ALERT'S FACT LINES (2026-09-18): three questions, one line each,
+    scannable on a phone among other alerts. What happened (the verb, the
+    shares, the value when the filing states one, the kind); when
+    (transaction and filing dates, numeric); what it did to the stake. A
+    filing that restated the holding beyond its transaction gets a fourth
+    line and no false before-and-after."""
+    tk, code = r["ticker"].upper(), r.get("code") or ""
+    plan = (r.get("plan") or "") == "plan"
+    shares = abs(_num(r.get("shares")) or 0)
+    what = (kinds.detail_of(r) or "").lower()
+    if code == "P":
+        verb, how = "Bought", "open market"
+    elif code == "S":
+        verb, how = "Sold", "pre-set plan" if plan else "own discretion"
+    elif "award" in what or "granted" in what:
+        verb, how = "Granted", ""
+    elif "withheld" in what:
+        verb, how = "Withheld", "for tax"
+    elif "vest" in what:
+        verb, how = "Vested", ""
+    elif "option" in what or "exercis" in what:
+        verb, how = "Exercised", "options"
+    elif "gift" in what:
+        verb, how = "Gave", "gift"
+    elif "convert" in what:
+        verb, how = "Converted", ""
+    else:
+        verb, how = "Filed", what
+    bits = []
+    if shares:
+        bits.append(f"{shares:,.0f} shares")
+    if value:
+        bits.append(kinds.money(value))
+    if how:
+        bits.append(how)
+    out = [(verb, " \u00b7 ".join(bits))]
+    when, filed = mdy(r.get("traded") or r.get("filed")), mdy(r.get("filed"))
+    out.append(("Transaction date", when))
+    out.append(("Filing date", filed))
+    mv = _num(r.get("pct_of_holding"))
+    after, before = _num(r.get("pct_after")), before_pct(r)
+    f = lambda x: f"{x:.3f}%" if x < 1 else f"{x:.2f}%"  # noqa: E731
+    res, held = _num(r.get("residue")), _num(r.get("holding_after"))
+    if res and held and abs(res) / max(abs(held) + abs(res), 1.0) > 0.02:
+        out.append(("Stake", f"now reads {f(after)}" if after is not None else "see the page"))
+        out.append(("Note", "this filing restated the holding beyond the transaction; the page says why"))
+        return out
+    if after is not None and before is not None and abs(after - before) > 0.0005:
+        arrow = f"{f(before)} \u2192 {f(after)}"
+        out.append(("Stake", arrow + (f"  ({mv:+.1f}% of the holding)" if mv else "")))
+    elif after is not None:
+        out.append(("Stake", f(after)))
+    return out
+
+
 def body(r, value, founder: bool):
     """THE BODY (2026-09-17): three sentences. The transaction (day, shares,
     value from the filing's own price); what it did to the holding (the
@@ -229,7 +294,8 @@ def decisions(events_p, since, founders=None, names=None):
                         "url": r.get("url") or "", "kind": "decision" if decision else "move",
                         "founder": tk in founders,     # the live alert's scope (functions/api/watch/run.js)
                         "sentence": sentence(r, value, name),
-                        "body": body(r, value, tk in founders)})
+                        "body": body(r, value, tk in founders),
+                        "facts": facts(r, value, tk in founders)})
     return out
 
 

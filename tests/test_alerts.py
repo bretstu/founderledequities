@@ -120,3 +120,27 @@ def test_the_alert_names_a_restated_holding_instead_of_a_false_before_and_after(
     assert "restated the holding lower than the transaction explains" in b and "2.83% of EVCM" in b and "goes from" not in b
     clean = dict(r, residue="0")
     assert "restated" not in alerts.body(clean, 6000, True)
+
+
+def test_the_alert_facts_are_three_lines_and_a_note_when_the_holding_was_restated():
+    """THE FACT LINES (2026-09-18): what, transaction and filing dates
+    (numeric), the stake before and after; a fourth line and no false
+    before-and-after when the filing restated the holding."""
+    import os
+    import sys
+    sys.path.insert(0, os.path.join(str(ROOT), "ops"))
+    import alerts
+    r = {"ticker": "RCAT", "ceo": "Jeffrey Thompson", "code": "S", "plan": "plan", "label": "sale", "shares": "150000", "value": "1200000",
+         "pct_of_holding": "-7.1", "pct_after": "7.67", "holding_after": "1960000", "net_change": "-150000", "outstanding": "25550000",
+         "traded": "2026-09-15", "filed": "2026-09-17"}
+    f = dict(alerts.facts(r, 1.2e6, True))
+    assert f["Sold"] == "150,000 shares \u00b7 $1.2M \u00b7 pre-set plan" and f["Transaction date"] == "09/15/2026" and f["Filing date"] == "09/17/2026"
+    assert f["Stake"].startswith("8.26% \u2192 7.67%") and "-7.1%" in f["Stake"]
+    g = dict(alerts.facts(dict(r, code="A", label="award granted", plan="", value=""), None, True))
+    assert g["Granted"] == "150,000 shares", "no value invented for a grant"
+    e = dict(alerts.facts(dict(r, code="S", plan="", shares="600", value="6330", pct_of_holding="-0.01", pct_after="2.83", residue="-2400000"), 6330, True))
+    assert e["Sold"].endswith("own discretion") and e["Stake"] == "now reads 2.83%" and "restated the holding" in e["Note"]
+    run = open(os.path.join(str(ROOT), "functions", "api", "watch", "run.js"), encoding="utf-8").read()
+    assert "e.facts" in run and "${first.tk} \\u00b7" in run, "the mail lays the facts out and the subject leads with the ticker"
+    page = open(os.path.join(str(ROOT), "alerts.html"), encoding="utf-8").read()
+    assert 'class="facts"' in page and "Transaction date" in page and "09/10/2026" in page, "the sample is the mail"

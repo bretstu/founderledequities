@@ -88,7 +88,9 @@ export async function onRequestPost({ request, env }) {
     b.items.sort((x, y) => (y.e.value || 0) - (x.e.value || 0));
     const first = b.items[0].e;
     const short = (e) => (e.sentence || `${e.ceo} ${e.code === "P" ? "bought" : "sold"} ${e.tk}.`).replace(/ on \d{4}-\d{2}-\d{2}\.$/, ".").replace(/\.$/, "");
-    const subject = b.items.length === 1 ? short(first) : `${short(first)}, and ${b.items.length - 1} more`;
+    // THE SUBJECT LEADS WITH THE TICKER (2026-09-18): alerts line up and sort in an inbox
+    const shortNoCo = (e) => short(e).replace(new RegExp(` of ${(e.company || e.tk).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`), "");
+    const subject = b.items.length === 1 ? `${first.tk} \u00b7 ${shortNoCo(first)}` : `${first.tk} \u00b7 ${shortNoCo(first)}, and ${b.items.length - 1} more`;
     const anyToken = [...b.watches.values()][0].token;
     // THE MAIL (2026-09-17): the headline, the day and the size of the move in
     // the person's own terms, the stake after and before, one link to the
@@ -100,8 +102,10 @@ export async function onRequestPost({ request, env }) {
     const stopThese = ws.length === 1 ? `<a href="${site(env)}/api/watch?stop=${ws[0].token}" style="color:#8C8880;">Stop these</a>`
       : ws.map((w) => `<a href="${site(env)}/api/watch?stop=${w.token}" style="color:#8C8880;">stop ${w.tk === "FOUNDERS" ? "live founder alerts" : "watching " + esc(w.ceo || w.tk)}</a>`).join(" &middot; ");
     const blocks = b.items.map(({ e }) => `
-<h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-size:26px;line-height:1.2;margin:16px 0 12px;">${esc(short(e))}.</h1>
-<p style="font-size:15px;line-height:1.6;margin:0 0 16px;">${esc(e.body || `${dayLine(e)} ${stakeLine(e)}`.trim())}</p>
+<h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-size:26px;line-height:1.2;margin:16px 0 14px;">${esc(short(e))}.</h1>
+${Array.isArray(e.facts) && e.facts.length
+  ? `<table role="presentation" cellpadding="0" cellspacing="0" style="font-size:14px;line-height:1.5;margin:0 0 16px;border-collapse:collapse;">${e.facts.map(([k, v]) => `<tr><td style="padding:2px 18px 2px 0;color:#8C8880;white-space:nowrap;vertical-align:top;">${esc(k)}</td><td style="padding:2px 0;color:#1A1A1A;">${esc(v)}</td></tr>`).join("")}</table>`
+  : `<p style="font-size:15px;line-height:1.6;margin:0 0 16px;">${esc(e.body || `${dayLine(e)} ${stakeLine(e)}`.trim())}</p>`}
 <p style="font-size:15px;line-height:1.5;margin:0 0 22px;"><a href="${site(env)}/company/${esc(e.tk)}/" style="color:#1A1A1A;font-weight:bold;text-decoration:none;">${esc(e.company || e.tk)} on Founder Led Equities &rarr;</a></p>`).join("");
     const html = `<!doctype html><html><body style="margin:0;padding:0;background:#ECE9E2;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ECE9E2;"><tr><td align="center" style="padding:20px 10px;">
@@ -112,7 +116,7 @@ ${blocks}
 <div style="border-top:1px solid #D6D1C7;margin:4px 0 12px;"></div>
 <p style="font-size:11px;line-height:1.6;color:#8C8880;margin:0;">${from}<br>${stopThese} &middot; <a href="${site(env)}/api/watch?stopall=${anyToken}" style="color:#8C8880;">Stop everything</a> &middot; Nothing here is investment advice.</p>
 </td></tr></table></td></tr></table></body></html>`;
-    const text = b.items.map(({ e }) => `${short(e)}.\n${e.body || `${dayLine(e)} ${stakeLine(e)}`.trim()}\n${site(env)}/company/${e.tk}/`).join("\n\n")
+    const text = b.items.map(({ e }) => `${short(e)}.\n${Array.isArray(e.facts) && e.facts.length ? e.facts.map(([k, v]) => `${k}: ${v}`).join("\n") : (e.body || `${dayLine(e)} ${stakeLine(e)}`.trim())}\n${site(env)}/company/${e.tk}/`).join("\n\n")
       + `\n\n${from.replace(/<[^>]+>/g, "")}\nStop these: ` + ws.map((w) => `${site(env)}/api/watch?stop=${w.token}`).join(" ")
       + `\nStop everything: ${site(env)}/api/watch?stopall=${anyToken}`;
     const r = await fetch(`${RESEND(env)}/emails`, {
