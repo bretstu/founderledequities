@@ -1696,7 +1696,7 @@ function pctWhy(e){
      pipeline declining to assert a number it cannot stand behind. There are
      three distinct reasons and they are worth telling apart, so the reason
      rides on the cell. */
-  if(e.rs)return "several filings moved this position on the same day and cannot be reconciled to one figure, so no percentage is asserted";
+  if(e.rs)return `the day's filings moved the position by ${Math.abs(Math.round(e.rs)).toLocaleString("en-US")} shares the transactions do not explain (often a purchase the rules let the filer report later, on a Form 5), so the trade's share of the holding is not asserted`;
   if(e.ha&&(e.nc===null||e.nc===undefined))return "the record has no point on this filing's day, so what it did to the stake is not stated";
   if(!e.ha)return "no common-stock position on record to measure against — Blackstone's CEO, for one, holds partnership units rather than issued stock of the company";
   return "the position before this trade computes to zero, and a percentage of nothing is not a number";

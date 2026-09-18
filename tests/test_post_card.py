@@ -50,3 +50,8 @@ def test_the_link_card_is_the_post_card_and_the_seal_holds(tmp_path):
     import company_cards
     assert "post_card.draw(" in open(os.path.join(ROOT, "ops", "company_cards.py"), encoding="utf-8").read(), "the deploy's company card is drawn by the post card"
     assert post_card.money(999_600_000) == "$1B" and post_card.money(999_800) == "$1M"
+
+
+def test_a_day_the_record_cannot_add_up_still_states_the_stake_before_and_after():
+    t = post_card.post_text("AMBA", "Feng-Ming Wang", True, "disc", 394555, "", 1.74, None, pct_before=1.7563)
+    assert "Stake 1.76% \u2192 1.74%." in t and "of the stake" not in t

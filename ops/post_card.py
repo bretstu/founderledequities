@@ -154,8 +154,11 @@ def from_event(tk, out, accession=None, root=ROOT, store=None):
                 e.get("value") or "", e.get("traded") or e.get("filed"), before, after, series)
 
 
-def post_text(tk, ceo, founder, kind, amount, pct_of_holding, pct_after, filed_minutes=None) -> str:
-    """The three lines, in the site's words, no pronoun anywhere."""
+def post_text(tk, ceo, founder, kind, amount, pct_of_holding, pct_after, filed_minutes=None, pct_before=None) -> str:
+    """The three lines, in the site's words, no pronoun anywhere. When the
+    trade's share of the holding is not asserted (a day the record cannot
+    add up: Ambarella, 2026-09-17), the stake before and after still are,
+    and the line says them instead."""
     who = ("Founder " if founder else "CEO ") + ceo
     verb = "bought" if kind == "bought" else "sold"
     amt = f" {money(amount)}" if amount else ""
@@ -167,7 +170,10 @@ def post_text(tk, ceo, founder, kind, amount, pct_of_holding, pct_after, filed_m
     except ValueError:
         pass
     f = lambda x: f"{x:.3f}%" if x < 1 else f"{x:.2f}%"  # noqa: E731
-    line2 = f"{mv}Now owns {f(float(pct_after))}." if pct_after not in (None, "") else mv.strip()
+    if not mv and pct_before not in (None, "") and pct_after not in (None, ""):
+        line2 = f"Stake {f(float(pct_before))} \u2192 {f(float(pct_after))}."
+    else:
+        line2 = f"{mv}Now owns {f(float(pct_after))}." if pct_after not in (None, "") else mv.strip()
     line3 = f"Filed {filed_minutes} minutes ago." if filed_minutes is not None else "Filed today."
     return f"{line1}\n{line2}\n{line3}"
 

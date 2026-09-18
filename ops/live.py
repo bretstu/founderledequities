@@ -243,8 +243,14 @@ def post_block(u, ev):
         kind = post_card.post_kind(ev)
         founder = bool(u.get("founder"))
         minutes = None
+        before = ""
+        try:
+            h, n, o = float(ev.get("holding_after") or 0), float(ev.get("net_change") or 0), float(ev.get("outstanding") or 0)
+            before = f"{(h - n) / o * 100:.4f}" if o else ""
+        except ValueError:
+            before = ""
         text = post_card.post_text(u["tk"], u.get("ceo") or "", founder, kind, ev.get("value") or "",
-                                   ev.get("pct_of_holding") or "", ev.get("pct_after") or "", minutes)
+                                   ev.get("pct_of_holding") or "", ev.get("pct_after") or "", minutes, pct_before=before)
         # THE LINK IS THE CARD (2026-09-18): the page's own OG image is the
         # compact card with this trade on it, so the post is text plus the
         # link and X draws the card; nothing to attach
