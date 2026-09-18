@@ -20,16 +20,16 @@ def test_the_post_is_three_lines_in_the_sites_words():
     assert t.startswith("OPEN-MARKET BUY\nCEO A Hired CEO bought $50K of $X.")
 
 
-def test_the_card_draws_at_1200_by_560(tmp_path):
+def test_the_card_draws_at_the_link_card_ratio(tmp_path):
     from PIL import Image
     series = [(f"2026-{m:02d}-01", 10 + m) for m in range(1, 13)]
     out = tmp_path / "card.png"
     post_card.draw(str(out), "SOUN", "SoundHound AI, Inc.", "Dr. Keyvan Mohajer", True, "disc", 868853, "2026-09-15", 4.09, 4.01, series)
     im = Image.open(out)
-    assert im.size == (1200, 560)
+    assert im.size == (1200, 630), "the link-card ratio"
     out2 = tmp_path / "nochart.png"
     post_card.draw(str(out2), "X", "X Corp", "Someone", False, "bought", None, "2026-09-15", None, 1.2, [])
-    assert Image.open(out2).size == (1200, 560), "no price series, no amount: still a card"
+    assert Image.open(out2).size == (1200, 630), "no price series, no amount: still a card"
 
 
 def test_the_kind_is_the_tapes():

@@ -18,7 +18,7 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 from company_cards import Fonts, read_series, compact, INK, MUT, FAINT, LINE, PAPER, BUY, SELL  # noqa: E402
 
-W, H = 1200, 560
+W, H = 1200, 630
 KIND_WORD = {"disc": "DISCRETIONARY SALE", "plan": "PLANNED SALE", "bought": "OPEN-MARKET BUY", "sold": "SALE (plan not stated)"}
 KIND_COLOR = {"disc": SELL, "plan": MUT, "bought": BUY, "sold": SELL}
 
@@ -62,65 +62,70 @@ def money(v):
 
 
 def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_after, series, fonts_dir=None, height=None, sealed=False):
-    """1200 x `height` (560 for a post, 630 for the page's link card). A
-    sealed company shows no stake and no trade line."""
+    """1200x630, the link-card ratio. Top to bottom: the company and the
+    person; a year of closes across the full width, the day marked; the
+    newest trade in its colour; the stake before and after, large. No brand
+    line and no address (X prints the site under the card), no sales line
+    (a sealed company simply shows no stake), and nothing in the bottom
+    70px, where X lays the page title over the image."""
     from PIL import Image, ImageDraw
-    H = height or 560
+    H = height or 630
     fonts = Fonts(fonts_dir or os.path.join(HERE, "fonts"))
     im = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(im)
     pad = 56
-    # brand
-    d.text((pad, 44), "FOUNDER LED EQUITIES", font=fonts.mono(20), fill=FAINT)
-    d.text((W - pad, 44), "founderledequities.com", font=fonts.mono(20), fill=FAINT, anchor="ra")
-    # company and person
+    # the company and the person
     name = short_name(company, tk)
-    size = 72 if len(name) <= 18 else 60 if len(name) <= 26 else 48
-    d.text((pad, 84), name, font=fonts.disp(size, 650), fill=INK)
-    y = 84 + size + 16
+    size = 64 if len(name) <= 18 else 54 if len(name) <= 26 else 44
+    d.text((pad, 40), name, font=fonts.disp(size, 650), fill=INK)
+    y = 40 + size + 10
     line = f"{ceo}  ·  CEO"
-    d.text((pad, y), line, font=fonts.ui(28, 500), fill=MUT)
+    d.text((pad, y), line, font=fonts.ui(26, 500), fill=MUT)
     if founder:
-        x = pad + d.textlength(line, font=fonts.ui(28, 500)) + 18
-        bw, bh = 118, 30
+        x = pad + d.textlength(line, font=fonts.ui(26, 500)) + 16
+        bw, bh = 110, 28
         d.rounded_rectangle((x, y + 2, x + bw, y + 2 + bh), radius=4, fill=INK)
-        d.text((x + bw / 2, y + 2 + bh / 2), "FOUNDER", font=fonts.mono(16), fill=PAPER, anchor="mm")
-    # the kind line and the stake, at the foot
-    color = KIND_COLOR.get(kind, MUT)
+        d.text((x + bw / 2, y + 2 + bh / 2), "FOUNDER", font=fonts.mono(15), fill=PAPER, anchor="mm")
+    # the chart, full width, in the middle band
+    top, bottom = y + 56, H - 250
+    if series:
+        pts = series[-260:]
+        vals = [c for _, c in pts]
+        lo, hi = min(vals), max(vals)
+        span = (hi - lo) or 1.0
+        x0, x1 = pad, W - pad
+        poly = []
+        for i, (_, c) in enumerate(pts):
+            x = x0 + (x1 - x0) * i / max(len(pts) - 1, 1)
+            yy = bottom - (bottom - top) * (c - lo) / span
+            poly.append((x, yy))
+        d.polygon(poly + [(x1, bottom + 2), (x0, bottom + 2)], fill="#E9E5DB")
+        d.line(poly, fill=INK, width=3)
+        lx, ly = poly[-1]
+        color = KIND_COLOR.get(kind, MUT) if kind else INK
+        d.ellipse((lx - 8, ly - 8, lx + 8, ly + 8), fill=color)
+        d.text((x0, bottom + 12), pts[0][0][:4], font=fonts.mono(15), fill=FAINT)
+        d.text((x1, bottom + 12), pts[-1][0][:4], font=fonts.mono(15), fill=FAINT, anchor="ra")
+    # the trade line and the stake, above the title overlay
     f = lambda x: f"{x:.3f}%" if x < 1 else f"{x:.2f}%"  # noqa: E731
-    # the trade line is the filing's own facts, shown sealed or not; the stake
-    # before and after is the site's number, which a subscription buys
+    color = KIND_COLOR.get(kind, MUT)
     if kind:
         kl = KIND_WORD.get(kind, "TRADE") + (f"  ·  {money(amount)}" if amount else "") + (f"  ·  {mdy(when)}" if when else "")
-        d.text((pad, H - 176), kl, font=fonts.mono(26), fill=color)
-    if sealed:
-        d.text((pad, H - 136), "The stake is in Pro", font=fonts.disp(40, 500), fill=MUT)
-    else:
+        # a sealed card (no stake: the OG images are public files, and the
+        # stake is what a subscription buys) carries the trade line larger,
+        # where the stake would sit, so the card reads whole
+        if sealed:
+            d.text((pad, H - 176), kl, font=fonts.mono(34), fill=color)
+        else:
+            d.text((pad, H - 200), kl, font=fonts.mono(24), fill=color)
+    if not sealed:
         if pct_before is not None and pct_after is not None and abs(pct_before - pct_after) > 0.0005 and kind:
             stake = f"{f(pct_before)}  →  {f(pct_after)}"
         elif pct_after is not None:
             stake = f"Owns {f(pct_after)}"
         else:
             stake = ""
-        d.text((pad, H - 136), stake, font=fonts.disp(76, 500), fill=INK)
-    # the sparkline, right third
-    if series:
-        pts = series[-260:]
-        vals = [c for _, c in pts]
-        lo, hi = min(vals), max(vals)
-        x0, x1, y0, y1 = int(W * 0.63), W - pad, 130, H - 96
-        span = (hi - lo) or 1.0
-        poly = []
-        for i, (_, c) in enumerate(pts):
-            x = x0 + (x1 - x0) * i / max(len(pts) - 1, 1)
-            yy = y1 - (y1 - y0) * (c - lo) / span
-            poly.append((x, yy))
-        d.polygon(poly + [(x1, y1 + 60), (x0, y1 + 60)], fill="#EAE6DC")
-        d.line(poly, fill=INK, width=3)
-        lx, ly = poly[-1]
-        d.ellipse((lx - 9, ly - 9, lx + 9, ly + 9), fill=color)
-        d.text((x1, y1 + 30), f"{pts[0][0][:4]} – {pts[-1][0][:4]}", font=fonts.mono(16), fill=FAINT, anchor="ra")
-    d.line((0, H - 6, W, H - 6), fill=LINE, width=1)
+        d.text((pad, H - 166), stake, font=fonts.disp(72, 500), fill=INK)
     im.save(out, "PNG", optimize=True)
     return out
 
