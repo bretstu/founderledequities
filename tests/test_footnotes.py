@@ -31,6 +31,8 @@ def test_lines_carry_exactly_their_own_footnotes():
     root = F.parse_doc(DOC)
     lines = F.lines_of(root, "0001-26-000001")
     assert [l["nature"] for l in lines] == ["By Chan Zuckerberg Biohub, Inc.", "By CZI Holdings, LLC"], "the direct line has no footnote; the option is not a holding of shares"
+    assert lines[0]["context"] == [("F3", "Mr. Zuckerberg is the sole member of CZI Holdings, LLC.")], "the other footnotes ride along as context"
+    assert "OTHER FOOTNOTES" in F.packet_text(lines[0]) and "context only" in F.packet_text(lines[0])
     assert lines[0]["footnote_ids"] == ["F2"] and "no pecuniary interest" in lines[0]["footnotes"][0][1]
     assert lines[1]["footnote_ids"] == ["F3"] and lines[0]["remarks"] == "This is 1 of 2 Form 4s."
     p = F.packet_text(lines[0])
@@ -65,3 +67,10 @@ def test_the_key_changes_when_the_footnote_text_changes():
 def test_the_prompt_names_the_hedge_and_forbids_inference_from_names():
     assert "except to the extent" in F.SYSTEM and "Do NOT infer from the name" in F.SYSTEM
     assert set(F.VERDICT_TOOL["input_schema"]["properties"]["label"]["enum"]) == set(F.LABELS)
+
+
+def test_a_zero_line_is_not_sent_and_the_household_rule_is_in_the_prompt():
+    doc = DOC.replace("<value>1231037</value>", "<value>0</value>")
+    lines = F.lines_of(F.parse_doc(doc), "a")
+    assert [l["nature"] for l in lines] == ["By CZI Holdings, LLC"], "a line at zero carries nothing to exclude"
+    assert "EVEN WHEN the footnote fully disclaims" in F.SYSTEM and "Separate Property Trust" in F.EXAMPLES

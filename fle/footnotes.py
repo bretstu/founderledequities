@@ -49,7 +49,7 @@ SYSTEM = """You classify ONE holding line from an SEC Form 3, 4 or 5, using ONLY
 
 The question: does the reporting person have a PECUNIARY INTEREST in these shares -- would they profit or lose on them? Answer with exactly one label:
 
-- economic: nothing in the footnotes says otherwise. This INCLUDES the standard hedge "disclaims beneficial ownership except to the extent of his/her pecuniary interest" (that is a hedge, not a disclaimer); shares held by a spouse or a family member in the household; trusts for the person or their family; and entities the person owns or controls for their own benefit (an LLC, a holding company, a family partnership).
+- economic: nothing in the footnotes says otherwise. This INCLUDES the standard hedge "disclaims beneficial ownership except to the extent of his/her pecuniary interest" (that is a hedge, not a disclaimer); trusts for the person or their family; entities the person owns or controls for their own benefit (an LLC, a holding company, a family partnership); and ALWAYS shares held by or for a spouse or a family member in the household (a spouse's separate-property trust, a trust for the children), EVEN WHEN the footnote fully disclaims beneficial ownership of them -- the household benefits, and that is the rule here.
 - disclaimed: the footnote says the person has NO pecuniary interest, or the shares are held by a charity, foundation, non-profit, private foundation or donor-advised fund, or are held for unrelated third parties, or by an entity in which the person states no economic interest.
 - partial: the footnote states the person's pecuniary interest is a FRACTION of the line (a partnership percentage, an LLC percentage, a charitable remainder or charitable lead trust where the person keeps an income or remainder interest). Give the fraction as a number between 0 and 1 if the footnote states one; otherwise null.
 - unclear: the footnotes concern something else (a trading plan, a price, a conversion ratio, a vesting schedule), refer the reader to another filing, or do not say.
@@ -80,6 +80,7 @@ economic: "The Reporting Person disclaims beneficial ownership of these securiti
 economic: "Held by the Smith Family Trust, of which the Reporting Person is trustee, for the benefit of the Reporting Person's children." -> economic (a family trust)
 disclaimed: "Represents shares held by the Chan Zuckerberg Biohub, Inc., a non-profit organization. Mr. Zuckerberg disclaims beneficial ownership of these shares and has no pecuniary interest in them." -> disclaimed
 disclaimed: "Held of record by January Capital HoldCo, LLC, an entity controlled by Endeavor. The Reporting Person disclaims beneficial ownership of these shares except to the extent of any pecuniary interest, and has no pecuniary interest in them." -> disclaimed (the sentence goes on to say no interest)
+economic: "Held by the Susan L. Dell Separate Property Trust. The reporting person disclaims beneficial ownership of these securities for purposes of Rule 16a-1(a)(1) and (2)." -> economic (a spouse's trust: household family, whatever the disclaimer says)
 partial: "Held by ABC Partners, L.P.; the Reporting Person holds a 40% limited partnership interest and disclaims beneficial ownership except to the extent of that interest." -> partial, fraction 0.4
 unclear: "The sales reported in this Form 4 were effected pursuant to a Rule 10b5-1 trading plan adopted on March 31, 2026." -> unclear"""
 
@@ -116,10 +117,18 @@ def lines_of(root, accession: str) -> list:
                 after = _t(n, "postTransactionAmounts/sharesOwnedFollowingTransaction/value")
                 direct = _t(n, "ownershipNature/directOrIndirectOwnership/value")
                 nature = re.sub(r"\s+", " ", _t(n, "ownershipNature/natureOfOwnership/value"))
+                try:
+                    if float(after or 0) <= 0:
+                        continue   # nothing held on this line: nothing to exclude
+                except ValueError:
+                    pass
                 out.append({
                     "accession": accession, "row": i, "table": table, "security": title, "direct": direct,
                     "nature": nature, "shares": after, "footnote_ids": ids,
                     "footnotes": [(k, notes.get(k, "")) for k in ids if notes.get(k)],
+                    # the filing's other footnotes, for context only: "of which the
+                    # Trust is the sole member" names a Trust defined elsewhere
+                    "context": [(k, v) for k, v in notes.items() if k not in ids and v],
                     "remarks": remarks,
                 })
     return out
@@ -130,7 +139,10 @@ def packet_text(line: dict) -> str:
     shares = f"{float(line['shares']):,.0f}" if line.get("shares") not in ("", None) else "?"
     who = "directly" if (line.get("direct") or "").upper() == "D" else f"indirectly, \"{line.get('nature') or ''}\""
     s = (f"LINE: {line['security']} · held {who} · {shares} shares (Table {line['table']})\n"
-         f"FOOTNOTES ATTACHED TO THIS LINE (verbatim):\n{fn}\n")
+         f"FOOTNOTES ATTACHED TO THIS LINE (verbatim; the quote must come from these):\n{fn}\n")
+    if line.get("context"):
+        ctx = "\n".join(f" ({k}) \"{v[:600]}\"" for k, v in line["context"][:12])
+        s += f"OTHER FOOTNOTES IN THE SAME FILING (context only, for terms the attached ones refer to):\n{ctx}\n"
     if line.get("remarks"):
         s += f"REMARKS ON THE FILING (verbatim): \"{line['remarks'][:1200]}\"\n"
     return s

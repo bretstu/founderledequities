@@ -40,8 +40,11 @@ def env_key():
 
 def stated_filings(led):
     """The filings the current position was stated by: those on the dates
-    the ledger's groups carry."""
-    dates = {g.filed for g in led.groups.values() if g.filed}
+    the ledger's counted groups carry (a closed group's old filing is not
+    the position)."""
+    from fle.ledger import closed_groups
+    closed = {k for k, _g, _c in closed_groups(led.groups, getattr(led, "retired", {}) or {})}
+    dates = {g.filed for k, g in led.groups.items() if g.filed and k not in closed and g.shares}
     return [f for f in led.mine if (f.get("reportDate") or f.get("filingDate") or "") in dates]
 
 
