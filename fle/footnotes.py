@@ -58,7 +58,8 @@ Also economic: VOTING SHARES PAIRED WITH UNITS in an "Up-C" structure. When a fo
 
 Rules:
 1. Use only the footnote text. Do NOT infer from the name of the entity: "Foundation", "Charitable", "Trust" or "Biohub" in a name decides nothing on its own; only what the footnote SAYS does. A footnote that merely names "the X Foundation" and adds the hedge is unclear, not disclaimed.
-2. The quote must be copied EXACTLY from the footnote text provided: the words that decide the label. If no words decide it, the label is unclear and the quote is the most relevant sentence.
+2. The quote must be ONE CONTIGUOUS passage copied EXACTLY from the footnote text provided (never two passages joined with "..."): the words that decide the label. If no words decide it, the label is unclear and the quote is the most relevant sentence.
+4. A STATEMENT of what the holder is decides; a NAME does not. "The shares are held by a charitable foundation" is a statement: disclaimed. "Held by the Hayne Foundation" is a name: unclear, even with the hedge.
 3. When in doubt between economic and disclaimed, answer unclear."""
 
 VERDICT_TOOL = {
@@ -86,6 +87,7 @@ economic: "Held by the Susan L. Dell Separate Property Trust. The reporting pers
 partial: "Held by ABC Partners, L.P.; the Reporting Person holds a 40% limited partnership interest and disclaims beneficial ownership except to the extent of that interest." -> partial, fraction 0.4
 unclear: "The sales reported in this Form 4 were effected pursuant to a Rule 10b5-1 trading plan adopted on March 31, 2026." -> unclear
 unclear: "These shares are owned indirectly by the Hayne Foundation. Mr. Hayne disclaims beneficial ownership of these shares, except to the extent of any pecuniary interest therein." -> unclear (a name is not a statement; nothing here says charity or no interest)
+disclaimed: "The shares are held by a charitable foundation. The reporting persons are officers of the charitable foundation and share voting and dispositive power for the foundation. The reporting persons disclaim beneficial ownership of the shares, except to the extent of their pecuniary interest therein." -> disclaimed ("a charitable foundation" is a statement of what the holder is; the hedge cannot create a pecuniary interest in a charity)
 economic: "Mr. Ergen established the Ergen Two-Year May 2025 GRAT and contributed 26,000,000 Class B shares to it. Mrs. Ergen serves as trustee." -> economic (a GRAT: annuity to the grantor, remainder to family)
 economic: "The shares of Class V-1 Common Stock have no economic rights and are paired with an equal number of Symbotic Holdings units held by the reporting person." -> economic (paired with units)"""
 

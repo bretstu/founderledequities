@@ -12,6 +12,7 @@ neighbours before pasting.
 """
 import csv
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -20,7 +21,66 @@ READS = os.path.join(ROOT, "universe", "footnote-reads.csv")
 REVIEWED = os.path.join(ROOT, "universe", "footnote-reviewed.csv")
 
 
+def golden():
+    sys.path.insert(0, ROOT)
+    from fle.edgar import EdgarClient
+    from fle.ledger import _parse
+    from fle.footnotes import lines_of, line_key, classify
+    if not os.path.exists(REVIEWED) or not os.path.exists(READS):
+        print("  nothing reviewed yet")
+        return 0
+    key_env = os.environ.get("ANTHROPIC_API_KEY") or ""
+    if not key_env:
+        for line in open(os.path.join(ROOT, ".env"), encoding="utf-8"):
+            if line.startswith("ANTHROPIC_API_KEY="):
+                key_env = line.split("=", 1)[1].strip().strip('"').strip("'")
+    reviewed = {r["key"]: r for r in csv.DictReader(open(REVIEWED, encoding="utf-8-sig"))}
+    reads = {r["key"]: r for r in csv.DictReader(open(READS, encoding="utf-8-sig"))}
+    # the expected label from the verdict: ok -> the flagged label stands; no -> economic; read -> any
+    client = EdgarClient()
+    P = {r["ticker"]: r for r in csv.DictReader(open(os.path.join(ROOT, "panel.csv"), encoding="utf-8-sig"))}
+    checked = flipped = 0
+    cache = {}
+    for k, v in reviewed.items():
+        r = reads.get(k)
+        if not r or v["verdict"] not in ("ok", "no"):
+            continue
+        expect = r["label"] if v["verdict"] == "ok" else "economic"
+        tk, acc = r["ticker"], r["accession"]
+        cik = int(P[tk]["cik"]) if tk in P else None
+        if cik is None:
+            continue
+        if (cik, acc) not in cache:
+            f = {"accessionNumber": acc, "primaryDocument": "", "form": "4"}
+            try:
+                from fle.edgar import EdgarClient as _E  # noqa: F401
+                subs = client.submissions(cik)
+                f = next((x for x in subs.get("_filings", []) if x.get("accessionNumber") == acc), f)
+                cache[(cik, acc)] = _parse(client, cik, f)
+            except Exception:  # noqa: BLE001
+                cache[(cik, acc)] = None
+        root = cache[(cik, acc)]
+        if root is None:
+            continue
+        line = next((l for l in lines_of(root, acc) if line_key(r["owner_cik"], l) == k), None)
+        if line is None:
+            continue
+        got = classify(line, key_env)
+        checked += 1
+        ok = (got["label"] == expect) or (expect == "economic" and got["label"] in ("economic", "unclear"))
+        if not ok:
+            flipped += 1
+            print(f"  FLIPPED {tk} {r['security'][:20]} {r['nature'][:30]}: expected {expect}, read {got['label']} -- \"{got['quote'][:100]}\"")
+    print(f"  golden set: {checked} reviewed line(s) re-read, {flipped} flipped")
+    return 1 if flipped else 0
+
+
 def main(argv):
+    if "--golden" in argv:
+        # THE GOLDEN SET: every reviewed line re-read under the current prompt,
+        # compared with the recorded verdict. A prompt change that flips a
+        # settled reading fails here before it reads anything new.
+        return golden()
     if "--reviewed" in argv:
         i = argv.index("--reviewed")
         key, verdict = argv[i + 1], (argv[i + 2] if len(argv) > i + 2 else "ok")
@@ -38,13 +98,20 @@ def main(argv):
     if not os.path.exists(READS):
         print("  no readings yet: python3 ops/footnote_reads.py")
         return 0
-    rows = [r for r in csv.DictReader(open(READS, encoding="utf-8-sig")) if r["label"] in ("disclaimed", "partial")]
+    NAME_HINT = re.compile(r"foundation|charit|philanthrop|donor|biohub|non-?profit|for the benefit of|endowment", re.I)
+    allrows = list(csv.DictReader(open(READS, encoding="utf-8-sig")))
+    rows = [r for r in allrows if r["label"] in ("disclaimed", "partial")]
+    # NAME ONLY (2026-09-18): a line the model left unclear whose vehicle's
+    # NAME says foundation, charity, donor: not a reading, a reason to look
+    for r in allrows:
+        if r["label"] == "unclear" and NAME_HINT.search(r.get("nature") or ""):
+            rows.append(dict(r, label="name only"))
     if "--all" not in argv:
         rows = [r for r in rows if r["key"] not in reviewed]
     if not rows:
         print("  nothing to review")
         return 0
-    rows.sort(key=lambda r: (r["ticker"], -float(r["shares"] or 0)))
+    rows.sort(key=lambda r: (r["ticker"], r["label"] == "name only", -float(r["shares"] or 0)))
     ciks = {}
     pp = os.path.join(ROOT, "panel.csv")
     if os.path.exists(pp):

@@ -80,3 +80,8 @@ def test_the_prompt_carries_the_grat_the_paired_units_and_the_name_rules():
     assert "GRAT" in F.SYSTEM and "NOT partial" in F.SYSTEM
     assert "PAIRED WITH UNITS" in F.SYSTEM and "paired with units" in F.EXAMPLES
     assert "A name is not a statement" in F.EXAMPLES or "a name is not a statement" in F.EXAMPLES
+
+
+def test_the_statement_versus_name_pair_and_contiguous_quotes_are_in_the_prompt():
+    assert "ONE CONTIGUOUS passage" in F.SYSTEM and "A STATEMENT of what the holder is decides" in F.SYSTEM
+    assert "a charitable foundation\" is a statement" in F.EXAMPLES or "is a statement of what the holder is" in F.EXAMPLES

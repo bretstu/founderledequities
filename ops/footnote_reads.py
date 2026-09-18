@@ -66,6 +66,9 @@ def main(argv):
     client = EdgarClient()
     panel = list(csv.DictReader(open(os.path.join(ROOT, "panel.csv"), encoding="utf-8-sig")))
     founders = {r["ticker"].upper() for r in csv.DictReader(open(os.path.join(ROOT, "founders.csv"), encoding="utf-8-sig")) if (r.get("founder") or "").lower() == "yes"} if os.path.exists(os.path.join(ROOT, "founders.csv")) else set()
+    done_p = os.path.join(ROOT, "universe", "footnote-done.json")
+    import json
+    done_state = json.load(open(done_p)) if os.path.exists(done_p) else {}
     reads = load_reads(READS)
     if reread and only:
         reads = {k: v for k, v in reads.items() if v.get("ticker", "").upper() not in only}
@@ -80,6 +83,9 @@ def main(argv):
             continue
         if limit is not None and calls >= limit:
             break
+        # a company read through on the same stated filings is skipped before the walk
+        if not reread and not only and done_state.get(tk) == (r.get("shares_as_of") or ""):
+            continue
         try:
             cik = int(r["cik"])
             out = shares_outstanding(client, cik)
@@ -112,6 +118,9 @@ def main(argv):
                     print(f"  {tk} [{v['label']:10}] {line['security'][:22]:22} {who:44} {float(line['shares'] or 0):>13,.0f}")
                     print(f"        quote: \"{v['quote'][:200]}\"" + ("" if v["verified"] else "   (NOT VERIFIED: discarded)"))
         write_reads(READS, reads)
+        if limit is None or calls < limit:
+            done_state[tk] = r.get("shares_as_of") or ""
+            json.dump(done_state, open(done_p, "w"), indent=0)
         n_flag = sum(1 for x in reads.values() if x["ticker"] == tk and x["label"] in ("disclaimed", "partial"))
         print(f"  {companies:4} {tk:6} {calls - before:3} line(s) read" + (f"  · {n_flag} flagged" if n_flag else ""), flush=True)
     labels = {}
