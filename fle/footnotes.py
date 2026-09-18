@@ -57,10 +57,11 @@ The question: does the reporting person have a PECUNIARY INTEREST in these share
 Also economic: VOTING SHARES PAIRED WITH UNITS in an "Up-C" structure. When a footnote says shares of a class are "non-economic" or "have no economic rights" because they are paired with (or exchangeable together with) partnership or LLC units held by the same person, the person's economic interest is those units, one per share: label economic, and say "paired with units" in the reason. When a footnote calls shares "non-economic" or "voting shares" and says NOTHING about units, the label is unclear, never disclaimed: the economics sit in units the filing reports elsewhere, and "non-economic" describes the class, not the person's interest.
 
 Rules:
-1. Use only the footnote text. Do NOT infer from the name of the entity: "Foundation", "Charitable", "Trust" or "Biohub" in a name decides nothing on its own; only what the footnote SAYS does. A footnote that merely names "the X Foundation" and adds the hedge is unclear, not disclaimed.
-2. The quote must be ONE CONTIGUOUS passage copied EXACTLY from the footnote text provided (never two passages joined with "..."): the words that decide the label. If no words decide it, the label is unclear and the quote is the most relevant sentence.
-4. A STATEMENT of what the holder is decides; a NAME does not. "The shares are held by a charitable foundation" is a statement: disclaimed. "Held by the Hayne Foundation" is a name: unclear, even with the hedge.
-3. When in doubt between economic and disclaimed, answer unclear."""
+1. Decide as a careful analyst would, with economic ownership as the goal, from the footnote text AND the name and role given for the holder. A FOUNDATION (including a "family foundation") in which the person's stated role is trustee, officer, member or director, with no footnote saying the person or their family benefits from it, is a charity: disclaimed, basis "name". The words "sole member and director", "trustee" and "may be deemed to beneficially own" describe control of a charity, not an interest in it. A trust or LLC is NOT a foundation: a family trust or the person's own LLC is economic unless a footnote says otherwise.
+2. The quote must be ONE CONTIGUOUS passage copied EXACTLY from the footnote text provided (never two passages joined with "..."): the words that decide the label. If the name decides and no words do, quote the sentence that names the holder.
+3. State the basis: "statement" when the footnote says what the holder is or what the interest is; "name" when the name and role decided it.
+4. A footnote that describes a TRANSACTION (a gift made, a sale, shares withheld, a conversion) says nothing about who holds what remains: unclear.
+5. When in doubt between economic and disclaimed, answer unclear."""
 
 VERDICT_TOOL = {
     "name": "record_reading",
@@ -71,9 +72,10 @@ VERDICT_TOOL = {
             "label": {"type": "string", "enum": list(LABELS)},
             "fraction": {"type": ["number", "null"]},
             "quote": {"type": "string", "description": "verbatim words from the footnote text that decide the label"},
+            "basis": {"type": "string", "enum": ["statement", "name"], "description": "what decided it: the footnote's statement, or the holder's name and role"},
             "reason": {"type": "string", "description": "one short sentence"},
         },
-        "required": ["label", "quote"],
+        "required": ["label", "quote", "basis"],
     },
 }
 
@@ -86,7 +88,9 @@ disclaimed: "Held of record by January Capital HoldCo, LLC, an entity controlled
 economic: "Held by the Susan L. Dell Separate Property Trust. The reporting person disclaims beneficial ownership of these securities for purposes of Rule 16a-1(a)(1) and (2)." -> economic (a spouse's trust: household family, whatever the disclaimer says)
 partial: "Held by ABC Partners, L.P.; the Reporting Person holds a 40% limited partnership interest and disclaims beneficial ownership except to the extent of that interest." -> partial, fraction 0.4
 unclear: "The sales reported in this Form 4 were effected pursuant to a Rule 10b5-1 trading plan adopted on March 31, 2026." -> unclear
-unclear: "These shares are owned indirectly by the Hayne Foundation. Mr. Hayne disclaims beneficial ownership of these shares, except to the extent of any pecuniary interest therein." -> unclear (a name is not a statement; nothing here says charity or no interest)
+disclaimed: line "By Hayne Foundation"; footnote "These shares are owned indirectly by Richard A. Hayne and indirectly by his spouse, Margaret Hayne. Richard A. Hayne disclaims beneficial ownership of these shares, except to the extent of any pecuniary interest therein." -> disclaimed, basis name (a foundation the couple runs; the hedge leaves the interest open and the holder settles it)
+disclaimed: "Represents securities held by the Jeff T. Green Family Foundation. Mr. Green is the sole member and director of the Foundation and has investment and voting control over the shares held by the Foundation, and may be deemed to indirectly beneficially own the shares." -> disclaimed, basis name (control of a charity, described carefully, and nothing more)
+unclear: line held directly; footnote "Gift to a charitable organization." -> unclear (a transaction footnote: the shares that remain in the line are the person's)
 disclaimed: "The shares are held by a charitable foundation. The reporting persons are officers of the charitable foundation and share voting and dispositive power for the foundation. The reporting persons disclaim beneficial ownership of the shares, except to the extent of their pecuniary interest therein." -> disclaimed ("a charitable foundation" is a statement of what the holder is; the hedge cannot create a pecuniary interest in a charity)
 economic: "Mr. Ergen established the Ergen Two-Year May 2025 GRAT and contributed 26,000,000 Class B shares to it. Mrs. Ergen serves as trustee." -> economic (a GRAT: annuity to the grantor, remainder to family)
 economic: "The shares of Class V-1 Common Stock have no economic rights and are paired with an equal number of Symbotic Holdings units held by the reporting person." -> economic (paired with units)
@@ -119,7 +123,18 @@ def lines_of(root, accession: str) -> list:
                     continue   # options, RSUs, warrants: not holdings of shares
                 if table == "II" and re.search(r"option|warrant|right to (buy|purchase)|restricted stock unit|\bRSUs?\b|\bunits?\b|phantom", title, re.I):
                     continue
-                ids = sorted({f.get("id") for f in n.iter("footnoteId") if f.get("id")})
+                # FOOTNOTES ON THE HOLDING, NOT THE TRANSACTION (2026-09-18, IBP):
+                # "Gift to a charitable organization" hung on the transaction
+                # code of a gift and was read as a description of the holder.
+                # The XML says which field a footnote is attached to; only
+                # those on the security title, the balance after, and the
+                # ownership nature describe the line.
+                ids = set()
+                for path in ("securityTitle", "postTransactionAmounts", "ownershipNature"):
+                    e = n.find(path)
+                    if e is not None:
+                        ids.update(f.get("id") for f in e.iter("footnoteId") if f.get("id"))
+                ids = sorted(ids)
                 if not ids:
                     continue
                 after = _t(n, "postTransactionAmounts/sharesOwnedFollowingTransaction/value")
@@ -222,13 +237,15 @@ def classify(line: dict, api_key: str, model: str = ANTHROPIC_MODEL) -> dict:
         frac = float(frac) if frac is not None else None
     except (TypeError, ValueError):
         frac = None
+    basis = str(got.get("basis") or "").strip().lower()
     return {"label": label if ok else "none", "fraction": frac, "quote": quote,
+            "basis": basis if basis in ("statement", "name") else "",
             "reason": str(got.get("reason") or "").strip()[:300],
             "verified": ok, "model": model}
 
 
 READ_COLUMNS = ["key", "ticker", "ceo", "owner_cik", "accession", "row", "security", "direct", "nature", "shares",
-                "label", "fraction", "quote", "reason", "footnote_ids", "model", "read_on", "url"]
+                "label", "fraction", "basis", "quote", "reason", "footnote_ids", "model", "read_on", "url"]
 
 
 def load_reads(path: str) -> dict:

@@ -64,9 +64,11 @@ def test_the_key_changes_when_the_footnote_text_changes():
     assert k1 != F.line_key("1548760", line2) and k1.startswith("1548760|a|1|")
 
 
-def test_the_prompt_names_the_hedge_and_forbids_inference_from_names():
-    assert "except to the extent" in F.SYSTEM and "Do NOT infer from the name" in F.SYSTEM
+def test_the_prompt_names_the_hedge_and_decides_a_foundation_by_name_and_role():
+    assert "except to the extent" in F.SYSTEM and "Decide as a careful analyst would" in F.SYSTEM
+    assert "basis \"name\"" in F.SYSTEM and "A trust or LLC is NOT a foundation" in F.SYSTEM
     assert set(F.VERDICT_TOOL["input_schema"]["properties"]["label"]["enum"]) == set(F.LABELS)
+    assert "basis" in F.VERDICT_TOOL["input_schema"]["required"]
 
 
 def test_a_zero_line_is_not_sent_and_the_household_rule_is_in_the_prompt():
@@ -79,12 +81,12 @@ def test_a_zero_line_is_not_sent_and_the_household_rule_is_in_the_prompt():
 def test_the_prompt_carries_the_grat_the_paired_units_and_the_name_rules():
     assert "GRAT" in F.SYSTEM and "NOT partial" in F.SYSTEM
     assert "PAIRED WITH UNITS" in F.SYSTEM and "paired with units" in F.EXAMPLES
-    assert "A name is not a statement" in F.EXAMPLES or "a name is not a statement" in F.EXAMPLES
+    assert "Hayne Foundation" in F.EXAMPLES and "basis name" in F.EXAMPLES
 
 
 def test_the_statement_versus_name_pair_and_contiguous_quotes_are_in_the_prompt():
-    assert "ONE CONTIGUOUS passage" in F.SYSTEM and "A STATEMENT of what the holder is decides" in F.SYSTEM
-    assert "a charitable foundation\" is a statement" in F.EXAMPLES or "is a statement of what the holder is" in F.EXAMPLES
+    assert "ONE CONTIGUOUS passage" in F.SYSTEM and "describes a TRANSACTION" in F.SYSTEM
+    assert "a charitable foundation" in F.EXAMPLES
 
 
 def test_a_shortened_quote_passes_when_every_segment_is_the_footnotes_words():
@@ -93,3 +95,19 @@ def test_a_shortened_quote_passes_when_every_segment_is_the_footnotes_words():
     assert not F.quote_in_footnotes("The Reporting Person is ... a trustee of the Ford Foundation", w), "an invented segment fails"
     assert not F.quote_in_footnotes("a trustee of each of Lefkofsky ... The Reporting Person is", w), "segments out of order fail"
     assert "never disclaimed" in F.SYSTEM and "describes the class" in F.EXAMPLES
+
+
+def test_a_transaction_footnote_is_not_sent_with_the_line():
+    doc = """<ownershipDocument><nonDerivativeTable>
+<nonDerivativeTransaction><securityTitle><value>Common Stock</value></securityTitle>
+ <transactionCoding><transactionCode>G</transactionCode><footnoteId id="F1"/></transactionCoding>
+ <transactionAmounts><transactionShares><value>1000</value><footnoteId id="F2"/></transactionShares></transactionAmounts>
+ <postTransactionAmounts><sharesOwnedFollowingTransaction><value>193803</value></sharesOwnedFollowingTransaction></postTransactionAmounts>
+ <ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></nonDerivativeTransaction>
+<nonDerivativeHolding><securityTitle><value>Common Stock</value></securityTitle>
+ <postTransactionAmounts><sharesOwnedFollowingTransaction><value>500</value></sharesOwnedFollowingTransaction></postTransactionAmounts>
+ <ownershipNature><directOrIndirectOwnership><value>I</value></directOrIndirectOwnership><natureOfOwnership><value>By Foundation</value><footnoteId id="F3"/></natureOfOwnership></ownershipNature></nonDerivativeHolding>
+</nonDerivativeTable><footnotes><footnote id="F1">Gift to a charitable organization.</footnote><footnote id="F2">Price.</footnote><footnote id="F3">Held by the X Foundation, of which he is trustee.</footnote></footnotes></ownershipDocument>"""
+    lines = F.lines_of(F.parse_doc(doc), "a")
+    assert [l["nature"] for l in lines] == ["By Foundation"], "the gift's footnote hangs on the transaction, not the line"
+    assert lines[0]["footnote_ids"] == ["F3"] and [k for k, _ in lines[0]["context"]] == ["F1", "F2"]

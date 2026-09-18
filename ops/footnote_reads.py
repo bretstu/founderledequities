@@ -111,7 +111,7 @@ def main(argv):
                 url = f"https://www.sec.gov/Archives/edgar/data/{cik}/{acc.replace('-', '')}/"
                 reads[k] = {"key": k, "ticker": tk, "ceo": r["ceo"], "owner_cik": r["owner_cik"], "accession": acc, "row": line["row"],
                             "security": line["security"], "direct": line["direct"], "nature": line["nature"], "shares": line["shares"],
-                            "label": v["label"], "fraction": "" if v["fraction"] is None else v["fraction"], "quote": v["quote"],
+                            "label": v["label"], "fraction": "" if v["fraction"] is None else v["fraction"], "basis": v.get("basis", ""), "quote": v["quote"],
                             "reason": v["reason"], "footnote_ids": " ".join(line["footnote_ids"]), "model": v["model"], "read_on": today, "url": url}
                 if only:
                     who = "D" if line["direct"] == "D" else f"I: {line['nature'][:40]}"

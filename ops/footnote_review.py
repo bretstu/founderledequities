@@ -12,7 +12,6 @@ neighbours before pasting.
 """
 import csv
 import os
-import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -21,7 +20,20 @@ READS = os.path.join(ROOT, "universe", "footnote-reads.csv")
 REVIEWED = os.path.join(ROOT, "universe", "footnote-reviewed.csv")
 
 
+def _migrate_reviewed():
+    """An older reviewed file has no label column; give it one, so a verdict's
+    label is kept from now on and old rows read as 'no label recorded'."""
+    if not os.path.exists(REVIEWED):
+        return
+    rows = list(csv.reader(open(REVIEWED, encoding="utf-8-sig")))
+    if rows and "label" not in rows[0]:
+        out = [["key", "verdict", "note", "label"]] + [(r + ["", "", ""])[:4] for r in rows[1:]]
+        with open(REVIEWED, "w", newline="", encoding="utf-8") as fh:
+            csv.writer(fh).writerows(out)
+
+
 def golden():
+    _migrate_reviewed()
     sys.path.insert(0, ROOT)
     from fle.edgar import EdgarClient
     from fle.ledger import _parse
@@ -96,6 +108,7 @@ def main(argv):
         label_now = ""
         if os.path.exists(READS):
             label_now = next((r["label"] for r in csv.DictReader(open(READS, encoding="utf-8-sig")) if r["key"] == key), "")
+        _migrate_reviewed()
         new = not os.path.exists(REVIEWED)
         with open(REVIEWED, "a", newline="", encoding="utf-8") as fh:
             w = csv.writer(fh)
@@ -110,14 +123,8 @@ def main(argv):
     if not os.path.exists(READS):
         print("  no readings yet: python3 ops/footnote_reads.py")
         return 0
-    NAME_HINT = re.compile(r"foundation|charit|philanthrop|donor|biohub|non-?profit|for the benefit of|endowment", re.I)
     allrows = list(csv.DictReader(open(READS, encoding="utf-8-sig")))
     rows = [r for r in allrows if r["label"] in ("disclaimed", "partial")]
-    # NAME ONLY (2026-09-18): a line the model left unclear whose vehicle's
-    # NAME says foundation, charity, donor: not a reading, a reason to look
-    for r in allrows:
-        if r["label"] == "unclear" and NAME_HINT.search(r.get("nature") or ""):
-            rows.append(dict(r, label="name only"))
     if "--all" not in argv:
         rows = [r for r in rows if r["key"] not in reviewed]
     if not rows:
@@ -131,7 +138,8 @@ def main(argv):
     for r in rows:
         who = "held directly" if r["direct"] == "D" else f"by {r['nature']}"
         frac = f" · fraction {r['fraction']}" if r.get("fraction") else ""
-        print(f"\n== {r['ticker']} · {r['ceo']} · {r['security']} {who} · {float(r['shares'] or 0):,.0f} shares · [{r['label']}{frac}]")
+        basis = f" · by {r['basis']}" if r.get("basis") else ""
+        print(f"\n== {r['ticker']} · {r['ceo']} · {r['security']} {who} · {float(r['shares'] or 0):,.0f} shares · [{r['label']}{frac}{basis}]")
         print(f"   \"{r['quote']}\"")
         print(f"   {r['reason']}")
         print(f"   filing: {r['url']}   key: {r['key']}")
