@@ -44,14 +44,15 @@ from .founders import ANTHROPIC_MODEL, _post, quote_is_verbatim
 
 MAX_TOKENS = 400
 LABELS = ("economic", "disclaimed", "partial", "unclear")
-PROMPT_VERSION = "v268"   # bumped whenever SYSTEM or EXAMPLES change; recorded on every reading
+PROMPT_VERSION = "v269"   # bumped whenever SYSTEM or EXAMPLES change; recorded on every reading
 
 SYSTEM = """You classify ONE holding line from an SEC Form 3, 4 or 5, using ONLY the footnote text provided.
 
 The question: does the reporting person have a PECUNIARY INTEREST in these shares -- would they profit or lose on them? Answer with exactly one label:
 
 - economic: nothing in the footnotes says otherwise. This INCLUDES the standard hedge "disclaims beneficial ownership except to the extent of his/her pecuniary interest" (that is a hedge, not a disclaimer); trusts for the person or their family, INCLUDING an irrevocable trust for children where the person or the spouse is trustee, or where no trustee is stated; entities the person owns or controls (an LLC the person is sole member or manager of, a holding company, a family partnership), whatever the entity's purpose; a spouse's or a family member's shares, a custodial account for a minor, a trust for the person's own benefit; and ALWAYS shares held by or for a SPOUSE (a spouse's separate-property trust, a joint filing's lines), EVEN WHEN the footnote fully disclaims beneficial ownership of them -- a marriage is one household, and that is the rule here.
-  The ONLY family case that is disclaimed is a GIFT COMPLETED, and the footnote must show it: an irrevocable trust or vehicle for children or descendants with an INDEPENDENT trustee or manager stated (a corporate trustee, a named third party, "legal counsel" -- not the person, not the spouse), OR a vehicle for the children with a FULL disclaimer and no hedge ("not an admission that the reporting person is the beneficial owner"). The person's power to replace an independent trustee does not undo the gift. Without one of those, a family trust is economic.
+  The ONLY family case that is disclaimed is a GIFT COMPLETED, and the footnote must show it: an irrevocable trust or vehicle FOR CHILDREN OR DESCENDANTS with an INDEPENDENT trustee or manager stated (a corporate trustee, a named third party, "legal counsel" -- not the person, not the spouse), OR a vehicle stated to be for the children with a FULL disclaimer and no hedge ("not an admission that the reporting person is the beneficial owner"). The person's power to replace an independent trustee does not undo the gift. Without one of those, a family trust is economic.
+  THE FORMULA NEVER DECIDES ON ITS OWN. "Disclaims beneficial ownership... not an admission that the reporting person is the beneficial owner" counts ONLY when the vehicle is stated to be for children or descendants. On a trust for the person's own benefit, on a spouse's shares, or on an unspecified "family member", the same words change nothing: economic.
 - disclaimed: the footnote says the person has NO pecuniary interest, or the shares are held by a charity, foundation, non-profit, private foundation or donor-advised fund, or are held for unrelated third parties, or by an entity in which the person states no economic interest.
 - partial: the footnote states the person's pecuniary interest is a FRACTION of the line (a partnership percentage, an LLC percentage, a charitable remainder or charitable lead trust where a CHARITY takes the other part). Give the fraction as a number between 0 and 1 if the footnote states one; otherwise null. A GRAT (grantor retained annuity trust) is NOT partial: the annuity returns to the grantor and the remainder goes to family, so it is economic.
 - unclear: the footnotes concern something else (a trading plan, a price, a conversion ratio, a vesting schedule), refer the reader to another filing, or do not say.
@@ -99,7 +100,8 @@ economic: "53.26% of which is held on behalf of Mr. Ostrover, 21.74% on behalf o
 economic: "Shares held by the Houston 2012 Irrevocable Children's Trust, for which the Reporting Person serves as trustee." -> economic (the person is trustee: holds the strings)
 economic: "The Reporting Person is the Co-Administrative Trustee and Co-Investment Trustee of the Irrevocable Trust." -> economic (co-trustee)
 economic: "Shares held by the David M. Overton 2011 Gift Trust for the benefit of the reporting person's son. The reporting person's spouse is trustee of the trust. The reporting person disclaims beneficial ownership." -> economic (the spouse is trustee: the household, whatever the disclaimer)
-economic: "These shares are held in a trust for the benefit of the reporting person. The reporting person disclaims beneficial ownership." -> economic (for the person's own benefit)
+economic: "These shares are held in a trust for the benefit of the reporting person. The reporting person disclaims beneficial ownership of these securities, and the filing of this report is not an admission that the reporting person is the beneficial owner." -> economic (for the person's own benefit; the formula changes nothing)
+economic: line "By family member"; footnote "The Reporting Person disclaims beneficial ownership of these securities, and this report shall not be deemed an admission that the Reporting Person is the beneficial owner." -> economic (a family member's shares, still in the household; the formula changes nothing)
 economic: "The shares are held of record by Start Small, LLC, for which the Reporting Person is the sole member." -> economic (an LLC the person owns, whatever its purpose; not a foundation)
 economic: "Shares held in the Gift Trust, an irrevocable trust established for the benefit of a minor child of the reporting person." -> economic (no trustee stated: the person holds the strings until shown otherwise)
 disclaimed: "These shares are held by the Field 2021 Descendants Trust, of which Bryn Mawr Trust Company of Delaware serves as trustee and may be replaced at the discretion of the Reporting Person." -> disclaimed, basis statement (a corporate trustee: a gift completed; the power to replace the trustee does not undo it)
@@ -185,6 +187,18 @@ def packet_text(line: dict) -> str:
     return s
 
 
+def content_key(owner_cik: str, line: dict) -> str:
+    """THE SAME QUESTION, ASKED ONCE (2026-09-18): everything the reader is
+    shown -- owner, class, direct/indirect, the vehicle's text, the attached
+    footnotes, the remarks -- matched exactly. Two lines identical in all of
+    that are one question, and the answer is copied rather than bought
+    again. Any difference in any field is its own reading."""
+    parts = [owner_cik, (line.get("security") or "").strip().lower(), (line.get("direct") or "").upper(),
+             re.sub(r"\s+", " ", (line.get("nature") or "")).strip().lower(),
+             "|".join(v for _k, v in line["footnotes"]), (line.get("remarks") or "")]
+    return hashlib.sha1("\x1f".join(parts).encode("utf-8")).hexdigest()[:16]
+
+
 def line_key(owner_cik: str, line: dict) -> str:
     h = hashlib.sha1(("|".join(v for _k, v in line["footnotes"]) + "|" + (line.get("remarks") or "")).encode("utf-8")).hexdigest()[:10]
     return f"{owner_cik}|{line['accession']}|{line['row']}|{h}"
@@ -261,7 +275,7 @@ def classify(line: dict, api_key: str, model: str = ANTHROPIC_MODEL) -> dict:
             "verified": ok, "model": model}
 
 
-READ_COLUMNS = ["key", "ticker", "ceo", "owner_cik", "accession", "row", "security", "direct", "nature", "shares",
+READ_COLUMNS = ["key", "content", "ticker", "ceo", "owner_cik", "accession", "row", "security", "direct", "nature", "shares",
                 "label", "fraction", "basis", "quote", "reason", "footnote_ids", "model", "prompt", "read_on", "url"]
 
 

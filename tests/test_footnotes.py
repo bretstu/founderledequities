@@ -124,7 +124,7 @@ def test_the_prompt_separates_a_spouse_from_a_gift_to_a_child():
     assert "a marriage is one household" in F.SYSTEM and "GIFT COMPLETED" in F.SYSTEM
     assert "INDEPENDENT trustee" in F.SYSTEM and "Sage Resources" in F.EXAMPLES and "Descendants' Trust" in F.EXAMPLES
     assert "the person is trustee: holds the strings" in F.EXAMPLES and "Start Small" in F.EXAMPLES
-    assert F.PROMPT_VERSION == "v268"
+    assert F.PROMPT_VERSION == "v269" and "THE FORMULA NEVER DECIDES ON ITS OWN" in F.SYSTEM
 
 
 def test_the_prompt_is_sent_as_a_cached_block(monkeypatch):
@@ -138,3 +138,14 @@ def test_the_prompt_is_sent_as_a_cached_block(monkeypatch):
     monkeypatch.setattr(F, "_post", fake_post)
     F.classify(line, "k")
     assert isinstance(seen["system"], list) and seen["system"][0]["cache_control"] == {"type": "ephemeral"}
+
+
+def test_the_content_key_is_the_same_question_and_only_that():
+    root = F.parse_doc(DOC)
+    a, b = F.lines_of(root, "acc-1")
+    a2 = dict(a, accession="acc-2", row=9, shares="999")
+    assert F.content_key("1", a) == F.content_key("1", a2), "another filing, same vehicle and words: the same question"
+    assert F.content_key("1", a) != F.content_key("1", b), "a different vehicle is a different question"
+    assert F.content_key("1", a) != F.content_key("1", dict(a, footnotes=[("F2", "other words")])), "different words: a different question"
+    assert F.content_key("1", a) != F.content_key("2", a), "another person: a different question"
+    assert "content" in F.READ_COLUMNS

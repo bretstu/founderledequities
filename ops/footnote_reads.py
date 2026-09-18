@@ -22,7 +22,7 @@ sys.path.insert(0, ROOT)
 from fle.edgar import EdgarClient  # noqa: E402
 from fle.ledger import build_ledger, _parse  # noqa: E402
 from fle.outstanding import shares_outstanding  # noqa: E402
-from fle.footnotes import lines_of, line_key, classify, load_reads, write_reads, PROMPT_VERSION  # noqa: E402
+from fle.footnotes import lines_of, line_key, content_key, classify, load_reads, write_reads, PROMPT_VERSION  # noqa: E402
 
 READS = os.path.join(ROOT, "universe", "footnote-reads.csv")
 
@@ -78,6 +78,11 @@ def main(argv):
             shutil.copy(READS, READS.replace(".csv", ".prev.csv"))
         reads = {k: v for k, v in reads.items() if v.get("ticker", "").upper() not in only}
     calls = 0
+    copied = 0
+    by_content = {}
+    for x in reads.values():
+        if x.get("content"):
+            by_content.setdefault(x["content"], x)
     today = dt.date.today().isoformat()
     companies = 0
     for r in panel:
@@ -100,6 +105,7 @@ def main(argv):
             continue
         companies += 1
         before = calls
+        copied_before = copied
         for f in stated_filings(led):
             root = _parse(client, cik, f)
             if root is None:
@@ -109,15 +115,25 @@ def main(argv):
                 k = line_key(r["owner_cik"], line)
                 if k in reads:
                     continue
-                if limit is not None and calls >= limit:
-                    break
-                v = classify(line, key)
-                calls += 1
+                ck = content_key(r["owner_cik"], line)
+                prior = by_content.get(ck)
+                if prior is not None and prior.get("prompt") == PROMPT_VERSION and prior.get("label") not in ("none", ""):
+                    # the same question, already answered under this prompt: copy it
+                    v = {"label": prior["label"], "fraction": float(prior["fraction"]) if prior.get("fraction") else None,
+                         "basis": prior.get("basis", ""), "quote": prior["quote"], "reason": prior["reason"], "model": prior["model"], "verified": True}
+                    copied += 1
+                else:
+                    if limit is not None and calls >= limit:
+                        break
+                    v = classify(line, key)
+                    calls += 1
                 url = f"https://www.sec.gov/Archives/edgar/data/{cik}/{acc.replace('-', '')}/"
                 reads[k] = {"key": k, "ticker": tk, "ceo": r["ceo"], "owner_cik": r["owner_cik"], "accession": acc, "row": line["row"],
                             "security": line["security"], "direct": line["direct"], "nature": line["nature"], "shares": line["shares"],
                             "label": v["label"], "fraction": "" if v["fraction"] is None else v["fraction"], "basis": v.get("basis", ""), "quote": v["quote"],
-                            "reason": v["reason"], "footnote_ids": " ".join(line["footnote_ids"]), "model": v["model"], "prompt": PROMPT_VERSION, "read_on": today, "url": url}
+                            "reason": v["reason"], "footnote_ids": " ".join(line["footnote_ids"]), "model": v["model"], "prompt": PROMPT_VERSION, "read_on": today, "url": url,
+                            "content": ck}
+                by_content.setdefault(ck, reads[k])
                 if only:
                     who = "D" if line["direct"] == "D" else f"I: {line['nature'][:40]}"
                     print(f"  {tk} [{v['label']:10}] {line['security'][:22]:22} {who:44} {float(line['shares'] or 0):>13,.0f}")
@@ -127,11 +143,11 @@ def main(argv):
             done_state[tk] = r.get("shares_as_of") or ""
             json.dump(done_state, open(done_p, "w"), indent=0)
         n_flag = sum(1 for x in reads.values() if x["ticker"] == tk and x["label"] in ("disclaimed", "partial"))
-        print(f"  {companies:4} {tk:6} {calls - before:3} line(s) read" + (f"  · {n_flag} flagged" if n_flag else ""), flush=True)
+        print(f"  {companies:4} {tk:6} {calls - before:3} line(s) read" + (f", {copied - copied_before} copied" if copied - copied_before else "") + (f"  · {n_flag} flagged" if n_flag else ""), flush=True)
     labels = {}
     for x in reads.values():
         labels[x["label"]] = labels.get(x["label"], 0) + 1
-    print(f"  footnotes: {companies} companies, {calls} lines read this run; {len(reads)} on file: " + ", ".join(f"{k} {v}" for k, v in sorted(labels.items())))
+    print(f"  footnotes: {companies} companies, {calls} lines read this run, {copied} copied from an identical line; {len(reads)} on file: " + ", ".join(f"{k} {v}" for k, v in sorted(labels.items())))
     flagged = [x for x in reads.values() if x["label"] in ("disclaimed", "partial")]
     if flagged:
         print(f"  {len(flagged)} line(s) flagged for review: ops/footnote_review.py")
