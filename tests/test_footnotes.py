@@ -74,3 +74,9 @@ def test_a_zero_line_is_not_sent_and_the_household_rule_is_in_the_prompt():
     lines = F.lines_of(F.parse_doc(doc), "a")
     assert [l["nature"] for l in lines] == ["By CZI Holdings, LLC"], "a line at zero carries nothing to exclude"
     assert "EVEN WHEN the footnote fully disclaims" in F.SYSTEM and "Separate Property Trust" in F.EXAMPLES
+
+
+def test_the_prompt_carries_the_grat_the_paired_units_and_the_name_rules():
+    assert "GRAT" in F.SYSTEM and "NOT partial" in F.SYSTEM
+    assert "PAIRED WITH UNITS" in F.SYSTEM and "paired with units" in F.EXAMPLES
+    assert "A name is not a statement" in F.EXAMPLES or "a name is not a statement" in F.EXAMPLES

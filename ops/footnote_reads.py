@@ -8,7 +8,8 @@ read once per filing that states it. Nothing here changes a number.
     python3 ops/footnote_reads.py --all          # every company
     python3 ops/footnote_reads.py META,TKO,CRM   # just these, printing each reading
     python3 ops/footnote_reads.py --limit 300    # at most N model calls this run
-Needs ANTHROPIC_API_KEY in .env (the founder stage's key).
+    python3 ops/footnote_reads.py --reread META  # read these companies' lines again (after a prompt change)
+Needs ANTHROPIC_API_KEY in .env (the founder stage's key). Prints a line per company.
 """
 import csv
 import datetime as dt
@@ -54,8 +55,9 @@ def main(argv):
     everyone = "--all" in argv
     if "--limit" in argv:
         limit = int(argv[argv.index("--limit") + 1])
+    reread = "--reread" in argv
     for a in argv[1:]:
-        if not a.startswith("--") and not a.isdigit():
+        if not a.startswith("--") and not a.isdigit() and (argv[argv.index(a) - 1] != "--limit"):
             only = {t.strip().upper() for t in a.split(",")}
     key = env_key()
     if not key:
@@ -65,6 +67,8 @@ def main(argv):
     panel = list(csv.DictReader(open(os.path.join(ROOT, "panel.csv"), encoding="utf-8-sig")))
     founders = {r["ticker"].upper() for r in csv.DictReader(open(os.path.join(ROOT, "founders.csv"), encoding="utf-8-sig")) if (r.get("founder") or "").lower() == "yes"} if os.path.exists(os.path.join(ROOT, "founders.csv")) else set()
     reads = load_reads(READS)
+    if reread and only:
+        reads = {k: v for k, v in reads.items() if v.get("ticker", "").upper() not in only}
     calls = 0
     today = dt.date.today().isoformat()
     companies = 0
@@ -84,6 +88,7 @@ def main(argv):
             print(f"  {tk}: the walk failed ({e.__class__.__name__})")
             continue
         companies += 1
+        before = calls
         for f in stated_filings(led):
             root = _parse(client, cik, f)
             if root is None:
@@ -107,6 +112,8 @@ def main(argv):
                     print(f"  {tk} [{v['label']:10}] {line['security'][:22]:22} {who:44} {float(line['shares'] or 0):>13,.0f}")
                     print(f"        quote: \"{v['quote'][:200]}\"" + ("" if v["verified"] else "   (NOT VERIFIED: discarded)"))
         write_reads(READS, reads)
+        n_flag = sum(1 for x in reads.values() if x["ticker"] == tk and x["label"] in ("disclaimed", "partial"))
+        print(f"  {companies:4} {tk:6} {calls - before:3} line(s) read" + (f"  · {n_flag} flagged" if n_flag else ""), flush=True)
     labels = {}
     for x in reads.values():
         labels[x["label"]] = labels.get(x["label"], 0) + 1
