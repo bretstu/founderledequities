@@ -135,7 +135,7 @@ const P=runPage();
     const html=els["#actwrap"]._html;
     renderActivity();
     assert(els["#actwrap"]._html.includes('class="tape"')&&(els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===rows.length,"one table row per filing, once the excerpt's limit is lifted");
-    assert(/data-key="kind">Kind<span class="arr">.*data-key="co">Company.*data-key="ceo">CEO.*data-key="v">Amount.*data-key="ch">Change.*data-key="st">New stake.*data-key="fd"[^>]*>Filed.*data-key="td"[^>]*>Traded/.test(html),"eight sortable columns, Traded last: the kind says the manner, the change is the number the tape ranks by, filed and traded are their own");
+    assert(/data-key="kind">Kind<span class="arr">.*data-key="co">Company.*data-key="ceo">CEO.*data-key="v">Amount.*data-key="st">Stake, before &rarr; after.*data-key="td"[^>]*>Traded.*data-key="fd"[^>]*>Filed/.test(html),"seven sortable columns (2026-09-18): the kind says the manner, the stake before and after says what it did, traded then filed");
     assert(html.includes('<td class="fd"><span class="dt" title="the day EDGAR accepted the form">'),"every row carries the day EDGAR accepted the form");
     // THE HEADERS SORT, LIKE THE SCOREBOARD'S; Kind restores the tape's own order
     P.setTapeSort("v"); {const r=actSorted(actRows()); const vs=r.map(e=>((e.c==="P"||e.c==="S")&&e.v&&!e.fl)?e.v:null).filter(x=>x!==null); assert(vs.every((x,i)=>i===0||x<=vs[i-1]),"Amount sorts descending on the first click"); assert(els["#actwrap"]._html.includes('data-key="v">Amount<span class="arr"> ↓'),"and the header shows the arrow");}
@@ -145,7 +145,7 @@ const P=runPage();
     P.setTapeSort("kind"); assert(state.ev.sort.key===null,"Kind is the tape's own order again");
     assert(!idxsrc.includes("filed ${e.fd}"),"the filed day is a column, not a hover");
     // THE SCOREBOARD IS AN OWNERSHIP TABLE (2026-09-17): the 12-month change in the stake and the as-of date, not the last trade
-    assert(idxsrc.includes('data-key="c12"')&&idxsrc.includes('class="n num c-c12"')&&!idxsrc.includes('data-key="asof"')&&!idxsrc.includes('data-key="ltf"')&&idxsrc.includes('>12-mo stake change<'),"the scoreboard shows the 12-month stake change, market cap, and no date or trade columns");
+    assert(idxsrc.includes('data-key="c12"')&&idxsrc.includes('class="n num c-c12"')&&!idxsrc.includes('data-key="asof"')&&!idxsrc.includes('data-key="ltf"')&&idxsrc.includes('>A year ago<'),"the scoreboard shows the stake a year ago, market cap, and no date or trade columns");
     assert(html.includes("openCompany(")&&html.includes("sec.gov"),"rows are doors and the amount links to the filing");
     assert(!html.includes("DISCRET."),"kinds are spelled out");
     {const full=els["#actwrap"]._html;assert(full.includes('class="kind comp"')&&/class="detail">(<a [^>]+>)?award granted/.test(full)&&full.includes('class="kind xfer"')&&/class="detail">(<a [^>]+>)?gift</.test(full),"a grant and a gift carry the badge and the filing's label in grey, the label linking to the filing");}
@@ -227,7 +227,7 @@ const P=runPage();
     state.ev.f=false; setWin(365); renderActivity();
     const html=els["#actwrap"]._html; const row=html.slice(html.indexOf("ZZSEAL"),html.indexOf("ZZSEAL")+1000);
     assert(row.includes("$1.5M"),"the amount is the Form 4's own number and shows on a sealed row");
-    assert((row.match(/class="sealed"/g)||[]).length===2,"and the change and the stake after the trade are the two blurs");
+    assert((row.match(/class="sealed"/g)||[]).length===1,"and the stake column is the one blur a masked row would carry (no row is masked since 2026-09-18)");
     assert(!row.includes("sec.gov"),"no filing link on a sealed row");
     assert((els["#actnote"]._html||"").includes("outside the S&P 500"),"the note says where the sealed stakes are");
     P.EVENTS=savedE; renderActivity();
@@ -297,8 +297,8 @@ const P=runPage();
   let tb=els["#tbody"]._html;
   const order=[...tb.matchAll(/onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);
   assert(order[0]==="UPX"&&order[1]==="DNX"&&order[2]==="NOH","sorted by 1-yr return: the riser, the faller, then the one with no year of prices: "+order.join(",")+" r1="+P.PANEL.map(r=>r.r1).join(","));
-  assert(/UPX[\s\S]*?c-r1"><span class="up">\+41\.2%/.test(tb),"the riser reads +41.2% in green");
-  assert(/DNX[\s\S]*?c-r1"><span class="down">-12\.5%/.test(tb),"the faller reads -12.5% in red");
+  assert(/UPX[\s\S]*?c-r1">\+41\.2%/.test(tb),"the riser reads +41.2%, uncoloured (2026-09-18)");
+  assert(/DNX[\s\S]*?c-r1">-12\.5%/.test(tb),"the faller reads -12.5%, uncoloured");
   assert(!tb.includes('class="tbar"')&&!tb.includes("c-conf"),"no bar in the ownership cell, no confidence column: every cell is one value");
   assert(!tb.includes("pts"),"nobody is told about points");
   assert(!tb.includes('class="spark"'),"no chart preview in the screener -- the number says it, the company page draws it");
