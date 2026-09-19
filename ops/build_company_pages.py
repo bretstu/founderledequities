@@ -606,8 +606,7 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
                           '<a class="chip" data-screen="over-10" href="/screens/own-more-than-10-percent/" onclick="setScreen(\'over-10\');return false">Own more than 10%</a>'
                           '<a class="chip" data-screen="bought-this-year" href="/screens/bought-this-year/" onclick="setScreen(\'bought-this-year\');return false">Bought this year</a>'
                           '<a class="chip" data-screen="hired-under-1" href="/screens/hired-under-1-percent/" onclick="setScreen(\'hired-under-1\');return false">Hired, under 1%</a>'
-                          '<a class="chip" data-screen="" href="/companies/" onclick="setScreen(\'\');return false">Everyone</a>'
-                          '<span class="screendesc" id="screendesc"></span></div>'
+                          '<a class="chip" data-screen="" href="/companies/" onclick="setScreen(\'\');return false">Everyone</a></div>'
                           '<div class="controls">', 1))
         tpl = open(tpl_p, encoding="utf-8").read()
         js_v = ""
@@ -620,7 +619,13 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
             # THE PAGE IS THE PAGE (2026-09-18): the heading stays "Every company" on every screen's address;
             # only the document's title and description name the screen, for search
             # the line under the heading names the screen (the title's words), in the HTML for a crawler and live for a reader
-            t = table.replace("{{HEADING}}", "Every company").replace("{{DEF}}", f'<div class="screenline" id="screenline">{html.escape(heading if preset else "")}</div>')
+            # the same words the page script writes, so the line does not change when the script runs
+            line = {"founder-led": "Companies whose CEO founded them, by the company's own proxy statement.",
+                    "never-sold": "CEOs who have never sold a share of their company on the market.",
+                    "over-10": "CEOs who own more than a tenth of the company they run.",
+                    "bought-this-year": "CEOs whose last stake-moving trade was an open-market buy, within a year.",
+                    "hired-under-1": "CEOs the proxy does not name as founders, owning less than 1% of the company they run."}.get(preset, "Every US public company worth $1B or more, with what its CEO owns.")
+            t = table.replace("{{HEADING}}", "Every company").replace("{{DEF}}", f'<div class="screenline" id="screenline">{html.escape(line)}</div>')
             pg = (tpl.replace("{{TABLE}}", t)
                      .replace("{{TOPNAV}}", topnav)
                      .replace("{{INDEX_CSS}}", INDEX_CSS)

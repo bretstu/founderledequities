@@ -172,7 +172,7 @@ body.pro .hometape{display:none}
 .shead{display:flex;justify-content:space-between;align-items:baseline;gap:18px;margin-bottom:20px;flex-wrap:wrap}
 .shead h2{font-family:var(--disp);font-weight:500;letter-spacing:-.015em;font-size:clamp(28px,3vw,44px);line-height:1.08}
 .shead .r{font-size:13px;color:var(--mut)}
-.screenline{min-height:22px;font-size:15px;line-height:22px;color:var(--mut);margin-top:6px}
+.screenline{min-height:22px;font-size:15px;line-height:22px;color:var(--mut);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .shead .shr{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:flex-end}
 /* Ten bars in the frame, the rest a scroll away -- the ranking runs the
    whole index, so cutting it at ten hid 490 companies behind nothing at
@@ -1427,9 +1427,8 @@ function renderTable(){
   const homeOpen=typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0&&!state.pro;
   const screen=state.screen&&SCREENS[state.screen];
   document.querySelectorAll("[data-screen]").forEach(b=>b.classList.toggle("on",state.screen?b.dataset.screen===state.screen:(state.tbF&&!state.q&&!state.min&&!state.tbH?b.dataset.screen==="founder-led":b.dataset.screen==="")));
-  const sd=$("#screendesc");if(sd)sd.textContent=screen?screen.desc.charAt(0).toUpperCase()+screen.desc.slice(1)+".":"";
-  /* THE LINE UNDER THE HEADING (2026-09-19): which screen this is, in the words its address is titled with; a fixed height, so nothing moves */
-  const sl=$("#screenline");if(sl)sl.textContent=screen?screen.title:(state.tbF&&!state.q&&!state.min&&!state.tbH?"Founder-led companies":"");
+  /* THE LINE UNDER THE HEADING (2026-09-19): one sentence saying which list this is; one line, always present, so nothing moves */
+  const sl=$("#screenline");if(sl)sl.textContent=screen?screen.desc.charAt(0).toUpperCase()+screen.desc.slice(1)+".":(state.tbF&&!state.q&&!state.min&&!state.tbH?"Companies whose CEO founded them, by the company's own proxy statement.":"Every US public company worth $1B or more, with what its CEO owns.");
   let rows=PANEL.filter(r=>{
     if(homeOpen&&r.masked)return false;
     /* a sealed row's share is not in the file: a screen that asks about
