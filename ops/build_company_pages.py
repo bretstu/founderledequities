@@ -392,6 +392,15 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
 
 
 INDEX_CSS = ("""
+.screendef{font-size:15.5px;line-height:1.55;color:var(--mut);max-width:72ch;margin:8px 0 0}
+.sstatic table.stable{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.sstatic table.stable th{text-align:left;font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
+.sstatic table.stable td{padding:10px 10px 10px 0;border-bottom:1px solid var(--line);vertical-align:middle;color:var(--ink)}
+.sstatic table.stable td.n,.sstatic table.stable th.n{text-align:right;white-space:nowrap;padding-right:28px}
+.sstatic table.stable td.tk a{font-weight:700;color:var(--ink);text-decoration:none}
+.sstatic table.stable td.tk .co{color:var(--mut);margin-left:8px}
+.sstatic .fb{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;background:var(--ink);color:var(--bg);padding:1px 5px;border-radius:2px;vertical-align:middle;margin-left:8px}
+
 .cidx{padding:32px 0 60px}.cidx h1{font-family:var(--disp);font-size:clamp(28px,4vw,44px);font-weight:650;letter-spacing:-.02em;margin:0 0 8px}
 .cidx .sub{color:var(--mut);margin-bottom:18px}.cidx .letters{font-family:var(--mono);font-size:13px;display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}.cidx .letters a{color:var(--blue);text-decoration:none}
 .cidx section{margin-top:22px}.cidx h2{font-family:var(--mono);font-size:13px;color:var(--faint);letter-spacing:.14em;margin:0 0 8px}
@@ -464,7 +473,11 @@ SCREEN_CSS = """
 """
 
 
-def screen_pages(universe_p, founders, prices, out_dir, topnav, css_v):
+PRESET = {"founder-led": "founder-led", "never-sold": "never-sold", "own-more-than-10-percent": "over-10",
+          "bought-this-year": "bought-this-year", "hired-under-1-percent": "hired-under-1"}
+
+
+def screen_pages(universe_p, founders, prices, out_dir, topnav, css_v, index_rows=None, sp=None):
     """-> the list of screen URLs written. Reads the site's universe.csv; when
     it is absent (a test build without the site data) writes nothing."""
     if not os.path.exists(universe_p):
@@ -498,24 +511,23 @@ def screen_pages(universe_p, founders, prices, out_dir, topnav, css_v):
                        f'<td class="n c12">{agos}</td>'
                        f'<td class="n">{"" if w is None else _money(w)}</td></tr>')
         others = " ".join(f'<a href="/screens/{o_slug}/">{html.escape(o_title)}</a>' for o_slug, o_title, _d, _t in SCREENS if o_slug != slug)
-        interactive = {"founder-led": "/companies/", "never-sold": "/companies/?screen=never-sold", "own-more-than-10-percent": "/companies/?screen=over-10",
-                       "bought-this-year": "/companies/?screen=bought-this-year", "hired-under-1-percent": "/companies/?screen=hired-under-1"}[slug]
         desc = f"{len(picked):,} {definition}. Computed from SEC filings, updated nightly."
-        page = (f'<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-                f'<title>{html.escape(title)} · Founder Led Equities</title>'
-                f'<meta name="description" content="{html.escape(desc[:300])}">'
-                f'<link rel="canonical" href="{SITE}/screens/{slug}/">'
-                f'<meta property="og:title" content="{html.escape(title)}"><meta property="og:description" content="{html.escape(desc[:300])}">'
-                f'<meta property="og:image" content="{SITE}/og.png"><meta name="twitter:card" content="summary_large_image">'
-                f'<link rel="stylesheet" href="/site.css?v={css_v}"><style>{SCREEN_CSS}</style></head><body>\n{topnav}\n'
-                f'<main class="spage"><h1>{html.escape(title)}</h1>'
-                f'<p class="def">{len(picked):,} {html.escape(definition)}.</p>'
-                f'<p class="meta">As of {today} · sorted by the value of the stake · <a href="{interactive}">sort and search this list</a></p>'
-                f'<table><thead><tr><th>Company</th><th>CEO</th><th class="n">Stake</th><th class="n c12">A year ago</th><th class="n">Worth</th></tr></thead>'
-                f'<tbody>{"".join(trs)}</tbody></table>'
-                f'<p class="others">Other screens: {others}</p>'
-                f'<p class="meta" style="margin-top:28px">Founder Led Equities · computed from SEC EDGAR, never estimated · not investment advice · <a href="/about.html">how the numbers are made</a></p>'
-                f'</main></body></html>\n')
+        static_table = (f'<div class="sstatic" id="sstatic"><div class="wrap"><p class="meta" style="font-family:var(--mono);font-size:12px;color:var(--faint);margin:28px 0 10px">The list, as of {today}, sorted by the value of the stake</p>'
+                        f'<table class="stable"><thead><tr><th>Company</th><th>CEO</th><th class="n">Stake</th><th class="n c12">A year ago</th><th class="n">Worth</th></tr></thead>'
+                        f'<tbody>{"".join(trs)}</tbody></table>'
+                        f'<p class="others" style="margin:28px 0 0;font-size:14px;color:var(--mut)">Other screens: {others}</p></div></div>')
+        if _PAGE_FN is not None:
+            # ONE SCREEN, ONE ADDRESS (2026-09-18): the Companies page itself, preset to the question, with the
+            # rows in the HTML beneath so a crawler reads them and the reader gets the sortable table above
+            page = _PAGE_FN(title, definition, PRESET[slug], static_table, title, desc, f"{SITE}/screens/{slug}/")
+        else:
+            page = (f'<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+                    f'<title>{html.escape(title)} · Founder Led Equities</title>'
+                    f'<meta name="description" content="{html.escape(desc[:300])}">'
+                    f'<link rel="canonical" href="{SITE}/screens/{slug}/">'
+                    f'<link rel="stylesheet" href="/site.css?v={css_v}"><style>{SCREEN_CSS}</style></head><body>\n{topnav}\n'
+                    f'<main class="spage"><h1>{html.escape(title)}</h1><p class="def">{len(picked):,} {html.escape(definition)}.</p>'
+                    f'{static_table}</main></body></html>\n')
         d = os.path.join(out_dir, "screens", slug)
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
@@ -539,6 +551,9 @@ def _money(v):
     return f"${v:,.0f}"
 
 
+_PAGE_FN = None   # the Companies page as a function, set by companies_index, used by screen_pages
+
+
 def companies_index(rows, founders, sp, out_dir, topnav, css_v):
     """/companies/: one plain HTML link per company, grouped by letter, so
     every page has an internal link a crawler can follow without scripts."""
@@ -557,7 +572,7 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
     nav = " ".join(f'<a href="#{l}">{l}</a>' for l in sorted(by))
     n = f"{len(rows):,}"
     index_html_block = (f"<div class=\"cidx\"><div class=\"wrap\"><h2 style=\"font-family:var(--disp);font-weight:500;font-size:24px;letter-spacing:-.01em;color:var(--ink);margin:40px 0 6px\">Every company, A to Z</h2>"
-                        f"<div class=\"sub\">{n} US public companies worth $1B or more, each with a page for what its chief executive owns. S&amp;P 500 current stakes are open; the rest is Pro.</div>"
+                        f"<div class=\"sub\">{n} US public companies worth $1B or more, each with a page for what its chief executive owns.</div>"
                         f"<div class=\"letters\">{nav}</div>{''.join(parts)}</div></div>")
     # THE SCREENER IN FULL (PLAN.md section 5): the page is the template
     # companies.html (the table with its controls, the same block the home
@@ -577,37 +592,51 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
         b = idx.index("</div></section>", a) + len("</div></section>")
         table = (idx[a:b]
                  .replace('<section class="tablesec home" id="table">', '<section class="tablesec" id="table">')
-                 .replace("<h2>What they own now</h2>",
-                          '<h1 style="font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">Every company</h1>')
+                 .replace("<h2>Founder stakes</h2>",
+                          '<h1 style="font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">{{HEADING}}</h1>{{DEF}}')
                  .replace('<div class="shead">', '<div class="shead" style="align-items:flex-start">')
                  # THE NAMED SCREENS (step 6): four questions, each a link, above the controls
                  .replace('<div class="controls">',
                           '<div class="screens" id="screens">'
-                          '<a class="chip" data-screen="never-sold" href="?screen=never-sold" onclick="setScreen(\'never-sold\');return false">Never sold</a>'
-                          '<a class="chip" data-screen="over-10" href="?screen=over-10" onclick="setScreen(\'over-10\');return false">Own more than 10%</a>'
-                          '<a class="chip" data-screen="bought-this-year" href="?screen=bought-this-year" onclick="setScreen(\'bought-this-year\');return false">Bought this year</a>'
-                          '<a class="chip" data-screen="hired-under-1" href="?screen=hired-under-1" onclick="setScreen(\'hired-under-1\');return false">Hired, under 1%</a>'
-                          '<a class="chip" data-screen="" href="/companies/" onclick="setScreen(\'\');return false">Everyone</a>'
-                          '<span class="screendesc" id="screendesc"></span>'
-                          # THE SCREENS AS PAGES (2026-09-18): each has a plain address for search; one link here, and the footer, is how a crawler reaches them
-                          '<span class="screendesc" style="margin-left:auto"><a href="/screens/founder-led/" title="the five screens as plain pages, one address each">as pages &rarr;</a></span></div>'
+                          # ONE SCREEN, ONE ADDRESS (2026-09-18): each chip is a page, /screens/<slug>/, the interactive table preset to
+                          # its question with the rows in the HTML beneath for a crawler; "Everyone" is /companies/
+                          '<a class="chip" data-screen="founder-led" href="/screens/founder-led/">Founder-led</a>'
+                          '<a class="chip" data-screen="never-sold" href="/screens/never-sold/">Never sold</a>'
+                          '<a class="chip" data-screen="over-10" href="/screens/own-more-than-10-percent/">Own more than 10%</a>'
+                          '<a class="chip" data-screen="bought-this-year" href="/screens/bought-this-year/">Bought this year</a>'
+                          '<a class="chip" data-screen="hired-under-1" href="/screens/hired-under-1-percent/">Hired, under 1%</a>'
+                          '<a class="chip" data-screen="" href="/companies/">Everyone</a>'
+                          '<span class="screendesc" id="screendesc"></span></div>'
                           '<div class="controls">', 1))
-        page = (open(tpl_p, encoding="utf-8").read()
-                .replace("{{TABLE}}", table)
-                .replace("{{TOPNAV}}", topnav)
-                .replace("{{INDEX_CSS}}", INDEX_CSS)
-                .replace("{{INDEX}}", index_html_block)
-                .replace('href="/site.css"', f'href="/site.css?v={css_v}"'))
+        tpl = open(tpl_p, encoding="utf-8").read()
+        js_v = ""
         js_p = os.path.join(out_dir, "companies.js")
         if os.path.exists(js_p):
             import hashlib as _h
-            v = _h.sha256(open(js_p, "rb").read()).hexdigest()[:10]
-            page = page.replace('src="/companies.js"', f'src="/companies.js?v={v}"')
-    else:
-        page = ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n"
-                "<title>Every company &mdash; Founder Led Equities</title>\n"
-                f"<link rel=\"stylesheet\" href=\"/site.css?v={css_v}\"><style>{INDEX_CSS}</style></head><body>\n{topnav}\n"
-                f"{index_html_block}</body></html>")
+            js_v = _h.sha256(open(js_p, "rb").read()).hexdigest()[:10]
+
+        def companies_page(heading, definition, preset, static_block, title, desc, canonical):
+            t = table.replace("{{HEADING}}", html.escape(heading)).replace("{{DEF}}", f'<p class="screendef">{html.escape(definition)}</p>' if definition else "")
+            pg = (tpl.replace("{{TABLE}}", t)
+                     .replace("{{TOPNAV}}", topnav)
+                     .replace("{{INDEX_CSS}}", INDEX_CSS)
+                     .replace("{{INDEX}}", static_block)
+                     .replace('href="/site.css"', f'href=\"/site.css?v={css_v}\"'.replace('\\"', '"'))
+                     .replace("<title>Every company · Founder Led Equities</title>", f"<title>{html.escape(title)} · Founder Led Equities</title>")
+                     .replace('<meta property="og:title" content="Every company · Founder Led Equities">', f'<meta property="og:title" content="{html.escape(title)} · Founder Led Equities">')
+                     .replace('<link rel="canonical" href="https://founderledequities.com/companies/">', f'<link rel="canonical" href="{canonical}">'))
+            if desc:
+                pg = re.sub(r'<meta name="description" content="[^"]*">', f'<meta name="description" content="{html.escape(desc[:300])}">', pg, count=1)
+            # the preset: the page script reads it before it reads the URL
+            pg = pg.replace("{{TOPNAV}}", topnav).replace("</head>", f"<script>window.SCREEN_PRESET={json.dumps(preset)};</script></head>", 1)
+            if js_v:
+                pg = pg.replace('src="/companies.js"', f'src="/companies.js?v={js_v}"')
+            return pg
+
+        page = companies_page("Every company", "", "", index_html_block, "Every company",
+                              "", "https://founderledequities.com/companies/")
+        global _PAGE_FN
+        _PAGE_FN = companies_page
     os.makedirs(os.path.join(out_dir, "companies"), exist_ok=True)
     with open(os.path.join(out_dir, "companies", "index.html"), "w", encoding="utf-8") as fh:
         fh.write(page)
@@ -918,7 +947,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     # holds the facts should it ever be asked for.
     companies_index(index_rows, founders, sp, out_dir, topnav, css_v)
     urls.append("https://founderledequities.com/companies/")
-    urls.extend(screen_pages(os.path.join(out_dir, "universe.csv"), founders, prices, out_dir, topnav, css_v))
+    urls.extend(screen_pages(os.path.join(out_dir, "universe.csv"), founders, prices, out_dir, topnav, css_v, index_rows, sp))
     if os.path.exists(os.path.join(out_dir, "alerts", "index.html")):
         urls.append(f"{SITE}/alerts/")
     with open(os.path.join(out_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:

@@ -1380,7 +1380,8 @@ function setScreen(id){
   state.q="";state.min=0;state.tbF=false;state.tbH=false;
   const q=typeof document!=="undefined"&&document.querySelector("#q");if(q)q.value="";
   document.querySelectorAll("[data-min]").forEach(x=>x.classList.toggle("on",x.dataset.min==="0"));
-  if(typeof history!=="undefined"&&history.replaceState&&!(typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0))history.replaceState(null,"",state.screen?`?screen=${state.screen}`:location.pathname);
+  /* a screen page keeps its address (2026-09-18); elsewhere the query string says which screen */
+  if(typeof history!=="undefined"&&history.replaceState&&!(typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0)&&!(typeof location!=="undefined"&&/^\/screens\//.test(location.pathname)))history.replaceState(null,"",state.screen?`?screen=${state.screen}`:location.pathname);
   renderTable();
 }
 /*@shared*/

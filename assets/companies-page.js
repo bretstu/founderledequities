@@ -57,12 +57,18 @@ async function boot(){
     renderTable();
   }));
   const ex=$("#export");if(ex)ex.addEventListener("click",()=>exportTable());
-  /* a screen named in the URL is the page's question */
-  const sc=new URLSearchParams(location.search).get("screen");
-  if(sc&&SCREENS[sc])state.screen=sc;
-  /* the filter chips and switches leave a screen: they are a different question */
-  document.querySelectorAll("[data-min],#fchip,#hchip,#q").forEach(el=>el.addEventListener(el.id==="q"?"input":"click",()=>{if(state.screen){state.screen="";history.replaceState(null,"",location.pathname);}},true));
+  /* ONE SCREEN, ONE ADDRESS (2026-09-18): a screen page carries its question as
+     a preset the builder wrote into the page; the old ?screen= form still works.
+     "founder-led" is the founders switch rather than a screen. */
+  const preset=(typeof window!=="undefined"&&window.SCREEN_PRESET)||new URLSearchParams(location.search).get("screen")||"";
+  if(preset==="founder-led"){state.tbF=true;}
+  else if(preset&&SCREENS[preset])state.screen=preset;
+  document.querySelectorAll("[data-screen]").forEach(b=>b.classList.toggle("on",b.dataset.screen===(preset||"")));
+  /* the filter chips and switches leave a screen: they are a different question (the address stays; the reader changed it) */
+  document.querySelectorAll("[data-min],#fchip,#hchip,#q").forEach(el=>el.addEventListener(el.id==="q"?"input":"click",()=>{if(state.screen){state.screen="";document.querySelectorAll("[data-screen]").forEach(b=>b.classList.remove("on"));}},true));
   renderTable();
+  /* the rows the builder wrote beneath for a crawler step aside once the table above is drawn */
+  const st=document.getElementById("sstatic");if(st)st.style.display="none";
 }
 state.sort={key:"val",dir:-1};state.q="";state.min=0;state.screen="";state.tbF=false;state.tbH=false;state.live={panel:false,hist:false,events:false,founders:false,prices:false};
 boot();
