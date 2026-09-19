@@ -524,3 +524,27 @@ def test_the_alerts_page_is_built_with_three_switches_on_one_rule(tmp_path):
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
     assert "tk = 'FOUNDERS'" in run and "e.founder" in run and "b.accs" in run, "FOUNDERS matches founder events; one email per event per address"
     assert "PRO_STATUSES.has(sub.status)" in run and "proNow" in run, "a FOUNDERS watch mails only while the address is Pro (a lapsed trial stops)"
+
+
+def test_the_screens_are_pages_when_the_site_data_is_there(tmp_path):
+    """THE SCREENS AS PAGES (2026-09-18): five addresses with the table in the
+    HTML, built from universe.csv; absent the site data, nothing is written."""
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    assert not os.path.exists(os.path.join(out, "screens")), "no universe.csv, no screen pages"
+    uni = os.path.join(out, "universe.csv")
+    with open(uni, "w", encoding="utf-8") as fh:
+        fh.write("ticker,company,ceo,pct,shares,never_sold,lt_code,lt_traded,pct_12m_ago\n"
+                 "TSLA,Tesla,Elon Musk,28.44,1120000000,1,P,2026-08-01,15.8\n"
+                 "SEALD,Sealed Co,Jane Doe,0.5,1000000,0,S,2026-01-01,\n")
+    bcp.main(panel, founders, prices, sp, out)
+    for slug in ("founder-led", "never-sold", "own-more-than-10-percent", "bought-this-year", "hired-under-1-percent"):
+        page = open(os.path.join(out, "screens", slug, "index.html"), encoding="utf-8").read()
+        assert "<title>" in page and 'rel="canonical"' in page and "Other screens" in page
+    ns = open(os.path.join(out, "screens", "never-sold", "index.html"), encoding="utf-8").read()
+    assert 'href="/company/TSLA/"' in ns and "28.44%" in ns and 'href="/company/SEALD/"' not in ns
+    assert "+12.64 pts" in ns, "the 12-month change is on the row"
+    hired = open(os.path.join(out, "screens", "hired-under-1-percent", "index.html"), encoding="utf-8").read()
+    assert 'href="/company/SEALD/"' in hired and 'href="/company/TSLA/"' not in hired
+    sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
+    assert sm.count("/screens/") == 5

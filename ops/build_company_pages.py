@@ -420,6 +420,127 @@ def neighbours_html(tk, ranked, sp, k=5):
 NAMES = {}
 
 
+# THE SCREENS AS PAGES (2026-09-18): the reference's list pages. The Companies
+# page's screens are query strings a crawler folds into /companies/; these are
+# five addresses with the table in the HTML, each titled with the question
+# people type, defined in one sentence exactly as the site computes it, sorted
+# by stake value, every row a link to its company page. Built from the site's
+# own universe.csv (build_site_data), so a screen page and the interactive
+# screen agree to the row.
+SCREENS = [
+    ("founder-led", "Founder-led companies",
+     "US public companies worth $1B or more whose chief executive founded them, by the company's own proxy statement, with what each founder owns today",
+     lambda r, f: f),
+    ("never-sold", "CEOs who have never sold a share",
+     "chief executives who have never sold a share of their company on the market, in every Form 4 they have signed since 2016",
+     lambda r, f: (r.get("never_sold") or "") == "1"),
+    ("own-more-than-10-percent", "CEOs who own more than 10% of their company",
+     "chief executives whose stake is a tenth of the company or more, counted from the filings they signed",
+     lambda r, f: _num(r.get("pct")) is not None and _num(r.get("pct")) >= 10),
+    ("bought-this-year", "CEOs who bought shares this year",
+     "chief executives whose last stake-moving trade was an open-market purchase within the past twelve months",
+     lambda r, f: (r.get("lt_code") or "") == "P" and (r.get("lt_traded") or "") >= (datetime.date.today() - datetime.timedelta(days=365)).isoformat()),
+    ("hired-under-1-percent", "Hired CEOs who own less than 1%",
+     "chief executives the proxy statement does not name as founders, owning less than one percent of the company they run",
+     lambda r, f: (not f) and _num(r.get("pct")) is not None and _num(r.get("pct")) < 1),
+]
+
+SCREEN_CSS = """
+.spage{max-width:var(--max);margin:0 auto;padding:clamp(28px,4vw,52px) clamp(20px,3.5vw,48px) 72px}
+.spage h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(32px,4.4vw,56px);margin:0 0 10px}
+.spage .def{font-size:15.5px;line-height:1.55;color:var(--mut);max-width:72ch;margin:0 0 6px}
+.spage .meta{font-family:var(--mono);font-size:12px;color:var(--faint);margin:0 0 22px}
+.spage .meta a{color:var(--mut)}
+.spage table{width:100%;border-collapse:collapse;font-size:14px}
+.spage th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding:8px 10px;border-bottom:1px solid var(--ink)}
+.spage td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.spage td.n,.spage th.n{text-align:right;font-family:var(--mono);white-space:nowrap}
+.spage td.tk a{font-family:var(--mono);font-weight:600;color:var(--ink);text-decoration:none}
+.spage td.tk .co{display:block;font-size:12px;color:var(--mut)}
+.spage .fb{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;background:var(--ink);color:var(--paper);padding:1px 5px;border-radius:2px}
+.spage .up{color:var(--buy)}.spage .dn{color:var(--sell)}
+.spage .others{margin:36px 0 0;font-size:14px;color:var(--mut)}
+.spage .others a{color:var(--ink);margin-right:14px}
+@media(max-width:760px){.spage th.mc,.spage td.mc,.spage th.c12,.spage td.c12{display:none}}
+"""
+
+
+def screen_pages(universe_p, founders, prices, out_dir, topnav, css_v):
+    """-> the list of screen URLs written. Reads the site's universe.csv; when
+    it is absent (a test build without the site data) writes nothing."""
+    if not os.path.exists(universe_p):
+        return []
+    rows = list(csv.DictReader(open(universe_p, encoding="utf-8-sig")))
+    urls = []
+    today = datetime.date.today().isoformat()
+    def worth(r):
+        sh, px = _num(r.get("shares")), prices.get((r.get("ticker") or "").upper())
+        return sh * px if sh is not None and px else None
+    for slug, title, definition, test in SCREENS:
+        picked = []
+        for r in rows:
+            tk = (r.get("ticker") or "").upper()
+            f = (founders.get(tk) or {}).get("f") == "yes"
+            try:
+                if test(r, f):
+                    picked.append((r, f))
+            except Exception:  # noqa: BLE001
+                continue
+        picked.sort(key=lambda x: -(worth(x[0]) or 0))
+        trs = []
+        for r, f in picked:
+            tk = (r.get("ticker") or "").upper()
+            pct = _num(r.get("pct")); w = worth(r)
+            ago = _num(r.get("pct_12m_ago"))
+            c12 = (pct - ago) if (pct is not None and ago is not None) else None
+            c12s = "" if c12 is None else f'<span class="{"up" if c12 > 0 else "dn" if c12 < 0 else ""}">{c12:+.2f} pts</span>'
+            trs.append(f'<tr><td class="tk"><a href="/company/{html.escape(tk)}/">{html.escape(tk)}</a><span class="co">{html.escape(r.get("company") or "")}</span></td>'
+                       f'<td>{html.escape(r.get("ceo") or "")}{" <span class=\"fb\">FOUNDER</span>" if f else ""}</td>'
+                       f'<td class="n">{"" if pct is None else (f"{pct:.3f}%" if pct < 1 else f"{pct:.2f}%")}</td>'
+                       f'<td class="n">{"" if w is None else _money(w)}</td>'
+                       f'<td class="n c12">{c12s}</td></tr>')
+        others = " ".join(f'<a href="/screens/{o_slug}/">{html.escape(o_title)}</a>' for o_slug, o_title, _d, _t in SCREENS if o_slug != slug)
+        interactive = {"founder-led": "/companies/", "never-sold": "/companies/?screen=never-sold", "own-more-than-10-percent": "/companies/?screen=over-10",
+                       "bought-this-year": "/companies/?screen=bought-this-year", "hired-under-1-percent": "/companies/?screen=hired-under-1"}[slug]
+        desc = f"{len(picked):,} {definition}. Computed from SEC filings, updated nightly."
+        page = (f'<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+                f'<title>{html.escape(title)} · Founder Led Equities</title>'
+                f'<meta name="description" content="{html.escape(desc[:300])}">'
+                f'<link rel="canonical" href="{SITE}/screens/{slug}/">'
+                f'<meta property="og:title" content="{html.escape(title)}"><meta property="og:description" content="{html.escape(desc[:300])}">'
+                f'<meta property="og:image" content="{SITE}/og.png"><meta name="twitter:card" content="summary_large_image">'
+                f'<link rel="stylesheet" href="/site.css?v={css_v}"><style>{SCREEN_CSS}</style></head><body>\n{topnav}\n'
+                f'<main class="spage"><h1>{html.escape(title)}</h1>'
+                f'<p class="def">{len(picked):,} {html.escape(definition)}.</p>'
+                f'<p class="meta">As of {today} · sorted by the value of the stake · <a href="{interactive}">sort and search this list</a></p>'
+                f'<table><thead><tr><th>Company</th><th>Chief executive</th><th class="n">Stake</th><th class="n">Worth</th><th class="n c12">12-mo stake change</th></tr></thead>'
+                f'<tbody>{"".join(trs)}</tbody></table>'
+                f'<p class="others">Other screens: {others}</p>'
+                f'<p class="meta" style="margin-top:28px">Founder Led Equities · computed from SEC EDGAR, never estimated · not investment advice · <a href="/about.html">how the numbers are made</a></p>'
+                f'</main></body></html>\n')
+        d = os.path.join(out_dir, "screens", slug)
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
+            fh.write(page)
+        urls.append(f"{SITE}/screens/{slug}/")
+    print(f"  screen pages: {len(urls)} written")
+    return urls
+
+
+def _num(v):
+    try:
+        return float(v) if v not in (None, "") else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _money(v):
+    if v >= 1e12: return f"${v / 1e12:.2f}T"
+    if v >= 1e9: return f"${v / 1e9:.1f}B"
+    if v >= 1e6: return f"${v / 1e6:.1f}M"
+    return f"${v:,.0f}"
+
+
 def companies_index(rows, founders, sp, out_dir, topnav, css_v):
     """/companies/: one plain HTML link per company, grouped by letter, so
     every page has an internal link a crawler can follow without scripts."""
@@ -797,6 +918,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     # holds the facts should it ever be asked for.
     companies_index(index_rows, founders, sp, out_dir, topnav, css_v)
     urls.append("https://founderledequities.com/companies/")
+    urls.extend(screen_pages(os.path.join(out_dir, "universe.csv"), founders, prices, out_dir, topnav, css_v))
     if os.path.exists(os.path.join(out_dir, "alerts", "index.html")):
         urls.append(f"{SITE}/alerts/")
     with open(os.path.join(out_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
