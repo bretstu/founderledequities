@@ -590,7 +590,9 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
                           '<a class="chip" data-screen="bought-this-year" href="?screen=bought-this-year" onclick="setScreen(\'bought-this-year\');return false">Bought this year</a>'
                           '<a class="chip" data-screen="hired-under-1" href="?screen=hired-under-1" onclick="setScreen(\'hired-under-1\');return false">Hired, under 1%</a>'
                           '<a class="chip" data-screen="" href="/companies/" onclick="setScreen(\'\');return false">Everyone</a>'
-                          '<span class="screendesc" id="screendesc"></span></div>'
+                          '<span class="screendesc" id="screendesc"></span>'
+                          # THE SCREENS AS PAGES (2026-09-18): each has a plain address for search; one link here, and the footer, is how a crawler reaches them
+                          '<span class="screendesc" style="margin-left:auto"><a href="/screens/founder-led/" title="the five screens as plain pages, one address each">as pages &rarr;</a></span></div>'
                           '<div class="controls">', 1))
         page = (open(tpl_p, encoding="utf-8").read()
                 .replace("{{TABLE}}", table)

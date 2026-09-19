@@ -121,7 +121,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .hero{padding:clamp(36px,4.5vw,60px) 0 clamp(28px,3vw,40px)}
 
 /* ---------- hero ---------- */
-.hero h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(34px,4.6vw,72px)}   /* the same edges as the tables */
+.hero h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.08;font-size:clamp(30px,3.7vw,54px)}   /* one line at the shared measure (2026-09-18) */   /* the same edges as the tables */
 .hero h1 b{font-weight:500}
 .herosub{margin:18px 0 0;font-size:clamp(15px,1.25vw,18px);line-height:1.5;color:var(--mut)}
 @media(max-width:900px){.herosub{white-space:normal;max-width:52ch}}
@@ -405,11 +405,11 @@ td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .
    sealed row keeps the shape: value and stake blurred, the rest shown. */
 /* THE TAPE (PLAN.md section 5): a weather line, the controls, one table
    grouped by kind; no card grid. Tables are the site. */
-.tapehead{align-items:flex-start}
+.tapehead{align-items:flex-start;margin-bottom:8px}
 .activitysec.excerpt{padding-top:56px;padding-bottom:56px}
 .activitysec.excerpt .shead .exit{margin-top:6px}
 .tapesub{font-family:var(--ui);font-size:13.5px;color:var(--mut);margin-top:8px}   /* a caption: who · when · order, one size on both tables */
-.actstats{font-size:15px;color:var(--mut);margin:18px 0 18px}
+.actstats{font-size:15px;color:var(--mut);margin:6px 0 16px}
 .actstats b{color:var(--ink);font-weight:700}
 .tapectl{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .tapectl .chips{gap:6px}
@@ -786,7 +786,8 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
   <div><b class="fname">Founder Led Equities</b>
    &nbsp;·&nbsp; Computed from SEC EDGAR. Not investment advice.
    &nbsp;·&nbsp; <a href="about.html">About &amp; method</a>
-   &nbsp;·&nbsp; <a href="/companies/" title="one page per company, every company">Every company page</a></div>
+   &nbsp;·&nbsp; <a href="/companies/" title="one page per company, every company">Every company page</a>
+   &nbsp;·&nbsp; <a href="/screens/founder-led/" title="founder-led, never sold, own more than 10%, bought this year, hired under 1%">The screens</a></div>
   <div class="mono" id="footstamp"></div>
 </div></footer>
 

@@ -74,5 +74,10 @@ p{max-width:74ch;margin-bottom:13px;color:#26282B}
   <p class="small">Founder Led Equities · payments processed by Stripe ·
   this page was last updated August 2026</p>
 </main>
+<script>
+/* the nav's last button is Join for a visitor and Account for a member; a static page asks once */
+(async function(){try{const r=await fetch("/api/me",{cache:"no-store"});if(!r.ok)return;const me=await r.json();
+  if(me&&me.pro){const b=document.querySelector(".topnav .gopro");if(b){b.textContent="Account";b.setAttribute("href","/account/");}}}catch(e){}})();
+</script>
 </body>
 </html>
