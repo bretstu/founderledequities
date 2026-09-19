@@ -44,7 +44,7 @@ from .founders import ANTHROPIC_MODEL, _post, quote_is_verbatim
 
 MAX_TOKENS = 400
 LABELS = ("economic", "disclaimed", "partial", "unclear")
-PROMPT_VERSION = "v291"   # bumped whenever SYSTEM or EXAMPLES change; recorded on every reading
+PROMPT_VERSION = "v292"   # bumped whenever SYSTEM or EXAMPLES change; recorded on every reading
 
 SYSTEM = """You classify ONE holding line from an SEC Form 3, 4 or 5, using ONLY the footnote text provided.
 
@@ -107,6 +107,7 @@ economic: "The shares are held of record by Start Small, LLC, for which the Repo
 economic: "Shares held in the Gift Trust, an irrevocable trust established for the benefit of a minor child of the reporting person." -> economic (no trustee stated: the person holds the strings until shown otherwise)
 economic: line "In Trust for Children"; footnote "Shares held in trust for the benefit of Mr. Lipps' children." -> economic (a children's trust, no trustee named, no disclaimer: nothing shows the gift completed; the line's own label is not evidence)
 economic: line "By Children's Trust"; footnote "Shares are held directly by a trust for the benefit of the Reporting Person's daughter." -> economic (the same: for a child, nothing more)
+economic: "These securities are held by a trust for the benefit of one of Mr. Edwards' children. The Reporting Person disclaims beneficial ownership except to the extent of his pecuniary interest therein." -> economic (a child's trust with the HEDGED disclaimer and no trustee named: the hedge decides nothing, and nothing shows the gift completed; the formula rule is for the unhedged "not an admission" form only)
 economic: "Shares held by a trust for the benefit of the reporting person's children, who share the reporting person's household. The reporting person disclaims beneficial ownership of the shares held by the trust, and this report shall not be deemed an admission..." -> economic (the filer states the children share the household: a statement, and it beats the formula)
 disclaimed: line "By trust"; footnote "Shares held in the [Child #2] Gift Trust, an irrevocable trust established for the benefit of a minor child of the reporting person." with, attached to the same line, "The reporting person disclaims beneficial ownership of these securities, and the filing of this report is not an admission that the reporting person is the beneficial owner." -> disclaimed, basis statement (a children's vehicle with the full formula attached: a gift completed; no trustee is needed for this rule)
 disclaimed: "These shares are held by the Field 2021 Descendants Trust, of which Bryn Mawr Trust Company of Delaware serves as trustee and may be replaced at the discretion of the Reporting Person." -> disclaimed, basis statement (a corporate trustee: a gift completed; the power to replace the trustee does not undo it)
