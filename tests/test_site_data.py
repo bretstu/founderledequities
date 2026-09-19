@@ -159,7 +159,7 @@ def test_the_free_record_is_a_year_and_the_screener_has_its_counts(tmp_path):
            str(root / "sp.csv"), str(out))
     free_open = list(csv.DictReader(open(out / "events" / "OPEN.csv")))
     pro_open = list(csv.DictReader(open(out / "pro" / "events" / "OPEN.csv")))
-    assert [r["filed"] for r in free_open] == ["2026-08-01"] and free_open[0]["value"] == "1000", "the free shard is the year, figures intact"
+    assert len(free_open) == 3 and all(r["value"] for r in free_open), "the seal is off: the free shard is the whole record, figures intact"
     assert len(pro_open) == 3, "the Pro shard is the whole record"
     feed = list(csv.DictReader(open(out / "events-free.csv")))
     open_rows = [r for r in feed if r["ticker"] == "OPEN"]

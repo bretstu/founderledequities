@@ -472,6 +472,10 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     # company, carries everything since 2016.
     def within_year(r):
         return (r.get("filed") or "") >= year_ago
+    # THE SEAL IS OFF (2026-09-18): a company's free shard is its whole record
+    # since 2016, like the Pro shard; the reference is the point. The site's
+    # feed file (below) still carries a year, for its size.
+    within_year_shard = (lambda r: True) if OPEN_ALL else within_year
     for t, rows in sorted(ev_by_t.items()):
         with open(os.path.join(out_dir, "pro", "events", f"{t}.csv"), "w",
                   newline="", encoding="utf-8") as fh:
@@ -483,7 +487,7 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
             w = csv.DictWriter(fh, fieldnames=ev_cols + ["masked"])
             w.writeheader()
             if t in sp:
-                w.writerows(dict(r, masked="0") for r in rows if within_year(r))
+                w.writerows(dict(r, masked="0") for r in rows if within_year_shard(r))
             else:
                 w.writerows(masked_row(r) for r in rows if within_year(r))
 

@@ -453,7 +453,7 @@ const P=runPage();
     assert(about.includes(t),"about.html carries: "+t);
 
   // ---- payments wiring on the page ----
-  assert(idx.includes('href="/pro/"')&&idx.includes("$8 a month or $69 a year"),
+  assert(idx.includes('href="/pro/"')&&idx.includes("$69 a year or $8 a month"),
     "the Pro box points at the plan page at the real price");
   const pro=require("fs").readFileSync("pro.html","utf8");
   assert(pro.includes('href="/api/checkout?plan=monthly"')&&pro.includes('href="/api/checkout?plan=yearly"')&&pro.includes("14-day trial"),

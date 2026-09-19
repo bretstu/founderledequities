@@ -403,9 +403,9 @@ def test_the_pro_page_is_the_plan(tmp_path):
     bcp.main(panel, founders, prices, sp, out)
     page = open(os.path.join(out, "pro", "index.html"), encoding="utf-8").read()
     assert "{{TOPNAV}}" not in page and 'class="topnav"' in page
-    assert "$8" in page and "$69" in page and "14-day trial" in page and "The site is free. Pro keeps it that way" in page
+    assert "$8" in page and "$69" in page and "14-day trial" in page and "The site is free. Members keep it that way" in page
     assert 'href="/api/checkout?plan=monthly"' in page and 'href="/api/checkout?plan=yearly"' in page
-    assert "Alerts, watches and export are Pro" in page, "the copy rule, verbatim"
+    assert "Alerts, watches and export are for members" in page, "the copy rule, verbatim"
     idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
     assert 'function openPro(){location.href="/pro/";}' in idx and '<a href="/pro/">Pro</a>' not in idx
     for f in ("assets/company-page.js", "assets/tape-page.js"):
@@ -508,19 +508,19 @@ def test_the_alerts_page_is_built_with_three_switches_on_one_rule(tmp_path):
     page = open(os.path.join(out, "alerts", "index.html"), encoding="utf-8").read()
     assert "When a founder" in page and "1% or more" in page and "within about ten minutes of the SEC filing" in page
     assert page.count('class="lcard') == 3 and "The letter" in page and "Live founder alerts" in page and "Your watches" in page
-    assert "Everything founders did this week" in page and "Pick any company" in page and 'class="pro">Pro' in page, "the three sentences and the Pro mark (2026-09-17)"
+    assert "Everything founders did this week" in page and "Pick any company" in page and 'class="pro">Members' in page, "the three sentences and the members mark (2026-09-18)"
     assert 'class="k"' not in page.split('id="lbody"')[1].split("What one looks like")[0], "no small labels above the card titles"
     assert "Paul Gu bought $1.3M of Upstart" in page and "1.33% &rarr; 1.38%" in page and "Upstart on Founder Led Equities" in page, "the sample is the email as it arrives"
     assert 'href="/alerts/">Alerts' in page, "the page carries the nav with itself in it"
     js = open(os.path.join(out, "alerts.js"), encoding="utf-8").read()
     assert 'tk:"FOUNDERS"' in js and "/api/letter" in js and "/api/subscribe" in js and "/api/watch" in js
     # NO FAKE SWITCH (2026-09-17): a reader who is not Pro sees a trial button where the switch would be
-    assert "Start a 14-day trial" in js and 'ME&&ME.pro?sw("fsw"' in js and "Already Pro?" in js
+    assert "Start a 14-day trial" in js and 'ME&&ME.pro?sw("fsw"' in js and "Already a member?" in js
     assert "names.slice(0,2)" in js and "Manage all" in js, "the watches card stays compact: two names and the account for the rest"
     acct = open(os.path.join(ROOT, "assets", "account-page.js"), encoding="utf-8").read()
     assert "<h2>Live founder alerts</h2>" in acct and "Saturday morning" in acct and "Monday" not in acct and "names_only:true" in acct
     w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
-    assert 'tk === "FOUNDERS"' in w and "Live founder alerts are Pro" in w
+    assert 'tk === "FOUNDERS"' in w and "Live founder alerts are for members" in w
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
     assert "tk = 'FOUNDERS'" in run and "e.founder" in run and "b.accs" in run, "FOUNDERS matches founder events; one email per event per address"
     assert "PRO_STATUSES.has(sub.status)" in run and "proNow" in run, "a FOUNDERS watch mails only while the address is Pro (a lapsed trial stops)"

@@ -24,10 +24,10 @@ async function render(){
     <div class="lcard"><h2>The letter</h2><div class="d">Everything founders did this week, in one email on Saturday morning. Free.</div>
       <div class="ctl">${signed?sw("lsw",LETTER.on,LETTER.on?"Subscribed":"Subscribe","setLetter"):`<form class="lform" onsubmit="return joinLetter(event)"><input type="email" id="lemail" placeholder="you@example.com" required autocomplete="email"><button class="lbtn" type="submit">Send it</button></form>`}
       <div class="fine" id="lfine"></div></div></div>
-    <div class="lcard pro"><h2>Live founder alerts <span class="pro">Pro</span></h2><div class="d">Every founder&#8217;s move, within about ten minutes of the SEC filing.</div>
+    <div class="lcard pro"><h2>Live founder alerts <span class="pro">Members</span></h2><div class="d">Every founder&#8217;s move, within about ten minutes of the SEC filing.</div>
       <div class="ctl">${ME&&ME.pro?sw("fsw",live,live?"On":"Turn on","setLive"):`<a class="lbtn" href="/pro/">Start a 14-day trial</a>`}
-      <div class="fine" id="ffine">${ME&&ME.pro?"":signed?"":`Already Pro? <a href="/#signin">Sign in</a>`}</div></div></div>
-    <div class="lcard"><h2>Your watches</h2><div class="d">Pick any company and get an email when its chief executive&#8217;s stake moves.${ME&&ME.pro?"":" One company is free; more is Pro."}</div>
+      <div class="fine" id="ffine">${ME&&ME.pro?"":signed?"":`Already a member? <a href="/#signin">Sign in</a>`}</div></div></div>
+    <div class="lcard"><h2>Your watches</h2><div class="d">Pick any company and get an email when its chief executive&#8217;s stake moves.${ME&&ME.pro?"":" One company is free; more is for members."}</div>
       <div class="ctl">${signed?(names.length?`<div class="wlist"><div class="fine">${names.length} ${names.length===1?"company":"companies"}</div>${names.slice(0,2).map(w=>`<div class="row"><span><span class="tk"><a href="/company/${esc(w.tk)}/" style="color:inherit;text-decoration:none">${esc(w.tk)}</a></span>${esc(w.ceo||"")}</span><button class="stop" onclick="stopWatch('${esc(w.tk)}')">stop</button></div>`).join("")}<div class="fine">${names.length>2?`and ${names.length-2} more &middot; `:""}<a href="/account/">Manage all &rarr;</a></div></div>`:`<div class="fine">You are not watching any company yet. <a href="/companies/">Find one &rarr;</a></div>`):`<div class="fine"><a href="/companies/">Find a company &rarr;</a></div>`}</div>
     </div>
   </div>`;
@@ -48,7 +48,7 @@ async function joinLetter(ev){
 }
 async function setLive(el){
   const on=el.checked,f=$("#ffine");
-  if(!(ME&&ME.pro)){el.checked=false;f.innerHTML=`Live founder alerts are Pro. <a href="/pro/">The plan &rarr;</a>`;return;}
+  if(!(ME&&ME.pro)){el.checked=false;f.innerHTML=`Live founder alerts are for members. <a href="/pro/">Membership &rarr;</a>`;return;}
   try{
     const q=await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(on?{tk:"FOUNDERS",ceo:"every founder"}:{tk:"FOUNDERS",remove:true})});
     const j=await q.json();

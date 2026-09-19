@@ -78,7 +78,7 @@ export async function onRequestPost({ request, env }) {
   // reader has proved the address, so it is confirmed at once; the run
   // matches it to every founder event (functions/api/watch/run.js).
   if (tk === "FOUNDERS") {
-    if (!s.pro) return json({ ok: false, pro: true, message: "Live founder alerts are Pro." });
+    if (!s.pro) return json({ ok: false, pro: true, message: "Live founder alerts are for members." });
     await env.HITS.prepare("INSERT INTO watches (email, tk, ceo, token, confirmed, created) VALUES (?1, ?2, ?3, ?4, 1, ?5) ON CONFLICT(email, tk) DO UPDATE SET confirmed = 1")
       .bind(email, "FOUNDERS", "every founder", token(), now).run();
     return json({ ok: true, watching: true, message: "On. Every founder's move, as it is filed." });

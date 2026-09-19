@@ -646,7 +646,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
     <a href="/alerts/">Alerts</a>
     <a href="about.html">About</a>
     <button class="devtog" id="devtog" onclick="toggleDev()" title="Developer preview — see the site as a Pro subscriber">Preview: Free</button>
-    <button class="gopro" onclick="openPro()">Go Pro</button>
+    <button class="gopro" onclick="openPro()">Join</button>
   </div>
 </div></div>
 
@@ -781,7 +781,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
         <input type="email" id="homeemail" placeholder="you@example.com" required autocomplete="email">
         <button type="submit">Send it</button>
         <span class="hs-msg" id="homemsg"></span>
-        <span class="hs-live">Or <a href="/alerts/">live alerts</a> within minutes of the filing, with Pro.</span>
+        <span class="hs-live">Or <a href="/alerts/">live alerts</a> within minutes of the filing, for members.</span>
       </form>
     </div>
   </div>
@@ -804,9 +804,9 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
   <div class="mcard">
     <button class="mclose" onclick="closePro()" aria-label="Close">✕</button>
     <div class="seal">◆</div>
-    <h3>Founder Led Equities Pro</h3>
+    <h3>Membership</h3>
     <p>Every US public company worth $1 billion or more, in full: the stake, the shares and their worth for <span id="mcount">1,635</span> more companies; every trade since 2016 on every name; the tape at every window; export; a watchlist.</p>
-    <a class="mwide" style="display:block;text-align:center;text-decoration:none" href="/pro/">Pro, $8 a month or $69 a year &middot; 14-day trial</a>
+    <a class="mwide" style="display:block;text-align:center;text-decoration:none" href="/pro/">Become a member, $69 a year or $8 a month &middot; 14-day trial</a>
     <div class="mfine">Already subscribed? <a href="#" onclick="signIn();return false">Sign in</a> &middot; your email is the sign-in, no password &middot;
       <a class="mlater" href="#" onclick="closePro();return false" style="display:inline;margin:0">Close</a></div>
   </div>
@@ -1219,7 +1219,7 @@ function renderAll(){if(typeof document!=="undefined"&&document.body&&document.b
   if(/[?&]welcome=1/.test(location.search)&&!state._welcomed){
     state._welcomed=true;
     const t=document.createElement("div");
-    t.className="toast";t.textContent=state.pro?"Pro unlocked - welcome. No password needed: on any other device, sign in with your email.":"Payment received — finishing up, one moment…";
+    t.className="toast";t.textContent=state.pro?"Membership active - welcome. No password needed: on any other device, sign in with your email.":"Payment received — finishing up, one moment…";
     document.body.appendChild(t);
     setTimeout(()=>t.remove(),6000);
     history.replaceState(null,"",location.pathname);
@@ -2060,7 +2060,7 @@ function renderActivity(){
   const chips=$("#actkinds");
   if(chips)chips.innerHTML=["all","bought","sold","comp","xfer"].map(g=>`<button class="chip kd${(state.ev.kind||"all")===g?" on":""}" data-kind="${g}" onclick="setKind('${g}')">${g==="all"?"All":GROUP_WORD[g]} <small>${cnt(g)}</small></button>`).join("")
     +`<span class="tsep"></span><button class="chip big${state.ev.moved?" on":""}" onclick="setMoved(!state.ev.moved)" title="only the rows that moved the stake by at least 1% of what it was">Moved the stake &ge; 1%</button>`;
-  const pn=$("#pronote");if(pn)pn.innerHTML=state.pro?"":`Export is <a onclick="openPro()" style="cursor:pointer">Pro</a>.`;
+  const pn=$("#pronote");if(pn)pn.innerHTML=state.pro?"":`Export is for <a onclick="openPro()" style="cursor:pointer">members</a>.`;
   const rows=actSorted(actRows());
   const sealedN=rows.filter(e=>e.mk).length,dimN=rows.filter(evDim).length;
   /* THE HOME PAGE CARRIES AN EXCERPT (the first rows, the full tape a
@@ -2123,7 +2123,7 @@ function syncNav(){
   if(!b||!state.meKnown)return;
   if(state.pro){b.textContent="Account";b.onclick=()=>{location.href="/account/"};
     b.title="Your letter, your watches, your billing";}
-  else{b.textContent="Go Pro";b.onclick=openPro;b.title="";}
+  else{b.textContent="Join";b.onclick=openPro;b.title="";}
 }
 /* Go Pro is a page (PLAN.md section 5). The box stays for signing in. */
 function openPro(){location.href="/pro/";}

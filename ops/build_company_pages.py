@@ -103,8 +103,8 @@ def extract_topnav(index_html: str) -> str:
     # toggle and Go Pro stay off a static page that has no modal
     nav = nav.replace('href="#', 'href="/#').replace('href="about.html"', 'href="/about.html"')
     nav = re.sub(r'\s*<button class="devtog".*?</button>', "", nav, flags=re.S)
-    nav = re.sub(r'<button class="gopro" onclick="openPro\(\)">Go Pro</button>',
-                 '<a class="gopro" href="/pro/" style="text-decoration:none">Go Pro</a>', nav)
+    nav = re.sub(r'<button class="gopro" onclick="openPro\(\)">[^<]*</button>',
+                 '<a class="gopro" href="/pro/" style="text-decoration:none">Join</a>', nav)
     nav = nav.replace("onclick=\"window.scrollTo({top:0,behavior:'smooth'})\"", "onclick=\"location.href='/'\"")
     nav = nav.replace("onkeydown=\"if(event.key==='Enter')window.scrollTo({top:0,behavior:'smooth'})\"",
                       "onkeydown=\"if(event.key==='Enter')location.href='/'\"")

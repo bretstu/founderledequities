@@ -7,7 +7,7 @@ async function boot(){
   try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)ME=await q.json();}catch(e){}
   const body=$("#abody");
   if(!ME||!ME.email){
-    body.innerHTML=`<div class="asign"><h2>Sign in to see your account.</h2><p>Pro readers sign in with their email, no password. If you only read the letter or watch one founder, there is nothing to manage here: the links in each email do it.</p><a class="gopro" href="/#signin">Sign in</a> &nbsp; <a href="/pro/" style="font-size:14px">The plan &rarr;</a></div>`;
+    body.innerHTML=`<div class="asign"><h2>Sign in to see your account.</h2><p>Members sign in with their email, no password. If you only read the letter or watch one founder, there is nothing to manage here: the links in each email do it.</p><a class="gopro" href="/#signin">Sign in</a> &nbsp; <a href="/pro/" style="font-size:14px">The plan &rarr;</a></div>`;
     return;
   }
   $("#who").textContent=ME.email;
@@ -34,8 +34,8 @@ async function render(){
         :`<div class="anote">You are not watching any company. Open a company page and flip the switch under its numbers.</div>`}
       <div class="anote">An email when the stake moves. <a href="/alerts/">The alerts &rarr;</a> &middot; <a href="/companies/">Watch another &rarr;</a>${names.length>1?` &middot; <a href="#" onclick="stopAll();return false">Stop all</a>`:""}</div>
     </div>
-    <div class="ablock"><h2>Pro</h2>
-      <div class="arow"><div class="l"><span>${ME.pro?"Pro":"Not a subscriber"}</span><span class="mut">${ME.pro?"every company, the archive, the tape at every window, export, a list of watches":"S&P 500 current stakes and the last twelve months are open"}</span></div>
+    <div class="ablock"><h2>Membership</h2>
+      <div class="arow"><div class="l"><span>${ME.pro?"Member":"Not a member"}</span><span class="mut">${ME.pro?"every company, the archive, the tape at every window, export, a list of watches":"S&P 500 current stakes and the last twelve months are open"}</span></div>
         ${ME.pro?`<a class="abtn" href="/api/portal">Manage billing</a>`:`<a class="abtn primary" href="/pro/">Start trial</a>`}</div>
     </div>
     <div class="aout"><a href="/api/logout">Sign out</a></div>`;
