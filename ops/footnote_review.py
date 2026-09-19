@@ -173,7 +173,7 @@ def main(argv):
         who = "held directly" if r["direct"] == "D" else f"by {r['nature']}"
         frac = f" · fraction {r['fraction']}" if r.get("fraction") else ""
         basis = f" · by {r['basis']}" if r.get("basis") else ""
-        print(f"\n== {r['ticker']} · {r['ceo']} · {r['security']} {who} · {float(r['shares'] or 0):,.0f} shares · [{r['label']}{frac}{basis}]")
+        print(f"\n== {r['ticker']} · {r['ceo']} · {r['security']} {who} · {float(r['shares'] or 0):,.0f} shares · [{r['label']}{frac}{basis}] · footnotes {r.get('footnote_ids') or '-'}")
         print(f"   \"{r['quote']}\"")
         print(f"   {r['reason']}")
         print(f"   filing: {r['url']}   key: {r['key']}")
