@@ -543,7 +543,7 @@ def test_the_screens_are_pages_when_the_site_data_is_there(tmp_path):
         assert "<title>" in page and 'rel="canonical"' in page and "Other screens" in page
     ns = open(os.path.join(out, "screens", "never-sold", "index.html"), encoding="utf-8").read()
     assert 'href="/company/TSLA/"' in ns and "28.44%" in ns and 'href="/company/SEALD/"' not in ns
-    assert "+12.64 pts" in ns, "the 12-month change is on the row"
+    assert "15.80%" in ns, "the stake a year ago is on the row"
     hired = open(os.path.join(out, "screens", "hired-under-1-percent", "index.html"), encoding="utf-8").read()
     assert 'href="/company/SEALD/"' in hired and 'href="/company/TSLA/"' not in hired
     sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()

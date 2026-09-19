@@ -451,14 +451,13 @@ SCREEN_CSS = """
 .spage .def{font-size:15.5px;line-height:1.55;color:var(--mut);max-width:72ch;margin:0 0 6px}
 .spage .meta{font-family:var(--mono);font-size:12px;color:var(--faint);margin:0 0 22px}
 .spage .meta a{color:var(--mut)}
-.spage table{width:100%;border-collapse:collapse;font-size:14px}
-.spage th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding:8px 10px;border-bottom:1px solid var(--ink)}
-.spage td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-.spage td.n,.spage th.n{text-align:right;font-family:var(--mono);white-space:nowrap}
-.spage td.tk a{font-family:var(--mono);font-weight:600;color:var(--ink);text-decoration:none}
-.spage td.tk .co{display:block;font-size:12px;color:var(--mut)}
-.spage .fb{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;background:var(--ink);color:var(--paper);padding:1px 5px;border-radius:2px}
-.spage .up{color:var(--buy)}.spage .dn{color:var(--sell)}
+.spage table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.spage th{text-align:left;font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
+.spage td{padding:10px 10px 10px 0;border-bottom:1px solid var(--line);vertical-align:middle;font-size:14px;color:var(--ink)}
+.spage td.n,.spage th.n{text-align:right;white-space:nowrap;padding-right:28px}
+.spage td.tk a{font-weight:700;color:var(--ink);text-decoration:none}
+.spage td.tk .co{color:var(--mut);margin-left:8px}
+.spage .fb{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;background:var(--ink);color:var(--bg);padding:1px 5px;border-radius:2px;vertical-align:middle;margin-left:8px}
 .spage .others{margin:36px 0 0;font-size:14px;color:var(--mut)}
 .spage .others a{color:var(--ink);margin-right:14px}
 @media(max-width:760px){.spage th.mc,.spage td.mc,.spage th.c12,.spage td.c12{display:none}}
@@ -492,13 +491,12 @@ def screen_pages(universe_p, founders, prices, out_dir, topnav, css_v):
             tk = (r.get("ticker") or "").upper()
             pct = _num(r.get("pct")); w = worth(r)
             ago = _num(r.get("pct_12m_ago"))
-            c12 = (pct - ago) if (pct is not None and ago is not None) else None
-            c12s = "" if c12 is None else f'<span class="{"up" if c12 > 0 else "dn" if c12 < 0 else ""}">{c12:+.2f} pts</span>'
+            agos = "" if ago is None else (f"{ago:.3f}%" if ago < 1 else f"{ago:.2f}%")
             trs.append(f'<tr><td class="tk"><a href="/company/{html.escape(tk)}/">{html.escape(tk)}</a><span class="co">{html.escape(r.get("company") or "")}</span></td>'
-                       f'<td>{html.escape(r.get("ceo") or "")}{" <span class=\"fb\">FOUNDER</span>" if f else ""}</td>'
+                       f'<td>{html.escape(r.get("ceo") or "")}{"<span class=\"fb\">FOUNDER</span>" if f else ""}</td>'
                        f'<td class="n">{"" if pct is None else (f"{pct:.3f}%" if pct < 1 else f"{pct:.2f}%")}</td>'
-                       f'<td class="n">{"" if w is None else _money(w)}</td>'
-                       f'<td class="n c12">{c12s}</td></tr>')
+                       f'<td class="n c12">{agos}</td>'
+                       f'<td class="n">{"" if w is None else _money(w)}</td></tr>')
         others = " ".join(f'<a href="/screens/{o_slug}/">{html.escape(o_title)}</a>' for o_slug, o_title, _d, _t in SCREENS if o_slug != slug)
         interactive = {"founder-led": "/companies/", "never-sold": "/companies/?screen=never-sold", "own-more-than-10-percent": "/companies/?screen=over-10",
                        "bought-this-year": "/companies/?screen=bought-this-year", "hired-under-1-percent": "/companies/?screen=hired-under-1"}[slug]
@@ -513,7 +511,7 @@ def screen_pages(universe_p, founders, prices, out_dir, topnav, css_v):
                 f'<main class="spage"><h1>{html.escape(title)}</h1>'
                 f'<p class="def">{len(picked):,} {html.escape(definition)}.</p>'
                 f'<p class="meta">As of {today} · sorted by the value of the stake · <a href="{interactive}">sort and search this list</a></p>'
-                f'<table><thead><tr><th>Company</th><th>Chief executive</th><th class="n">Stake</th><th class="n">Worth</th><th class="n c12">12-mo stake change</th></tr></thead>'
+                f'<table><thead><tr><th>Company</th><th>CEO</th><th class="n">Stake</th><th class="n c12">A year ago</th><th class="n">Worth</th></tr></thead>'
                 f'<tbody>{"".join(trs)}</tbody></table>'
                 f'<p class="others">Other screens: {others}</p>'
                 f'<p class="meta" style="margin-top:28px">Founder Led Equities · computed from SEC EDGAR, never estimated · not investment advice · <a href="/about.html">how the numbers are made</a></p>'
