@@ -619,7 +619,8 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
         def companies_page(heading, definition, preset, static_block, title, desc, canonical):
             # THE PAGE IS THE PAGE (2026-09-18): the heading stays "Every company" on every screen's address;
             # only the document's title and description name the screen, for search
-            t = table.replace("{{HEADING}}", "Every company").replace("{{DEF}}", "")
+            # the line under the heading names the screen (the title's words), in the HTML for a crawler and live for a reader
+            t = table.replace("{{HEADING}}", "Every company").replace("{{DEF}}", f'<div class="screenline" id="screenline">{html.escape(heading if preset else "")}</div>')
             pg = (tpl.replace("{{TABLE}}", t)
                      .replace("{{TOPNAV}}", topnav)
                      .replace("{{INDEX_CSS}}", INDEX_CSS)

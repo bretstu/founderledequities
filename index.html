@@ -172,6 +172,7 @@ body.pro .hometape{display:none}
 .shead{display:flex;justify-content:space-between;align-items:baseline;gap:18px;margin-bottom:20px;flex-wrap:wrap}
 .shead h2{font-family:var(--disp);font-weight:500;letter-spacing:-.015em;font-size:clamp(28px,3vw,44px);line-height:1.08}
 .shead .r{font-size:13px;color:var(--mut)}
+.screenline{min-height:22px;font-size:15px;line-height:22px;color:var(--mut);margin-top:6px}
 .shead .shr{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:flex-end}
 /* Ten bars in the frame, the rest a scroll away -- the ranking runs the
    whole index, so cutting it at ten hid 490 companies behind nothing at
@@ -1363,13 +1364,13 @@ function lastTrades(){
    so a free reader's screen says how many more match in Pro. */
 /*@shared*/
 const SCREENS={
-  "never-sold":{name:"Never sold",desc:"CEOs who have never sold a share of their company on the market",
+  "never-sold":{name:"Never sold",title:"CEOs who have never sold a share",desc:"CEOs who have never sold a share of their company on the market",
     test:r=>!!r.ns},
-  "over-10":{name:"Own more than 10%",desc:"CEOs who own more than a tenth of the company they run",
+  "over-10":{name:"Own more than 10%",title:"CEOs who own more than 10% of their company",desc:"CEOs who own more than a tenth of the company they run",
     test:r=>r.pct!==null&&r.pct>=10},
-  "bought-this-year":{name:"Bought this year",desc:"CEOs whose last stake-moving trade was an open-market buy, within a year",
+  "bought-this-year":{name:"Bought this year",title:"CEOs who bought shares this year",desc:"CEOs whose last stake-moving trade was an open-market buy, within a year",
     test:r=>r.ltk==="bought"&&!!r.ltd&&r.ltd>=new Date(Date.now()-365*86400e3).toISOString().slice(0,10)},
-  "hired-under-1":{name:"Hired, under 1%",desc:"CEOs the proxy does not name as founders, owning less than 1% of the company they run",
+  "hired-under-1":{name:"Hired, under 1%",title:"Hired CEOs who own less than 1%",desc:"CEOs the proxy does not name as founders, owning less than 1% of the company they run",
     test:r=>!r.fd&&r.pct!==null&&r.pct<1},
 };
 /*@shared*/
@@ -1427,6 +1428,8 @@ function renderTable(){
   const screen=state.screen&&SCREENS[state.screen];
   document.querySelectorAll("[data-screen]").forEach(b=>b.classList.toggle("on",state.screen?b.dataset.screen===state.screen:(state.tbF&&!state.q&&!state.min&&!state.tbH?b.dataset.screen==="founder-led":b.dataset.screen==="")));
   const sd=$("#screendesc");if(sd)sd.textContent=screen?screen.desc.charAt(0).toUpperCase()+screen.desc.slice(1)+".":"";
+  /* THE LINE UNDER THE HEADING (2026-09-19): which screen this is, in the words its address is titled with; a fixed height, so nothing moves */
+  const sl=$("#screenline");if(sl)sl.textContent=screen?screen.title:(state.tbF&&!state.q&&!state.min&&!state.tbH?"Founder-led companies":"");
   let rows=PANEL.filter(r=>{
     if(homeOpen&&r.masked)return false;
     /* a sealed row's share is not in the file: a screen that asks about
