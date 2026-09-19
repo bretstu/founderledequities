@@ -186,17 +186,15 @@ echo "  data version: $DATAV"
 # at the root would publish every sealed stake. The page reads universe.csv.
 
 # ---- 3. sanity before the world sees it ----
-# the free root must never carry an unmasked universe: the root file and the
-# pro file must differ, and the root file must contain masked rows
-cmp -s public/universe.csv public/pro/universe.csv \
-  && { echo "REFUSING: root universe.csv equals the pro file"; exit 2; }
-# the masked column is read by name: a positional check (",1" at the end
-# of the line) refused a good build the day a column was added after it
-python3 - << 'PYSEAL' || { echo "REFUSING: no masked rows in the public universe.csv"; exit 2; }
+# THE SEAL IS OFF (2026-09-18): the root universe.csv is the whole panel with
+# every number, the same as the pro file, on purpose. What must still hold:
+# the root file exists, has every company, and no row is masked.
+python3 - << 'PYOPEN' || { echo "REFUSING: the public universe.csv is short or carries masked rows"; exit 2; }
 import csv, sys
 rows = list(csv.DictReader(open("public/universe.csv", encoding="utf-8-sig")))
-sys.exit(0 if any((r.get("masked") or "").strip() == "1" for r in rows) else 1)
-PYSEAL
+ok = len(rows) > 1500 and not any((r.get("masked") or "").strip() == "1" for r in rows) and all(r.get("pct") for r in rows[:50])
+sys.exit(0 if ok else 1)
+PYOPEN
 
 # wrangler bundles the functions/ directory from the project root by itself.
 # FLE_BRANCH selects the Pages branch: "production" is aliased to the domain;
