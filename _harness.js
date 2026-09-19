@@ -135,17 +135,17 @@ const P=runPage();
     const html=els["#actwrap"]._html;
     renderActivity();
     assert(els["#actwrap"]._html.includes('class="tape"')&&(els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===rows.length,"one table row per filing, once the excerpt's limit is lifted");
-    assert(/data-key="kind">Kind<span class="arr">.*data-key="co">Company.*data-key="ceo">CEO.*data-key="v">Amount.*data-key="st">Stake, before &rarr; after.*data-key="td"[^>]*>Traded.*data-key="fd"[^>]*>Filed/.test(html),"seven sortable columns (2026-09-18): the kind says the manner, the stake before and after says what it did, traded then filed");
-    assert(html.includes('<td class="fd"><span class="dt" title="the day EDGAR accepted the form">'),"every row carries the day EDGAR accepted the form");
+    assert(/data-key="kind">Kind<span class="arr">.*data-key="co">Company.*data-key="ceo">CEO.*data-key="v">Amount.*data-key="sh">Shares.*data-key="st">Stake.*data-key="td"[^>]*>Date/.test(html),"seven sortable columns (2026-09-18): kind, company, CEO, amount, shares, stake after, date");
+    assert(/<td class="td"><span class="dt" title="[^"]*; filed /.test(html),"every row's date carries the filed day on hover (2026-09-18: one date column)");
     // THE HEADERS SORT, LIKE THE SCOREBOARD'S; Kind restores the tape's own order
     P.setTapeSort("v"); {const r=actSorted(actRows()); const vs=r.map(e=>((e.c==="P"||e.c==="S")&&e.v&&!e.fl)?e.v:null).filter(x=>x!==null); assert(vs.every((x,i)=>i===0||x<=vs[i-1]),"Amount sorts descending on the first click"); assert(els["#actwrap"]._html.includes('data-key="v">Amount<span class="arr"> ↓'),"and the header shows the arrow");}
     P.setTapeSort("v"); {const r=actSorted(actRows()); const vs=r.map(e=>((e.c==="P"||e.c==="S")&&e.v&&!e.fl)?e.v:null).filter(x=>x!==null); assert(vs.every((x,i)=>i===0||x>=vs[i-1]),"a second click reverses");}
     P.setTapeSort("fd"); {const r=actSorted(actRows()); const ds=r.map(e=>e.fd); assert(ds.every((x,i)=>i===0||x<=ds[i-1]),"Filed sorts newest first");}
     P.setTapeSort("ceo"); {const r=actSorted(actRows()); const cs=r.map(e=>e.ceo||""); assert(cs.every((x,i)=>i===0||x.localeCompare(cs[i-1])>=0),"a name column sorts A to Z on the first click");}
     P.setTapeSort("kind"); assert(state.ev.sort.key===null,"Kind is the tape's own order again");
-    assert(!idxsrc.includes("filed ${e.fd}"),"the filed day is a column, not a hover");
+    assert(idxsrc.includes("; filed ${shortDay(e.fd)}"),"the filed day rides the date's hover");
     // THE SCOREBOARD IS AN OWNERSHIP TABLE (2026-09-17): the 12-month change in the stake and the as-of date, not the last trade
-    assert(idxsrc.includes('data-key="c12"')&&idxsrc.includes('class="n num c-c12"')&&!idxsrc.includes('data-key="asof"')&&!idxsrc.includes('data-key="ltf"')&&idxsrc.includes('>A year ago<'),"the scoreboard shows the stake a year ago, market cap, and no date or trade columns");
+    assert(!idxsrc.includes('data-key="asof"')&&!idxsrc.includes('data-key="ltf"')&&!idxsrc.includes('data-key="c12"'),"the scoreboard is stake, worth, market cap, and no date or trade columns");
     assert(html.includes("openCompany(")&&html.includes("sec.gov"),"rows are doors and the amount links to the filing");
     assert(!html.includes("DISCRET."),"kinds are spelled out");
     {const full=els["#actwrap"]._html;assert(full.includes('class="kind comp"')&&/class="detail">(<a [^>]+>)?award granted/.test(full)&&full.includes('class="kind xfer"')&&/class="detail">(<a [^>]+>)?gift</.test(full),"a grant and a gift carry the badge and the filing's label in grey, the label linking to the filing");}
@@ -162,13 +162,13 @@ const P=runPage();
     assert(P.evDim({c:"S",lb:"exercise and sell",pl:"discretionary",pc:null,po:2}),"a sale the site says left the position unchanged is dimmed");
     assert(idxsrc.indexOf('id="tg-f"')<idxsrc.indexOf('id="actkinds"')&&idxsrc.slice(idxsrc.indexOf('id="tg-f"'),idxsrc.indexOf('id="actkinds"')).indexOf('class="tapectl')===-1,"the kind chips sit on the same control row as the window and founders only");
     const stats=els["#actstats"]._html;
-    assert(/<b>\d+<\/b> CEOs? bought · (<b>\d+<\/b> for the first time ever · )?<b>\d+<\/b> cut a stake · <b>\d+<\/b> sold on a plan · <b>\d+<\/b> paid in shares · <b>\d+<\/b> gave shares away$/.test(stats),"the weather line: "+stats.replace(/<[^>]+>/g,""));
+    assert(/class="hstat"><div class="n">\d+<\/div><div class="k">bought on the open market<\/div>.*sold at their own discretion.*sold on a plan.*paid in shares.*gave shares away/.test(stats),"the week in five numbers, as stat blocks (2026-09-18): "+stats.replace(/<[^>]+>/g,""));
     assert(!/did not move a stake/.test(stats)&&!idxsrc.includes("did not move a stake"),"the tape never again says a filing did not move a stake unless its move was under 1%");
     // a plan is never counted as a cut; compensation never as a cut
-    const cut=+(stats.match(/<b>(\d+)<\/b> cut a stake/)||[])[1];
+    const cut=+(stats.match(/<div class="n">(\d+)<\/div><div class="k">sold at their own discretion/)||[])[1];
     const discPeople=new Set(actWindow().filter(e=>tapeKind(e)==="disc").map(e=>e.tk+"|"+e.ceo)).size;
     assert(cut===discPeople,"'cut a stake' counts discretionary sellers only: "+cut+" vs "+discPeople);
-    const paid=+(stats.match(/<b>(\d+)<\/b> paid in shares/)||[])[1];
+    const paid=+(stats.match(/<div class="n">(\d+)<\/div><div class="k">paid in shares/)||[])[1];
     const paidPeople=new Set(actWindow().filter(e=>tapeKind(e)==="comp"&&(e.c==="A"||e.c==="M"||e.lb==="exercise, part sold"||e.lb==="vested and sold")).map(e=>e.tk+"|"+e.ceo)).size;
     assert(paid===paidPeople&&paid>0,"'paid in shares' counts people who took shares as compensation, by kind, never by a sealed figure: "+paid);
     // THE LINE IS THE SAME ON BOTH SIDES OF THE SEAL: sealing every row changes no count
@@ -183,7 +183,7 @@ const P=runPage();
     P.setKind("all"); P.setMoved(true); assert(actRows().every(P.evMoved)&&actRows().length<rows.length,"Moved the stake >= 1% keeps only stated moves of 1%+");
     P.setMoved(false);
     // the subhead names the window's dates
-    assert(/(Founder-led|Every CEO) · \d+ [A-Z][a-z]{2}–\d+ [A-Z][a-z]{2} · moves first/.test(els["#tapesub"]._text||""),"the caption is who · when · order: "+els["#tapesub"]._text);
+    assert(/^(Founder-led|Every CEO) · \d+ [A-Z][a-z]{2}–\d+ [A-Z][a-z]{2}$/.test(els["#tapesub"]._text||""),"the caption is who · when (2026-09-18): "+els["#tapesub"]._text);
     // a free reader: 7d only, the longer chips dimmed and gated, the Pro note under the chips
     state.pro=false; setWin(7); renderActivity();
     assert(state.ev.win==="7","7 days for a free reader");
@@ -227,7 +227,7 @@ const P=runPage();
     state.ev.f=false; setWin(365); renderActivity();
     const html=els["#actwrap"]._html; const row=html.slice(html.indexOf("ZZSEAL"),html.indexOf("ZZSEAL")+1000);
     assert(row.includes("$1.5M"),"the amount is the Form 4's own number and shows on a sealed row");
-    assert((row.match(/class="sealed"/g)||[]).length===1,"and the stake column is the one blur a masked row would carry (no row is masked since 2026-09-18)");
+    assert((row.match(/class="sealed"/g)||[]).length===2,"the shares and the stake are the two blurs a masked row would carry (no row is masked since 2026-09-18)");
     assert(!row.includes("sec.gov"),"no filing link on a sealed row");
     assert((els["#actnote"]._html||"").includes("outside the S&P 500"),"the note says where the sealed stakes are");
     P.EVENTS=savedE; renderActivity();
@@ -239,7 +239,7 @@ const P=runPage();
     P.EVENTS=[{tk:"NEWB",ceo:"First Timer",c:"P",lb:"open-market purchase",pl:"discretionary",sh:1000,v:5e5,fd:"2026-09-03",td:"2026-09-02",pc:2.5,po:41.0,ha:41000,nc:1000,rs:null,u:"https://www.sec.gov/x",fb:true},
               {tk:"OLDB",ceo:"Old Hand",c:"P",lb:"open-market purchase",pl:"discretionary",sh:1000,v:9e5,fd:"2026-09-03",td:"2026-09-02",pc:0.1,po:1.0,ha:1e6,nc:1000,rs:null,u:"https://www.sec.gov/y",fb:false}];
     state.ev.f=false; setWin(30); renderActivity();
-    assert(els["#actstats"]._html.includes("<b>1</b> for the first time ever"),"the weather line counts first-ever purchases");
+    assert(els["#actstats"]._html.includes('<div class="n">1</div><div class="k">first buy on record</div>'),"the stats count first-ever purchases");
     assert(els["#actwrap"]._html.includes('class="firstb"'),"and the row carries the tag");
     P.EVENTS=savedE; setWin(365); renderActivity();
   }
@@ -310,10 +310,10 @@ const P=runPage();
    assert(on.includes("openCompany('UPX')")&&on.includes("openCompany('NOH')")&&!on.includes("openCompany('DNX')"),"the Never sold switch keeps the one who never reduced a stake and the short record, drops the seller -- options cashed don't count");
    P.state.tbH=false;P.renderTable();}
   // the last move's kind still sorts and screens (r.ltk) but is no longer a column (2026-09-17): the table is ownership, the tape is trades
-  assert(!rowOf("DNX").includes('class="c-lt"')&&!rowOf("DNX").includes('c-amt')&&rowOf("DNX").includes('c-c12')&&!rowOf("DNX").includes('c-asof'),"the row carries the 12-month stake change, no trade cells, no date");
+  assert(!rowOf("DNX").includes('class="c-lt"')&&!rowOf("DNX").includes('c-amt')&&!rowOf("DNX").includes('c-c12')&&!rowOf("DNX").includes('c-asof'),"the row carries the 12-month stake change, no trade cells, no date");
   assert(!tb.includes('class="c-asof"'),"no as-of column: a June filing must not read as a stale site (2026-09-17)");
   assert(!/c-lt"><span class="kind/.test(rowOf("DNX"))&&rowOf("UPX").includes('c-fd">Yes'),"no last-move words in the table; the founder flag its own column");
-  assert(rowOf("NOH").includes("less than a year on the record")||rowOf("NOH").includes(" pts"),"the 12-month column: a change in points, or an honest dash for a short record");
+  assert(!rowOf("NOH").includes(" pts"),"no 12-month column (2026-09-18): the table is stake, worth, market cap");
   state.tbH=true;P.renderTable();
   const held=[...els["#tbody"]._html.matchAll(/onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);
   assert(held.join(",")==="UPX,NOH","the Never sold switch keeps only those who never did: "+held.join(","));
@@ -533,7 +533,7 @@ const P=runPage();
   P.state.pro=true;P.state.ev.f=false;setWin(30);renderActivity();
   const off=els["#actwrap"]._html;
   assert(off.includes("A Founder")&&off.includes("A Hire"),"toggle off: every CEO");
-  assert(els["#actstats"]._html.includes("<b>1</b> cut a stake")&&els["#actstats"]._html.includes("<b>1</b> sold on a plan"),"the weather line counts the discretionary seller as a cut and the planned one as a plan");
+  assert(els["#actstats"]._html.includes('<div class="n">1</div><div class="k">sold at their own discretion')&&els["#actstats"]._html.includes('<div class="n">1</div><div class="k">sold on a plan'),"the stats count the discretionary seller and the planned one apart");
   P.state.ev.f=true;renderActivity();
   const on=els["#actwrap"]._html;
   assert(on.includes("A Founder")&&!on.includes("A Hire"),"toggle on: founders only");
