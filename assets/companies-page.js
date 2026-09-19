@@ -63,9 +63,8 @@ async function boot(){
   const preset=(typeof window!=="undefined"&&window.SCREEN_PRESET)||new URLSearchParams(location.search).get("screen")||"";
   if(preset==="founder-led"){state.tbF=true;}
   else if(preset&&SCREENS[preset])state.screen=preset;
-  document.querySelectorAll("[data-screen]").forEach(b=>b.classList.toggle("on",b.dataset.screen===(preset||"")));
-  /* the filter chips and switches leave a screen: they are a different question (the address stays; the reader changed it) */
-  document.querySelectorAll("[data-min],#fchip,#hchip,#q").forEach(el=>el.addEventListener(el.id==="q"?"input":"click",()=>{if(state.screen){state.screen="";document.querySelectorAll("[data-screen]").forEach(b=>b.classList.remove("on"));}},true));
+  /* the filter chips and switches leave a screen: they are a different question, and the address returns to /companies/ */
+  document.querySelectorAll("[data-min],#fchip,#hchip,#q").forEach(el=>el.addEventListener(el.id==="q"?"input":"click",()=>{if(state.screen||/^\/screens\//.test(location.pathname)){state.screen="";screenAddress("");}},true));
   renderTable();
   /* the rows the builder wrote beneath for a crawler step aside once the table above is drawn */
   const st=document.getElementById("sstatic");if(st)st.style.display="none";

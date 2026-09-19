@@ -600,12 +600,13 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
                           '<div class="screens" id="screens">'
                           # ONE SCREEN, ONE ADDRESS (2026-09-18): each chip is a page, /screens/<slug>/, the interactive table preset to
                           # its question with the rows in the HTML beneath for a crawler; "Everyone" is /companies/
-                          '<a class="chip" data-screen="founder-led" href="/screens/founder-led/">Founder-led</a>'
-                          '<a class="chip" data-screen="never-sold" href="/screens/never-sold/">Never sold</a>'
-                          '<a class="chip" data-screen="over-10" href="/screens/own-more-than-10-percent/">Own more than 10%</a>'
-                          '<a class="chip" data-screen="bought-this-year" href="/screens/bought-this-year/">Bought this year</a>'
-                          '<a class="chip" data-screen="hired-under-1" href="/screens/hired-under-1-percent/">Hired, under 1%</a>'
-                          '<a class="chip" data-screen="" href="/companies/">Everyone</a>'
+                          # the chips filter in place, as they always did; the address in the bar follows (setScreen)
+                          '<a class="chip" data-screen="founder-led" href="/screens/founder-led/" onclick="setFounderLed();return false">Founder-led</a>'
+                          '<a class="chip" data-screen="never-sold" href="/screens/never-sold/" onclick="setScreen(\'never-sold\');return false">Never sold</a>'
+                          '<a class="chip" data-screen="over-10" href="/screens/own-more-than-10-percent/" onclick="setScreen(\'over-10\');return false">Own more than 10%</a>'
+                          '<a class="chip" data-screen="bought-this-year" href="/screens/bought-this-year/" onclick="setScreen(\'bought-this-year\');return false">Bought this year</a>'
+                          '<a class="chip" data-screen="hired-under-1" href="/screens/hired-under-1-percent/" onclick="setScreen(\'hired-under-1\');return false">Hired, under 1%</a>'
+                          '<a class="chip" data-screen="" href="/companies/" onclick="setScreen(\'\');return false">Everyone</a>'
                           '<span class="screendesc" id="screendesc"></span></div>'
                           '<div class="controls">', 1))
         tpl = open(tpl_p, encoding="utf-8").read()
@@ -616,7 +617,9 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
             js_v = _h.sha256(open(js_p, "rb").read()).hexdigest()[:10]
 
         def companies_page(heading, definition, preset, static_block, title, desc, canonical):
-            t = table.replace("{{HEADING}}", html.escape(heading)).replace("{{DEF}}", f'<p class="screendef">{html.escape(definition)}</p>' if definition else "")
+            # THE PAGE IS THE PAGE (2026-09-18): the heading stays "Every company" on every screen's address;
+            # only the document's title and description name the screen, for search
+            t = table.replace("{{HEADING}}", "Every company").replace("{{DEF}}", "")
             pg = (tpl.replace("{{TABLE}}", t)
                      .replace("{{TOPNAV}}", topnav)
                      .replace("{{INDEX_CSS}}", INDEX_CSS)

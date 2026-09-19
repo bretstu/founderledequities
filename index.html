@@ -1376,12 +1376,28 @@ const SCREENS={
 function setScreen(id){
   state.screen=SCREENS[id]?id:"";
   /* a screen is the whole question: the other filters reset so the
-     answer is the screen's, and the URL says which */
+     answer is the screen's, and the address in the bar says which */
   state.q="";state.min=0;state.tbF=false;state.tbH=false;
   const q=typeof document!=="undefined"&&document.querySelector("#q");if(q)q.value="";
   document.querySelectorAll("[data-min]").forEach(x=>x.classList.toggle("on",x.dataset.min==="0"));
-  /* a screen page keeps its address (2026-09-18); elsewhere the query string says which screen */
-  if(typeof history!=="undefined"&&history.replaceState&&!(typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0)&&!(typeof location!=="undefined"&&/^\/screens\//.test(location.pathname)))history.replaceState(null,"",state.screen?`?screen=${state.screen}`:location.pathname);
+  screenAddress(state.screen);
+  renderTable();
+}
+/*@shared*/
+/* ONE SCREEN, ONE ADDRESS (2026-09-18): the page stays the page; the address follows the chip, so a link lands here with the filter on */
+const SCREEN_SLUG={"never-sold":"never-sold","over-10":"own-more-than-10-percent","bought-this-year":"bought-this-year","hired-under-1":"hired-under-1-percent","founder-led":"founder-led"};
+/*@shared*/
+function screenAddress(id){
+  if(typeof history==="undefined"||!history.replaceState||(typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0))return;
+  history.replaceState(null,"",id&&SCREEN_SLUG[id]?`/screens/${SCREEN_SLUG[id]}/`:"/companies/");
+}
+/*@shared*/
+function setFounderLed(){
+  /* the founders switch, as a screen: on, alone, at its address */
+  state.screen="";state.q="";state.min=0;state.tbH=false;state.tbF=true;
+  const q=typeof document!=="undefined"&&document.querySelector("#q");if(q)q.value="";
+  document.querySelectorAll("[data-min]").forEach(x=>x.classList.toggle("on",x.dataset.min==="0"));
+  screenAddress("founder-led");
   renderTable();
 }
 /*@shared*/
@@ -1409,7 +1425,7 @@ function renderTable(){
      /companies/ shows every row with the blurs. */
   const homeOpen=typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0&&!state.pro;
   const screen=state.screen&&SCREENS[state.screen];
-  document.querySelectorAll("[data-screen]").forEach(b=>b.classList.toggle("on",b.dataset.screen===(state.screen||"")));
+  document.querySelectorAll("[data-screen]").forEach(b=>b.classList.toggle("on",state.screen?b.dataset.screen===state.screen:(state.tbF&&!state.q&&!state.min&&!state.tbH?b.dataset.screen==="founder-led":b.dataset.screen==="")));
   const sd=$("#screendesc");if(sd)sd.textContent=screen?screen.desc.charAt(0).toUpperCase()+screen.desc.slice(1)+".":"";
   let rows=PANEL.filter(r=>{
     if(homeOpen&&r.masked)return false;
