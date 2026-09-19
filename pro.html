@@ -77,5 +77,16 @@
   <p class="signin">Already subscribed? <a href="/#signin">Sign in</a> &middot; Full refund within 7 days of any charge: <a href="mailto:hello@founderledequities.com?subject=Refund%20request">hello@founderledequities.com</a> &middot; <a href="/terms.html">Terms</a></p>
 </main>
 <div class="profoot"><span><a href="/about.html">About</a> &middot; Nothing here is investment advice &middot; Every figure links to the filing</span><span style="font-family:var(--mono);font-size:11px;color:var(--faint)">founderledequities.com</span></div>
+<script>
+/* ONE CLICK FEWER (2026-09-18): a reader the site knows (signed in, or here
+   from a link carrying ?email=) starts the trial with the address already on
+   Stripe's form. Nothing is sent anywhere but Stripe, and only on the click. */
+(async function(){
+  let email=(new URLSearchParams(location.search).get("email")||"").trim().toLowerCase();
+  if(!email){try{const r=await fetch("/api/me",{cache:"no-store"});if(r.ok){const j=await r.json();email=(j.email||"").toLowerCase();}}catch(e){}}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return;
+  document.querySelectorAll('a[href^="/api/checkout?plan="]').forEach(a=>{a.href+="&email="+encodeURIComponent(email);});
+})();
+</script>
 </body>
 </html>
