@@ -44,8 +44,8 @@ from fle import config as _config  # noqa: E402  (loads .env into the environmen
 
 SITE = "https://founderledequities.com"
 FROM = "Founder Led Equities <tape@founderledequities.com>"
-COPY_RULE = ("Every company, every stake and every trade is free on the site. "
-             "Members had every one of these on the day it was filed, by email. Membership is $69 a year: founderledequities.com/pro/")
+COPY_RULE = ("This letter is free and always will be. Members keep it that way, and get these moves "
+             "by email as they are filed. $69 a year: founderledequities.com/pro/")
 POSTAL_PLACEHOLDER = "[postal address]"
 # THE KINDS ARE THE PAGE'S (ops/kinds.py, 2026-09-15): the letter reads every
 # filing by the founder, not purchases and sales only, and ranks by the move
