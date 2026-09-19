@@ -124,10 +124,6 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .hero h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(34px,4.6vw,72px)}   /* the same edges as the tables */
 .hero h1 b{font-weight:500}
 .herosub{margin:18px 0 0;font-size:clamp(15px,1.25vw,18px);line-height:1.5;color:var(--mut)}
-.herolinks{margin:6px 0 -14px;font-size:12.5px;line-height:1.3;color:var(--mut)}   /* snug: the hero keeps its height (the negative margin gives back the line) */
-.herolinks a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
-.herolinks a:hover{border-bottom-color:var(--ink)}
-.herolinks .dot{margin:0 10px;color:var(--faint)}
 @media(max-width:900px){.herosub{white-space:normal;max-width:52ch}}
 .herosub .sealnote{display:block;margin-top:8px;color:var(--faint)}
 .herosub .sealnote .gopro{font-size:12.5px;padding:7px 14px;margin-left:10px;vertical-align:middle}
@@ -157,8 +153,6 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .hometape .hs-msg{flex-basis:100%;font-size:13.5px;color:var(--mut)}
 .hometape .hs-msg:empty{display:none}
 .hometape .hs-free{color:var(--mut);font-weight:400}
-.hometape .hs-live{flex-basis:100%;font-size:12.5px;color:var(--mut);margin-top:-4px;line-height:1.3}
-.hometape .hs-live a{color:var(--ink)}
 body.pro .hometape{display:none}
 .homesub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .homesub .hs-k{font-size:14px;font-weight:600;margin-right:4px}
@@ -657,9 +651,6 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
        founders against the index. -->
   <h1 id="thesis">What the person running the company still owns.</h1>
   <p class="herosub" id="herosub">Economic ownership from the filings they signed. Every US company worth $1B or more.</p>
-  <!-- THE POINTER (2026-09-18): the visitor who reads the headline and leaves still learns the two things exist.
-       A Pro reader sees "Your alerts" instead. -->
-  <p class="herolinks" id="herolinks"><a href="/alerts/">Free weekly letter</a><span class="dot">&middot;</span><a href="/alerts/">Live alerts</a></p>
   <div class="herostats" id="herostats"></div>
   <!-- The fold is headline, method line, three numbers, then the table
        that teaches the product. The week's sentence stood here until
@@ -781,7 +772,6 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
         <input type="email" id="homeemail" placeholder="you@example.com" required autocomplete="email">
         <button type="submit">Send it</button>
         <span class="hs-msg" id="homemsg"></span>
-        <span class="hs-live">Or <a href="/alerts/">live alerts</a> within minutes of the filing, for members.</span>
       </form>
     </div>
   </div>
@@ -1092,7 +1082,6 @@ async function loadData(){
   try{const r=await fetch("/api/me",{cache:"no-store"});
       if(r.ok){const j=await r.json();state.pro=!!j.pro;state.acct=j.email||"";state.meKnown=true;}}catch(e){}
   syncNav();   /* an answer that never came leaves the server-rendered label alone */
-  if(state.pro){const h=$("#herolinks");if(h)h.innerHTML=`<a href="/alerts/">Your alerts</a>`;}
 
   /* TWO WAVES, EACH IN PARALLEL.
      The files used to arrive one after another, each waiting for the last,
