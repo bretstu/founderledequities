@@ -123,7 +123,10 @@ def golden():
                 changes.setdefault((p["label"], r["label"]), []).append(r)
         for (a, b), rs in sorted(changes.items(), key=lambda kv: -len(kv[1])):
             print(f"  label change {a} -> {b}: {len(rs)} line(s)  e.g. " + "; ".join(f"{x['ticker']} {x['nature'][:24]}" for x in rs[:4]))
-        newly = [x for (a, b), rs in changes.items() if a not in ("disclaimed", "partial") and b in ("disclaimed", "partial") for x in rs]
+        # a line with a decision on file is settled, whichever way it moved; only undecided lines count as new
+        decided = {"|".join(k.split("|")[:3]) for k in reviewed}
+        newly = [x for (a, b), rs in changes.items() if a not in ("disclaimed", "partial") and b in ("disclaimed", "partial") for x in rs
+                 if "|".join(x["key"].split("|")[:3]) not in decided]
         moved = len(newly)
         print(f"  negatives: {moved} line(s) newly flagged against the previous reading" + ("" if moved else "  (clean)"))
     return 1 if (flipped or moved) else 0
