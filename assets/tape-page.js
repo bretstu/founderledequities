@@ -37,7 +37,7 @@ async function boot(){
      until then. */
   if(new URLSearchParams(location.search).get("subscribed")==="1"){
     const box=$("#subscribe");
-    if(box)box.innerHTML=`<div class="done"><h3>You're on the list.</h3><p>The Monday letter goes out next Monday morning: who bought, who cut a stake, who sold on a plan, founders first. Until then, this page is the tape. Every letter carries an unsubscribe link.</p></div>`;
+    if(box)box.innerHTML=`<div class="done"><h3>You're on the list.</h3><p>The letter goes out Saturday morning: who bought, who cut a stake, who sold on a plan, founders first. Until then, this page is the tape. Every letter carries an unsubscribe link.</p></div>`;
     history.replaceState(null,"",location.pathname);
   }
   if(new URLSearchParams(location.search).get("subscribed")==="check"){const m=$("#submsg");if(m)m.textContent="Check your inbox: one click confirms it.";}

@@ -99,9 +99,9 @@ const P=runPage();
     "the bars and the index chart are gone from the page (the chart is a static image on Method)");
   assert(idxsrc.includes('class="tablesec home"')&&idxsrc.includes("let TABLE_LIMIT=10;")&&idxsrc.includes('<a class="exit" href="/companies/">All companies'),
     "the home table is a ten-row preview with the rest a click away");
-  assert(idxsrc.includes('<h2>What they own now</h2>')&&!idxsrc.includes("The wealthiest CEOs"),"the heading is the question, not a rich list");
-  assert(idxsrc.includes('<a href="/tape/">Tape</a>')&&idxsrc.includes('<a href="/companies/">Companies</a>')&&!idxsrc.includes('>Scoreboard<')&&!idxsrc.includes('>Performance<'),
-    "the nav is Tape · Companies · Method · Pro");
+  assert(idxsrc.includes('<h2>Founder stakes</h2>')&&!idxsrc.includes("The wealthiest CEOs"),"the heading is the question, not a rich list");
+  assert(idxsrc.includes('<a href="/tape/">Activity</a>')&&idxsrc.includes('<a href="/companies/">Companies</a>')&&!idxsrc.includes('>Scoreboard<')&&!idxsrc.includes('>Performance<'),
+    "the nav is Activity · Companies · Alerts · About · Join");
   assert(!/class="blurred"/.test(els["#actwrap"]._html),"no blur class from the old gate anywhere: a sealed figure is a data-shape placeholder");
 
   // ---- THE TAPE: a weather line, the controls, one table grouped by kind ----
@@ -117,7 +117,7 @@ const P=runPage();
     // THE HOME PAGE IS AN EXCERPT: ten rows, the full tape a click away
     assert(idxsrc.includes("let TAPE_LIMIT=10;")&&idxsrc.includes('class="activitysec excerpt"'),"the home page's tape is a ten-row excerpt, like the scoreboard");
     assert((els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===10&&/^10 of [\d,]+ filings/.test(els["#actnote"]._html),"ten rows, and the note says of how many: "+els["#actnote"]._html.slice(0,40));
-    assert(idxsrc.includes('<a class="exit" href="/tape/">The full tape &rarr;</a>')&&idxsrc.includes('<a class="exit" href="/companies/">All companies &rarr;</a>'),"both previews exit the same way: heading left, the full page right");
+    assert(idxsrc.includes('<a class="exit" href="/tape/">All activity &rarr;</a>')&&idxsrc.includes('<a class="exit" href="/companies/">All companies &rarr;</a>'),"both previews exit the same way: heading left, the full page right");
     assert(idxsrc.includes('id="homesub"'),"the letter's signup sits under the tape excerpt");
     P.TAPE_LIMIT=0;
     assert(rows.length>50,"the window holds the year's filings: "+rows.length);
@@ -483,7 +483,7 @@ const P=runPage();
    const visible=idx.replace(/<!--[\s\S]*?-->/g,"").replace(/\/\*[\s\S]*?\*\//g,"").replace(/^\s*\/\/.*$/gm,"");
    const labels=visible;
    assert(!/chief executive/i.test(labels),"no label on the page says chief executive: "+(labels.match(/.{0,40}chief executive.{0,40}/i)||[""])[0]);
-   assert(idx.includes('<h1 id="thesis">What the person running the company still owns.</h1>'),"the hero says what the site is, the same for every reader");
+   assert(idx.includes('<h1 id="thesis">How much of the company does the CEO own?</h1>'),"the hero says what the site is, the same for every reader");
    assert(!idx.includes('See what moved')&&!idx.includes('Go Pro &middot; $15/mo</a>')&&!idx.includes("herobtns"),"no buttons on the fold: the sentence is the door, Pro is the header's");
    assert(!idx.includes('id="thisweek"'),"the fold is headline, method line, three numbers, the table: the week's sentence lives on /tape/ and in the letter");
    assert(!idx.includes('<a href="/pro/">Pro</a>')&&!idx.includes("Weekly tape, free")&&!idx.includes("navwatches"),"the header is where you are: Tape · Companies · Method and one button");

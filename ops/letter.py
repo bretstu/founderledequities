@@ -252,11 +252,11 @@ def draft_markdown(root, date, days=None):
     lines = [
         "---",
         f"date: {date}",
-        f"subject: This week's tape: {who_b} CEO{'s' if who_b != 1 else ''} bought, {who_c} cut a stake",
+        f"subject: This week: {who_b} CEO{'s' if who_b != 1 else ''} bought, {who_c} cut a stake",
         f"week: {week}",
         "---",
         "",
-        "# This week's tape.",
+        "# This week.",
         "",
         f"Founders only · {week} · the largest moves of the stake, every kind",
         "",
@@ -278,7 +278,7 @@ def draft_markdown(root, date, days=None):
         f"{len(rows)} filings this week · shown here: the largest moves of the stake, every open-market buy among them"
         + (f" · the change and the stake after are in Pro for the {sealed_n} from companies outside the S&P 500" if sealed_n else "") + ".",
         "",
-        f"[Read the full tape]({SITE}/tape/)",
+        f"[See all activity]({SITE}/tape/)",
         "",
     ]
     if look:
@@ -364,10 +364,10 @@ def render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal=None):
                 first_p = False
             elif val.startswith("**"):
                 H.append(f'<p style="font-size:14px;color:{MUT};margin:0 0 18px;">{inline(val)}</p>')
-            elif val.startswith("[Read the full tape]"):
+            elif val.startswith("[See all activity]"):
                 m = re.search(r"\((.+?)\)", val)
                 H.append(f'<table role="presentation" cellpadding="0" cellspacing="0" style="margin:10px 0 22px;"><tr><td style="background:{INK};">'
-                         f'<a href="{html.escape(m.group(1))}" style="display:inline-block;padding:11px 22px;color:{PAPER};font-size:14px;font-weight:bold;text-decoration:none;">Read the full tape &rarr;</a></td></tr></table>')
+                         f'<a href="{html.escape(m.group(1))}" style="display:inline-block;padding:11px 22px;color:{PAPER};font-size:14px;font-weight:bold;text-decoration:none;">See all activity &rarr;</a></td></tr></table>')
             else:
                 H.append(f'<p style="font-size:14px;line-height:1.5;color:{INK};margin:0 0 12px;">{inline(val)}</p>')
             T.append(inline(val, False) + "\n")
@@ -420,7 +420,7 @@ def archive_page(md, topnav, css_href="/site.css"):
         if kind == "h1":
             body.append(f'<h1 style="font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0 0 10px">{inline(val)}</h1>')
         elif kind == "p":
-            if val.startswith("[Read the full tape]"):
+            if val.startswith("[See all activity]"):
                 body.append(f'<p><a class="gopro" href="/tape/" style="display:inline-block;text-decoration:none">This week\'s tape, live &rarr;</a></p>')
             else:
                 body.append(f'<p style="font-size:15px;color:var(--mut);margin:0 0 14px;max-width:70ch">{inline(val)}</p>')
@@ -448,8 +448,8 @@ def archive_page(md, topnav, css_href="/site.css"):
             body.append("</tbody></table>")
     date = meta.get("date", "")
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-            f'<title>{html.escape(meta.get("subject","The tape"))} · Founder Led Equities</title>'
-            f'<meta name="description" content="The Monday tape of {html.escape(meta.get("week",""))}: who bought, who cut a stake, who sold on a plan. Founders first.">'
+            f'<title>{html.escape(meta.get("subject","This week"))} · Founder Led Equities</title>'
+            f'<meta name="description" content="The week of {html.escape(meta.get("week",""))}: who bought, who cut a stake, who sold on a plan. Founders first.">'
             f'<link rel="canonical" href="{SITE}/tape/{date}/"><link rel="stylesheet" href="{css_href}">'
             f'<style>.letter{{max-width:1120px;margin:0 auto;padding:48px clamp(20px,3.5vw,48px) 60px}}.letter .tape{{max-width:860px}}</style></head><body>'
             f'{topnav}<div class="letter"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:14px">The Monday tape · {html.escape(dt.date.fromisoformat(date).strftime("%B %-d, %Y") if date else "")}</div>'
@@ -566,7 +566,7 @@ def cmd_send(a):
         if not target:
             print("refusing: RESEND_SEGMENT_ID is not set (.env); create a segment meaning every subscribed contact on Resend's Audience page and put its id there")
             return 2
-        payload = {"from": FROM, "subject": meta.get("subject", "This week's tape"), "html": h, "text": t,
+        payload = {"from": FROM, "subject": meta.get("subject", "This week"), "html": h, "text": t,
                    "name": f"Monday tape {a.date}", **target}
         status, body = resend("/broadcasts", payload, key)
         print(f"  broadcast draft: {status} {body}")

@@ -76,7 +76,7 @@ def test_the_kicker_is_the_largest_move_and_the_largest_buy(tmp_path):
 def test_the_draft_renders_in_the_sites_look_and_seals_the_change_and_the_stake(tmp_path):
     root = _fixture(tmp_path)
     md = letter.draft_markdown(root, "2026-09-12")
-    assert md.startswith("---\ndate: 2026-09-12\nsubject: This week's tape: 2 CEOs bought, 2 cut a stake\nweek: Sep 7 to Sep 11")
+    assert md.startswith("---\ndate: 2026-09-12\nsubject: This week: 2 CEOs bought, 2 cut a stake\nweek: Sep 7 to Sep 11")
     assert "**2** CEOs bought · **1** for the first time ever · **2** cut a stake · **1** sold on a plan · **1** paid in shares · **1** gave shares away" in md
     assert "did not move a stake" not in md
     assert "| Kind | Company | CEO | Amount | Change | New stake | Manner |" in md
@@ -86,8 +86,8 @@ def test_the_draft_renders_in_the_sites_look_and_seals_the_change_and_the_stake(
     assert "| Transfer | DDOG | Olivier Pomel | — | -3.00% | 2.52% | Gift |" in md
     assert "NEEDS A LOOK BEFORE THE SEND (not in the table): René Lacerte, BILL: forfeited took the position on record to zero." in md
     h, t, meta = letter.render(md, postal="PO Box 1, Portland, ME 04101")
-    assert meta["subject"].startswith("This week's tape")
-    assert "Georgia" in h and "#F7F4EE" in h and "Read the full tape" in h
+    assert meta["subject"].startswith("This week")
+    assert "Georgia" in h and "#F7F4EE" in h and "See all activity" in h
     assert h.count(">Pro</a>") == 8, "a small Pro tag where the change and the stake are sealed (EQPT, BILL, UTHR, EQPT... four sealed rows, two tags each)"
     assert "{{{RESEND_UNSUBSCRIBE_URL}}}" in h and "PO Box 1" in h
     assert "28.44%" in t and "Unsubscribe" in t, "a plain-text alternative too"

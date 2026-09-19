@@ -144,7 +144,7 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     out.write_text(src, encoding="utf-8")
     st.main(panel, sp, prices, founders, str(out))
     page = out.read_text(encoding="utf-8")
-    assert '<h1 id="thesis">What the person running the company still owns.</h1>' in page, \
+    assert '<h1 id="thesis">How much of the company does the CEO own?</h1>' in page, \
         "the headline is the purpose, the same for every reader, and needs no stamp"
     # ONE STRIP FOR EVERYONE: three aggregates over every company, no company's stake
     assert '<div class="n">2</div><div class="k">CEOs own more than 5%</div>' in page, \
