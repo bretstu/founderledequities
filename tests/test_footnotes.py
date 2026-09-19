@@ -124,7 +124,7 @@ def test_the_prompt_separates_a_spouse_from_a_gift_to_a_child():
     assert "a marriage is one household" in F.SYSTEM and "GIFT COMPLETED" in F.SYSTEM
     assert "INDEPENDENT trustee" in F.SYSTEM and "Sage Resources" in F.EXAMPLES and "Descendants' Trust" in F.EXAMPLES
     assert "the person is trustee: holds the strings" in F.EXAMPLES and "Start Small" in F.EXAMPLES
-    assert F.PROMPT_VERSION == "v288" and "Never infer a trustee" in F.SYSTEM and "THE FORMULA NEVER DECIDES ON ITS OWN" in F.SYSTEM and "GRAT REMAINDER" in F.SYSTEM
+    assert F.PROMPT_VERSION == "v291" and "the line's own label is not evidence" in F.EXAMPLES and "Never infer a trustee" in F.SYSTEM and "THE FORMULA NEVER DECIDES ON ITS OWN" in F.SYSTEM and "GRAT REMAINDER" in F.SYSTEM
 
 
 def test_the_prompt_is_sent_as_a_cached_block(monkeypatch):
