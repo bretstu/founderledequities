@@ -29,6 +29,8 @@ import math
 import os
 import sys
 
+OPEN_ALL = True   # the seal is off (2026-09-18): see build_site_data.main
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -66,6 +68,8 @@ def dollars(v):
 
 def load_inputs(panel_p, sp_p, prices_p, founders_p, events_p):
     sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
+    if OPEN_ALL:   # THE SEAL IS OFF (2026-09-18): every card shows its stake
+        sp = None  # decided below once the panel is read
     prices = {}
     for r in csv.DictReader(open(prices_p, encoding="utf-8-sig")):
         try:
@@ -106,6 +110,8 @@ def load_inputs(panel_p, sp_p, prices_p, founders_p, events_p):
             "filed": (r.get("filed") or "")[:10],
             "after": float(r["pct_after"]) if r.get("pct_after") else None, "before": before})
     panel = list(csv.DictReader(open(panel_p, encoding="utf-8-sig")))
+    if sp is None:
+        sp = {(r.get("ticker") or "").upper() for r in panel}
     return sp, prices, founders, events, panel
 
 

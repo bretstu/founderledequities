@@ -3,7 +3,7 @@
 import { stripe, site, redirect, json } from "../_shared.js";
 
 export async function onRequestGet({ request, env }) {
-  // THE PLAN (PLAN.md section 2): $15 a month or $150 a year, a card-backed
+  // THE PLAN (2026-09-18): $8 a month or $69 a year (PRICE_ID_MONTHLY / PRICE_ID_YEARLY in the environment), a card-backed
   // 14-day trial. ?plan=yearly picks the yearly price; anything else is
   // monthly. No fallback: a missing price is refused, not replaced.
   const plan = new URL(request.url).searchParams.get("plan") === "yearly" ? "yearly" : "monthly";

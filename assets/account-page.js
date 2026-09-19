@@ -35,7 +35,7 @@ async function render(){
       <div class="anote">An email when the stake moves. <a href="/alerts/">The alerts &rarr;</a> &middot; <a href="/companies/">Watch another &rarr;</a>${names.length>1?` &middot; <a href="#" onclick="stopAll();return false">Stop all</a>`:""}</div>
     </div>
     <div class="ablock"><h2>Pro</h2>
-      <div class="arow"><div class="l"><span>${ME.pro?"$15 a month":"Not a subscriber"}</span><span class="mut">${ME.pro?"every company, the archive, the tape at every window, export, a list of watches":"S&P 500 current stakes and the last twelve months are open"}</span></div>
+      <div class="arow"><div class="l"><span>${ME.pro?"Pro":"Not a subscriber"}</span><span class="mut">${ME.pro?"every company, the archive, the tape at every window, export, a list of watches":"S&P 500 current stakes and the last twelve months are open"}</span></div>
         ${ME.pro?`<a class="abtn" href="/api/portal">Manage billing</a>`:`<a class="abtn primary" href="/pro/">Start trial</a>`}</div>
     </div>
     <div class="aout"><a href="/api/logout">Sign out</a></div>`;

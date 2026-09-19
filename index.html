@@ -806,7 +806,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
     <div class="seal">◆</div>
     <h3>Founder Led Equities Pro</h3>
     <p>Every US public company worth $1 billion or more, in full: the stake, the shares and their worth for <span id="mcount">1,635</span> more companies; every trade since 2016 on every name; the tape at every window; export; a watchlist.</p>
-    <a class="mwide" style="display:block;text-align:center;text-decoration:none" href="/pro/">Pro, $15 a month or $150 a year &middot; 14-day trial</a>
+    <a class="mwide" style="display:block;text-align:center;text-decoration:none" href="/pro/">Pro, $8 a month or $69 a year &middot; 14-day trial</a>
     <div class="mfine">Already subscribed? <a href="#" onclick="signIn();return false">Sign in</a> &middot; your email is the sign-in, no password &middot;
       <a class="mlater" href="#" onclick="closePro();return false" style="display:inline;margin:0">Close</a></div>
   </div>
@@ -1935,7 +1935,7 @@ function actSorted(rows){
 /*@shared*/
 function setWin(w){
   /* the longer windows are Pro; a free reader's click opens the box */
-  if(String(w)!=="7"&&!state.pro){openPro();return;}
+  /* the tape's windows are open to everyone (2026-09-18); export is Pro */
   state.ev.win=String(w);renderActivity();
 }
 function ago(d){
@@ -2060,7 +2060,7 @@ function renderActivity(){
   const chips=$("#actkinds");
   if(chips)chips.innerHTML=["all","bought","sold","comp","xfer"].map(g=>`<button class="chip kd${(state.ev.kind||"all")===g?" on":""}" data-kind="${g}" onclick="setKind('${g}')">${g==="all"?"All":GROUP_WORD[g]} <small>${cnt(g)}</small></button>`).join("")
     +`<span class="tsep"></span><button class="chip big${state.ev.moved?" on":""}" onclick="setMoved(!state.ev.moved)" title="only the rows that moved the stake by at least 1% of what it was">Moved the stake &ge; 1%</button>`;
-  const pn=$("#pronote");if(pn)pn.innerHTML=state.pro?"":`30d, 90d, 12m and export are <a onclick="openPro()" style="cursor:pointer">Pro</a>.`;
+  const pn=$("#pronote");if(pn)pn.innerHTML=state.pro?"":`Export is <a onclick="openPro()" style="cursor:pointer">Pro</a>.`;
   const rows=actSorted(actRows());
   const sealedN=rows.filter(e=>e.mk).length,dimN=rows.filter(evDim).length;
   /* THE HOME PAGE CARRIES AN EXCERPT (the first rows, the full tape a

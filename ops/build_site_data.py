@@ -29,6 +29,8 @@ import csv
 import json
 import os
 import sys
+
+OPEN_ALL = True   # the seal is off (2026-09-18): see build_site_data.main
 from collections import defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kinds  # noqa: E402
@@ -193,6 +195,14 @@ def ranks(panel, closes) -> dict:
 def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
          fresh_dir=None, perf_p="perf.csv", prices_dir=None) -> int:
     sp = {r["ticker"] for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
+    # THE SEAL IS OFF (2026-09-18). The site is a reference with a live feed:
+    # a company page that blurs its own number does not answer the query it
+    # is titled with, does not rank, and sends the reader who arrived from a
+    # post back out. Every company is open; what Pro keeps is the alerts,
+    # the watches and the exports. The S&P set still names the S&P (the
+    # sp column); it no longer decides what a page shows.
+    if OPEN_ALL:
+        sp = {r["ticker"] for r in csv.DictReader(open(panel_p, encoding="utf-8-sig"))}
     panel = list(csv.DictReader(open(panel_p, encoding="utf-8-sig")))
     # THE PARTNERSHIP REGISTER WINS (fle/partnerships.py, 2026-09-15): an
     # excluded company leaves the universe at the next panel run; until

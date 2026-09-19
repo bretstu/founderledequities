@@ -31,6 +31,8 @@ import os
 import re
 import sys
 
+OPEN_ALL = True   # the seal is off (2026-09-18): see build_site_data.main
+
 SITE = "https://founderledequities.com"
 
 
@@ -649,6 +651,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                      .replace('href="/site.css"', f'href="/site.css?v={css_v}"'))
 
     sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
+    if OPEN_ALL:   # THE SEAL IS OFF (2026-09-18): every page shows its number
+        sp = {(r.get("ticker") or "").upper() for r in csv.DictReader(open(panel_p, encoding="utf-8-sig"))}
     prices, price_date = {}, ""
     try:
         for r in csv.DictReader(open(prices_p, encoding="utf-8-sig")):

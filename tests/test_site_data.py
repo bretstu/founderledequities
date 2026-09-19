@@ -75,12 +75,10 @@ def test_list_files_carry_what_the_page_reads(tmp_path):
     assert free["BX"]["cautions"] == "holds partnership units"
     assert free["BX"]["masked"] == "0"
 
-    # the sealed row keeps the person and the date, loses the stake
+    # THE SEAL IS OFF (2026-09-18): a row outside the S&P carries its numbers too
     z = free["ZZZ"]
-    assert z["masked"] == "1"
-    for c in bsd.MASKED_COLS:
-        assert z[c] == "", f"sealed row leaks {c}={z[c]!r}"
-    assert z["ceo"] == "A. Founder" and z["shares_as_of"] == "2026-07-01"
+    assert z["masked"] == "0"
+    assert z["pct"] != "" and z["ceo"] == "A. Founder" and z["shares_as_of"] == "2026-07-01"
 
     # the pro file is unmasked
     assert pro["ZZZ"]["masked"] == "0" and pro["ZZZ"]["pct"] == "12.5"
@@ -183,5 +181,4 @@ def test_the_list_carries_the_last_move_and_never_sold(tmp_path):
     assert set(("lt_code", "lt_plan", "lt_value", "lt_traded", "lt_filed", "never_sold")) <= set(rows["OPEN"].keys())
     assert rows["OPEN"]["lt_code"] in ("P", "S") and rows["OPEN"]["lt_traded"]
     free = {r["ticker"]: r for r in _csv.DictReader(open(out / "universe.csv", encoding="utf-8"))}
-    sealed = next(r for r in free.values() if r["masked"] == "1")
-    assert sealed["lt_code"] and sealed["lt_value"] == "", "a sealed company's last move is named but its amount is sealed"
+    assert not [r for r in free.values() if r["masked"] == "1"], "the seal is off: no row is masked"

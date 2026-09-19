@@ -187,8 +187,8 @@ const P=runPage();
     // a free reader: 7d only, the longer chips dimmed and gated, the Pro note under the chips
     state.pro=false; setWin(7); renderActivity();
     assert(state.ev.win==="7","7 days for a free reader");
-    // openPro is a page now (/pro/); in the harness location is a stub, so the gate is judged by the window not changing
-    setWin(30); assert(state.ev.win==="7","a longer window is gated for a free reader and does not change the window");
+    // THE SEAL IS OFF (2026-09-18): every window is open to a free reader
+    setWin(30); assert(state.ev.win==="30","a longer window is open to a free reader");
     assert((els["#pronote"]._html||"").includes("Pro"),"the Pro note sits under the chips");
     state.pro=true; setWin(365);
   }
@@ -453,7 +453,7 @@ const P=runPage();
     assert(about.includes(t),"about.html carries: "+t);
 
   // ---- payments wiring on the page ----
-  assert(idx.includes('href="/pro/"')&&idx.includes("$15 a month or $150 a year"),
+  assert(idx.includes('href="/pro/"')&&idx.includes("$8 a month or $69 a year"),
     "the Pro box points at the plan page at the real price");
   const pro=require("fs").readFileSync("pro.html","utf8");
   assert(pro.includes('href="/api/checkout?plan=monthly"')&&pro.includes('href="/api/checkout?plan=yearly"')&&pro.includes("14-day trial"),
@@ -501,7 +501,7 @@ const P=runPage();
   assert(idx.includes("Filings through")&&idx.includes("EVENTS.reduce"),
     "the footer dates the newest filing read, not the newest that moved a stake");
   const terms=require("fs").readFileSync("terms.html","utf8");
-  for(const t of ["$15 per month","$150 per year","14-day trial","7 days","hello@founderledequities.com","not investment advice"])
+  for(const t of ["$8 per month","$69 per year","14-day trial","7 days","hello@founderledequities.com","not investment advice"])
     assert(terms.toLowerCase().includes(t.toLowerCase()),"terms.html carries: "+t);
 
   // ---- the free file: every S&P event, the seal is the only gate ----
