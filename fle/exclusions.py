@@ -74,6 +74,16 @@ DEFAULT = "universe/exclusions.csv"
 COLUMNS = ["cik", "ticker", "security", "direct", "reason", "source", "shares", "owner_cik", "since", "vehicle", "decided"]
 
 
+def class_key(security: str) -> str:
+    """A security title reduced to what names the class."""
+    t = (security or "").lower()
+    t = re.sub(r"\(the company's only class\)", " ", t)
+    t = re.sub(r",?\s*(\$?[0-9.]+\s*)?par value(\s*per share)?", " ", t)
+    t = re.sub(r"\bshares\b", "stock", t)
+    t = re.sub(r"[^a-z0-9]+", " ", t).strip()
+    return t
+
+
 @dataclass(frozen=True)
 class Exclusion:
     cik: str
@@ -97,20 +107,31 @@ class Exclusion:
     def is_addition(self) -> bool:
         return self.shares is not None
 
+    def same_class(self, security: str) -> bool:
+        """The class match, by meaning (2026-09-20): the ledger labels a
+        single-class company "Common Stock (the company's only class)" while
+        a register row carries the filing's title ("Common Stock, $.001 par
+        value", "Common Shares"); the parenthetical, the par-value clause and
+        shares/stock are not differences."""
+        return class_key(self.security) == class_key(security)
+
     def matches(self, security: str, direct: str) -> bool:
         """The class-and-direction match (a whole-class row). A vehicle row
         needs the line: see matches_line."""
-        if self.security.strip().lower() != (security or "").strip().lower():
+        if not self.same_class(security):
             return False
         return not self.direct or self.direct.upper() == (direct or "").upper()
 
     def matches_line(self, security: str, direct: str, nature: str | None) -> bool:
-        """Whether this row removes the given line: the class and direction,
-        and, for a vehicle row, the vehicle's canonical text."""
-        if not self.matches(security, direct):
-            return False
+        """Whether this row removes the given line. A whole-class row: the
+        class and the direction. A vehicle row: the class and the vehicle's
+        canonical text; the direction is not consulted, since filers put a
+        named trust in the direct column as often as the indirect one (AAOI,
+        Urban Outfitters) and the text is the identity."""
         if not self.vehicle:
-            return True
+            return self.matches(security, direct)
+        if not self.same_class(security):
+            return False
         from .ledger import vehicle_key   # local: ledger imports this module
         return vehicle_key(direct, nature)[1].split("#", 1)[0] == vehicle_key(direct, self.vehicle)[1]
 

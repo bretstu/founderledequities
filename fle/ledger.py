@@ -433,8 +433,8 @@ def apply_exclusions(here: dict, exclude, record: dict | None = None) -> None:
             del here[key]
             continue
         for e in rows:
-            if not getattr(e, "vehicle", "") or not e.matches(g.security, g.direct):
-                continue
+            if not getattr(e, "vehicle", "") or not e.same_class(g.security):
+                continue      # a vehicle row: the class and the text; the direction is not consulted
             want = vehicle_key(g.direct, e.vehicle)[1]
             hits = [v for v in g.vehicles() if v[1].split("#", 1)[0] == want]
             if not hits:

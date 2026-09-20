@@ -4397,3 +4397,20 @@ def test_a_register_row_can_remove_one_vehicle_and_leave_the_class(monkeypatch):
     here2 = {("Common Stock", "I"): g2}
     apply_exclusions(here2, [Exclusion(cik="1", ticker="X", security="Common Stock", direct="I", reason="r", source="https://s", vehicle="See footnote")], {})
     assert here2[("Common Stock", "I")].shares == 300.0
+
+
+def test_a_vehicle_row_matches_the_class_by_meaning_and_ignores_the_direction():
+    """AAOI and Urban Outfitters (2026-09-20): the ledger labels the single class
+    "(the company's only class)" and the filer put the trust in the direct
+    column; the register row, written from the filing's title and "I", must
+    still remove the line."""
+    from fle.exclusions import Exclusion
+    from fle.ledger import Group, apply_exclusions, vehicle_key
+    g = Group(security="Common Stock (the company's only class)", direct="D")
+    trust = vehicle_key("D", "By Thompson Lin Family Trust"); own = vehicle_key("D", "")
+    g.hold_by_vehicle = {trust: 807602.0, own: 1296047.0}; g.holdings = 807602.0 + 1296047.0; g.shares = g.holdings
+    here = {("Common Stock (the company's only class)", "D"): g}
+    row = Exclusion(cik="1", ticker="AAOI", security="Common Stock, $.001 par value", direct="I", reason="a corporate trustee", source="https://s", vehicle="By Thompson Lin Family Trust")
+    rec = {}
+    apply_exclusions(here, [row], rec)
+    assert here[("Common Stock (the company's only class)", "D")].shares == 1296047.0 and list(rec.values())[0][0] == 807602.0
