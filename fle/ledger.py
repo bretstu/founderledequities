@@ -441,18 +441,15 @@ def apply_exclusions(here: dict, exclude, record: dict | None = None) -> None:
                 continue
             if is_anonymous(e.vehicle, g.direct) and len(hits) > 1:
                 continue      # which pointer? the register cannot say; a person can
-            removed = 0.0
+            before = g.shares
             for v in hits:
-                if v in g.last_txn:
-                    removed += g.last_txn.pop(v) or 0.0
+                g.last_txn.pop(v, None)
                 if v in g.hold_by_vehicle:
-                    h = g.hold_by_vehicle.pop(v) or 0.0
-                    g.holdings -= h
-                    if v not in g.last_txn:
-                        removed += h
+                    g.holdings -= g.hold_by_vehicle.pop(v) or 0.0
                 g.passed.pop(v, None)
                 g.opening.pop(v, None)
             g.shares = sum(g.last_txn.values()) + g.holdings
+            removed = before - g.shares      # what actually left the position, counted once
             if record is not None and removed:
                 record.setdefault(f"{g.label()} · {e.vehicle}", (removed, e.reason, e.source))
         if not g.vehicles() and g.shares <= 0.5:
