@@ -427,7 +427,7 @@ table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
 /* ONE SHAPE FOR BOTH TABLES: the name columns take the left half, the
    figures sit in narrow right-aligned columns near their labels, the
    last two columns are the move and its date. The CEO cell truncates. */
-.tw-kind{width:15%}.tw-co{width:29%}.tw-ceo{width:19%}.tw-v{width:10%}.tw-sh{width:10%}.tw-st{width:8%}.tw-td{width:9%}
+.tw-kind{width:14%}.tw-co{width:24%}.tw-ceo{width:17%}.tw-v{width:9%}.tw-sh{width:9%}.tw-ch{width:9%}.tw-st{width:8%}.tw-td{width:10%}
 table.tape th.sortable{cursor:pointer;user-select:none}table.tape th.sortable:hover{color:var(--ink)}table.tape td.fd{white-space:nowrap}
 table.tape th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
 table.tape th.n,table.tape td.n{text-align:right;padding-right:28px}
@@ -1932,6 +1932,7 @@ function actSorted(rows){
       if(sk==="co")return coOf(e.tk)||e.tk;if(sk==="ceo")return e.ceo||"";
       if(sk==="v")return (e.c==="P"||e.c==="S")&&e.v&&!e.fl?e.v:null;
       if(sk==="sh"){return e.mk||!e.sh?null:signedShares(e);}
+      if(sk==="ch"){const p=evMove(e);return p?p.v:null;}
       if(sk==="st")return e.mk?null:(e.po===null||e.po===undefined?null:e.po);
       if(sk==="td")return e.td||e.fd;if(sk==="fd")return e.fd;return null;};
     return [...rows].sort((a,b)=>{
@@ -2033,7 +2034,7 @@ function actRow(e){
   const shs=e.mk?LOCK("in Pro","0,000"):(!e.sh?`<span class="nopr">&mdash;</span>`:`${signedShares(e)>0?"+":"\u2212"}${Math.abs(signedShares(e)).toLocaleString("en-US")}`);
   const p=evMove(e);
   const change=e.mk?LOCK("what the filing did to the stake is in Pro","−0.0%")
-    :p?`<span class="${p.v>=0?"plus":"minus"}" title="what this filing did to the stake, as a share of the stake before it${p.approx?"; "+approxNote(e):""}">${stakeChange(p.v,p.approx).replace(/^≈ /,"≈").replace(/stake /,"")}</span>`
+    :p?`<span title="what this filing did to the stake, as a share of the stake before it${p.approx?"; "+approxNote(e):""}">${stakeChange(p.v,p.approx).replace(/^≈ /,"≈").replace(/stake /,"")}</span>`
     :`<span class="nopr" title="${moveWhy(e)}">${unchangedKind(e)!==null&&unchangedKind(e)!=="pre"?"unchanged":"&mdash;"}</span>`;
   const amt=!trade?`<span class="nopr" title="the filing states no price for this row; the change column says what it did to the stake">&mdash;</span>`:(e.fl?`<span class="nopr" title="${e.fl}">${evValCell(e)}</span>`:evValCell(e));
   return `<tr class="dayrow${dim?" dim":""}" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
@@ -2041,7 +2042,8 @@ function actRow(e){
     <td class="co"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a><span class="nm">${coOf(e.tk)}</span></td>
     <td class="ceo"><span class="cn" title="${(e.ceo||coOf(e.tk)).replace(/"/g,"&quot;")}">${e.ceo||coOf(e.tk)}</span>${fMark(e.tk)}${e.fb?`<span class="firstb" title="this person's first open-market purchase on record">first buy</span>`:""}</td>
     <td class="n v">${trade?link(amt,"the filing, on EDGAR"):amt}</td>
-    <td class="n sh" title="${p?("as a share of the stake before it: "+stakeChange(p.v,p.approx)).replace(/"/g,"&quot;"):moveWhy(e).replace(/"/g,"&quot;")}">${shs}</td>
+    <td class="n sh" title="the shares this filing moved">${shs}</td>
+    <td class="n ch" title="what this filing did to the stake, as a share of the stake before it">${change}</td>
     <td class="n st" title="the stake after this filing">${stake}</td>
     <td class="td"><span class="dt" title="${tapeManner(e)}; the transaction date${e.tf&&e.tf!==e.td?"s":""}${lagNote(e)}; filed ${shortDay(e.fd)}">${spanDay(e,d=>d.slice(5).replace(/^0/,"").replace("-0","-").replace("-","/"))}${(e.fd&&e.td&&(new Date(e.fd)-new Date(e.tf||e.td))/86400e3>3)?` <span class="late">· filed ${e.fd.slice(5).replace(/^0/,"").replace("-0","-").replace("-","/")}</span>`:""}</td>
   </tr>`;
@@ -2052,7 +2054,7 @@ function actRow(e){
    the tape's own order (kind groups, the move within). Filed is the day
    EDGAR accepted the form; Traded the day of the transaction. */
 /*@shared*/
-const TAPE_COLS=[["kind","Kind",""],["co","Company",""],["ceo","CEO",""],["v","Amount","n"],["sh","Shares","n"],["st","Stake","n"],["td","Date",""]];
+const TAPE_COLS=[["kind","Kind",""],["co","Company",""],["ceo","CEO",""],["v","Amount","n"],["sh","Shares","n"],["ch","Of holding","n"],["st","Stake","n"],["td","Date",""]];
 /*@shared*/
 function tapeHead(){
   /* tolerant of a page whose state has no tape yet: the built tape.js declares

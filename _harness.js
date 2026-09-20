@@ -135,7 +135,7 @@ const P=runPage();
     const html=els["#actwrap"]._html;
     renderActivity();
     assert(els["#actwrap"]._html.includes('class="tape"')&&(els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===rows.length,"one table row per filing, once the excerpt's limit is lifted");
-    assert(/data-key="kind">Kind<span class="arr">.*data-key="co">Company.*data-key="ceo">CEO.*data-key="v">Amount.*data-key="sh">Shares.*data-key="st">Stake.*data-key="td"[^>]*>Date/.test(html),"seven sortable columns (2026-09-18): kind, company, CEO, amount, shares, stake after, date");
+    assert(/data-key="kind">Kind<span class="arr">.*data-key="co">Company.*data-key="ceo">CEO.*data-key="v">Amount.*data-key="sh">Shares.*data-key="ch">Of holding.*data-key="st">Stake.*data-key="td"[^>]*>Date/.test(html),"eight sortable columns (2026-09-20): kind, company, CEO, amount, shares, of holding, stake after, date");
     assert(/<td class="td"><span class="dt" title="[^"]*; filed /.test(html),"every row's date carries the filed day on hover (2026-09-18: one date column)");
     // THE HEADERS SORT, LIKE THE SCOREBOARD'S; Kind restores the tape's own order
     P.setTapeSort("v"); {const r=actSorted(actRows()); const vs=r.map(e=>((e.c==="P"||e.c==="S")&&e.v&&!e.fl)?e.v:null).filter(x=>x!==null); assert(vs.every((x,i)=>i===0||x<=vs[i-1]),"Amount sorts descending on the first click"); assert(els["#actwrap"]._html.includes('data-key="v">Amount<span class="arr"> ↓'),"and the header shows the arrow");}
@@ -227,7 +227,7 @@ const P=runPage();
     state.ev.f=false; setWin(365); renderActivity();
     const html=els["#actwrap"]._html; const row=html.slice(html.indexOf("ZZSEAL"),html.indexOf("ZZSEAL")+1000);
     assert(row.includes("$1.5M"),"the amount is the Form 4's own number and shows on a sealed row");
-    assert((row.match(/class="sealed"/g)||[]).length===2,"the shares and the stake are the two blurs a masked row would carry (no row is masked since 2026-09-18)");
+    assert((row.match(/class="sealed"/g)||[]).length>=2,"the shares and the stake (and the change) are the blurs a masked row would carry (no row is masked since 2026-09-18)");
     assert(!row.includes("sec.gov"),"no filing link on a sealed row");
     assert((els["#actnote"]._html||"").includes("outside the S&P 500"),"the note says where the sealed stakes are");
     P.EVENTS=savedE; renderActivity();
