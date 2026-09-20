@@ -959,7 +959,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     urls.extend(screen_pages(os.path.join(out_dir, "universe.csv"), founders, prices, out_dir, topnav, css_v, index_rows, sp))
     # the letter's archive (ops/letter.py publish writes the pages; the sitemap lists them here)
     import glob as _glob
-    issues = sorted(_glob.glob(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "weekly", "letter-*.md")))
+    issues = [p for p in sorted(_glob.glob(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "weekly", "letter-*.md")))
+              if re.search(r"^sent:\s*\S", open(p, encoding="utf-8").read(2000), re.M)]   # sent issues only
     if issues:
         urls.append("https://founderledequities.com/letter/")
         urls.extend(f"https://founderledequities.com/letter/{os.path.basename(p)[7:-3]}/" for p in issues)

@@ -54,6 +54,11 @@ link preview.
 5. `git add weekly/letter-<date>.md && git commit` — the archive is
    versioned, and the next kit reads it for the voice.
 
+An issue is an issue once it is sent: `--send --confirm` stamps
+`sent: <date>` into the file's front matter, and only stamped files are
+published, listed in the sitemap, or used for the voice. The pipeline's
+Saturday drafts sit in the same folder unstamped and never become pages.
+
 ## Where it appears
 
 - `/letter/` — the index: date, title, the week; the signup box on top.

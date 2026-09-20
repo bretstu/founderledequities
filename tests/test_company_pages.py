@@ -106,8 +106,9 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert 'src="/company.js?v=' in tsla and 'href="/site.css?v=' in tsla, "a new script is a new address"
     assert os.path.exists(os.path.join(out, "site.css"))
     sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
-    import glob as _g
-    n_letters = len(_g.glob(os.path.join(ROOT, "weekly", "letter-*.md")))
+    import glob as _g, re as _re
+    n_letters = len([p for p in _g.glob(os.path.join(ROOT, "weekly", "letter-*.md"))
+                     if _re.search(r"^sent:\s*\S", open(p, encoding="utf-8").read(2000), _re.M)])
     assert sm.count("<loc>") == 8 + (1 + n_letters if n_letters else 0) and "/company/SEALD/" in sm and "/companies/" in sm and "/tape/" in sm and "/pro/" in sm and "/alerts/" in sm, \
         "every company is in the sitemap: the open ones with the answer, the sealed ones with the question; and the alerts page (2026-09-17)"
     robots = open(os.path.join(out, "robots.txt"), encoding="utf-8").read()

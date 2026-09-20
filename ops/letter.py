@@ -610,6 +610,33 @@ def cmd_render(a):
     return 0
 
 
+def mark_sent(root, date):
+    """AN ISSUE IS AN ISSUE ONCE IT IS SENT (2026-09-20). The confirmed send
+    stamps `sent: <today>` into the file's front matter; the publisher and
+    the kit's voice folder take only stamped files. A draft the pipeline
+    wrote and nobody sent never becomes a page."""
+    md_p, _ = paths(root, date)
+    md = open(md_p, encoding="utf-8").read()
+    if re.search(r"^sent:", md, re.M):
+        return
+    stamp = f"sent: {dt.date.today().isoformat()}\n"
+    if md.startswith("---"):
+        end = md.index("\n---", 3)
+        md = md[:end + 1] + stamp + md[end + 1:]
+    else:
+        md = f"---\n{stamp}---\n" + md
+    open(md_p, "w", encoding="utf-8").write(md)
+    print(f"  {md_p}: stamped as sent")
+
+
+def is_sent(md_path):
+    try:
+        head = open(md_path, encoding="utf-8").read(2000)
+    except OSError:
+        return False
+    return bool(re.search(r"^sent:\s*\S", head, re.M))
+
+
 def _shell(root, out):
     sys.path.insert(0, HERE)
     import build_company_pages as bcp  # noqa: E402
@@ -652,6 +679,8 @@ def cmd_publish(a):
     topnav, css = _shell(a.root, a.out)
     issues = []
     for p in sorted(glob.glob(os.path.join(a.root, "weekly", "letter-*.md"))):
+        if not is_sent(p):
+            continue      # a draft is not an issue
         date = os.path.basename(p)[len("letter-"):-len(".md")]
         try:
             issues.append(write_issue(a.root, a.out, date, topnav, css))
@@ -711,6 +740,8 @@ def cmd_send(a):
             return 0
         status, body2 = resend(f"/broadcasts/{body['id']}/send", {}, key)
         print(f"  sent: {status} {body2}")
+        if status < 300:
+            mark_sent(a.root, a.date)
         return 0 if status < 300 else 1
     print("send needs --test or --send"); return 2
 

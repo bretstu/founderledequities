@@ -286,7 +286,9 @@ def main(argv):
         f"Passages naming the CEO are marked.\n\n" + plan_mentions(client, cik, filings, ceo, since))
 
     # 09: the previous letters (the sent ones: weekly/letter-*.md), newest last
-    for p in sorted(glob.glob(os.path.join(ROOT, "weekly", "letter-*.md")))[-6:]:
+    sent = [p for p in sorted(glob.glob(os.path.join(ROOT, "weekly", "letter-*.md")))
+            if re.search(r"^sent:\s*\S", open(p, encoding="utf-8").read(2000), re.M)]
+    for p in sent[-6:]:      # the voice is the issues that went out, never the drafts
         shutil.copy(p, os.path.join(out, "09-previous-letters", os.path.basename(p)))
     open(os.path.join(out, "transcript.txt"), "w", encoding="utf-8").write("(paste the latest earnings-call transcript here, if you have it)\n")
 
