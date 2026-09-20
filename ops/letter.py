@@ -44,8 +44,7 @@ from fle import config as _config  # noqa: E402  (loads .env into the environmen
 
 SITE = "https://founderledequities.com"
 FROM = "Founder Led Equities <tape@founderledequities.com>"
-COPY_RULE = ("This letter is free and always will be. Members keep it that way, and get these moves "
-             "by email as they are filed. $69 a year: founderledequities.com/pro/")
+COPY_RULE = "Every number here is computed from SEC filings; every company has a page at founderledequities.com."
 POSTAL_PLACEHOLDER = "[postal address]"
 # THE KINDS ARE THE PAGE'S (ops/kinds.py, 2026-09-15): the letter reads every
 # filing by the founder, not purchases and sales only, and ranks by the move
@@ -321,7 +320,9 @@ def draft_markdown(root, date, days=None):
     if big_other:
         r = big_other[0]; extra.append(f"- **{r['ceo']} {r['manner'].lower()} {money(r['value'])} of {r['tk']}**: {r['label'] or r['manner']}. Owns {pct(r['after'])}.")
     if plans:
-        r = plans[0]; extra.append(f"- **{r['ceo']} sold {money(r['value'])} of {r['tk']}** under a plan set months ago, the largest planned sale of the week. Owns {pct(r['after'])}.")
+        r = plans[0]
+        small = f", though only {r['move']:.2f}% of the holding" if r["move"] is not None and r["move"] < 1 else ""
+        extra.append(f"- **{r['ceo']} sold {money(r['value'])} of {r['tk']}** under a plan set months ago: the largest planned sale of the week by dollars{small}. Owns {pct(r['after'])}.")
     if extra:
         lines += ["Two more, outside the table:", ""] + extra + [""]
     lines += ["## The week's decisions", "",
@@ -330,7 +331,7 @@ def draft_markdown(root, date, days=None):
     lines += [row(r) for r in sorted(decisions, key=lambda r: (r["kind"] != "bought", -(r["move"] or 0)))]
     lines += ["", f"The rest of the week: [every filing]({SITE}/tape/).", "",
               "## One ranking", "", "[one list from the site: e.g. the founders who own the most of the company they run, three names and the link to the screen]", "",
-              "*This letter is free and always will be. Members keep it that way, and get these moves by email as they are filed.*", ""]
+              ""]
     if look:
         lines += ["", "NEEDS A LOOK BEFORE THE SEND (not in the tables): " + "; ".join(f"{r['ceo']}, {r['tk']}: {r['manner'].lower()} took the position on record to zero" for r in look) + "."]
     return "\n".join(lines)
@@ -348,11 +349,13 @@ def parse(md):
                 k, v = l.split(":", 1)
                 meta[k.strip()] = v.strip()
         body = md[end + 4:]
-    blocks, table, para = [], [], []
+    blocks, table, para, items = [], [], [], []
     def flush():
-        nonlocal para, table
+        nonlocal para, table, items
         if table:
             blocks.append(("table", table)); table = []
+        if items:
+            blocks.append(("ul", items)); items = []
         if para:
             blocks.append(("p", " ".join(para))); para = []
     for l in body.split("\n"):
@@ -370,6 +373,12 @@ def parse(md):
             if para:
                 blocks.append(("p", " ".join(para))); para = []
             continue
+        if s.startswith("- ") or s.startswith("* "):
+            if para:
+                blocks.append(("p", " ".join(para))); para = []
+            items.append(s[2:].strip()); continue
+        if items and not s.startswith(("- ", "* ")):
+            blocks.append(("ul", items)); items = []
         if s.startswith("# "):
             flush(); blocks.append(("h1", s[2:].strip())); continue
         if s.startswith("## "):
@@ -427,6 +436,9 @@ def render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal=None):
             T.append(f"[{alt}: {src}]\n")
         elif kind == "members":
             H.append(f'<div style="border-top:1px solid {LINE};margin:14px 0;"></div>')
+        elif kind == "ul":
+            H.append('<ul style="margin:0 0 14px 18px;padding:0;">' + "".join(f'<li style="font-size:14px;line-height:1.5;color:{INK};margin:0 0 6px;">{inline(x)}</li>' for x in val) + "</ul>")
+            T.extend("  - " + inline(x, False) for x in val); T.append("")
         elif kind == "p":
             if first_p:
                 H.append(f'<p style="font-size:14px;color:{MUT};margin:0 0 18px;">{inline(val)}</p>'
@@ -501,6 +513,8 @@ def archive_page(md, topnav, css_href="/site.css"):
         elif kind == "img":
             alt, src = val
             body.append(f'<figure class="lfig"><img src="{html.escape(src)}" alt="{html.escape(alt)}" loading="lazy"></figure>')
+        elif kind == "ul":
+            body.append('<ul class="lul">' + "".join(f"<li>{inline(x)}</li>" for x in val) + "</ul>")
         elif kind == "p":
             if val.startswith("[See all activity]"):
                 body.append('<p><a class="gopro" href="/tape/" style="display:inline-block;text-decoration:none">All activity &rarr;</a></p>')
@@ -558,6 +572,7 @@ LETTER_CSS = """
 .letter h1.lt{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(32px,4.4vw,54px);margin:0 0 14px;max-width:30ch}
 .letter h2.lh2{font-family:var(--disp);font-weight:500;letter-spacing:-.01em;font-size:clamp(22px,2.4vw,30px);margin:34px 0 10px}
 .letter p.lp{font-size:16px;line-height:1.6;color:var(--ink);margin:0 0 14px;max-width:72ch}
+.letter ul.lul{margin:0 0 16px 20px;padding:0;max-width:72ch}.letter ul.lul li{font-size:16px;line-height:1.6;margin:0 0 8px}
 .letter figure.lfig{margin:14px 0 20px}.letter figure.lfig img{max-width:100%;border:1px solid var(--line)}
 .letter table.ltable{border-collapse:collapse;font-size:14px;margin:8px 0 18px;font-variant-numeric:tabular-nums;max-width:860px;width:100%}
 .letter table.ltable th{text-align:left;font-family:var(--ui);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);padding:0 12px 8px 0;border-bottom:1px solid var(--ink)}
