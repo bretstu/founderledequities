@@ -286,8 +286,8 @@ def test_a_curated_exclusion_is_applied_and_reported():
     import inspect
     from fle import ledger
     src = inspect.getsource(ledger.build_ledger)
-    assert "led.excluded.setdefault" in src
-    assert "del here[key]" in src
+    assert "apply_exclusions(here, exclude, led.excluded)" in src   # the register is applied inside the walk, whole class or one vehicle (2026-09-19)
+    assert "del here[key]" in inspect.getsource(ledger.apply_exclusions)
 
 
 def test_an_exclusion_without_a_source_is_refused():

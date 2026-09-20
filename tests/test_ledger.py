@@ -4364,3 +4364,36 @@ def _txn(t, code, sh, ad, after, d, di="D", nat=""):
             f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>{di}</value></directOrIndirectOwnership><natureOfOwnership><value>{nat}</value></natureOfOwnership></ownershipNature></nonDerivativeTransaction>')
 
 
+
+
+def test_a_register_row_can_remove_one_vehicle_and_leave_the_class(monkeypatch):
+    """PHASE TWO OF THE FOOTNOTE READER (2026-09-19): a row naming a vehicle
+    removes that line; the rest of the class stands; the removal is
+    recorded with the reason for the page."""
+    from fle.exclusions import Exclusion
+    from fle.ledger import Group, apply_exclusions, vehicle_key
+    g = Group(security="Class A Common Stock", direct="I")
+    biohub = vehicle_key("I", "By Chan Zuckerberg Biohub, Inc.")
+    czi = vehicle_key("I", "By CZI Holdings, LLC")
+    g.hold_by_vehicle = {biohub: 1231037.0, czi: 340000000.0}
+    g.holdings = 1231037.0 + 340000000.0
+    g.shares = g.holdings
+    here = {("Class A Common Stock", "I"): g}
+    row = Exclusion(cik="1326801", ticker="META", security="Class A Common Stock", direct="I",
+                    reason="has no pecuniary interest in these shares", source="https://sec.gov/x",
+                    vehicle="By Chan Zuckerberg Biohub, Inc.")
+    rec = {}
+    apply_exclusions(here, [row], rec)
+    assert here[("Class A Common Stock", "I")].shares == 340000000.0, "the Biohub is gone, CZI stands"
+    assert list(rec.values())[0][0] == 1231037.0 and "pecuniary" in list(rec.values())[0][1]
+    # a whole-class row still removes the group
+    whole = Exclusion(cik="1", ticker="X", security="Class A Common Stock", direct="I", reason="r", source="https://s")
+    apply_exclusions(here, [whole], rec)
+    assert not here
+    # an anonymous vehicle text with two such lines removes nothing
+    g2 = Group(security="Common Stock", direct="I")
+    a1, a2 = ("I", "seefootnote#1"), ("I", "seefootnote#2")
+    g2.hold_by_vehicle = {a1: 100.0, a2: 200.0}; g2.holdings = 300.0; g2.shares = 300.0
+    here2 = {("Common Stock", "I"): g2}
+    apply_exclusions(here2, [Exclusion(cik="1", ticker="X", security="Common Stock", direct="I", reason="r", source="https://s", vehicle="See footnote")], {})
+    assert here2[("Common Stock", "I")].shares == 300.0

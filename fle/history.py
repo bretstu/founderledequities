@@ -53,7 +53,7 @@ from dataclasses import dataclass, field
 
 import copy
 
-from .ledger import (SECTION16, Group, _merge_same_day, _parse, _rows, groups_total, settlements_only_in_table_ii,
+from .ledger import (SECTION16, Group, _merge_same_day, _parse, _rows, groups_total, settlements_only_in_table_ii, apply_exclusions,
                      displace_amended, retired_classes, letters_seen,
                      class_letters,
                      is_share_class, issuer_of, match_class, names_another_letter, dominant_letter, single_class_letter, SINGLE_CLASS,
@@ -668,10 +668,7 @@ def build_history(client, issuer_cik: int, owner_cik: str, mine: list,
         for g in here.values():
             g.shares = sum(g.last_txn.values()) + g.holdings
             g.filed = when
-        for key in list(here):
-            if any(e.matches(here[key].security, here[key].direct)
-                   for e in exclude if not getattr(e, "is_addition", False)):
-                del here[key]
+        apply_exclusions(here, exclude)   # a whole class, or one vehicle of it (2026-09-19)
 
         # ONE RUNNING BALANCE CAN CROSS A DOCUMENT BOUNDARY.
         #

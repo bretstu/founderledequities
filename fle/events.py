@@ -604,11 +604,11 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
         own_net = sum((r.moved if r.acquired else -r.moved) for r in lines
                       if r.code and r.shares == r.shares
                       and (r.table == "I" or is_share_class(r.security))
-                      and not any(e.matches(r.security, r.direct) for e in exclude))
+                      and not any(e.matches_line(r.security, r.direct, r.nature) for e in exclude))
         groups: dict = {}
         counted = [r for r in lines if r.code and r.shares == r.shares
                    and (r.table == "I" or is_share_class(r.security))
-                   and not any(e.matches(r.security, r.direct) for e in exclude)]
+                   and not any(e.matches_line(r.security, r.direct, r.nature) for e in exclude)]
         has_trade = any(r.code in TRADE_CODES for r in counted)
         # a filing with no trade is a row only if it moved the stake: a Class
         # B to Class A conversion nets to zero when both classes count, and
@@ -619,7 +619,7 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
         for r in lines:
             if r.code not in TRADE_CODES and not (comp_code and r.code == comp_code):
                 continue
-            if any(e.matches(r.security, r.direct) for e in exclude):
+            if any(e.matches_line(r.security, r.direct, r.nature) for e in exclude):
                 continue
             if r.code == comp_code and r.shares != r.shares:
                 continue

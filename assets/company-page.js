@@ -62,8 +62,13 @@ function band(r){
   /* the ticker and the market cap beside the name */
   const kick=$("#ctk");
   if(kick)kick.innerHTML=`${esc(r.tk)}${mcap?` · ${money(mcap)}`:""}`;
+  /* NOT COUNTED (2026-09-19, phase two of the footnote reader): the lines the
+     register removes, each with the footnote's own words. The reader can
+     see why the number is lower than the filing's total. */
+  const excl=(C.row&&C.row.excluded_detail)||"";
+  const notCounted=excl?`<div class="cnot"><span class="k">Not counted</span> ${excl.split(" | ").map(x=>esc(x)).join("<br>")}</div>`:"";
   return `<div class="cband four">
-    <div>${big}</div>
+    <div>${big}${notCounted}</div>
     ${stat("Shares held",r.masked?BLUR("00,000,000"):r.sh!==null?fmt(r.sh):"&mdash;","",r.masked?"":tabled,"shares held, per the latest filing")}
     ${stat("Worth",r.masked?BLUR("$0.0B"):r.val?money(r.val):"&mdash;","","",`the stake's value: shares held at the ${asof} close${r.price?` of $${r.price.toFixed(2)}`:""}`)}
     ${watchCard(r)}

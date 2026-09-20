@@ -71,7 +71,7 @@ from pathlib import Path
 
 DEFAULT = "universe/exclusions.csv"
 
-COLUMNS = ["cik", "ticker", "security", "direct", "reason", "source", "shares", "owner_cik", "since"]
+COLUMNS = ["cik", "ticker", "security", "direct", "reason", "source", "shares", "owner_cik", "since", "vehicle", "decided"]
 
 
 @dataclass(frozen=True)
@@ -85,15 +85,34 @@ class Exclusion:
     shares: float | None = None    # set: a SUPPLEMENT the tables leave out; unset: an exclusion
     owner_cik: str = ""            # a supplement belongs to a PERSON; only that owner's filings get it
     since: str = ""                # informational: the filing that first stated it
+    # ONE VEHICLE, NOT A CLASS (2026-09-19, phase two of the footnote reader).
+    # The nature text of the line to remove, as the filing writes it ("By
+    # Chan Zuckerberg Biohub, Inc."); matched by the ledger's own vehicle
+    # key (case, punctuation and a leading "By" folded, then exact). Blank
+    # means the whole class-and-direction, as before (TKO).
+    vehicle: str = ""
+    decided: str = ""              # blank for a hand row; "reader YYYY-MM-DD" for a row the decisions file produced
 
     @property
     def is_addition(self) -> bool:
         return self.shares is not None
 
     def matches(self, security: str, direct: str) -> bool:
+        """The class-and-direction match (a whole-class row). A vehicle row
+        needs the line: see matches_line."""
         if self.security.strip().lower() != (security or "").strip().lower():
             return False
         return not self.direct or self.direct.upper() == (direct or "").upper()
+
+    def matches_line(self, security: str, direct: str, nature: str | None) -> bool:
+        """Whether this row removes the given line: the class and direction,
+        and, for a vehicle row, the vehicle's canonical text."""
+        if not self.matches(security, direct):
+            return False
+        if not self.vehicle:
+            return True
+        from .ledger import vehicle_key   # local: ledger imports this module
+        return vehicle_key(direct, nature)[1].split("#", 1)[0] == vehicle_key(direct, self.vehicle)[1]
 
 
 @dataclass
@@ -154,7 +173,9 @@ def read_exclusions(path: str | None = None) -> Exclusions:
                 reason=(row.get("reason") or "").strip(),
                 source=src, shares=shares,
                 owner_cik=str(int(row.get("owner_cik"))) if shares is not None else "",
-                since=(row.get("since") or "").strip()))
+                since=(row.get("since") or "").strip(),
+                vehicle=(row.get("vehicle") or "").strip(),
+                decided=(row.get("decided") or "").strip()))
     return out
 
 

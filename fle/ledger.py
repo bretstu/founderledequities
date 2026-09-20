@@ -411,6 +411,54 @@ def base_of(key: tuple) -> tuple:
     return (key[0], key[1].split("#", 1)[0])
 
 
+def apply_exclusions(here: dict, exclude, record: dict | None = None) -> None:
+    """Remove from `here` (group key -> Group) what the register says is not
+    the person's: a whole class-and-direction (a row with no vehicle), or one
+    vehicle of it (a row naming the line). `record`, when given, gets
+    label -> (shares removed, reason, source) for the page.
+
+    An anonymous vehicle ("See footnote") is matched by its base text only
+    when the group has exactly one such line, since the register cannot say
+    which of several pointers it means; otherwise the row is left to a hand
+    decision and nothing is removed."""
+    rows = [e for e in exclude if not getattr(e, "is_addition", False)]
+    if not rows:
+        return
+    for key in list(here):
+        g = here[key]
+        whole = next((e for e in rows if not getattr(e, "vehicle", "") and e.matches(g.security, g.direct)), None)
+        if whole:
+            if record is not None:
+                record.setdefault(g.label(), (g.shares, whole.reason, whole.source))
+            del here[key]
+            continue
+        for e in rows:
+            if not getattr(e, "vehicle", "") or not e.matches(g.security, g.direct):
+                continue
+            want = vehicle_key(g.direct, e.vehicle)[1]
+            hits = [v for v in g.vehicles() if v[1].split("#", 1)[0] == want]
+            if not hits:
+                continue
+            if is_anonymous(e.vehicle, g.direct) and len(hits) > 1:
+                continue      # which pointer? the register cannot say; a person can
+            removed = 0.0
+            for v in hits:
+                if v in g.last_txn:
+                    removed += g.last_txn.pop(v) or 0.0
+                if v in g.hold_by_vehicle:
+                    h = g.hold_by_vehicle.pop(v) or 0.0
+                    g.holdings -= h
+                    if v not in g.last_txn:
+                        removed += h
+                g.passed.pop(v, None)
+                g.opening.pop(v, None)
+            g.shares = sum(g.last_txn.values()) + g.holdings
+            if record is not None and removed:
+                record.setdefault(f"{g.label()} · {e.vehicle}", (removed, e.reason, e.source))
+        if not g.vehicles() and g.shares <= 0.5:
+            del here[key]
+
+
 def vehicle_keys(rows: list, ends: dict | None = None) -> list:
     """One key per row of ONE document: the nature text, and where several
     anonymous vehicles share it, the running balance tells them apart.
@@ -1804,16 +1852,10 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
 
         # A HOLDING THE COMPANY ITSELF SAYS IS NOT THEIRS. Curated, sourced,
         # and one class at one issuer -- see fle/exclusions.py for why there
-        # is no rule for this.
-        for key in list(here):
-            hit = next((e for e in exclude
-                        if not getattr(e, "is_addition", False)
-                        and e.matches(here[key].security, here[key].direct)),
-                       None)
-            if hit:
-                led.excluded.setdefault(
-                    here[key].label(), (here[key].shares, hit.reason, hit.source))
-                del here[key]
+        # is no rule for this. A row may name ONE VEHICLE (2026-09-19): the
+        # foundation, the other family's trust, the child's trust someone
+        # else holds; the rest of the class stands.
+        apply_exclusions(here, exclude, led.excluded)
         for key, g in here.items():
             g.filed = when
             # A FILING THAT STATES A CLASS STATES IT WHOLE, HOLDINGS-ONLY OR NOT
