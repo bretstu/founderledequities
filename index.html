@@ -449,6 +449,7 @@ table.tape td.kd{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 table.tape td.kd .detail{font-size:12px;color:var(--mut);margin-left:7px}
 table.tape td.kd .detail a{color:inherit;text-decoration:none}table.tape td.kd .detail a:hover{text-decoration:underline}
 table.tape td.st .arrw{color:var(--mut);margin:0 3px}
+table.tape td.td .late{color:var(--mut);white-space:nowrap}   /* a filing that landed days after its transaction says so (2026-09-20) */
 
 table.tape .lowc{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:4px;cursor:help}
 /* ONE ROW OF CONTROLS (2026-09-15): when · who · what · how much, in
@@ -748,6 +749,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
          their row. -->
     <div class="tapectl">
       <span class="chips" id="actwin" role="group" aria-label="window">
+        <button class="chip win" data-win="week" title="filings that reached EDGAR since Monday">Week</button>
         <button class="chip win" data-win="7" title="filings that reached EDGAR in the last 7 days">7d</button>
         <button class="chip win" data-win="30">30d</button>
         <button class="chip win" data-win="90">90d</button>
@@ -1891,12 +1893,20 @@ function evDim(e){
 function tapeWindow(days,foundersOnly){
   /* every filing by a chief executive in the window, by filing date;
      a pre-IPO catch-up row stays on the company page */
-  const cut=new Date(Date.now()-days*86400e3).toISOString().slice(0,10);
+  const cut=windowStart(days).toISOString().slice(0,10);
   return EVENTS.filter(e=>!e.pre&&e.fd>=cut&&fOnly(e.tk,foundersOnly));
+}
+/* THE WEEK (2026-09-20): "week" is Monday of the current week to today, by
+   filing date -- on a Saturday, Monday to Friday's filings; on a Wednesday,
+   Monday to Wednesday's. A number is that many days back. */
+/*@shared*/
+function windowStart(w){
+  if(w==="week"){const now=new Date();const day=(now.getUTCDay()+6)%7;const mon=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()-day));return mon;}
+  return new Date(Date.now()-(+w||7)*86400e3);
 }
 /*@shared*/
 function actWindow(){
-  return tapeWindow(+state.ev.win||7,state.ev.f);
+  return tapeWindow(state.ev.win==="week"?"week":(+state.ev.win||7),state.ev.f);
 }
 /* the rows of the table: the window narrowed by the chips */
 /*@shared*/
@@ -2033,7 +2043,7 @@ function actRow(e){
     <td class="n v">${trade?link(amt,"the filing, on EDGAR"):amt}</td>
     <td class="n sh" title="${p?("as a share of the stake before it: "+stakeChange(p.v,p.approx)).replace(/"/g,"&quot;"):moveWhy(e).replace(/"/g,"&quot;")}">${shs}</td>
     <td class="n st" title="the stake after this filing">${stake}</td>
-    <td class="td"><span class="dt" title="${tapeManner(e)}; the transaction date${e.tf&&e.tf!==e.td?"s":""}${lagNote(e)}; filed ${shortDay(e.fd)}">${spanDay(e,d=>d.slice(5).replace(/^0/,"").replace("-0","-").replace("-","/"))}</span></td>
+    <td class="td"><span class="dt" title="${tapeManner(e)}; the transaction date${e.tf&&e.tf!==e.td?"s":""}${lagNote(e)}; filed ${shortDay(e.fd)}">${spanDay(e,d=>d.slice(5).replace(/^0/,"").replace("-0","-").replace("-","/"))}${(e.fd&&e.td&&(new Date(e.fd)-new Date(e.tf||e.td))/86400e3>3)?` <span class="late">· filed ${e.fd.slice(5).replace(/^0/,"").replace("-0","-").replace("-","/")}</span>`:""}</td>
   </tr>`;
 }
 /*@shared*/
@@ -2058,9 +2068,8 @@ function tapeHead(){
 function renderActivity(){
   if(!$("#actwrap"))return;
   const f=$("#tg-f");if(f)f.checked=state.ev.f;
-  document.querySelectorAll("#actwin .win").forEach(c=>{c.classList.toggle("on",c.dataset.win===state.ev.win);c.classList.toggle("dim",c.dataset.win!=="7"&&!state.pro);});
-  const days=+state.ev.win||7;
-  const to=new Date(),from=new Date(Date.now()-days*86400e3);
+  document.querySelectorAll("#actwin .win").forEach(c=>{c.classList.toggle("on",c.dataset.win===state.ev.win);c.classList.remove("dim");});
+  const to=new Date(),from=windowStart(state.ev.win==="week"?"week":(+state.ev.win||7));
   const dd=x=>x.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
   /* THE CAPTION IS THE SAME SHAPE ON BOTH TABLES: who · when/how · order.
      "Founder-led" is the category; "Founders only" is the switch's label
