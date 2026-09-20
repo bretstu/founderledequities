@@ -548,7 +548,7 @@ def archive_page(md, topnav, css_href="/site.css"):
                   'if(me&&me.pro){const m=document.getElementById("lmembers");if(m)m.hidden=false;const g=document.getElementById("lgate");if(g)g.hidden=true;}}catch(e){}})();</script>')
     gate = ("" if free else '<div class="lgate" id="lgate"><p>The rest of this issue is for members. <a href="/pro/">Membership &rarr;</a></p></div>')
     try:
-        nice = dt.date.fromisoformat(date).strftime("%A, %B %-d, %Y") if date else ""
+        nice = dt.date.fromisoformat(date).strftime("%B %-d, %Y") if date else ""
     except ValueError:
         nice = date
     kick_feat = f' · <a href="/company/{html.escape(featured)}/">{html.escape(featured)}</a>' if featured else ""
@@ -560,27 +560,30 @@ def archive_page(md, topnav, css_href="/site.css"):
             f'<meta property="og:image" content="{og}"><meta name="twitter:card" content="summary_large_image">'
             f'<link rel="stylesheet" href="{css_href}">'
             f'<style>{LETTER_CSS}</style></head><body>'
-            f'{topnav}<main class="letter"><div class="lkick"><a href="/letter/">Founder Moves</a> · {html.escape(nice)}{kick_feat}</div>'
+            f'{topnav}<main class="letter"><div class="lcol"><div class="lkick"><a href="/letter/">Founder Moves</a> · {html.escape(nice)}{kick_feat}</div>'
             f'<div class="lfree">' + "\n".join(body) + "</div>" + gate +
-            f'<div class="lfoot">{html.escape(COPY_RULE)} Nothing here is investment advice. <a href="/letter/">Every issue &rarr;</a></div></main>{members_js}</body></html>')
+            f'<div class="lfoot">{html.escape(COPY_RULE)} Nothing here is investment advice. <a href="/letter/">Every issue &rarr;</a></div></div></main>{members_js}</body></html>')
 
 
 LETTER_CSS = """
 .letter{max-width:var(--max);margin:0 auto;padding:clamp(28px,4vw,52px) clamp(20px,3.5vw,48px) 72px}
+.letter .lcol{max-width:720px}   /* ONE READING COLUMN (2026-09-20): text, image and tables the same width; the site's column holds the nav, the issue sits in its left 720px */
 .letter .lkick{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
 .letter .lkick a{color:var(--mut);text-decoration:none}
-.letter h1.lt{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(32px,4.4vw,54px);margin:0 0 14px;max-width:30ch}
-.letter h2.lh2{font-family:var(--disp);font-weight:500;letter-spacing:-.01em;font-size:clamp(22px,2.4vw,30px);margin:34px 0 10px}
-.letter p.lp{font-size:16px;line-height:1.6;color:var(--ink);margin:0 0 14px;max-width:72ch}
-.letter ul.lul{margin:0 0 16px 20px;padding:0;max-width:72ch}.letter ul.lul li{font-size:16px;line-height:1.6;margin:0 0 8px}
-.letter figure.lfig{margin:14px 0 20px}.letter figure.lfig img{max-width:100%;border:1px solid var(--line)}
-.letter table.ltable{border-collapse:collapse;font-size:14px;margin:8px 0 18px;font-variant-numeric:tabular-nums;max-width:860px;width:100%}
+.letter h1.lt{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.08;font-size:clamp(30px,3.6vw,44px);margin:0 0 14px}
+.letter h2.lh2{font-family:var(--disp);font-weight:500;letter-spacing:-.01em;font-size:clamp(21px,2.2vw,26px);margin:32px 0 10px}
+.letter p.lp{font-size:16px;line-height:1.6;color:var(--ink);margin:0 0 14px}
+.letter ul.lul{margin:0 0 16px 20px;padding:0}.letter ul.lul li{font-size:16px;line-height:1.6;margin:0 0 8px}
+.letter figure.lfig{margin:16px 0 22px}.letter figure.lfig img{display:block;width:100%;height:auto;border:1px solid var(--line)}
+.letter table.ltable{border-collapse:collapse;font-size:13.5px;margin:8px 0 18px;font-variant-numeric:tabular-nums;width:100%}
 .letter table.ltable th{text-align:left;font-family:var(--ui);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);padding:0 12px 8px 0;border-bottom:1px solid var(--ink)}
-.letter table.ltable td{padding:8px 12px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.letter table.ltable td{padding:8px 10px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
 .letter table.ltable th.n,.letter table.ltable td.n{text-align:right;white-space:nowrap}
-.letter .lgate{border:1px solid var(--line);padding:16px 18px;margin:24px 0;max-width:72ch;font-size:15px;color:var(--mut)}.letter .lgate a{color:var(--ink)}
-.letter .lfoot{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 0;font-size:12.5px;color:var(--mut);max-width:72ch}
+.letter table.ltable th:last-child,.letter table.ltable td:last-child{padding-right:0}
+.letter .lgate{border:1px solid var(--line);padding:16px 18px;margin:24px 0;font-size:15px;color:var(--mut)}.letter .lgate a{color:var(--ink)}
+.letter .lfoot{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 0;font-size:12.5px;color:var(--mut)}
 .lindex{max-width:var(--max);margin:0 auto;padding:clamp(28px,4vw,52px) clamp(20px,3.5vw,48px) 72px}
+.lindex .lcol{max-width:720px}
 .lindex h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(34px,4.6vw,56px);margin:0 0 8px}
 .lindex .sub{font-size:15.5px;color:var(--mut);margin:0 0 22px;max-width:72ch}
 .lindex .lsub{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 34px;font-size:14px}
@@ -626,9 +629,9 @@ def index_page(issues, topnav, css_href="/site.css", signup_html=""):
             f'<title>Founder Moves, the letter · Founder Led Equities</title>'
             f'<meta name="description" content="Every issue of Founder Moves: what chief executives did with their own stakes each week. Free.">'
             f'<link rel="canonical" href="{SITE}/letter/"><link rel="stylesheet" href="{css_href}"><style>{LETTER_CSS}</style></head><body>'
-            f'{topnav}<main class="lindex"><h1>Founder Moves</h1><p class="sub">What chief executives did with their own stakes this week.</p>'
+            f'{topnav}<main class="lindex"><div class="lcol"><h1>Founder Moves</h1><p class="sub">What chief executives did with their own stakes this week.</p>'
             f'{signup}<div class="issues">' + "\n".join(rows) + "</div>"
-            f'<div class="lfoot" style="border-top:1px solid var(--line);margin-top:40px;padding:16px 0 0;font-size:12.5px;color:var(--mut)">Nothing here is investment advice.</div></main></body></html>')
+            f'<div class="lfoot" style="border-top:1px solid var(--line);margin-top:40px;padding:16px 0 0;font-size:12.5px;color:var(--mut)">Nothing here is investment advice.</div></div></main></body></html>')
 
 
 def resend(path, payload, key):
