@@ -38,6 +38,7 @@ carries the same accession), the share count's own change, and an honest
 """
 import csv
 import datetime as dt
+import math
 import os
 import sys
 from collections import defaultdict
@@ -318,6 +319,37 @@ def week_md(d, date):
     look = [line(d, e, mark=False) for e in rows if is_guarded(e)]
     if look:
         out += ["## Needs a look before anything is said", ""] + look + [""]
+    # THE LETTER'S SHORTLISTS (2026-09-20). Two lists the issue is built from:
+    # the decisions, ranked for the feature and the two shorter moves; and the
+    # filings that moved a stake by a percent or more, whatever their kind,
+    # plus the largest planned sales, for the "Moved the stake" section.
+    out += ["## Candidates for the feature (decisions only, ranked)", "",
+            "score = log10(dollars) + 2 × |share of holding, %| (+1 for a buy, +0.5 for a stake over 5%)", ""]
+    cands = []
+    for e in collapse(rows):
+        k = kinds.kind_of(e)
+        if k not in ("bought", "disc") or is_guarded(e):
+            continue
+        v = num(e.get("value")) or 0
+        m = kinds.move_of(e)
+        share = abs(m[0]) if m else 0.0
+        after = num(e.get("pct_after")) or 0
+        score = (math.log10(v) if v > 0 else 0) + 2 * share + (1 if k == "bought" else 0) + (0.5 if after >= 5 else 0)
+        cands.append((score, e, v, share, after, k))
+    cands.sort(key=lambda x: -x[0])
+    for score, e, v, share, after, k in cands[:8]:
+        out.append(f"- {e['tk']:6} {e.get('ceo') or d.panel.get(e['tk'], {}).get('ceo') or '':24} {'BUY ' if k == 'bought' else 'SALE'} "
+                   f"{kinds.money(v):>8}  {share:5.2f}% of holding  stake {pct(after):>7}  score {score:.1f}")
+    out.append("")
+    out += ["## Moved the stake (a percent of the holding or more, any kind) and the largest planned sales", ""]
+    moved = [e for e in collapse(rows) if (m := kinds.move_of(e)) and abs(m[0]) >= 1.0 and not is_guarded(e)]
+    moved.sort(key=lambda e: -abs(kinds.move_of(e)[0]))
+    for e in moved:
+        out.append(f"- {e['tk']:6} {e.get('ceo') or '':24} {kinds.kind_of(e):6} {what(e)[:50]:50} {kinds.money(num(e.get("value")) or 0):>8}  {kinds.move_of(e)[0]:+.2f}% of holding  stake {pct(num(e.get('pct_after')) or 0)}")
+    plans = sorted([e for e in collapse(rows) if kinds.kind_of(e) == "plan"], key=lambda e: -(num(e.get("value")) or 0))[:3]
+    for e in plans:
+        out.append(f"- {e['tk']:6} {e.get('ceo') or '':24} plan   sold on a plan set months ago{'':16} {kinds.money(num(e.get("value")) or 0):>8}  stake {pct(num(e.get('pct_after')) or 0)}")
+    out.append("")
     return head + "\n".join(out)
 
 

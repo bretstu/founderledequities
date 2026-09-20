@@ -25,7 +25,8 @@ One file, written once, that becomes the email, the page and the Substack post.
 
     ![Troendle's stake since 2016](https://founderledequities.com/og/MEDP.png)
 
-    ## Two more that mattered
+    ## Two more decisions
+    ## Moved the stake          (not decisions, but large: gifts, grants, the biggest plan sales)
     ## The week's numbers
 
     | Kind | Company | CEO | Amount | Stake |
@@ -39,6 +40,18 @@ What renders: `#` title, `##` subheads, paragraphs, **bold**, *italic*,
 is at /og/TICKER.png). `title` is the email subject and the page title;
 `featured` links the issue to the company page and picks the card for the
 link preview.
+
+## Choosing the feature
+
+`ops/moves.py week` writes drafts/moves-week.md with two shortlists at the
+end: **Candidates for the feature** (decisions only, ranked by
+log10(dollars) + 2 × share of holding, a premium for a buy and for a stake
+over 5%) and **Moved the stake** (every filing that moved a holding by a
+percent or more, whatever its kind, plus the three largest planned sales).
+The feature is the top candidate unless its kit has no story; the two
+shorter moves are the next two decisions, one a buy if there was one; the
+Moved-the-stake section is the second list, each line naming its kind (a
+gift, a grant, a plan sale), so no reader mistakes a plan for a decision.
 
 ## The Saturday
 
