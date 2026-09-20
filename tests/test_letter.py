@@ -92,7 +92,7 @@ def test_the_draft_renders_in_the_sites_look_and_seals_the_change_and_the_stake(
     assert "{{{RESEND_UNSUBSCRIBE_URL}}}" in h and "PO Box 1" in h
     assert "28.44%" in t and "Unsubscribe" in t, "a plain-text alternative too"
     page = letter.archive_page(md, '<div class="top">nav</div>', "/site.css?v=abc")
-    assert 'class="tape"' in page and page.count('class="sealed"') == 8 and 'href="/site.css?v=abc"' in page
+    assert 'class="ltable"' in page and 'href="/site.css?v=abc"' in page and 'rel="canonical" href="https://founderledequities.com/letter/' in page, "the letter is a page at /letter/<date>/ (2026-09-20), the seal off"
     assert 'class="kind xfer"' in page and 'class="kind comp"' in page
 
 

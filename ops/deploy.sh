@@ -165,12 +165,8 @@ $OGPY ops/company_cards.py panel.csv "$SP_LIST" prices.csv founders.csv events.c
   || echo "  company cards: not drawn; pages keep og.png"
 if [ -d og ] && [ -n "$(ls og 2>/dev/null)" ]; then mkdir -p public/og && cp og/*.png public/og/; fi
 python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" public/ events.csv history.csv --og og --prices price-history
-# ---- 4b. the archive of letters: every letter ever drafted is a page, /tape/<date>/ ----
-for f in weekly/letter-*.md; do
-  [ -f "$f" ] || continue
-  d=$(basename "$f" .md); d=${d#letter-}
-  python3 ops/letter.py page "$d" public/ >/dev/null || echo "  letter page $d failed"
-done
+# ---- 4b. the letter: every issue in weekly/ is a page at /letter/<date>/, with the index at /letter/ (2026-09-20) ----
+python3 ops/letter.py publish public/ || echo "  letter: publish failed; the site is unaffected"
 # THE DATA HAS A VERSION. The pages fetched every CSV with no-store, so a
 # return visit re-downloaded eleven megabytes. Each fetch now carries
 # ?v=<this deploy>, so the browser and the edge cache a deploy's files

@@ -322,6 +322,14 @@ def parse(md):
             continue
         if s.startswith("# "):
             flush(); blocks.append(("h1", s[2:].strip())); continue
+        if s.startswith("## "):
+            flush(); blocks.append(("h2", s[3:].strip())); continue
+        m_img = re.fullmatch(r"!\[([^\]]*)\]\(([^)]+)\)", s.strip())
+        if m_img:
+            flush(); blocks.append(("img", (m_img.group(1), m_img.group(2)))); continue
+        if s.strip() == "---members---":
+            # THE PAID PART (2026-09-20): everything below is for members
+            flush(); blocks.append(("members", "")); continue
         para.append(s)
     flush()
     return meta, blocks
@@ -331,9 +339,11 @@ def inline(text, for_html=True):
     t = html.escape(text) if for_html else text
     if for_html:
         t = re.sub(r"\*\*(.+?)\*\*", r"<b style=\"color:%s\">\1</b>" % INK, t)
+        t = re.sub(r"(?<![*\w])\*(?!\*)([^*\n]+?)\*(?!\*)", r"<i>\1</i>", t)
         t = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2" style="color:%s">\1</a>' % INK, t)
     else:
         t = re.sub(r"\*\*(.+?)\*\*", r"\1", t)
+        t = re.sub(r"(?<![*\w])\*(?!\*)([^*\n]+?)\*(?!\*)", r"\1", t)
         t = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r"\1 (\2)", t)
     return t
 
@@ -344,7 +354,8 @@ def render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal=None):
     postal = postal or os.environ.get("POSTAL_ADDRESS") or POSTAL_PLACEHOLDER
     date_line = dt.date.fromisoformat(meta.get("date", dt.date.today().isoformat())).strftime("%A, %B %-d, %Y")
     H, T = [], []
-    H.append(f'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>{html.escape(meta.get("subject","This week\'s tape"))}</title></head>'
+    subject = meta.get("title") or meta.get("subject") or "This week"
+    H.append(f'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>{html.escape(subject)}</title></head>'
              f'<body style="margin:0;padding:0;background:#ECE9E2;">'
              f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ECE9E2;"><tr><td align="center" style="padding:20px 10px;">'
              f'<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:{PAPER};font-family:Helvetica,Arial,sans-serif;color:{INK};">'
@@ -357,6 +368,15 @@ def render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal=None):
         if kind == "h1":
             H.append(f'<h1 style="font-family:Georgia,\'Times New Roman\',serif;font-weight:normal;font-size:34px;line-height:1.1;margin:22px 0 6px;color:{INK};">{inline(val)}</h1>')
             T.append(val.upper() + "\n")
+        elif kind == "h2":
+            H.append(f'<h2 style="font-family:Georgia,\'Times New Roman\',serif;font-weight:normal;font-size:22px;line-height:1.2;margin:24px 0 8px;color:{INK};">{inline(val)}</h2>')
+            T.append("\n" + val.upper() + "\n")
+        elif kind == "img":
+            alt, src = val
+            H.append(f'<img src="{html.escape(src)}" alt="{html.escape(alt)}" width="544" style="display:block;width:100%;max-width:544px;height:auto;margin:6px 0 14px;border:1px solid {LINE2};">')
+            T.append(f"[{alt}: {src}]\n")
+        elif kind == "members":
+            H.append(f'<div style="border-top:1px solid {LINE};margin:14px 0;"></div>')
         elif kind == "p":
             if first_p:
                 H.append(f'<p style="font-size:14px;color:{MUT};margin:0 0 18px;">{inline(val)}</p>'
@@ -413,52 +433,121 @@ def render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal=None):
 
 
 def archive_page(md, topnav, css_href="/site.css"):
-    """The letter as a page of the site: /tape/<date>/."""
+    """The letter as a page of the site: /letter/<date>/ (2026-09-20; the
+    old /tape/<date>/ address redirects there). The same blocks the email
+    renders, in the site's shell; a ---members--- marker ends the free part
+    for a visitor and the page asks /api/me for the rest."""
     meta, blocks = parse(md)
-    body = []
+    body, free = [], True
     for kind, val in blocks:
+        if kind == "members":
+            body.append('</div><div class="lmembers" id="lmembers" hidden>')
+            free = False
+            continue
         if kind == "h1":
-            body.append(f'<h1 style="font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0 0 10px">{inline(val)}</h1>')
+            body.append(f'<h1 class="lt">{inline(val)}</h1>')
+        elif kind == "h2":
+            body.append(f'<h2 class="lh2">{inline(val)}</h2>')
+        elif kind == "img":
+            alt, src = val
+            body.append(f'<figure class="lfig"><img src="{html.escape(src)}" alt="{html.escape(alt)}" loading="lazy"></figure>')
         elif kind == "p":
             if val.startswith("[See all activity]"):
-                body.append(f'<p><a class="gopro" href="/tape/" style="display:inline-block;text-decoration:none">This week\'s tape, live &rarr;</a></p>')
+                body.append('<p><a class="gopro" href="/tape/" style="display:inline-block;text-decoration:none">All activity &rarr;</a></p>')
             else:
-                body.append(f'<p style="font-size:15px;color:var(--mut);margin:0 0 14px;max-width:70ch">{inline(val)}</p>')
+                body.append(f'<p class="lp">{inline(val)}</p>')
         elif kind == "table":
             head, rows = val[0], val[1:]
-            body.append('<table class="tape"><thead><tr>' + "".join(f'<th{" class=\"n\"" if h in ("Amount","Change","New stake") else ""}>{html.escape(h)}</th>' for h in head) + "</tr></thead><tbody>")
+            body.append('<table class="ltable"><thead><tr>' + "".join(f'<th{" class=\"n\"" if h in ("Amount","Change","New stake","Stake","Shares") else ""}>{html.escape(h)}</th>' for h in head) + "</tr></thead><tbody>")
             for cells in rows:
-                k = {"Bought": "bought", "Discretionary": "disc", "Planned": "plan", "Plan": "plan", "Sold": "sold", "Compensation": "comp", "Transfer": "xfer"}.get(cells[0], "plan")
+                k = {"Bought": "bought", "Discretionary": "disc", "Planned": "plan", "Plan": "plan", "Sold": "sold", "Compensation": "comp", "Transfer": "xfer"}.get(cells[0], "")
                 tds = []
-                for i, c in enumerate(cells):
-                    h = head[i] if i < len(head) else ""
-                    if i == 0:
-                        tds.append(f'<td class="kd"><span class="kind {k}">{html.escape(c)}</span></td>')
-                    elif h in ("New stake", "Change") and c == "Pro":
-                        tds.append(f'<td class="n"><span class="sealed" data-shape="{"0.00%" if h == "New stake" else "−0.0%"}" aria-label="in Pro" title="in Pro"></span></td>')
-                    elif h in ("Amount", "Change", "New stake"):
+                for i_, c in enumerate(cells):
+                    h = head[i_] if i_ < len(head) else ""
+                    if i_ == 0 and k:
+                        tds.append(f'<td><span class="kind {k}">{html.escape(c)}</span></td>')
+                    elif h in ("Amount", "Change", "New stake", "Stake", "Shares"):
                         tds.append(f'<td class="n">{html.escape(c)}</td>')
-                    elif h == "Company":
-                        tds.append(f'<td class="co"><a class="pglink" href="/company/{html.escape(c)}/">{html.escape(c)}</a></td>')
-                    elif h == "Manner":
-                        tds.append(f'<td class="mn">{html.escape(c)}</td>')
+                    elif h == "Company" and re.fullmatch(r"[A-Z0-9.\-]{1,8}", c):
+                        tds.append(f'<td><a class="pglink" href="/company/{html.escape(c)}/"><b>{html.escape(c)}</b></a></td>')
                     else:
-                        tds.append(f'<td class="ceo">{html.escape(c)}</td>')
-                body.append('<tr class="dayrow">' + "".join(tds) + "</tr>")
+                        tds.append(f'<td>{inline(c)}</td>')
+                body.append("<tr>" + "".join(tds) + "</tr>")
             body.append("</tbody></table>")
     date = meta.get("date", "")
+    title = meta.get("title") or meta.get("subject") or "This week"
+    featured = (meta.get("featured") or "").strip().upper()
+    og = f"{SITE}/og/{featured}.png" if featured else f"{SITE}/og.png"
+    desc = meta.get("description") or f"The week of {meta.get('week','')}: who bought, who cut a stake, who sold on a plan. Founders first."
+    members_js = ("" if free else
+                  '<script>(async function(){try{const r=await fetch("/api/me",{cache:"no-store"});if(!r.ok)return;const me=await r.json();'
+                  'if(me&&me.pro){const m=document.getElementById("lmembers");if(m)m.hidden=false;const g=document.getElementById("lgate");if(g)g.hidden=true;}}catch(e){}})();</script>')
+    gate = ("" if free else '<div class="lgate" id="lgate"><p>The rest of this issue is for members. <a href="/pro/">Membership &rarr;</a></p></div>')
+    try:
+        nice = dt.date.fromisoformat(date).strftime("%A, %B %-d, %Y") if date else ""
+    except ValueError:
+        nice = date
+    kick_feat = f' · <a href="/company/{html.escape(featured)}/">{html.escape(featured)}</a>' if featured else ""
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-            f'<title>{html.escape(meta.get("subject","This week"))} · Founder Led Equities</title>'
-            f'<meta name="description" content="The week of {html.escape(meta.get("week",""))}: who bought, who cut a stake, who sold on a plan. Founders first.">'
-            f'<link rel="canonical" href="{SITE}/tape/{date}/"><link rel="stylesheet" href="{css_href}">'
-            f'<style>.letter{{max-width:1120px;margin:0 auto;padding:48px clamp(20px,3.5vw,48px) 60px}}.letter .tape{{max-width:860px}}</style></head><body>'
-            f'{topnav}<div class="letter"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:14px">The Monday tape · {html.escape(dt.date.fromisoformat(date).strftime("%B %-d, %Y") if date else "")}</div>'
-            + "\n".join(body) +
-            f'<div class="tapefoot" style="border-top:1px solid var(--line);margin-top:40px;padding:16px 0 0;font-size:12.5px;color:var(--mut)">{html.escape(COPY_RULE)} · Nothing here is investment advice.</div>'
-            f'</div></body></html>')
+            f'<title>{html.escape(title)} · Founder Led Equities</title>'
+            f'<meta name="description" content="{html.escape(desc[:300])}">'
+            f'<link rel="canonical" href="{SITE}/letter/{date}/">'
+            f'<meta property="og:title" content="{html.escape(title)}"><meta property="og:description" content="{html.escape(desc[:300])}">'
+            f'<meta property="og:image" content="{og}"><meta name="twitter:card" content="summary_large_image">'
+            f'<link rel="stylesheet" href="{css_href}">'
+            f'<style>{LETTER_CSS}</style></head><body>'
+            f'{topnav}<main class="letter"><div class="lkick"><a href="/letter/">Founder Moves</a> · {html.escape(nice)}{kick_feat}</div>'
+            f'<div class="lfree">' + "\n".join(body) + "</div>" + gate +
+            f'<div class="lfoot">{html.escape(COPY_RULE)} Nothing here is investment advice. <a href="/letter/">Every issue &rarr;</a></div></main>{members_js}</body></html>')
 
 
-# ---------------------------------------------------------------- send
+LETTER_CSS = """
+.letter{max-width:var(--max);margin:0 auto;padding:clamp(28px,4vw,52px) clamp(20px,3.5vw,48px) 72px}
+.letter .lkick{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+.letter .lkick a{color:var(--mut);text-decoration:none}
+.letter h1.lt{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(32px,4.4vw,54px);margin:0 0 14px;max-width:30ch}
+.letter h2.lh2{font-family:var(--disp);font-weight:500;letter-spacing:-.01em;font-size:clamp(22px,2.4vw,30px);margin:34px 0 10px}
+.letter p.lp{font-size:16px;line-height:1.6;color:var(--ink);margin:0 0 14px;max-width:72ch}
+.letter figure.lfig{margin:14px 0 20px}.letter figure.lfig img{max-width:100%;border:1px solid var(--line)}
+.letter table.ltable{border-collapse:collapse;font-size:14px;margin:8px 0 18px;font-variant-numeric:tabular-nums;max-width:860px;width:100%}
+.letter table.ltable th{text-align:left;font-family:var(--ui);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);padding:0 12px 8px 0;border-bottom:1px solid var(--ink)}
+.letter table.ltable td{padding:8px 12px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.letter table.ltable th.n,.letter table.ltable td.n{text-align:right;white-space:nowrap}
+.letter .lgate{border:1px solid var(--line);padding:16px 18px;margin:24px 0;max-width:72ch;font-size:15px;color:var(--mut)}.letter .lgate a{color:var(--ink)}
+.letter .lfoot{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 0;font-size:12.5px;color:var(--mut);max-width:72ch}
+.lindex{max-width:var(--max);margin:0 auto;padding:clamp(28px,4vw,52px) clamp(20px,3.5vw,48px) 72px}
+.lindex h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(34px,4.6vw,56px);margin:0 0 8px}
+.lindex .sub{font-size:15.5px;color:var(--mut);margin:0 0 26px;max-width:72ch}
+.lindex .issue{display:grid;grid-template-columns:120px 1fr;gap:14px;padding:14px 0;border-top:1px solid var(--line);align-items:baseline}
+.lindex .issue .d{font-family:var(--mono);font-size:12px;color:var(--faint)}
+.lindex .issue a{font-family:var(--disp);font-size:22px;color:var(--ink);text-decoration:none}
+.lindex .issue a:hover{text-decoration:underline}
+.lindex .issue .w{font-size:13px;color:var(--mut);margin-top:2px}
+"""
+
+
+def index_page(issues, topnav, css_href="/site.css", signup_html=""):
+    """/letter/: every issue, newest first, with the signup box (the home
+    page's, lifted) above the list."""
+    rows = []
+    for meta in issues:
+        d = meta.get("date", "")
+        try:
+            nice = dt.date.fromisoformat(d).strftime("%b %-d, %Y")
+        except ValueError:
+            nice = d
+        title = meta.get("title") or meta.get("subject") or "This week"
+        rows.append(f'<div class="issue"><div class="d">{html.escape(nice)}</div><div><a href="/letter/{html.escape(d)}/">{html.escape(title)}</a>'
+                    f'<div class="w">{html.escape("the week of " + meta["week"] if meta.get("week") else "")}</div></div></div>')
+    return (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+            f'<title>Founder Moves, the letter · Founder Led Equities</title>'
+            f'<meta name="description" content="Every issue of Founder Moves: what chief executives did with their own stakes each week, one of them in depth. Free, every Saturday.">'
+            f'<link rel="canonical" href="{SITE}/letter/"><link rel="stylesheet" href="{css_href}"><style>{LETTER_CSS}</style></head><body>'
+            f'{topnav}<main class="lindex"><h1>Founder Moves</h1><p class="sub">What chief executives did with their own stakes this week, one of them in depth. Free, every Saturday morning.</p>'
+            f'{signup_html}' + "\n".join(rows) +
+            f'<div class="lfoot" style="border-top:1px solid var(--line);margin-top:40px;padding:16px 0 0;font-size:12.5px;color:var(--mut)">Nothing here is investment advice.</div></main></body></html>')
+
+
 def resend(path, payload, key):
     """-> (status, body). The body is parsed as JSON when it is JSON, and
     returned as text otherwise, so an error is shown rather than swallowed."""
@@ -517,28 +606,72 @@ def cmd_render(a):
     md = open(md_p, encoding="utf-8").read()
     h, t, meta = render(md, unsubscribe_url="#unsubscribe")
     open(html_p, "w", encoding="utf-8").write(h)
-    print(f"  preview {html_p}  (open it in a browser)  subject: {meta.get('subject','')}")
+    print(f"  preview {html_p}  (open it in a browser)  subject: {meta.get('title') or meta.get('subject','')}")
     return 0
 
 
-def cmd_page(a):
-    md_p, _ = paths(a.root, a.date)
-    md = open(md_p, encoding="utf-8").read()
+def _shell(root, out):
     sys.path.insert(0, HERE)
     import build_company_pages as bcp  # noqa: E402
-    idx = open(os.path.join(a.root, "index.html"), encoding="utf-8").read()
+    idx = open(os.path.join(root, "index.html"), encoding="utf-8").read()
     topnav = bcp.extract_topnav(idx)
     css = "/site.css"
     try:
-        css_text = open(os.path.join(a.out, "site.css"), encoding="utf-8").read()
+        css_text = open(os.path.join(out, "site.css"), encoding="utf-8").read()
         import hashlib
         css = f"/site.css?v={hashlib.sha256(css_text.encode()).hexdigest()[:10]}"
     except OSError:
         pass
-    d = os.path.join(a.out, "tape", a.date)
+    return topnav, css
+
+
+def write_issue(root, out, date, topnav, css):
+    md_p, _ = paths(root, date)
+    md = open(md_p, encoding="utf-8").read()
+    d = os.path.join(out, "letter", date)
     os.makedirs(d, exist_ok=True)
     open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(archive_page(md, topnav, css))
-    print(f"  archive page {d}/index.html")
+    # the old address, /tape/<date>/, sends a reader on
+    old = os.path.join(out, "tape", date)
+    os.makedirs(old, exist_ok=True)
+    open(os.path.join(old, "index.html"), "w", encoding="utf-8").write(
+        f'<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=/letter/{date}/"><link rel="canonical" href="{SITE}/letter/{date}/"><a href="/letter/{date}/">/letter/{date}/</a>')
+    return parse(md)[0]
+
+
+def cmd_page(a):
+    topnav, css = _shell(a.root, a.out)
+    write_issue(a.root, a.out, a.date, topnav, css)
+    print(f"  letter page {a.out}/letter/{a.date}/index.html")
+    return 0
+
+
+def cmd_publish(a):
+    """Every issue in weekly/ as a page, and the index at /letter/."""
+    import glob
+    topnav, css = _shell(a.root, a.out)
+    issues = []
+    for p in sorted(glob.glob(os.path.join(a.root, "weekly", "letter-*.md"))):
+        date = os.path.basename(p)[len("letter-"):-len(".md")]
+        try:
+            issues.append(write_issue(a.root, a.out, date, topnav, css))
+        except Exception as e:  # noqa: BLE001
+            print(f"  letter {date}: not published ({e})")
+    issues.sort(key=lambda m: m.get("date", ""), reverse=True)
+    signup = ""
+    try:
+        idx = open(os.path.join(a.root, "index.html"), encoding="utf-8").read()
+        m = re.search(r'(<div class="hometape"[\s\S]*?</div>\s*</div>)', idx)
+        if m:
+            signup = m.group(1)
+    except OSError:
+        pass
+    d = os.path.join(a.out, "letter")
+    os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(index_page(issues, topnav, css, signup))
+    with open(os.path.join(d, "issues.json"), "w", encoding="utf-8") as fh:
+        json.dump([{"date": m.get("date", ""), "title": m.get("title") or m.get("subject", ""), "featured": m.get("featured", "")} for m in issues], fh)
+    print(f"  letter: {len(issues)} issue(s) published at /letter/, index written")
     return 0
 
 
@@ -554,7 +687,7 @@ def cmd_send(a):
         if not to:
             print("--to or LETTER_TEST_TO (.env) is needed for a test send"); return 2
         h, t, meta = render(md, unsubscribe_url=f"{SITE}/tape/#unsubscribe", postal=postal)
-        status, body = resend("/emails", {"from": FROM, "to": [to], "subject": f"[test] {meta.get('subject','This week\'s tape')}",
+        status, body = resend("/emails", {"from": FROM, "to": [to], "subject": f"[test] {meta.get('title') or meta.get('subject') or 'This week'}",
                                           "html": h, "text": t}, key)
         print(f"  test send to {to}: {status} {body}")
         return 0 if status < 300 else 1
@@ -566,7 +699,7 @@ def cmd_send(a):
         if not target:
             print("refusing: RESEND_SEGMENT_ID is not set (.env); create a segment meaning every subscribed contact on Resend's Audience page and put its id there")
             return 2
-        payload = {"from": FROM, "subject": meta.get("subject", "This week"), "html": h, "text": t,
+        payload = {"from": FROM, "subject": meta.get("title") or meta.get("subject") or "This week", "html": h, "text": t,
                    "name": f"Monday tape {a.date}", **target}
         status, body = resend("/broadcasts", payload, key)
         print(f"  broadcast draft: {status} {body}")
@@ -589,10 +722,11 @@ def main():
     d = sub.add_parser("draft"); d.add_argument("--date"); d.add_argument("--days", type=int, default=7); d.add_argument("--force", action="store_true")
     r = sub.add_parser("render"); r.add_argument("date")
     p = sub.add_parser("page"); p.add_argument("date"); p.add_argument("out")
+    pb = sub.add_parser("publish"); pb.add_argument("out")
     s = sub.add_parser("send"); s.add_argument("date"); s.add_argument("--test", action="store_true"); s.add_argument("--send", action="store_true")
     s.add_argument("--confirm", action="store_true"); s.add_argument("--to")
     a = ap.parse_args()
-    return {"draft": cmd_draft, "render": cmd_render, "page": cmd_page, "send": cmd_send}[a.cmd](a)
+    return {"draft": cmd_draft, "render": cmd_render, "page": cmd_page, "publish": cmd_publish, "send": cmd_send}[a.cmd](a)
 
 
 if __name__ == "__main__":
