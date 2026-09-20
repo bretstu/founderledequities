@@ -67,33 +67,31 @@ def test_the_kicker_is_the_largest_move_and_the_largest_buy(tmp_path):
     k = letter.kicker(rows)
     assert k[0] == "Largest move: Martine Rothblatt, UTHR, award granted (stake in Pro).", k[0]
     assert k[1].startswith("Largest open-market buy: Elon Musk, TSLA, $1B (stake +0.51%)")
-    assert "38.4M" not in " ".join(k), "Musk's $38.4M plan moved 0.3%: not the move of the week"
     assert "forfeited" not in " ".join(k), "the guarded row is never featured"
-    md = letter.draft_markdown(root, "2026-09-12")
-    assert "(stake in Pro).\n\nLargest open-market buy" in md, "each kicker line is its own paragraph"
 
 
-def test_the_draft_renders_in_the_sites_look_and_seals_the_change_and_the_stake(tmp_path):
+def test_the_draft_is_the_issues_skeleton_in_the_settled_template(tmp_path):
+    """THE TEMPLATE (2026-09-20): the feature, two more decisions, moved the
+    stake, the week's decisions, one ranking. The pipeline fills the
+    tables and the shortlist; the writing is left in brackets."""
     root = _fixture(tmp_path)
     md = letter.draft_markdown(root, "2026-09-12")
-    assert md.startswith("---\ndate: 2026-09-12\nsubject: This week: 2 CEOs bought, 2 cut a stake\nweek: Sep 7 to Sep 11")
-    assert "**2** CEOs bought · **1** for the first time ever · **2** cut a stake · **1** sold on a plan · **1** paid in shares · **1** gave shares away" in md
-    assert "did not move a stake" not in md
-    assert "| Kind | Company | CEO | Amount | Change | New stake | Manner |" in md
-    assert "| Compensation | UTHR | Martine Rothblatt | — | Pro | Pro | Award granted |" in md, "the largest move of the week, an award, sealed"
-    assert "| Bought | EQPT | Jabbok Schlacks (first buy) | $526K | Pro | Pro | Open market · 2 filings |" in md
-    assert "| Bought | TSLA | Elon Musk | $1B | +0.51% | 28.44% | Open market |" in md
-    assert "| Transfer | DDOG | Olivier Pomel | — | -3.00% | 2.52% | Gift |" in md
-    assert "NEEDS A LOOK BEFORE THE SEND (not in the table): René Lacerte, BILL: forfeited took the position on record to zero." in md
-    h, t, meta = letter.render(md, postal="PO Box 1, Portland, ME 04101")
-    assert meta["subject"].startswith("This week")
-    assert "Georgia" in h and "#F7F4EE" in h and "See all activity" in h
-    assert h.count(">Pro</a>") == 8, "a small Pro tag where the change and the stake are sealed (EQPT, BILL, UTHR, EQPT... four sealed rows, two tags each)"
+    assert md.startswith("---\ndate: 2026-09-12\ntitle: ") and "\nfeatured: " in md and "\nweek: Sep 7 to Sep 11\n" in md
+    for h in ("## [The feature:", "## Two more decisions", "## Moved the stake", "## The week's decisions", "## One ranking"):
+        assert h in md, h
+    assert "| Kind | Company | CEO | Amount | Shares | Of holding | Stake |" in md
+    assert "| Bought | TSLA | Elon Musk | $1B |" in md and "+0.51% | 28.44% |" in md, "a decision row, with shares and the move as a share of the holding"
+    assert "| Transfer | DDOG | Olivier Pomel |" in md and "-3.00% | 2.52% |" in md, "a gift that moved the holding by 3% is in Moved the stake"
+    assert "Pro" not in md.split("## The feature")[0], "nothing is sealed (2026-09-18)"
+    assert "NEEDS A LOOK BEFORE THE SEND (not in the tables): René Lacerte, BILL: forfeited took the position on record to zero." in md
+    h, t, meta = letter.render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal="PO Box 1, Portland, ME")
+    assert meta["title"] and "Georgia" in h and "#F7F4EE" in h and "every filing" in h
     assert "{{{RESEND_UNSUBSCRIBE_URL}}}" in h and "PO Box 1" in h
     assert "28.44%" in t and "Unsubscribe" in t, "a plain-text alternative too"
     page = letter.archive_page(md, '<div class="top">nav</div>', "/site.css?v=abc")
-    assert 'class="ltable"' in page and 'href="/site.css?v=abc"' in page and 'rel="canonical" href="https://founderledequities.com/letter/' in page, "the letter is a page at /letter/<date>/ (2026-09-20), the seal off"
-    assert 'class="kind xfer"' in page and 'class="kind comp"' in page
+    assert 'class="ltable"' in page and 'href="/site.css?v=abc"' in page and 'rel="canonical" href="https://founderledequities.com/letter/' in page
+    assert 'class="kind xfer"' in page and 'class="lh2"' in page
+
 
 
 def test_a_list_send_refuses_without_a_postal_line(tmp_path, monkeypatch):

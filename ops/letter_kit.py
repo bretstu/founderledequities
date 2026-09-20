@@ -214,7 +214,7 @@ You are helping me write the featured section of this week's issue of Founder Le
 **This week's featured move:** {ceo} at {company} ({tk}). The files in this folder are everything you need.
 
 ## Read in this order
-1. `09-previous-letters/`: the issues already sent. Match their voice and format exactly; that is the voice the letter is written in. The format is fixed: one line on the week, ONE move in about 300 words, two shorter moves, one chart or ranking, the link to the full list.
+1. `09-previous-letters/`: the issues already sent. Match their voice and format exactly; that is the voice the letter is written in. The format is fixed (the skeleton in `01-the-week.md` follows it): a title that is the feature's claim; one line on the week; THE FEATURE in about 300 words; "Two more decisions" (the largest buy and the largest discretionary sale not featured, one paragraph each, person–action–company (ticker)); "Moved the stake" (the pipeline's table of every filing that moved a holding by a percent or more, then a bullet for the largest non-decision by dollars and one for the largest planned sale); "The week's decisions" (the pipeline's table); "One ranking". Every company gets its ticker on first mention. Editorial rules stay out of the prose.
 2. `03-company-page.md`: what the site states for this company. **These are the letter's numbers.** Never restate the stake from the proxy or elsewhere.
 3. `02-the-move.md`: the move itself and the person's whole history on the site since 2016.
 4. `01-the-week.md`: the rest of the week, for the two shorter moves.
