@@ -39,3 +39,19 @@ def test_decided_disclaimed_lines_become_vehicle_rows_and_hand_rows_stay(tmp_pat
     FR.main([])
     rows = list(csv.DictReader(open(root / "universe" / "exclusions.csv", encoding="utf-8-sig")))
     assert [r["ticker"] for r in rows] == ["TKO"]
+
+
+def test_a_copied_reading_inherits_the_ruling_of_the_line_it_was_copied_from():
+    """THE NIGHTLY (2026-09-20): a founder's next filing repeats last month's
+    footnote; the reader copies the reading, and the decision comes with it."""
+    import footnote_review as FRv
+    reads = [
+        {"key": "1|a|1|h", "label": "disclaimed", "content": "C1"},     # decided by hand
+        {"key": "1|b|1|h", "label": "disclaimed", "content": "C1"},     # the next filing, same words: inherits
+        {"key": "1|b|2|h", "label": "disclaimed", "content": "C2"},     # new words: not decided
+        {"key": "1|c|1|h", "label": "economic", "content": "C1"},       # same words, a different label: not the same ruling
+    ]
+    reviewed = {"1|a|1|h": {"key": "1|a|1|h", "verdict": "ok", "note": "a charity", "label": "disclaimed"}}
+    d = FRv.decided(reads, reviewed)
+    assert d["1|a|1|h"][0] == "ok" and d["1|b|1|h"][0] == "ok" and "(inherited)" in d["1|b|1|h"][1] and d["1|b|1|h"][2] == "1|a|1|h"
+    assert "1|b|2|h" not in d and "1|c|1|h" not in d

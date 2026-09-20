@@ -11,6 +11,7 @@ Until then a pasted row excludes the whole class, so read the line's
 neighbours before pasting.
 """
 import csv
+import datetime as dt
 import os
 import sys
 
@@ -18,6 +19,32 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 READS = os.path.join(ROOT, "universe", "footnote-reads.csv")
 REVIEWED = os.path.join(ROOT, "universe", "footnote-reviewed.csv")
+
+
+def decided(reads_rows, reviewed):
+    """WHICH LINES ARE DECIDED (2026-09-20). By the line's key or its
+    filing-and-row id, as before; and BY THE FOOTNOTE'S TEXT: a reading the
+    reader copied from an identical line inherits that line's verdict, since
+    the same words got the same ruling. A founder's next filing with last
+    month's footnotes is decided the moment it is read.
+    -> {reads key: (verdict, note, source key)}"""
+    by_key = {k: v for k, v in reviewed.items()}
+    by_id = {"|".join(k.split("|")[:3]): v for k, v in reviewed.items()}
+    by_content = {}
+    for r in reads_rows:
+        v = by_key.get(r["key"]) or by_id.get("|".join(r["key"].split("|")[:3]))
+        if v and r.get("content"):
+            by_content.setdefault((r["content"], r["label"]), (v, r["key"]))
+    out = {}
+    for r in reads_rows:
+        v = by_key.get(r["key"]) or by_id.get("|".join(r["key"].split("|")[:3]))
+        if v:
+            out[r["key"]] = (v["verdict"], v.get("note", ""), r["key"])
+            continue
+        c = by_content.get((r.get("content"), r["label"]))
+        if c:
+            out[r["key"]] = (c[0]["verdict"], c[0].get("note", "") + " (inherited)", c[1])
+    return out
 
 
 def _migrate_reviewed():
@@ -161,9 +188,35 @@ def main(argv):
         return 0
     allrows = list(csv.DictReader(open(READS, encoding="utf-8-sig")))
     rows = [r for r in allrows if r["label"] in ("disclaimed", "partial")]
-    reviewed_ids = {"|".join(k.split("|")[:3]) for k in reviewed}
+    dec = decided(allrows, reviewed)
     if "--all" not in argv:
-        rows = [r for r in rows if r["key"] not in reviewed and "|".join(r["key"].split("|")[:3]) not in reviewed_ids]
+        rows = [r for r in rows if r["key"] not in dec]
+    if "--summary" in argv:
+        # THE NIGHTLY'S LINE (2026-09-20): how many need a person, written to
+        # drafts/ and mailed when there are any
+        out = [f"# Footnotes to review · {dt.date.today().isoformat()}", ""]
+        for r in sorted(rows, key=lambda r: (r["ticker"], -float(r["shares"] or 0))):
+            out.append(f"- {r['ticker']} {r['ceo']} [{r['label']}] {r['security'][:24]} {r['direct']} {r['nature'][:40]!r} {float(r['shares'] or 0):,.0f}")
+            out.append(f"  \"{r['quote'][:240]}\"")
+            out.append(f"  ok:  python3 ops/footnote_review.py --reviewed '{r['key']}' ok")
+            out.append(f"  no:  python3 ops/footnote_review.py --reviewed '{r['key']}' no")
+        os.makedirs(os.path.join(ROOT, "drafts"), exist_ok=True)
+        open(os.path.join(ROOT, "drafts", "footnotes-to-review.md"), "w", encoding="utf-8").write("\n".join(out) + "\n")
+        print(f"  footnotes: {len(rows)} line(s) to review" + (" (drafts/footnotes-to-review.md)" if rows else ""))
+        if rows:
+            try:
+                sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+                from live import send_mail
+                to = os.environ.get("LIVE_TO") or ""
+                if not to and os.path.exists(os.path.join(ROOT, ".env")):
+                    for line in open(os.path.join(ROOT, ".env"), encoding="utf-8"):
+                        if line.startswith("LIVE_TO="):
+                            to = line.split("=", 1)[1].strip().strip('"').strip("'")
+                if to and send_mail(to, f"Footnotes to review: {len(rows)}", "\n".join(out)):
+                    print(f"  mailed to {to}")
+            except Exception as exc:  # noqa: BLE001
+                print(f"  (not mailed: {exc})")
+        return 0
     if not rows:
         print("  nothing to review")
         return 0

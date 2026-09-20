@@ -6,6 +6,7 @@ footnote's own words, written to universe/footnote-reads.csv. A line is
 read once per filing that states it. Nothing here changes a number.
     python3 ops/footnote_reads.py                # founders whose stated filings have unread lines
     python3 ops/footnote_reads.py --all          # every company
+    python3 ops/footnote_reads.py --nightly      # the nightly: companies with new stated filings only, identical footnotes copied, at most 80 calls
     python3 ops/footnote_reads.py META,TKO,CRM   # just these, printing each reading
     python3 ops/footnote_reads.py --limit 300    # at most N model calls this run
     python3 ops/footnote_reads.py --reread META  # read these companies' lines again (after a prompt change)
@@ -52,9 +53,12 @@ def stated_filings(led):
 def main(argv):
     only = None
     limit = None
-    everyone = "--all" in argv
+    everyone = "--all" in argv or "--nightly" in argv
+    nightly = "--nightly" in argv      # every company whose stated filings changed since the last read; capped; one line of output
     if "--limit" in argv:
         limit = int(argv[argv.index("--limit") + 1])
+    elif nightly:
+        limit = 80                     # a night's ceiling on model calls: under a dollar; the rest waits for tomorrow
     reread = "--reread" in argv
     for a in argv[1:]:
         if not a.startswith("--") and not a.isdigit() and (argv[argv.index(a) - 1] != "--limit"):
@@ -143,6 +147,8 @@ def main(argv):
             done_state[tk] = r.get("shares_as_of") or ""
             json.dump(done_state, open(done_p, "w"), indent=0)
         n_flag = sum(1 for x in reads.values() if x["ticker"] == tk and x["label"] in ("disclaimed", "partial"))
+        if nightly and calls == before and copied == copied_before:
+            continue
         print(f"  {companies:4} {tk:6} {calls - before:3} line(s) read" + (f", {copied - copied_before} copied" if copied - copied_before else "") + (f"  · {n_flag} flagged" if n_flag else ""), flush=True)
     labels = {}
     for x in reads.values():

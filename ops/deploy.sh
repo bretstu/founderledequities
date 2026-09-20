@@ -147,6 +147,21 @@ fi
 # from. Nothing is posted.
 python3 ops/moves.py today || echo "  drafts: today's moves failed"
 
+# ---- 2f. THE FOOTNOTE READER, NIGHTLY (2026-09-20). Companies whose stated
+# filings changed tonight have their new lines read; a footnote identical to
+# one already read is copied, not asked again, so most nights make no model
+# call at all (a ceiling of 80 when they do). A copied reading inherits the
+# ruling of the line it was copied from. The register is regenerated from
+# the decisions and takes effect at the NEXT walk; anything new that needs a
+# person is written to drafts/footnotes-to-review.md and mailed. On Sundays
+# the golden set is re-read against its rulings (about a dollar).
+python3 ops/footnote_reads.py --nightly || echo "  footnotes: the reader failed; the register stands"
+python3 ops/footnote_register.py --quiet || echo "  footnotes: the register was not regenerated"
+python3 ops/footnote_review.py --summary || echo "  footnotes: the summary failed"
+if [ "$(date +%u)" = "7" ]; then
+  python3 ops/footnote_review.py --golden || echo "  footnotes: THE GOLDEN SET FAILED; check the prompt before the next reading"
+fi
+
 # ---- 3. the HTML says what the page says ----
 # The hero, the stat strip and the top ten of the leaderboard are written
 # into public/index.html as real markup, so a fetch without scripts (an

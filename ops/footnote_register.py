@@ -46,10 +46,12 @@ def main(argv):
     reg_p = os.path.join(ROOT, DEFAULT)
     panel = {r["ticker"]: r for r in csv.DictReader(open(os.path.join(ROOT, "panel.csv"), encoding="utf-8-sig"))}
     reads = list(csv.DictReader(open(READS, encoding="utf-8-sig"))) if os.path.exists(READS) else []
-    decisions = {}
+    reviewed = {}
     if os.path.exists(REVIEWED):
         for r in csv.DictReader(open(REVIEWED, encoding="utf-8-sig")):
-            decisions[_id(r["key"])] = r          # the latest verdict per line wins (the file is appended)
+            reviewed[r["key"]] = r                # the latest verdict per line wins (the file is appended)
+    from footnote_review import decided
+    dec = decided(reads, reviewed)                # by key, by id, or inherited from an identical footnote
     hand = []
     if os.path.exists(reg_p):
         for r in csv.DictReader(open(reg_p, encoding="utf-8-sig")):
@@ -62,8 +64,8 @@ def main(argv):
     for r in reads:
         by_owner_class.setdefault((r["owner_cik"], r["security"].strip().lower(), r["direct"].upper()), []).append(r)
     for r in reads:
-        d = decisions.get(_id(r["key"]))
-        if not d or d.get("verdict") != "ok" or r["label"] != "disclaimed":
+        d = dec.get(r["key"])
+        if not d or d[0] != "ok" or r["label"] != "disclaimed":
             continue
         tk = r["ticker"].upper()
         if tk not in panel:
@@ -87,9 +89,10 @@ def main(argv):
                      "vehicle": vehicle, "decided": f"reader {dt.date.today().isoformat()}"}
 
     rows = hand + sorted(picked.values(), key=lambda x: (x["ticker"], x["security"], x["vehicle"]))
-    print(f"  register: {len(hand)} hand row(s) kept, {len(picked)} reader row(s) from {len(decisions)} decision(s)")
-    for r in sorted(picked.values(), key=lambda x: x["ticker"]):
-        print(f"    {r['ticker']:6} {r['security'][:22]:22} {r['direct']} {r['vehicle'][:44]:44} {r['reason'][:60]}")
+    print(f"  register: {len(hand)} hand row(s) kept, {len(picked)} reader row(s) from {len(reviewed)} decision(s)")
+    if "--quiet" not in argv:
+        for r in sorted(picked.values(), key=lambda x: x["ticker"]):
+            print(f"    {r['ticker']:6} {r['security'][:22]:22} {r['direct']} {r['vehicle'][:44]:44} {r['reason'][:60]}")
     for tk, ceo, v, sh, why in sorted(set(skipped)):
         print(f"  SKIPPED {tk} {ceo}: {v!r} {sh} shares: {why}")
     if dry:
