@@ -1485,11 +1485,31 @@ def _refresh(args, log) -> int:
     # the feed answers "who filed?" instead of 2,135 index reads. The
     # nightly still reads every index and would reach the same rows.
     targeted = sorted({t.strip().upper() for t in (getattr(args, "tickers", None) or "").split(",") if t.strip()})
+    # THE WEEKLY WALK (2026-09-20). The nightly walks who filed and reuses
+    # everyone else's row, which is fast and right except the day a rule
+    # changes: a company whose chief executive has not filed keeps the old
+    # arithmetic until he does. Once a week (Sunday, when EDGAR is closed
+    # and the Saturday stages have run) the memory is forgotten and every
+    # company is recomputed from the filings on disk. No model is called:
+    # the readers key on filings, not on walks. What moved without a filing
+    # is reported and mailed, not refused; the anchors hold as always.
+    full = bool(getattr(args, "full", False)) or (datetime.date.today().weekday() == 6 and not getattr(args, "no_full", False) and not targeted)
+    if full and not targeted:
+        log("full: the weekly walk; every company recomputed, the nightly's memory forgotten")
+        hs_live = os.path.join(live, "history-state.json")
+        if os.path.exists(hs_live):
+            os.replace(hs_live, hs_live + ".before-full")
+        _progress_pings(log, minutes=30)
     if targeted:
         log(f"targeted: {', '.join(targeted)} (the rest keep last night's rows)")
         ck = path("panel-targeted.jsonl")
         if os.path.exists(ck):
             os.remove(ck)
+        prior = ""
+    elif full:
+        for p_ in (ck, prior):
+            if os.path.exists(p_):
+                os.remove(p_)
         prior = ""
     elif rotate_checkpoint(ck, prior, args.universe):
         log("panel: last night's checkpoint is tonight's prior")
@@ -1591,7 +1611,9 @@ def _refresh(args, log) -> int:
     # 2b -- the same question of every company: a share count that moved
     # with no newer filing to explain it is the rules moving, not the person
     odd = [t for t in unexplained_moves(path("panel.csv", staged=False), path("panel.csv")) if t not in forget]   # a register change explains its own moves
-    if odd and len(odd) > UNEXPLAINED_LIMIT and not args.force:
+    if full:
+        _mail_weekly_diff(log, args.dir, odd, path("panel.csv", staged=False), path("panel.csv"))
+    if odd and len(odd) > UNEXPLAINED_LIMIT and not args.force and not full:
         log(f"REFUSING TO PUBLISH -- {len(odd)} companies' share counts moved "
             f"with no newer filing to explain it ({', '.join(odd[:12])}"
             f"{', ...' if len(odd) > 12 else ''}). That is a rule change, not "
@@ -1599,8 +1621,8 @@ def _refresh(args, log) -> int:
             f"panel-diff.csv has every move. --force publishes anyway.")
         return 2
     if odd:
-        log(f"{len(odd)} share count(s) moved with no newer filing -- within "
-            f"the nightly allowance, worth a look: {', '.join(odd)}")
+        log(f"{len(odd)} share count(s) moved with no newer filing -- " + ("the weekly walk's finding, mailed" if full else "within "
+            f"the nightly allowance, worth a look") + f": {', '.join(odd[:20])}{', ...' if len(odd) > 20 else ''}")
 
     # 3 -- history, reusing companies that have not filed
     state_p = os.path.join(live, "history-state.json")
@@ -1795,6 +1817,69 @@ def _write_variant(src: str, dst: str, keep) -> None:
         writer.writeheader()
         writer.writerows(rows)
     os.replace(tmp, dst)
+
+
+def _progress_pings(log, minutes: int = 30) -> None:
+    """The weekly walk runs for hours; the dead-man's switch expects a finish
+    within its grace. A daemon thread pings success every `minutes` while the
+    run lasts, so a long walk is not a missing one; the final /<exit> still
+    says how it ended."""
+    url = os.environ.get("FLE_HEARTBEAT_URL")
+    if not url:
+        return
+    import threading
+
+    def loop():
+        import urllib.request
+        while True:
+            time.sleep(minutes * 60)
+            try:
+                urllib.request.urlopen(urllib.request.Request(url, data=b"still walking", method="POST"), timeout=10)  # noqa: S310
+            except Exception:  # noqa: BLE001
+                pass
+    threading.Thread(target=loop, daemon=True).start()
+
+
+def _mail_weekly_diff(log, root, odd, before_p, after_p) -> None:
+    """The Sunday report: every company whose share count moved with no
+    filing to explain it, before and after, written to drafts/ and mailed
+    to LIVE_TO. An empty list is the good news and is mailed too."""
+    day = datetime.date.today().isoformat()
+    lines = [f"# The weekly walk, {day}", ""]
+    try:
+        b = {r["ticker"]: r for r in csv.DictReader(open(before_p, encoding="utf-8-sig"))}
+        a = {r["ticker"]: r for r in csv.DictReader(open(after_p, encoding="utf-8-sig"))}
+    except OSError:
+        b, a = {}, {}
+    if not odd:
+        lines.append("Every company recomputed; nothing moved without a filing.")
+    else:
+        lines.append(f"{len(odd)} share count(s) moved with no newer filing to explain it. Each is a rule change reaching a company that had not filed, or a bug:")
+        lines.append("")
+        for t in odd:
+            x, y = b.get(t, {}), a.get(t, {})
+            lines.append(f"- {t:6} {y.get('ceo','')[:26]:26} {float(x.get('shares') or 0):>14,.0f} -> {float(y.get('shares') or 0):>14,.0f}   "
+                         f"{float(x.get('pct') or 0):6.2f}% -> {float(y.get('pct') or 0):6.2f}%   as of {y.get('shares_as_of','')}")
+    text = "\n".join(lines) + "\n"
+    try:
+        os.makedirs(os.path.join(root, "drafts"), exist_ok=True)
+        open(os.path.join(root, "drafts", f"weekly-walk-{day}.md"), "w", encoding="utf-8").write(text)
+    except OSError:
+        pass
+    to = os.environ.get("LIVE_TO") or ""
+    if not to and os.path.exists(os.path.join(root, ".env")):
+        for line in open(os.path.join(root, ".env"), encoding="utf-8"):
+            if line.startswith("LIVE_TO="):
+                to = line.split("=", 1)[1].strip().strip('"').strip("'")
+    if not to:
+        return
+    try:
+        sys.path.insert(0, os.path.join(root, "ops"))
+        from live import send_mail   # noqa: E402
+        if send_mail(to, f"The weekly walk: {len(odd)} unexplained move(s)", text):
+            log(f"weekly walk: the report was mailed to {to}")
+    except Exception as exc:  # noqa: BLE001
+        log(f"weekly walk: the report was not mailed ({exc.__class__.__name__})")
 
 
 def _heartbeat(log, signal, body: str = "") -> None:
@@ -2587,6 +2672,10 @@ def main(argv=None) -> int:
     rf.add_argument("--since", default="2016-01-01")
     rf.add_argument("--tickers", default=None,
                     help="targeted: walk only these companies (comma-separated); the rest keep last night's rows")
+    rf.add_argument("--full", action="store_true",
+                    help="THE WEEKLY WALK (2026-09-20): forget the nightly's memory and recompute every company; the diff is mailed, "
+                         "unexplained moves are reported rather than refused, the anchors stay strict. Sundays do this on their own; --no-full stops that")
+    rf.add_argument("--no-full", action="store_true", help="a Sunday run that stays incremental")
     rf.add_argument("--rewalk", action="store_true",
                     help="targeted: walk the named companies' history again even with no new filing "
                          "(forgets their entry in history-state.json first), for a rule change")

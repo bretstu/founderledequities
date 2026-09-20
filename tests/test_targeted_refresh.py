@@ -55,3 +55,24 @@ def test_the_confidence_cap_writes_its_note_once(tmp_path):
     n2 = edge_confidence(str(panel), str(hist))
     assert panel.read_text() == first, "a second cap changes nothing"
     assert first.count("balance far below") <= 1
+
+
+def test_the_weekly_walk_has_its_flags_and_its_report(tmp_path, monkeypatch):
+    """THE WEEKLY WALK (2026-09-20): --full (or a Sunday) forgets the nightly's
+    memory; the odd moves are reported and mailed rather than refused; the
+    report is written to drafts/ even with nothing to say."""
+    import csv
+    from fle import cli
+    import inspect
+    src = inspect.getsource(cli.main)
+    assert '"--full"' in src and '"--no-full"' in src
+    before, after = tmp_path / "before.csv", tmp_path / "after.csv"
+    for pth, sh in ((before, "100"), (after, "90")):
+        with open(pth, "w", newline="") as fh:
+            w = csv.writer(fh); w.writerow(["ticker", "ceo", "shares", "pct", "shares_as_of"]); w.writerow(["AAA", "Some One", sh, "1.0", "2026-01-01"])
+    monkeypatch.delenv("LIVE_TO", raising=False)
+    cli._mail_weekly_diff(lambda m: None, str(tmp_path), ["AAA"], str(before), str(after))
+    rep = next((tmp_path / "drafts").glob("weekly-walk-*.md")).read_text()
+    assert "AAA" in rep and "100 ->" in rep and "90" in rep and "1 share count(s) moved" in rep
+    cli._mail_weekly_diff(lambda m: None, str(tmp_path), [], str(before), str(after))
+    assert "nothing moved without a filing" in next((tmp_path / "drafts").glob("weekly-walk-*.md")).read_text()
