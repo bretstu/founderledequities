@@ -21,7 +21,7 @@ async function render(){
   }
   const live=WATCHES.some(w=>w.tk==="FOUNDERS"),names=WATCHES.filter(w=>w.tk!=="FOUNDERS");
   $("#lbody").innerHTML=`<div class="lgrid">
-    <div class="lcard"><h2>The letter</h2><div class="d">Everything founders did this week, in one email on Saturday morning. Free.</div>
+    <div class="lcard"><h2>The letter</h2><div class="d">Everything founders did this week, in one email. Free.</div>
       <div class="ctl">${signed?sw("lsw",LETTER.on,LETTER.on?"Subscribed":"Subscribe","setLetter"):`<form class="lform" onsubmit="return joinLetter(event)"><input type="email" id="lemail" placeholder="you@example.com" required autocomplete="email"><button class="lbtn" type="submit">Send it</button></form>`}
       <div class="fine" id="lfine"></div></div></div>
     <div class="lcard pro"><h2>Live founder alerts <span class="pro">Members</span></h2><div class="d">Every founder&#8217;s move, within about ten minutes of the SEC filing.</div>

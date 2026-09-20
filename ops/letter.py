@@ -582,8 +582,14 @@ LETTER_CSS = """
 .letter .lfoot{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 0;font-size:12.5px;color:var(--mut);max-width:72ch}
 .lindex{max-width:var(--max);margin:0 auto;padding:clamp(28px,4vw,52px) clamp(20px,3.5vw,48px) 72px}
 .lindex h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(34px,4.6vw,56px);margin:0 0 8px}
-.lindex .sub{font-size:15.5px;color:var(--mut);margin:0 0 26px;max-width:72ch}
-.lindex .issue{display:grid;grid-template-columns:120px 1fr;gap:14px;padding:14px 0;border-top:1px solid var(--line);align-items:baseline}
+.lindex .sub{font-size:15.5px;color:var(--mut);margin:0 0 22px;max-width:72ch}
+.lindex .lsub{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 34px;font-size:14px}
+.lindex .lsub label{color:var(--mut)}
+.lindex .lsub input{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:min(280px,100%)}
+.lindex .lsub button{font:inherit;font-size:13px;font-weight:600;padding:9px 14px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer}
+.lindex .lsub .lmsg{font-size:13px;color:var(--mut)}
+.lindex .issues{border-top:1px solid var(--ink)}
+.lindex .issue{display:grid;grid-template-columns:120px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--line);align-items:baseline}
 .lindex .issue .d{font-family:var(--mono);font-size:12px;color:var(--faint)}
 .lindex .issue a{font-family:var(--disp);font-size:22px;color:var(--ink);text-decoration:none}
 .lindex .issue a:hover{text-decoration:underline}
@@ -592,8 +598,10 @@ LETTER_CSS = """
 
 
 def index_page(issues, topnav, css_href="/site.css", signup_html=""):
-    """/letter/: every issue, newest first, with the signup box (the home
-    page's, lifted) above the list."""
+    """/letter/: the issues as a list with a rule between them, newest first,
+    and a quiet signup line at the top (the field and the button in the
+    page's own type, no band). No day of the week anywhere: the letter is
+    weekly, and the dates below say when it came."""
     rows = []
     for meta in issues:
         d = meta.get("date", "")
@@ -602,14 +610,24 @@ def index_page(issues, topnav, css_href="/site.css", signup_html=""):
         except ValueError:
             nice = d
         title = meta.get("title") or meta.get("subject") or "This week"
+        feat = (meta.get("featured") or "").strip().upper()
         rows.append(f'<div class="issue"><div class="d">{html.escape(nice)}</div><div><a href="/letter/{html.escape(d)}/">{html.escape(title)}</a>'
-                    f'<div class="w">{html.escape("the week of " + meta["week"] if meta.get("week") else "")}</div></div></div>')
+                    f'<div class="w">{html.escape("the week of " + meta["week"] if meta.get("week") else "")}{(" · " + html.escape(feat)) if feat else ""}</div></div></div>')
+    signup = ('<form class="lsub" id="lsub" onsubmit="return subscribeLetter(event)">'
+              '<label for="lemail">Get it by email</label>'
+              '<input type="email" id="lemail" placeholder="you@example.com" required autocomplete="email">'
+              '<button type="submit">Subscribe</button><span class="lmsg" id="lmsg"></span></form>'
+              '<script>async function subscribeLetter(ev){ev.preventDefault();const email=(document.getElementById("lemail").value||"").trim(),m=document.getElementById("lmsg"),btn=document.querySelector("#lsub button");'
+              'if(!email||btn.disabled)return false;btn.disabled=true;btn.textContent="Sending…";'
+              'try{const q=await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});const j=await q.json();'
+              'm.textContent=j.message||"Check your inbox: one click confirms it.";if(j.ok){document.getElementById("lemail").disabled=true;btn.textContent="Sent";}else{btn.disabled=false;btn.textContent="Subscribe";}}'
+              'catch(e){m.textContent="Something went wrong; write to hello@founderledequities.com.";btn.disabled=false;btn.textContent="Subscribe";}return false;}</script>')
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
             f'<title>Founder Moves, the letter · Founder Led Equities</title>'
-            f'<meta name="description" content="Every issue of Founder Moves: what chief executives did with their own stakes each week, one of them in depth. Free, every Saturday.">'
+            f'<meta name="description" content="Every issue of Founder Moves: what chief executives did with their own stakes each week. Free.">'
             f'<link rel="canonical" href="{SITE}/letter/"><link rel="stylesheet" href="{css_href}"><style>{LETTER_CSS}</style></head><body>'
-            f'{topnav}<main class="lindex"><h1>Founder Moves</h1><p class="sub">What chief executives did with their own stakes this week, one of them in depth. Free, every Saturday morning.</p>'
-            f'{signup_html}' + "\n".join(rows) +
+            f'{topnav}<main class="lindex"><h1>Founder Moves</h1><p class="sub">What chief executives did with their own stakes this week.</p>'
+            f'{signup}<div class="issues">' + "\n".join(rows) + "</div>"
             f'<div class="lfoot" style="border-top:1px solid var(--line);margin-top:40px;padding:16px 0 0;font-size:12.5px;color:var(--mut)">Nothing here is investment advice.</div></main></body></html>')
 
 
@@ -753,13 +771,6 @@ def cmd_publish(a):
             print(f"  letter {date}: not published ({e})")
     issues.sort(key=lambda m: m.get("date", ""), reverse=True)
     signup = ""
-    try:
-        idx = open(os.path.join(a.root, "index.html"), encoding="utf-8").read()
-        m = re.search(r'(<div class="hometape"[\s\S]*?</div>\s*</div>)', idx)
-        if m:
-            signup = m.group(1)
-    except OSError:
-        pass
     d = os.path.join(a.out, "letter")
     os.makedirs(d, exist_ok=True)
     open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(index_page(issues, topnav, css, signup))

@@ -22,7 +22,7 @@ async function render(){
   const live=watches.some(w=>w.tk==="FOUNDERS"),names=watches.filter(w=>w.tk!=="FOUNDERS");
   body.innerHTML=`
     <div class="ablock"><h2>The letter</h2>
-      <div class="arow"><div class="l"><span>${letter.on?"On":"Off"}</span><span class="mut">${letter.on?"everything founders did this week, Saturday morning":"you are not on the list"}</span></div>
+      <div class="arow"><div class="l"><span>${letter.on?"On":"Off"}</span><span class="mut">${letter.on?"everything founders did this week, once a week":"you are not on the list"}</span></div>
         <button class="abtn${letter.on?"":" primary"}" onclick="setLetter(${letter.on?"false":"true"})">${letter.on?"Stop":"Join"}</button></div>
     </div>
     <div class="ablock"><h2>Live founder alerts</h2>
