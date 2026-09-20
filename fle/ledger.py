@@ -451,7 +451,8 @@ def apply_exclusions(here: dict, exclude, record: dict | None = None) -> None:
             g.shares = sum(g.last_txn.values()) + g.holdings
             removed = before - g.shares      # what actually left the position, counted once
             if record is not None and removed:
-                record.setdefault(f"{g.label()} · {e.vehicle}", (removed, e.reason, e.source))
+                # one vehicle, one entry, whichever column the filer used for it on a given filing (AAOI, Vornado)
+                record.setdefault(f"{g.security} · {e.vehicle}", (removed, e.reason, e.source))
         if not g.vehicles() and g.shares <= 0.5:
             del here[key]
 
