@@ -71,21 +71,24 @@ def test_the_kicker_is_the_largest_move_and_the_largest_buy(tmp_path):
 
 
 def test_the_draft_is_the_issues_skeleton_in_the_settled_template(tmp_path):
-    """THE TEMPLATE (2026-09-20): the feature, two more decisions, moved the
-    stake, the week's decisions, one ranking. The pipeline fills the
-    tables and the shortlist; the writing is left in brackets."""
+    """THE TEMPLATE (settled 2026-09-20, six sections): title; this week
+    (the counts, the largest move); the feature; the largest buy and sale by
+    dollars; the top five stake moves, any kind; a ranking. The pipeline
+    fills the numbers; the writing is left in brackets."""
     root = _fixture(tmp_path)
     md = letter.draft_markdown(root, "2026-09-12")
     assert md.startswith("---\ndate: 2026-09-12\ntitle: ") and "\nfeatured: " in md and "\nweek: Sep 7 to Sep 11\n" in md
-    for h in ("## [The feature:", "## Two more decisions", "## Moved the stake", "## The week's decisions", "## One ranking"):
+    for h in ("## [The feature:", "## Largest open-market buy and discretionary sale", "## Top stake moves", "## [The ranking"):
         assert h in md, h
-    assert "| Kind | Company | CEO | Amount | Shares | Of holding | Stake |" in md
-    assert "| Bought | TSLA | Elon Musk | $1B |" in md and "+0.51% | 28.44% |" in md, "a decision row, with shares and the move as a share of the holding"
-    assert "| Transfer | DDOG | Olivier Pomel |" in md and "-3.00% | 2.52% |" in md, "a gift that moved the holding by 3% is in Moved the stake"
-    assert "Pro" not in md.split("## The feature")[0], "nothing is sealed (2026-09-18)"
+    assert "The largest move of any stake was" in md, "this week names the largest move, whatever its kind"
+    assert "**The largest buy.** *Elon Musk bought $1B of TSLA*" in md, "the largest buy by dollars, other than the feature"
+    assert "| Kind | Company | CEO | Amount | Of holding | Stake |" in md
+    assert md.count("\n| ") <= 6, "five rows and a header, no more"
+    assert "| Transfer | DDOG | Olivier Pomel |" in md and "-3.00% | 2.52% |" in md, "a gift that moved the holding by 3% is a top stake move"
+    assert "Pro" not in md.split("## [The feature")[0], "nothing is sealed (2026-09-18)"
     assert "NEEDS A LOOK BEFORE THE SEND (not in the tables): René Lacerte, BILL: forfeited took the position on record to zero." in md
     h, t, meta = letter.render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal="PO Box 1, Portland, ME")
-    assert meta["title"] and "Georgia" in h and "#F7F4EE" in h and "every filing" in h
+    assert meta["title"] and "Georgia" in h and "Every filing of the week" in h
     assert "{{{RESEND_UNSUBSCRIBE_URL}}}" in h and "PO Box 1" in h
     assert "28.44%" in t and "Unsubscribe" in t, "a plain-text alternative too"
     page = letter.archive_page(md, '<div class="top">nav</div>', "/site.css?v=abc")

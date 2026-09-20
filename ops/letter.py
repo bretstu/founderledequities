@@ -243,22 +243,20 @@ def pick(rows, cap=12):
 
 # ---------------------------------------------------------------- the markdown
 def draft_markdown(root, date, days=None):
-    """THE ISSUE'S SKELETON (2026-09-20, the template settled). The pipeline
-    fills what it can from the week and leaves the writing to a person:
+    """THE ISSUE'S SKELETON (settled 2026-09-20, after issue 1; six sections).
+    The pipeline fills every number and leaves the writing to a person:
 
         # <title: the feature's claim>
-        the week in a line
-        ## <the feature>                       (written; the top candidate)
-        ## Two more decisions                 (the largest buy and the largest
-                                               discretionary sale not featured)
-        ## Moved the stake                    (every filing that moved a holding
-                                               by >=1%, any kind; then the largest
-                                               non-decision by dollars and the
-                                               largest planned sale)
-        ## The week's decisions               (every buy and discretionary sale)
-        ## One ranking                        (the largest founder stakes)
+        This week          two sentences: the counts; the largest move of any
+                           stake, its kind named; plus a first-ever buy if there was one
+        ## <the feature>   ~300 words, written by a person from the kit's brief
+        ## Largest open-market buy and discretionary sale   by DOLLARS, other than the feature
+        ## Top stake moves the five largest by SHARE OF THE HOLDING, any kind;
+                           one bullet when a big non-decision missed the five; the link
+        ## <the ranking>   three bullets from the site
 
-    The rows carry `shares` where the events file has them."""
+    The score (log10 dollars + 2 x share of holding, +1 buy, +0.5 stake>5%)
+    proposes the feature and is never mentioned in the letter."""
     rows, monday = week_rows(root, date, days)
     friday = week_bounds(date)[1]
     look = [r for r in rows if r["guarded"]]
@@ -274,64 +272,53 @@ def draft_markdown(root, date, days=None):
         return (_m.log10(v) if v > 0 else 0) + 2 * (r["move"] or 0) + (1 if r["kind"] == "bought" else 0) + (0.5 if (r["after"] or 0) >= 5 else 0)
     ranked = sorted(decisions, key=lambda r: -score(r))
     feature = ranked[0] if ranked else None
-    top_buy = next((r for r in ranked if r["kind"] == "bought" and r is not feature), None)
-    top_sale = next((r for r in ranked if r["kind"] == "disc" and r is not feature), None)
-    moved = sorted([r for r in rows_c if (r["move"] or 0) >= 1.0 and r["kind"] not in ("bought", "disc") and not r["guarded"]], key=lambda r: -(r["move"] or 0))
-    plans = sorted([r for r in rows_c if r["kind"] == "plan"], key=lambda r: -(r["value"] or 0))
-    big_other = sorted([r for r in rows_c if r["kind"] not in ("bought", "disc", "plan") and (r["value"] or 0) >= 50e6], key=lambda r: -(r["value"] or 0))
+    by_dollars = sorted(decisions, key=lambda r: -(r["value"] or 0))
+    top_buy = next((r for r in by_dollars if r["kind"] == "bought" and r is not feature), None)
+    top_sale = next((r for r in by_dollars if r["kind"] == "disc" and r is not feature), None)
+    movers = sorted([r for r in rows_c if r["move"] is not None and not r["guarded"]], key=lambda r: -(r["move"] or 0))[:5]
+    big_other = sorted([r for r in rows_c if r["kind"] not in ("bought", "disc") and (r["value"] or 0) >= 50e6 and r not in movers], key=lambda r: -(r["value"] or 0))
+    firsts = [r for r in rows_c if r["kind"] == "bought" and r.get("first")]
 
-    def who(r):
-        return f"{r['ceo']} of {r['tk']}"
-    def decision_line(r):
+    def decision_par(r, label):
         verb = "bought" if r["kind"] == "bought" else "sold"
         amt = money(r["value"]) if r["value"] else "shares"
         mv = f"{r['move']:.2f}% of the holding" if r["move"] is not None else "the move unstated"
-        return (f"*{r['ceo']} {verb} {amt} of {r['tk']}* {'on the open market' if r['kind'] == 'bought' else 'at their own discretion'}"
-                f"{' across ' + str(r['n']) + ' filings' if r.get('n', 1) > 1 else ''}, {mv}. Owns {pct(r['after'])}. [the company, the person's history, what the filings say]")
-    def row(r, kind_word=None):
+        return (f"**{label}.** *{r['ceo']} {verb} {amt} of {r['tk']}* {'on the open market' if r['kind'] == 'bought' else 'at their own discretion'}"
+                f"{' across ' + str(r['n']) + ' filings' if r.get('n', 1) > 1 else ''}: {mv}. [one fact from the history: buys and sales in two years, plan or not] Owns {pct(r['after'])}.")
+    def row(r):
         amt = money(r["value"]) if r["value"] and not r["flag"] else "—"
-        sh = r.get("shares")
-        shs = (f"{'+' if sh > 0 else '−'}{abs(sh):,.0f}" if isinstance(sh, (int, float)) and sh else "—")
         mv = (f"{r['change']:+.2f}%" if r["change"] is not None else "—")
-        return f"| {kind_word or KIND_WORD[r['kind']]} | {r['tk']} | {r['ceo']} | {amt} | {shs} | {mv} | {pct(r['after']) or '—'} |"
+        return f"| {KIND_WORD[r['kind']]} | {r['tk']} | {r['ceo']} | {amt} | {mv} | {pct(r['after']) or '—'} |"
 
     title = (f"{feature['ceo'].split()[-1]} {'buys' if feature['kind'] == 'bought' else 'sells'} {money(feature['value']) if feature['value'] else 'shares'} of {feature['tk']}"
              if feature else f"This week: {who_b} CEO{'s' if who_b != 1 else ''} bought, {who_c} cut a stake")
+    top = movers[0] if movers else None
+    this_week = (f"{who_b} founder{'s' if who_b != 1 else ''} bought on the open market this week; {who_c} sold at their own discretion; {who_p} sold on plans set months ago.")
+    if top:
+        this_week += f" The largest move of any stake was {top['ceo']}'s: {top['move']:.1f}% of the {top['tk']} holding, {top['manner'].lower()}."
+    for r in firsts:
+        this_week += f" One first: {r['ceo']} bought {r['tk']} on the open market for the first time on record."
     lines = ["---", f"date: {date}", f"title: {title}", f"week: {week}", f"featured: {feature['tk'] if feature else ''}", "---", "",
-             f"# {title}", "", f"*Founder Moves · the week of {week}*", "",
-             f"{who_b} founder{'s' if who_b != 1 else ''} put their own money in this week; {who_c} took some out at their own discretion; {who_p} sold on plans set months ago. [one sentence on the week's largest decision]", ""]
-    lines += [f"## [The feature: {who(feature) if feature else 'the week has no decision to feature; a founder from Moved the stake'}]", "",
-              "[About 300 words, from the kit: what the company does and how it makes money; what the person has done before with the stake; what the filings say (plans on file, buybacks, the proxy); what this move changed. Every company gets its ticker on first mention. Numbers from the site only.]", "",
-              f"![the stake since 2016](https://founderledequities.com/og/{feature['tk'] if feature else 'TICKER'}.png)", ""]
-    lines += ["## Two more decisions", ""]
-    for r in (top_buy, top_sale):
-        if r:
-            lines += [decision_line(r), ""]
-    if not top_buy and not top_sale:
-        lines += ["[no other decision this week]", ""]
-    lines += ["## Moved the stake", "", "Not decisions, but not nothing: every filing this week that moved a founder's holding by a percent or more, whatever its kind.", ""]
-    if moved:
-        lines += ["| Kind | Company | CEO | Amount | Shares | Of holding | Stake |", "|---|---|---|---|---|---|---|"]
-        lines += [row(r) for r in moved]
+             f"# {title}", "", f"*Founder Moves · the week of {week}*", "", this_week, ""]
+    lines += [f"## [The feature: {feature['ceo'] + ' of ' + feature['tk'] if feature else 'no decision this week; the largest move from Top stake moves'}]", "",
+              "[About 300 words, in your words, from the kit's brief: what the company does; what the person has done before with the stake; what the filings say that the Form 4 doesn't; what this move changed. The ticker on first mention. Numbers from the site only.]", "",
+              f"![the stake, the last twelve months](https://founderledequities.com/og/{feature['tk'] if feature else 'TICKER'}.png)", ""]
+    lines += ["## Largest open-market buy and discretionary sale", ""]
+    if top_buy:
+        lines += [decision_par(top_buy, "The largest buy"), ""]
     else:
-        lines += ["[nothing moved a holding by a percent or more this week]"]
+        lines += ["**The largest buy.** No founder bought on the open market this week" + (" other than the feature." if feature and feature["kind"] == "bought" else "."), ""]
+    if top_sale:
+        lines += [decision_par(top_sale, "The largest sale"), ""]
+    lines += ["## Top stake moves", "", "The five largest changes to a founder's stake this week, as a share of the holding, whatever the kind.", "",
+              "| Kind | Company | CEO | Amount | Of holding | Stake |", "|---|---|---|---|---|---|"]
+    lines += [row(r) for r in movers]
     lines += [""]
-    extra = []
     if big_other:
-        r = big_other[0]; extra.append(f"- **{r['ceo']} {r['manner'].lower()} {money(r['value'])} of {r['tk']}**: {r['label'] or r['manner']}. Owns {pct(r['after'])}.")
-    if plans:
-        r = plans[0]
-        small = f", though only {r['move']:.2f}% of the holding" if r["move"] is not None and r["move"] < 1 else ""
-        extra.append(f"- **{r['ceo']} sold {money(r['value'])} of {r['tk']}** under a plan set months ago: the largest planned sale of the week by dollars{small}. Owns {pct(r['after'])}.")
-    if extra:
-        lines += ["Two more, outside the table:", ""] + extra + [""]
-    lines += ["## The week's decisions", "",
-              f"Every open-market buy and discretionary sale by a founder-CEO this week, ranked by what it did to the stake. Plan sales, grants, vests and gifts are not here; the full list of {len(rows)} filings is on the site.", "",
-              "| Kind | Company | CEO | Amount | Shares | Of holding | Stake |", "|---|---|---|---|---|---|---|"]
-    lines += [row(r) for r in sorted(decisions, key=lambda r: (r["kind"] != "bought", -(r["move"] or 0)))]
-    lines += ["", f"The rest of the week: [every filing]({SITE}/tape/).", "",
-              "## One ranking", "", "[one list from the site: e.g. the founders who own the most of the company they run, three names and the link to the screen]", "",
-              ""]
+        r = big_other[0]
+        lines += [f"- **{r['ceo']} {r['manner'].lower()} {money(r['value'])} of {r['tk']}**: {r['label'] or r['manner']}, {abs(r['move'] or 0):.2f}% of the holding. Owns {pct(r['after'])}.", ""]
+    lines += [f"[Every filing of the week, on the site.]({SITE}/tape/)", "",
+              "## [The ranking: what it ranks]", "", "- [three bullets from the site's data, and the link to the screen]", ""]
     if look:
         lines += ["", "NEEDS A LOOK BEFORE THE SEND (not in the tables): " + "; ".join(f"{r['ceo']}, {r['tk']}: {r['manner'].lower()} took the position on record to zero" for r in look) + "."]
     return "\n".join(lines)

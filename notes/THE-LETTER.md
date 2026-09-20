@@ -1,140 +1,138 @@
-# The letter: how an issue is made (settled 2026-09-20, after issue 1)
+# The letter (settled 2026-09-20, after issue 1)
 
-One file, written once, that becomes the email, the page and the Substack
-post. Weekly; no day of the week is promised anywhere (the archive's dates
-show when issues arrive).
+Weekly. One file, written once, that becomes the email, the page and the
+Substack post. No day of the week is promised anywhere; the archive's dates
+show when issues arrive.
 
-## The template
+## Who writes what
 
-1. **Title**: the feature's claim, in words the filing supports ("Medpace's
-   founder sold $15.4M, not on a plan"; not "at a price he chose" when the
-   limit-order fact is from an older filing).
-2. **The week in a line**: bought / at their own discretion / on plans.
-3. **The feature**, ~300 words: the top candidate by the pipeline's score,
-   at your discretion (the one override: a candidate whose kit has no story).
-   What the company does and how it makes money; what the person has done
-   before with the stake; what the filings say (plans on file, buybacks, the
-   proxy row); what this move changed. The company's card as the image, with
-   a caption saying what window it shows.
-4. **Two more decisions**: the largest buy and the largest discretionary
-   sale not featured. Three sentences each: what they did and what it was
-   as a share of the holding; one fact from their history (from the events
-   file: how many buys/sales in two years, on a plan or not); what they own.
-   Not two more deep dives.
-5. **Moved the stake**: one line saying what the table holds, then the
-   pipeline's table of every filing that moved a holding by ≥1%, any kind,
-   the kind named in the first column, sorted by "Of holding". Then two
-   bullets, person–action–company (ticker): the largest non-decision by
-   dollars, and the largest planned sale "by dollars" (say so, or a reader
-   asks why it isn't in the table).
-6. **The week's decisions**: one line saying it is every buy and
-   discretionary sale by a founder-CEO, ranked by what it did to the stake,
-   and that plan sales, grants, vests and gifts are not here; then the table.
-7. **One ranking**: three bullets from the site's data (e.g. founders who
-   added the most to their stakes on the open market this year), one line
-   for the largest by dollars, the link to the screen. Not the largest-stake
-   list while any number in it is in doubt (Venture Global is the pair's).
+- **The pipeline** finds and counts: the shortlist of candidates, the
+  largest buy and sale, the top five stake moves, the person's history, the
+  card. Data, never prose.
+- **The session** (from the kit) writes a research BRIEF for the featured
+  company: facts with their sources. Not a draft.
+- **I write the letter**, in my own words, from the brief and the skeleton.
+  The voice is the moat of a letter the way the reconstruction is the moat
+  of the site. Substack's detector read issue 1 as 85% AI; from issue 2 the
+  prose is mine.
 
-No closing sales line. The email footer says only where the numbers come
-from and where to unsubscribe.
+## The six sections
 
-## The voice (what we cut in issue 1)
+1. **Title.** The feature's claim, in words the filing supports.
+   "Medpace's founder sold $15.4M, not on a plan."
 
-- No editorial rules in the prose ("a plan sale that takes 7% is worth
-  knowing about"). The section's one-line intro says what the table holds
-  and nothing about why.
-- No flourishes: "it's a better story than the number", "not decisions, but
-  not nothing", "a pattern worth watching", "put their own money in".
-- Only what the record shows. A characterisation ("a bad year for real
-  estate") is cut unless a filing says it. Inferences stay if they are the
-  plain meaning of a document (a limit order: he sets a price, the market
-  decides the day) and are attributed.
-- Every company gets its ticker on first mention, in prose and tables.
-- Percentages to two decimals (0.34%, not 0.343%); "0.84% of his holding",
-  not "nearly a percent".
-- A dash under Amount means no money changed hands (a grant, a vest, a
-  gift); a grant raises the holding because the company issued the shares.
-- Numbers from the site only. The pipeline's tables, not screenshots (a
-  screenshot gave Cimpress 0.51% instead of 1.4%, and changed the pick).
+2. **This week.** Two sentences: the counts (how many founders bought on
+   the open market, how many sold at their own discretion, how many sold on
+   plans), and the largest move of any founder's stake, its kind named.
+   Plus one sentence when a founder made his first open-market buy on
+   record. The week for someone who reads nothing else; everything in it
+   has a section below.
+
+3. **The feature**, headed by its claim. One decision, about 300 words, in
+   my words: what the company does; what the person has done before with
+   the stake; what the filings say that the Form 4 doesn't (plans on file,
+   buybacks, the proxy); what this move changed. The top candidate by the
+   pipeline's score, at my discretion (the one override: a candidate whose
+   kit has no story). The company's card as the image, captioned with the
+   window it shows. From issue 2: one line on what the last issue's company
+   did since ("Medpace since last week: +2.1%"), printed whatever it is.
+
+4. **Largest open-market buy and discretionary sale**, BY DOLLARS, other
+   than the feature. Two labelled paragraphs, *The largest buy* and *The
+   largest sale*, each three sentences: what they did and how much of their
+   holding it was; one fact from their history (buys and sales in the last
+   two years, plan or not); what they own. A week with no buy has one
+   paragraph and says so.
+
+5. **Top stake moves.** The five largest changes to any founder's stake
+   this week, BY SHARE OF THE HOLDING, whatever the kind, as a five-row
+   table: Kind · Company · CEO · Amount · Of holding · Stake. A plan sale,
+   a grant or a gift sits beside a discretionary sale, labelled for what it
+   was. Under it, one bullet only when a big non-decision missed the five
+   (a gift or grant too small a share of the holding: Huang's $93M). Then
+   the link: every filing of the week, on the site.
+
+6. **One ranking**, headed by what it ranks. Three bullets from the site's
+   data and the link to the screen; a different question each week (who
+   added most to their stake this year; who has never sold; the largest
+   stakes once the doubtful ones are fixed; the biggest cuts this quarter).
+
+Two measures, each section naming which it uses: dollars in 4, share of
+the holding in 5. The score proposes the feature and is never mentioned.
+Sections 1, 2, 3, 5, 6 always appear; 4 shrinks on a thin week rather than
+being padded. No table longer than five rows; everything else is a link.
+No closing sales line; the footer says only where the numbers come from.
+
+## The voice (what issue 1 taught)
+
+- One point per piece: the sentence you'd say across a table. If you can't
+  say it, you aren't ready to write.
+- Answer the reader's next question in order: what happened; who is this
+  and what's the company; what did he do before; how do you know; so what.
+- A fact, then what it means, in that order.
+- Short sentences, concrete nouns, no word you wouldn't say out loud. No
+  editorial rules in the prose. No flourishes ("a better story than the
+  number", "not decisions, but not nothing", "worth watching").
+- Only what the record shows; an inference stays if it is the plain
+  meaning of a document and is attributed.
+- Tickers on first mention. Percentages to two decimals. A dash under
+  Amount means no money changed hands; a grant raises the holding because
+  the company issued the shares.
+- Numbers from the site only, from the pipeline's tables, never from a
+  screenshot (a screenshot gave Cimpress 0.51% instead of 1.4%).
+- Read it aloud before sending; cut what you stumble on.
 
 ## Choosing the feature
 
-`ops/moves.py week` writes drafts/moves-week.md with two shortlists at the
-end: **Candidates for the feature** (decisions only, scored
-log10(dollars) + 2 × share of holding, +1 for a buy, +0.5 for a stake over
-5%) and **Moved the stake** (every ≥1% filing, any kind, plus the three
-largest plan sales). Open the top candidate's kit first; pass on it only if
-the filings are dull. The two shorter moves are the next buy and the next
-sale on the list. The score decides, not a glance at the dollars: in issue
-1 the glance picked EquipmentShare (7.3) over Alexandria (8.1), and
-SoundHound over Cimpress, and both were wrong.
+`ops/moves.py week` writes drafts/moves-week.md with the ranked candidates
+(decisions only: log10(dollars) + 2 × share of holding, +1 for a buy, +0.5
+for a stake over 5%) and the ≥1% movers. Open the top candidate's kit
+first; pass on it only if the filings are dull. In issue 1 a glance at the
+dollars picked EquipmentShare (7.3) over Alexandria (8.1) and SoundHound
+over Cimpress; the score was right both times.
 
-## The Saturday (or Sunday)
+## The Sunday
 
-1. `ops/moves.py week` → read the two shortlists.
-2. `ops/letter_kit.py <TICKER>` for the top candidate → upload
-   `drafts/kit-<TICKER>-<date>.zip` to a new Claude session with
-   `00-PROMPT.md` as the first message; iterate. Drop the latest earnings
-   call transcript into `transcript.txt` first if you have one (the Motley
-   Fool transcripts are free to read).
-3. For the two shorter moves, the person's history:
-   `python3 - <<'EOF'` over events.csv for the two tickers (two years of
-   P/S rows, plan or not) — the kit will carry this from issue 2.
-4. `ops/letter.py draft` writes the skeleton with the tables filled; paste
-   the session's prose into it; save as `weekly/letter-<date>.md`.
-5. `ops/send-tape.sh <date> --test` → read it in your inbox (and
-   `weekly/letter-<date>.html` in a browser).
-6. `ops/send-tape.sh <date> --send --confirm` (mails the list and stamps
-   the file `sent:`), then `ops/deploy.sh` (publishes /letter/<date>/ and
-   the index), then `git add weekly/letter-<date>.md && git commit`.
-7. Substack: new post; paste the text from the site's page; the tables and
-   the chart go in as images (Substack has no table support and does not
-   fetch remote images): upload `public/og/<TICKER>.png` for the chart with
-   the caption "<Company> on Founder Led Equities →" linked to the company
-   page; tables as PNGs (the pipeline will render them from issue 2; a
-   screenshot until then). Headings as H3. One subscribe button, at the
-   end, with your own words in it. Tags: `founder moves` and the featured
-   ticker. Social preview: the card (Substack picks the first image).
-   Send via email and the app.
-8. X: the week's numbers as a short thread with the page's link, pinned.
+1. `ops/moves.py week` → the shortlists.
+2. `ops/letter_kit.py <TICKER>` → upload `drafts/kit-<TICKER>-<date>.zip`
+   to a new Claude session with `00-PROMPT.md` as the first message; it
+   returns the brief. Drop the latest call transcript into
+   `transcript.txt` first if you have one.
+3. `ops/letter.py draft` writes the skeleton with every number filled.
+   Write the feature and the two paragraphs into it. Save as
+   `weekly/letter-<date>.md`.
+4. `ops/send-tape.sh <date> --test` → read it in your inbox and open
+   `weekly/letter-<date>.html`.
+5. `ops/send-tape.sh <date> --send --confirm` (mails the list, stamps the
+   file `sent:`); `ops/deploy.sh` (publishes /letter/<date>/ and the
+   index); `git add weekly/letter-<date>.md && git commit`.
+6. Substack: new post; paste the text from the site's page; tables and the
+   chart as images (upload `public/og/<TICKER>.png`, caption
+   "<Company> on Founder Led Equities →" linked to the company page); H3
+   headings; one subscribe button at the end, in your words; tags
+   `founder moves` and the ticker; send via email. Fill the "How I make
+   this" statement honestly: numbers computed by my pipeline from filings,
+   the reading mine, an assistant for research.
+7. X: the week's two sentences as a post with the page's link, pinned.
 
-## What appears where
+## Where it appears
 
-- `/letter/` — the index: a quiet signup line, then the issues as a list
-  with rules (date · title · the week · the featured ticker). Only files
-  stamped `sent:` are published; the pipeline's unsent drafts in `weekly/`
-  never become pages.
-- `/letter/<date>/` — the issue in one 720px reading column: text, image
-  and tables the same width. `/tape/<date>/` redirects there.
+- `/letter/` — a quiet signup line, then the issues as a list (date · title
+  · the week · the featured ticker). Only files stamped `sent:` publish.
+- `/letter/<date>/` — the issue in one 720px reading column.
 - The nav: Activity · Companies · Letter · Alerts · About · Join.
-- The sitemap carries the index and every sent issue.
 
 ## The file
 
-`weekly/letter-YYYY-MM-DD.md`, committed. Front matter, then Markdown:
-
-    ---
-    date: 2026-09-19
-    title: Medpace's founder sold $15.4M, not on a plan
-    week: 14 Sep to 18 Sep
-    featured: MEDP
-    ---
-
-What renders: `#` title, `##` subheads, paragraphs, **bold**, *italic*,
-[links](url), `- ` bullet lists, tables, one image per line
-(`![alt](url)`; the company's card is at /og/TICKER.png), and a
-`---members---` marker for the paid part when it starts. `title` is the
-email subject and the page title; `featured` links the issue to the company
-page and picks the card for the link preview.
+`weekly/letter-YYYY-MM-DD.md`, committed. Front matter (`date`, `title`,
+`week`, `featured`; `sent:` is stamped by the send), then Markdown: `#`
+title, `##` subheads, paragraphs, **bold**, *italic*, [links](url), `- `
+bullets, tables, one image per line, and a `---members---` marker for the
+paid part when it starts.
 
 ## For issue 2 (the pipeline's side)
 
-- The since-2016 stake chart for the featured company, drawn beside the
-  card, so the feature's image shows the whole story rather than a year.
-- The person's history (two years of buys and sales, plan or not) written
-  into the kit's `02-the-move.md` and into the skeleton's "Two more
-  decisions" lines.
-- Table images for Substack (`ops/letter.py substack <date>` → a folder
-  with the text, the chart and each table as a PNG).
-- The Venture Global shape (a partner's entity is partial) in the reader,
-  and the register's `fraction` column.
+- The since-2016 stake chart for the featured company, beside the card.
+- Table images for Substack (`ops/letter.py substack <date>`).
+- The person's history line written into the skeleton's two paragraphs.
+- "Since last issue" for the featured stock, from the price store.

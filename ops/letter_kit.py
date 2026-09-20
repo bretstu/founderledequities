@@ -207,32 +207,33 @@ def company_page(tk):
     return "\n".join(out) + "\n"
 
 
-PROMPT = """# This week's letter: the featured move
+PROMPT = """# This week's letter: the research brief for the featured move
 
-You are helping me write the featured section of this week's issue of Founder Led Equities, a weekly letter about what chief executives do with their own stakes in the companies they run. The site (https://founderledequities.com) computes every number from SEC filings and never estimates; the letter explains the two or three moves that mattered this week, one of them in depth.
+You are helping me write the featured section of this week's issue of Founder Led Equities, a weekly letter about what chief executives do with their own stakes in the companies they run. The site (https://founderledequities.com) computes what every US public company's CEO owns from the SEC filings they sign. I WRITE THE LETTER MYSELF, in my own words; your job is the research: a brief of facts, each pointing at the document it came from, that I write from. Do not draft prose for the letter.
 
 **This week's featured move:** {ceo} at {company} ({tk}). The files in this folder are everything you need.
 
 ## Read in this order
-1. `09-previous-letters/`: the issues already sent. Match their voice and format exactly; that is the voice the letter is written in. The format is fixed (the skeleton in `01-the-week.md` follows it): a title that is the feature's claim; one line on the week; THE FEATURE in about 300 words; "Two more decisions" (the largest buy and the largest discretionary sale not featured, one paragraph each, person–action–company (ticker)); "Moved the stake" (the pipeline's table of every filing that moved a holding by a percent or more, then a bullet for the largest non-decision by dollars and one for the largest planned sale); "The week's decisions" (the pipeline's table); "One ranking". Every company gets its ticker on first mention. Editorial rules stay out of the prose.
-2. `03-company-page.md`: what the site states for this company. **These are the letter's numbers.** Never restate the stake from the proxy or elsewhere.
-3. `02-the-move.md`: the move itself and the person's whole history on the site since 2016.
-4. `01-the-week.md`: the rest of the week, for the two shorter moves.
-5. `08-10b5-1-plans.md`: every trading-plan arrangement the company disclosed in two years. Whether this move was inside a plan, and when any plan was adopted or ended, is the single most useful fact for the letter.
-6. `04-10-K.txt`, `05-10-Q.txt`, `06-8-K-earnings.txt`, `07-DEF-14A.txt`: the company's own documents, whole. `transcript.txt` if I added the latest call.
+1. `03-company-page.md`: what the site states for this company. **These are the letter's numbers.** Never restate the stake from the proxy or elsewhere; the proxy counts options and the site does not.
+2. `02-the-move.md`: the move itself and the person's whole history on the site since 2016.
+3. `08-10b5-1-plans.md`: every trading-plan arrangement the company disclosed in two years. Whether this move was inside a plan, and when any plan was adopted or ended, is the single most useful fact in the brief.
+4. `04-10-K.txt`, `05-10-Q.txt`, `06-8-K-earnings.txt`, `07-DEF-14A.txt`: the company's own documents, whole. `transcript.txt` if I added the latest call.
+5. `01-the-week.md`: the rest of the week, for context only.
+6. `09-previous-letters/`: the issues already sent, so you know what the section looks like when finished (about 300 words: the company, the person's history with the stake, what the filings say that the Form 4 doesn't, what this move changed).
 
-## Then, before drafting, tell me
-- In five sentences, what the company does and how it makes money (from the 10-K), in plain words a reader who has never heard of it will follow.
-- What management said last quarter (the 8-K release; the transcript if present) and what the guidance is.
-- What trading plans this CEO has on file, with dates, and whether this move was inside one.
-- What this person has done before with their stake, from `02-the-move.md`: buys, discretionary sales, the stake's peak and trough since 2016.
-- Anything in the proxy about the person's ownership or pay that a reader should know.
-- The three things you could not find or would want verified.
+## The brief (bullets, with the source named on every line)
+- What the company does and how it makes money, in five plain sentences from the 10-K, for a reader who has never heard of it.
+- What management said last quarter (the 8-K release; the transcript if present), and the guidance.
+- The trading arrangements this CEO has on file, with dates, and whether this move was inside one (from `08-10b5-1-plans.md`; quote the disclosure).
+- What the company has done to its own share count (buybacks, issuance) in the last year, from the 10-Q/10-K, against the person's sales.
+- What this person has done before with the stake, from `02-the-move.md`: buys, discretionary sales, the peak and trough since 2016, the price paid where the record has it.
+- Anything in the proxy about the person's ownership or pay a reader should know (a related-party lease, a shared entity, options outside the site's count).
+- One line: the single fact that makes this week's move a story, if there is one. If there isn't, say so.
+- The three things you could not find or would want verified before it's printed.
 
-## Then draft the featured section: about 300 words
-Every claim points at the document it came from (name the file and quote at most a phrase). Numbers only from `03-company-page.md` and `02-the-move.md`. No prediction, no recommendation, no adjectives about the stock; what the person did, what it changed, what they have done before, and what the company is, so the reader learns something they could not get from a headline. I will edit it; you are the research partner, not the author.
+No prediction, no recommendation, no adjectives. Every number that describes the stake comes from `03-company-page.md` and `02-the-move.md` only. Every company gets its ticker on first mention.
 
-Then we work on it together.
+Then I write, and we check it together against the brief.
 """
 
 
