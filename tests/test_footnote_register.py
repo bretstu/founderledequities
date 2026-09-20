@@ -31,6 +31,10 @@ def test_decided_disclaimed_lines_become_vehicle_rows_and_hand_rows_stay(tmp_pat
     assert FR.main([]) == 0
     rows = list(csv.DictReader(open(root / "universe" / "exclusions.csv", encoding="utf-8-sig")))
     assert [r["ticker"] for r in rows] == ["TKO", "META"], "the hand row stays; the Biohub is one row across two filings; Snap's anonymous line beside another is skipped"
+    assert open(root / "universe" / "rewalk-next.txt").read().split() == ["META"], "a changed company is listed for the next walk (2026-09-20)"
+    (root / "universe" / "rewalk-next.txt").unlink()
+    FR.main([])
+    assert not (root / "universe" / "rewalk-next.txt").exists(), "nothing changed: nothing to rewalk"
     meta = rows[1]
     assert meta["vehicle"] == "By Chan Zuckerberg Biohub, Inc." and meta["reason"] == "has no pecuniary interest in these shares" and meta["decided"].startswith("reader ")
     # a later `no` removes the row

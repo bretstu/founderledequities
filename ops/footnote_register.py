@@ -97,11 +97,26 @@ def main(argv):
         print(f"  SKIPPED {tk} {ceo}: {v!r} {sh} shares: {why}")
     if dry:
         return 0
+    # WHAT CHANGED, FOR THE NEXT WALK (2026-09-20): the companies whose reader
+    # rows differ from the file as it was are listed for the refresh, which
+    # rewalks them that night whether or not they filed.
+    before = {}
+    if os.path.exists(reg_p):
+        for r in csv.DictReader(open(reg_p, encoding="utf-8-sig")):
+            if (r.get("decided") or "").strip():
+                before[(r["ticker"], r["security"].strip().lower(), r.get("vehicle", ""))] = r["reason"]
+    after = {(r["ticker"], r["security"].strip().lower(), r["vehicle"]): r["reason"] for r in picked.values()}
+    changed = sorted({k[0] for k in set(before) ^ set(after)} | {k[0] for k in set(before) & set(after) if before[k] != after[k]})
     with open(reg_p, "w", encoding="utf-8", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=COLUMNS)
         w.writeheader()
         w.writerows(rows)
     print(f"  wrote {reg_p}: {len(rows)} row(s)")
+    if changed:
+        nxt = os.path.join(ROOT, "universe", "rewalk-next.txt")
+        have = set(open(nxt, encoding="utf-8").read().split()) if os.path.exists(nxt) else set()
+        open(nxt, "w", encoding="utf-8").write("\n".join(sorted(have | set(changed))) + "\n")
+        print(f"  rewalk tonight: {', '.join(changed)} (universe/rewalk-next.txt)")
     return 0
 
 

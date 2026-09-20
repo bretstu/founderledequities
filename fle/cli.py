@@ -1493,6 +1493,40 @@ def _refresh(args, log) -> int:
         prior = ""
     elif rotate_checkpoint(ck, prior, args.universe):
         log("panel: last night's checkpoint is tonight's prior")
+    # A REGISTER CHANGE IS REWALKED THE SAME NIGHT (2026-09-20). The nightly
+    # recomputes only companies that filed; a footnote decided this morning
+    # for a founder who will not file for months would otherwise wait for
+    # him. ops/footnote_register.py lists the companies whose rows changed
+    # in universe/rewalk-next.txt; their prior panel rows and history state
+    # are forgotten here, so the walk does them tonight, then the list is
+    # cleared. (A targeted run does its own forgetting with --rewalk.)
+    rewalk_next = os.path.join(os.path.abspath(args.dir), "universe", "rewalk-next.txt")
+    forget = set()
+    if not targeted and os.path.exists(rewalk_next):
+        forget = {t.strip().upper() for t in open(rewalk_next, encoding="utf-8").read().split() if t.strip()}
+        os.remove(rewalk_next)
+    if forget:
+        if prior and os.path.exists(prior):
+            kept = []
+            with open(prior, encoding="utf-8") as fh:
+                for line in fh:
+                    try:
+                        if (json.loads(line).get("ticker") or "").upper() in forget:
+                            continue
+                    except ValueError:
+                        pass
+                    kept.append(line)
+            with open(prior, "w", encoding="utf-8") as fh:
+                fh.writelines(kept)
+        hs = os.path.join(live, "history-state.json")
+        if os.path.exists(hs):
+            with open(hs, encoding="utf-8") as fh:
+                st = json.load(fh)
+            for t in forget:
+                st.pop(t, None)
+            with open(hs, "w", encoding="utf-8") as fh:
+                json.dump(st, fh)
+        log(f"register: {len(forget)} compan{'y' if len(forget) == 1 else 'ies'} whose exclusions changed will be rewalked tonight: {', '.join(sorted(forget))}")
     # Each stage gets exactly what its own command reads. These defaults
     # mirror the parser's; a stage that grew an option and was not added
     # here used to die mid-run, hours in.
@@ -1556,7 +1590,7 @@ def _refresh(args, log) -> int:
                     f"(unchanged tonight); ANCHORS in fle/cli.py is stale")
     # 2b -- the same question of every company: a share count that moved
     # with no newer filing to explain it is the rules moving, not the person
-    odd = unexplained_moves(path("panel.csv", staged=False), path("panel.csv"))
+    odd = [t for t in unexplained_moves(path("panel.csv", staged=False), path("panel.csv")) if t not in forget]   # a register change explains its own moves
     if odd and len(odd) > UNEXPLAINED_LIMIT and not args.force:
         log(f"REFUSING TO PUBLISH -- {len(odd)} companies' share counts moved "
             f"with no newer filing to explain it ({', '.join(odd[:12])}"
