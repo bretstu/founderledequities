@@ -12,11 +12,13 @@
 #                           # rest keep last night's rows; about two minutes
 #   REWALK=1 ops/now.sh CVNA,ASST   # targeted, and their history walked again even
 #                           # with no new filing (a rule change); refresh.log has the walk
+#   FORCE=1 ops/now.sh COIN # publish even if a verified holding moved without a filing
+#                           # (after the change has been checked by hand)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export FLE_QUICK=1
 TICKERS="${1:-}"
-python3 -m fle.cli refresh --dir "$(pwd)" ${TICKERS:+--tickers "$TICKERS"} ${REWALK:+--rewalk} 2>&1 | tee refresh.log | grep --line-buffered -E "^\[|VENDOR|published|targeted|alerts:|drafts:|Deployment|refus|Traceback"
+python3 -m fle.cli refresh --dir "$(pwd)" ${TICKERS:+--tickers "$TICKERS"} ${REWALK:+--rewalk} ${FORCE:+--force} 2>&1 | tee refresh.log | grep --line-buffered -E "^\[|VENDOR|published|targeted|alerts:|drafts:|Deployment|refus|Traceback"
 echo
 echo "== today's moves (drafts/moves-today.md) =="
 sed -n '3,40p' drafts/moves-today.md 2>/dev/null || echo "(no draft written)"

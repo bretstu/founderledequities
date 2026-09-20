@@ -1791,8 +1791,14 @@ def _heartbeat(log, signal, body: str = "") -> None:
 # sales took 200,000 shares off the previous anchor (66,396,146), and the diff
 # flagged the stale constant as a moved holding. An anchor is a number as of
 # a date; when a founder trades, the anchor moves with the filing.
-ANCHORS = {"TSLA": 1123324786, "META": 342463325, "DELL": 294263250,
-           "COIN": 25640144, "XYZ": 48844566, "LYV": 4188167,
+# THE REGISTER MOVES TWO ANCHORS (2026-09-20, phase two of the footnote reader):
+# Coinbase less the Ehrsam 2014 Irrevocable Trust (2,958,393: Armstrong is its
+# trustee, not its beneficiary) = 22,681,751; Meta less the Chan Zuckerberg
+# Biohub (1,231,037: "no pecuniary interest in these shares") = 341,232,288.
+# The proxy's shares-held for Armstrong, 25,640,144, is the site's figure
+# before the exclusion, to the share.
+ANCHORS = {"TSLA": 1123324786, "META": 341232288, "DELL": 294263250,
+           "COIN": 22681751, "XYZ": 48844566, "LYV": 4188167,
            "ECHO": 147184017, "SMCI": 66196146, "FOXA": 86776627}
 
 
