@@ -4474,7 +4474,18 @@ def test_partnership_units_carry_forward_from_the_filing_that_stated_them(monkey
         total_ii, titles_ii, units_ii = L._options(root)
         if not led.options and total_ii:
             led.options, led.option_titles = total_ii, titles_ii
-        for k, v in units_ii.items():
-            led.unit_titles.setdefault(k, v)
-        led.partnership_units = sum(led.unit_titles.values())
+        if not led.unit_titles and units_ii:
+            led.unit_titles = dict(units_ii)
+            led.partnership_units = sum(led.unit_titles.values())
     assert led.options == 530222.0 and led.partnership_units == 50978823.0
+    # and a newer filing that restates the units under a new name replaces the old statement whole (Blue Owl)
+    f4b = ET.fromstring("""<ownershipDocument><documentType>4</documentType><derivativeTable><derivativeHolding>
+      <securityTitle><value>Blue Owl Operating Group Units</value></securityTitle><conversionOrExercisePrice><footnoteId id="F1"/></conversionOrExercisePrice>
+      <postTransactionAmounts><sharesOwnedFollowingTransaction><value>7655333</value></sharesOwnedFollowingTransaction></postTransactionAmounts>
+      <ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></derivativeHolding></derivativeTable></ownershipDocument>""")
+    led2 = L.Ledger()
+    for root in (f4b, f3):
+        _t, _ti, units_ii = L._options(root)
+        if not led2.unit_titles and units_ii:
+            led2.unit_titles = dict(units_ii); led2.partnership_units = sum(led2.unit_titles.values())
+    assert led2.partnership_units == 7655333.0

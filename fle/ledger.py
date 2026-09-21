@@ -1927,9 +1927,15 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
         total_ii, titles_ii, units_ii = _options(root)
         if not led.options and total_ii:
             led.options, led.option_titles = total_ii, titles_ii
-        for k, v in units_ii.items():
-            led.unit_titles.setdefault(k, v)
-        led.partnership_units = sum(led.unit_titles.values())
+        # THE NEWEST FILING THAT STATES ANY UNITS STATES THEM WHOLE. Carrying
+        # every title forward added Blue Owl's old Owl Rock titles to its
+        # current ones (7.7M read as 144M); a filer who restates the units
+        # restates all of them, so the first statement seen newest-first is
+        # the holding, and only a person whose newer filings never mention
+        # units (Hagerty, a Form 3 and Form 4s about other things) reaches back.
+        if not led.unit_titles and units_ii:
+            led.unit_titles = dict(units_ii)
+            led.partnership_units = sum(led.unit_titles.values())
 
     # THE FORM 3, FOR THE FLOWS ONLY. The position no longer needs it -- a
     # filing states each group whole, so nothing is carried and there is
