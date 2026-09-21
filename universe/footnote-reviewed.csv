@@ -1,0 +1,280 @@
+key,verdict,note,label
+908724|0001062993-24-019966|3|d7a58fbb87,no,"a spouse's separate-property trust: household family, economic (the site's rule; Section 16's presumption; both vendors count it)",
+908724|0001062993-24-019966|1|93056cadc6,no,"a spouse's separate-property trust: household family, economic (the site's rule; Section 16's presumption; both vendors count it)",
+908724|0001123292-25-000539|1|93056cadc6,no,"a spouse's separate-property trust: household family, economic (the site's rule; Section 16's presumption; both vendors count it)",
+908724|0001123292-16-002649|3|2ced173227,no,"a spouse's separate-property trust: household family, economic (the site's rule; Section 16's presumption; both vendors count it)",
+1548760|0000950103-26-011908|3|b84a26c488,ok,a non-profit; no pecuniary interest; the proxy excludes it,
+904548|0000904548-26-000015|10|b2443faa63,no,"a GRAT: annuity to the grantor, remainder to family; economic by the household rule",
+904548|0000904548-26-000015|11|ae701db83f,no,"a GRAT: annuity to the grantor, remainder to family; economic by the household rule",
+904548|0000904548-26-000015|14|c874d0dc42,no,"a GRAT: annuity to the grantor, remainder to family; economic by the household rule",
+904548|0000904548-26-000015|13|22748706de,no,"a GRAT: annuity to the grantor, remainder to family; economic by the household rule",
+904548|0000904548-26-000015|12|8198cd6c24,no,"a GRAT: annuity to the grantor, remainder to family; economic by the household rule",
+904548|0000904548-26-000015|6|7bea3ef52e,ok,a charitable foundation; the hedge cannot create a pecuniary interest in a charity,
+1947645|0001213900-25-012458|5|d9aca82910,no,"Up-C paired voting shares: the economics are the units, one per share; the number stands",
+1947645|0001213900-25-012458|2|0f772185ca,no,"Up-C paired voting shares: the economics are the units, one per share; the number stands",
+1933447|0001933447-25-000005|1|31dab14744,no,"Up-C paired voting shares: the economics are the units, one per share; the number stands",
+940569|0001193125-26-290584|3|02d83dbe00,ok,"the Hayne Foundation is a private foundation (confirmed by reading); the model inferred from the name, which the prompt forbids",
+1114357|0001114357-26-000034|17|8459bdcd92,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001114357-26-000034|18|51501864dc,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001114357-26-000034|19|a9b4f3ae5c,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001114357-26-000034|20|1c77d1166e,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001114357-26-000034|21|ce4aecdf36,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001114357-26-000034|22|dc1dab2695,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001114357-26-000034|23|1e89f15335,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001114357-26-000034|24|3f967e3c22,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001114357-26-000034|26|51501864dc,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001114357-26-000034|27|a9b4f3ae5c,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001114357-26-000034|28|1c77d1166e,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001114357-26-000034|30|dc1dab2695,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001114357-26-000036|2|d760a1b62b,read,an investment vehicle with other members; the fraction is not in the footnotes; check the Tempus proxy,
+1114357|0001114357-26-000036|6|478d995ea6,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001114357-26-000036|7|24ceef1511,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001415889-24-017734|24|b77253b105,read,an investment vehicle with other members; the fraction is not in the footnotes; check the Tempus proxy,
+1114357|0001415889-24-017734|38|5800d8f9cb,read,an investment vehicle with other members; the fraction is not in the footnotes; check the Tempus proxy,
+1114357|0001415889-24-017736|10|829e562e63,read,an investment vehicle with other members; the fraction is not in the footnotes; check the Tempus proxy,
+1114357|0001415889-24-017736|14|a287399864,ok,"a private foundation, confirmed by reading; the model inferred from the name (a flag, not a finding)",
+1114357|0001415889-24-017736|2|829e562e63,read,an investment vehicle with other members; the fraction is not in the footnotes; check the Tempus proxy,
+1114357|0001415889-24-017736|7|829e562e63,read,an investment vehicle with other members; the fraction is not in the footnotes; check the Tempus proxy,
+940569|0001193125-26-290584|3|02d83dbe00,ok,a private foundation by reading; the reader correctly says unclear on a name alone (surfaced as name-only),unclear
+940569|0001193125-26-290584|3|02d83dbe00,ok,a private foundation by reading; the reader correctly says unclear on a name alone,unclear
+940569|0001193125-26-290584|3|02d83dbe00,ok,a foundation the couple runs; disclaimed by name under the analyst's rule,disclaimed
+1114357|0001114357-26-000034|17|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000034|18|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000034|19|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000034|20|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000034|21|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000034|22|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000034|23|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000034|24|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000034|25|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000034|26|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000034|27|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000034|28|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000034|29|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000034|30|a167ed55c6,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000036|6|d760a1b62b,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001114357-26-000036|7|d760a1b62b,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1114357|0001415889-24-017736|14|373a226969,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1671445|0001671445-25-000010|4|0b7a68e0f8,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1671445|0001671445-26-000008|1|0b7a68e0f8,ok,"a foundation, disclaimed by name and role (agreed 2026-09-18)",disclaimed
+1308562|0001193125-26-352542|4|48418dd155,ok,"majority member of the LLC: a fraction, unstated; read the proxy",partial
+1394688|0001823945-21-000048|1|d372abcb31,no,"spouse and a descendants' trust with nothing said about its terms: the household, not partial",partial
+1539940|0001876042-26-000271|10|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|11|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|12|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|13|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|14|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|15|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|16|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|17|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|18|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|19|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|20|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|21|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|22|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|23|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|24|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|25|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|6|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|8|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1539940|0001876042-26-000271|9|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1540655|0001540655-26-000024|3|8163197670,no,a family partnership including the reporting person: the household,partial
+1699293|0001193125-26-151634|2|2f8ae786bd,ok,"no financial interest, beneficiaries not family: the filer's own words",disclaimed
+1012998|0001193125-26-276155|2|7fa6cbe0b7,ok,no pecuniary interest: the filer's words,disclaimed
+1012998|0001193125-26-276155|3|6613f1dd0f,ok,no pecuniary interest: the filer's words,disclaimed
+1012998|0001193125-26-276155|4|869831f05a,ok,no pecuniary interest: the filer's words,disclaimed
+1352618|0001352618-26-000012|1|cd764450e8,no,a trust for the reporting person's own benefit,disclaimed
+1472160|0001437749-26-004950|1|69fd0ef1be,no,"gift trusts, no trustee stated: holds the strings until shown otherwise",disclaimed
+1472160|0001437749-26-004950|2|8584ed5d79,no,"gift trusts, no trustee stated: holds the strings until shown otherwise",disclaimed
+1473358|0001104659-26-018613|3|77291cd758,no,"the spouse's family trust, hedge only",disclaimed
+1486259|0000950103-22-006052|1|aa4cb9bbf2,read,"corporate trustee, hedge, beneficiaries unstated: unclear until read",disclaimed
+1486259|0000950103-22-006052|2|aaade1d904,read,"corporate trustee, hedge, beneficiaries unstated: unclear until read",disclaimed
+1486259|0000950103-22-006052|3|8af2434f86,read,"corporate trustee, hedge, beneficiaries unstated: unclear until read",disclaimed
+1585821|0001628280-23-041475|1|71d9333cf8,no,a family member's shares: the household,disclaimed
+1590945|0001628280-25-029124|6|84568c65d2,no,"an LLC he is sole member of: his, whatever its purpose",disclaimed
+1613062|0001193125-25-230522|2|ac500163c0,no,trustee of the SLAT: the household,disclaimed
+1700548|0001690820-23-000269|2|207f27fac9,no,co-trustee of the trust: holds the strings,disclaimed
+1734563|0001734563-26-000019|8|8cd988efa4,no,trustee of the children's trust,disclaimed
+1848395|0001562180-25-005961|10|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|11|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|122|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|123|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|124|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|125|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|126|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|127|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|128|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|129|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|12|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|13|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|149|b7514d5d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|14|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|150|b7514d5d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|154|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|155|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|156|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|15|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|16|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|171|19f5ea07e8,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|17|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|18|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|197|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|198|19f5ea07e8,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|199|fe4086dab0,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|19|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|200|dbea8ea69d,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|201|b7514d5d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|202|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|203|19f5ea07e8,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|204|fe4086dab0,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|205|dbea8ea69d,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|206|b7514d5d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|20|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|21|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|23|19f5ea07e8,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|24|19f5ea07e8,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|25|19f5ea07e8,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|26|19f5ea07e8,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|27|19f5ea07e8,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|28|19f5ea07e8,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|29|19f5ea07e8,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|30|19f5ea07e8,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|3|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|4|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|5|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|6|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|7|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|8|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001562180-25-005961|9|0ca85a1d0c,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001848395-26-000013|1|018e8bdd8a,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1848395|0001848395-26-000013|3|48d5fa56b0,ok,"children's vehicle, unhedged disclaimer, manager unstated: a completed gift (decided 2026-09-18)",disclaimed
+1869013|0001828108-25-000089|1|81c082c088,no,trustee of the family trust,disclaimed
+1888118|0001875444-24-000004|2|884102c619,no,custodian for a minor: the household,disclaimed
+1888118|0001875444-24-000004|3|884102c619,no,custodian for a minor: the household,disclaimed
+1991099|0001470831-26-000495|4|3e4c89fe3b,no,he or his spouse is trustee,disclaimed
+1991099|0001470831-26-000495|5|3d2f1b856f,no,he or his spouse is trustee,disclaimed
+2058037|0001769628-26-000430|14|11f05f99f9,ok,"third-party trustee, family beneficiaries: a completed gift",disclaimed
+2073586|0002073586-26-000014|2|3dc0950683,ok,"corporate trustee, descendants trust: a completed gift",disclaimed
+901484|0001193125-26-297059|1|947d1050c6,no,trustee of the child's trust,disclaimed
+902162|0000902162-26-000012|4|ff0e96eca3,no,spouse is trustee,disclaimed
+904548|0000904548-26-000015|5|cd6b295cd8,no,a minor child's shares: the household,disclaimed
+1585821|0001628280-23-041475|2|71d9333cf8,no,a family member's shares: the household; the formula does not change that,disclaimed
+1613062|0001193125-25-230522|12|0ce54150d7,ok,"two named independent co-trustees, full disclaimer: a gift completed (17.9M; read the filing)",disclaimed
+1613062|0001193125-25-230522|5|0ce54150d7,ok,"two named independent co-trustees, full disclaimer: a gift completed (17.9M; read the filing)",disclaimed
+1848395|0001848395-26-000013|2|abc12a5b1b,ok,children's vehicles with the full 'not an admission' disclaimer: gifts completed,disclaimed
+1374436|0001713683-26-000180|2|b163728738,read,"an independent trustee, no beneficiary stated: unclear until read",disclaimed
+1496665|0001628280-26-061871|1|ec2100b8d8,ok,a children's trust with the full formula: a gift completed,disclaimed
+1888932|0001888932-26-000011|1|4d167de821,ok,"a member of the LLC, control shared: a fraction, unstated",partial
+1895111|0001895111-26-000018|2|ddf125698c,no,the footnote says he has voting or investment power: holds the strings,disclaimed
+1895111|0001895111-26-000018|6|ddf125698c,no,the footnote says he has voting or investment power: holds the strings,disclaimed
+2061801|0002061801-26-000017|6|a0fba195d3,read,"an independent trustee, no beneficiary stated: unclear until read",disclaimed
+2061801|0002061801-26-000017|7|9cb947f85f,read,"an independent trustee, no beneficiary stated: unclear until read",disclaimed
+1012998|0001193125-26-276155|2|7fa6cbe0b7,no,economic under the rules as settled (spouse-trustee household; majority member counted whole),economic
+1012998|0001193125-26-276155|3|6613f1dd0f,no,economic under the rules as settled (spouse-trustee household; majority member counted whole),economic
+1012998|0001193125-26-276155|4|869831f05a,no,economic under the rules as settled (spouse-trustee household; majority member counted whole),economic
+1308562|0001193125-26-214911|9|8ea285f904,no,economic under the rules as settled (spouse-trustee household; majority member counted whole),economic
+1308562|0001193125-26-352542|4|48418dd155,no,economic under the rules as settled (spouse-trustee household; majority member counted whole),economic
+1472160|0001437749-26-004950|2|8584ed5d79,ok,the formula attached to this child's trust: a gift completed,disclaimed
+1496665|0001628280-26-061871|1|ec2100b8d8,no,"the filer says the children share the household: a statement, and it beats the formula",economic
+1888932|0001888932-26-000011|1|4d167de821,no,a member of the LLC: counted whole; economic,economic
+1106232|0001106232-26-000010|2|e0c486d8df,ok,"a foundation by name, trustee: a charity",disclaimed
+1326228|0001104659-24-006838|2|30816fbb91,no,"'immediate family' includes a spouse: the household, not a gift to children",disclaimed
+1373630|0001628280-26-043907|1|1f9e46dca9,no,a trust created under a GRAT with no trustee named: not shown to have left his hands,disclaimed
+1373630|0001628280-26-043907|5|f5c97c7666,no,a trust created under a GRAT with no trustee named: not shown to have left his hands,disclaimed
+1539940|0001876042-26-000271|7|fde1f8cf35,ok,"an irrevocable non-grantor trust, independent trustee, no hedge: a gift completed",disclaimed
+1587420|0001683168-26-005948|1|7917a7cc50,ok,"irrevocable trust for his heirs, a corporate trustee: a gift completed",disclaimed
+1737136|0001104659-26-019289|1|c1aa5159da,no,a continuation trust under a GRAT with no trustee named: not shown to have left his hands,disclaimed
+1851492|0001679788-25-000221|8|3bf12c4225,ok,trustee of another family's trust,disclaimed
+2073586|0002073586-26-000010|3|31b6f66341,ok,a corporate trustee on a descendants trust and on a GRAT remainder trust: gifts completed,disclaimed
+2073586|0002073586-26-000010|7|3dc0950683,ok,a corporate trustee on a descendants trust and on a GRAT remainder trust: gifts completed,disclaimed
+2073586|0002073586-26-000010|8|31b6f66341,ok,a corporate trustee on a descendants trust and on a GRAT remainder trust: gifts completed,disclaimed
+2073586|0002073586-26-000014|4|31b6f66341,ok,a corporate trustee on a descendants trust and on a GRAT remainder trust: gifts completed,disclaimed
+1472160|0001437749-26-004950|1|69fd0ef1be,ok,"a children's trust with the formula attached (F2, on both children's lines): a gift completed",disclaimed
+1472160|0001437749-26-004950|2|8584ed5d79,ok,"a children's trust with the formula attached (F2, on both children's lines): a gift completed",disclaimed
+1598688|0001628280-26-061572|3|3643335efd,no,a child's trust with the hedged disclaimer and no trustee: economic,disclaimed
+1472160|0001437749-26-004950|1|69fd0ef1be,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1472160|0001437749-26-004950|2|8584ed5d79,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|10|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|11|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|122|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|123|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|124|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|125|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|126|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|127|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|128|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|129|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|12|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|13|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|149|b7514d5d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|14|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|150|b7514d5d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|154|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|155|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|156|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|15|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|16|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|171|19f5ea07e8,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|17|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|18|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|197|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|198|19f5ea07e8,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|199|fe4086dab0,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|19|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|200|dbea8ea69d,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|201|b7514d5d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|202|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|203|19f5ea07e8,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|204|fe4086dab0,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|205|dbea8ea69d,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|206|b7514d5d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|20|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|21|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|23|19f5ea07e8,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|24|19f5ea07e8,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|25|19f5ea07e8,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|26|19f5ea07e8,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|27|19f5ea07e8,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|28|19f5ea07e8,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|29|19f5ea07e8,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|30|19f5ea07e8,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|3|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|4|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|5|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|6|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|7|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|8|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001562180-25-005961|9|0ca85a1d0c,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001848395-26-000013|1|018e8bdd8a,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001848395-26-000013|2|abc12a5b1b,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1848395|0001848395-26-000013|3|48d5fa56b0,no,rule B (2026-09-19): no independent trustee named; the wording of a disclaimer never decides; counted,disclaimed
+1486259|0000950103-22-006052|1|aa4cb9bbf2,read,"a corporate trustee, beneficiaries 'family members': not shown to be the children; the proxy settles it",disclaimed
+1486259|0000950103-22-006052|2|aaade1d904,read,"a corporate trustee, beneficiaries 'family members': not shown to be the children; the proxy settles it",disclaimed
+1486259|0000950103-22-006052|3|8af2434f86,read,"a corporate trustee, beneficiaries 'family members': not shown to be the children; the proxy settles it",disclaimed
+1114357|0001114357-26-000038|11|cefb35d5d6,ok,"the foundations, on the newest filing",disclaimed
+1114357|0001114357-26-000038|12|cefb35d5d6,ok,"the foundations, on the newest filing",disclaimed
+1114357|0001114357-26-000038|5|cefb35d5d6,ok,"the foundations, on the newest filing",disclaimed
+1031083|0001031083-26-000002|6|6d7827f34c,ok,"a corporation owned with his brother: a fraction, unstated",partial
+1208478|0001193125-26-085644|6|f5c9893fa4,ok,"a charitable lead annuity trust, remainder to him: a fraction, unstated",partial
+1249555|0000100517-26-000155|2|57d48cfb66,ok,"a children's trust, his brother as trustee: someone outside the household named",disclaimed
+1274833|0001193125-26-094055|2|53184a737e,ok,"a partnership shared with others: a fraction, unstated",partial
+1284352|0001284352-26-000004|2|b4b82be3a7,ok,"one of the general partners: a fraction, unstated; the proxy will say",partial
+1326019|0001506307-26-000107|1|637d45c274,ok,"disclaims 10%: a fraction, stated (0.9)",partial
+1354590|0000093410-26-000173|1|2e16225bd0,no,"children's trusts with no trustee named hold 99%: in his hands; economic, whole",partial
+1453104|0000905148-26-004074|1|a6d13405bc,no,a child's trust with the reporting person as trustee: economic,disclaimed
+1456330|0001193125-26-201398|1|7752582dd1,no,a co-trustee is a trustee: the children's trusts are in his hands,disclaimed
+1714892|0001128928-26-000082|4|97bb54a058,ok,"the footnote states he has no investment, voting or dispositive power over the children's trusts: someone else holds them",disclaimed
+1714892|0001128928-26-000082|5|dead204fa9,ok,a stated fraction (0.5) of the family LLC,partial
+1785595|0001785595-26-000016|1|8184808ede,no,"the line already is his proportionate interest: the filer did the fraction; economic, whole",partial
+898860|0001193125-25-291590|2|63e5d1dbb6,ok,"one of two limited partners; one of seven: fractions, unstated; the proxy will say",partial
+898860|0001193125-25-291590|3|483b7872e9,ok,"one of two limited partners; one of seven: fractions, unstated; the proxy will say",partial
+898860|0001193125-25-291590|4|483b7872e9,ok,"one of two limited partners; one of seven: fractions, unstated; the proxy will say",partial
+898860|0001193125-25-291590|5|483b7872e9,ok,"one of two limited partners; one of seven: fractions, unstated; the proxy will say",partial
+898860|0001193125-25-291590|6|483b7872e9,ok,"one of two limited partners; one of seven: fractions, unstated; the proxy will say",partial
+898860|0001193125-25-291590|7|483b7872e9,ok,"one of two limited partners; one of seven: fractions, unstated; the proxy will say",partial
+904503|0000904503-26-000005|5|5e3cdffb2a,ok,a charitable foundation; disclaims any pecuniary interest,disclaimed
+905853|0001225208-26-005796|1|a2aefb4223,no,the spouse is trustee of the Trust: the household; economic,partial
+905853|0001225208-26-005796|3|c69e582dc5,no,the spouse is trustee of the Trust: the household; economic,partial
+905853|0001225208-26-005796|4|edd8c031e7,no,the spouse is trustee of the Trust: the household; economic,partial
+925122|0001193125-25-211324|10|73a0fcc4bf,ok,"the family chain of entities: a fraction, unstated",partial
+925122|0001193125-25-211324|9|73a0fcc4bf,ok,"the family chain of entities: a fraction, unstated",partial
