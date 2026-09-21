@@ -1143,8 +1143,8 @@ def _trust_the_balances(rows: list) -> None:
             r.acquired = not r.acquired
 
 
-def _options(root) -> tuple[float, dict]:
-    """-> (total, {title: amount}).
+def _options(root) -> tuple[float, dict, dict]:
+    """-> (total, {title: amount}, {unit title: amount}).
 
     The total alone cannot answer the question it raises. Schwarzman holds
     235,686,046 of SOMETHING at Blackstone, and whether that is a stock
@@ -1179,7 +1179,7 @@ def _options(root) -> tuple[float, dict]:
             by_title[key] = v                    # document order: last wins
             if is_partnership_unit(title):
                 partnership[key] = v
-    return sum(by_title.values()), by_title, sum(partnership.values())
+    return sum(by_title.values()), by_title, partnership
 
 
 
@@ -1379,6 +1379,7 @@ class Ledger:
     options: float = 0.0
     option_titles: dict = field(default_factory=dict)
     partnership_units: float = 0.0
+    unit_titles: dict = field(default_factory=dict)   # {unit title: amount}, the newest statement of each (2026-09-24)
     converted: list = field(default_factory=list)
     flows: Flows = field(default_factory=Flows)
 
@@ -1918,8 +1919,17 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                 # total is unchanged.
                 _merge_same_day(led.groups[key], g, newest_first=True)
 
-        if not led.options:
-            led.options, led.option_titles, led.partnership_units = _options(root)
+        # TABLE II: the options are a snapshot from the newest filing that has
+        # any; the PARTNERSHIP UNITS ARE A HOLDING and carry forward (2026-09-24,
+        # Hagerty): a Form 3 stated 50,978,823 units of The Hagerty Group and no
+        # later Form 4 restated them, so a newest-filing snapshot read zero.
+        # Newest first, so the newest statement of each unit title wins.
+        total_ii, titles_ii, units_ii = _options(root)
+        if not led.options and total_ii:
+            led.options, led.option_titles = total_ii, titles_ii
+        for k, v in units_ii.items():
+            led.unit_titles.setdefault(k, v)
+        led.partnership_units = sum(led.unit_titles.values())
 
     # THE FORM 3, FOR THE FLOWS ONLY. The position no longer needs it -- a
     # filing states each group whole, so nothing is carried and there is

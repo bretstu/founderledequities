@@ -4450,4 +4450,31 @@ def test_a_form_3_states_partnership_units_by_the_underlying_count():
         <natureOfOwnership><value>By Hagerty Holding Corp.</value></natureOfOwnership></ownershipNature>
     </derivativeHolding></derivativeTable></ownershipDocument>"""
     total, by_title, units = _options(ET.fromstring(xml))
-    assert units == 50978823.0 and total == 50978823.0
+    assert sum(units.values()) == 50978823.0 and total == 50978823.0
+
+
+def test_partnership_units_carry_forward_from_the_filing_that_stated_them(monkeypatch):
+    """HAGERTY (2026-09-24): the Form 3 states the units; the later Form 4
+    carries only a convertible preferred in Table II. The units are a
+    holding and persist until restated; the walk must not read zero from
+    the newest filing's snapshot."""
+    import xml.etree.ElementTree as ET
+    from fle import ledger as L
+    f3 = ET.fromstring("""<ownershipDocument><documentType>3</documentType><derivativeTable><derivativeHolding>
+      <securityTitle><value>Hagerty Group Units</value></securityTitle><conversionOrExercisePrice><footnoteId id="F1"/></conversionOrExercisePrice>
+      <exerciseDate><footnoteId id="F1"/></exerciseDate><expirationDate><footnoteId id="F1"/></expirationDate>
+      <underlyingSecurity><underlyingSecurityTitle><value>Class A Common Stock</value></underlyingSecurityTitle><underlyingSecurityShares><value>50978823</value></underlyingSecurityShares></underlyingSecurity>
+      <ownershipNature><directOrIndirectOwnership><value>I</value></directOrIndirectOwnership></ownershipNature></derivativeHolding></derivativeTable></ownershipDocument>""")
+    f4 = ET.fromstring("""<ownershipDocument><documentType>4</documentType><derivativeTable><derivativeHolding>
+      <securityTitle><value>Series A Convertible Preferred Stock</value></securityTitle><conversionOrExercisePrice><value>11.79</value></conversionOrExercisePrice>
+      <postTransactionAmounts><sharesOwnedFollowingTransaction><value>530222</value></sharesOwnedFollowingTransaction></postTransactionAmounts>
+      <ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></derivativeHolding></derivativeTable></ownershipDocument>""")
+    led = L.Ledger()
+    for root in (f4, f3):          # newest first, as the walk goes
+        total_ii, titles_ii, units_ii = L._options(root)
+        if not led.options and total_ii:
+            led.options, led.option_titles = total_ii, titles_ii
+        for k, v in units_ii.items():
+            led.unit_titles.setdefault(k, v)
+        led.partnership_units = sum(led.unit_titles.values())
+    assert led.options == 530222.0 and led.partnership_units == 50978823.0
