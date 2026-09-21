@@ -4414,3 +4414,21 @@ def test_a_vehicle_row_matches_the_class_by_meaning_and_ignores_the_direction():
     rec = {}
     apply_exclusions(here, [row], rec)
     assert here[("Common Stock (the company's only class)", "D")].shares == 1296047.0 and list(rec.values())[0][0] == 807602.0
+
+
+def test_a_form_3_reports_a_share_class_in_table_ii_by_its_underlying_count():
+    """BOOST RUN (2026-09-21): Karos's Form 3 lists 29,533,018 Class B in Table II
+    with no balance field (a Form 3's Table II has none); the count is the
+    underlying security's. The walk read nothing and the site said 0%."""
+    import xml.etree.ElementTree as ET
+    from fle.ledger import _rows
+    xml = """<ownershipDocument><documentType>3</documentType><derivativeTable><derivativeHolding>
+      <securityTitle><value>Class B Common Stock, par value $0.0001 per share</value></securityTitle>
+      <conversionOrExercisePrice><footnoteId id="F1"/></conversionOrExercisePrice>
+      <exerciseDate><footnoteId id="F1"/></exerciseDate><expirationDate><footnoteId id="F1"/></expirationDate>
+      <underlyingSecurity><underlyingSecurityTitle><value>Class A Common Stock, par value $0.0001 per share</value></underlyingSecurityTitle>
+        <underlyingSecurityShares><value>29533018</value></underlyingSecurityShares></underlyingSecurity>
+      <ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature>
+    </derivativeHolding></derivativeTable></ownershipDocument>"""
+    rows = _rows(ET.fromstring(xml), "3", "2026-05-08", "0001493152-26-023900")
+    assert len(rows) == 1 and rows[0].table == "II" and rows[0].shares == 29533018.0 and rows[0].direct == "D"

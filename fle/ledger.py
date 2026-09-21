@@ -1080,6 +1080,15 @@ def _rows(root, form: str, when: str, acc: str) -> list[Line]:
             own = node.find("ownershipNature")
             shares = _num(node.find("postTransactionAmounts"),
                           "sharesOwnedFollowingTransaction")
+            if table == "II" and (form.startswith("3") or shares is None):
+                # A FORM 3 STATES A TABLE II SHARE CLASS BY ITS UNDERLYING COUNT
+                # (2026-09-21, Boost Run). The initial statement's schema has
+                # no balance field on a Table II holding: the count is the
+                # underlying security's, and a share class converts one for
+                # one, so that count is the holding. Form 4s carry a balance
+                # and it is read above; a filing of any type that omits it
+                # is read the same way rather than as nothing.
+                shares = _num(node.find("underlyingSecurity"), "underlyingSecurityShares") if shares is None else shares
             amounts = node.find("transactionAmounts")
             ad = (_t(amounts, "transactionAcquiredDisposedCode") or "A").upper()[:1]
             out.append(Line(
