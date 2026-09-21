@@ -72,7 +72,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setWin,actWindow,actRows,actRow,actSorted,actStats,setTapeSort,tapeHead,tapeKind,tapeGroup,tapeDetail,tapeManner,evMove,evMoved,evDim,moveWhy,setKind,setMoved,tapeCounts,soldTickers,lastTrades,exportTable,cleanHist,renderTable,setScreen,fInfo,set TAPE_LIMIT(v){TAPE_LIMIT=v},get SCREEN_COUNTS(){return SCREEN_COUNTS},set SCREEN_COUNTS(v){SCREEN_COUNTS=v},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setWin,actWindow,actRows,actRow,actSorted,actStats,setTapeSort,tapeHead,tapeKind,tapeGroup,tapeDetail,tapeManner,evMove,evMoved,evDim,moveWhy,setKind,setMoved,tapeCounts,soldTickers,lastTrades,exportTable,cleanHist,renderTable,setScreen,setGroup,passes,presetOf,screenSentence,DEFAULTS,PRESETS,fInfo,set TAPE_LIMIT(v){TAPE_LIMIT=v},get SCREEN_COUNTS(){return SCREEN_COUNTS},set SCREEN_COUNTS(v){SCREEN_COUNTS=v},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -249,8 +249,8 @@ const P=runPage();
     const savedP=P.PANEL, savedC=P.SCREEN_COUNTS;
     P.PANEL=[{tk:"AAA",co:"A",ceo:"a",pct:12,val:1e9,masked:false,conf:"high",asof:"2026-09-01",rp:1,rv:1},
              {tk:"BBB",co:"B",ceo:"b",pct:null,val:null,masked:true,conf:"",asof:"",rp:2,rv:2}];
-    P.SCREEN_COUNTS={m0f0h0:2,m10f0h0:2,m5f0h0:2,m1f0h0:2,m0f1h0:1,m10f1h0:1,m5f1h0:1,m1f1h0:1,m0f0h1:2,m10f0h1:2,m5f0h1:2,m1f0h1:2,m0f1h1:1,m10f1h1:1,m5f1h1:1,m1f1h1:1};
-    P.state.pro=false;P.state.min=10;P.state.q="";P.state.tbF=false;P.state.tbH=false;P.renderTable();
+    P.SCREEN_COUNTS={"s:":2,"s:over-10":2};
+    P.state.pro=false;Object.assign(P.state,P.DEFAULTS,{min:10});P.state.q="";P.renderTable();
     assert((els["#tcount"]._html||"").includes("1 more match in Pro"),"under >10% the sealed match is counted: "+els["#tcount"]._html);
     P.state.q="AAA";P.renderTable();
     assert(!(els["#tcount"]._html||"").includes("more match"),"under a search there is no count");
@@ -273,7 +273,7 @@ const P=runPage();
     P.setScreen("hired-under-1");
     tks=rowsOf();
     assert(tks.length===1&&tks[0]==="HI","hired under 1% keeps the hired CEO with the small stake");
-    assert(P.state.tbF===false&&P.state.min===0,"a screen is the whole question: the other filters reset");
+    assert(P.state.who==="hired"&&P.state.max===1&&P.state.min===0&&P.state.sold==="any","a screen is the whole question: its preset on, the other groups at the default");
     P.setScreen("");P.PANEL=savedP;P.SCREEN_COUNTS=savedC;P.state.screen=savedL;P.TABLE_LIMIT=20;P.renderTable();
   }
 
@@ -285,14 +285,14 @@ const P=runPage();
     NOH:[[day(10),3.0,10]],
   };
   const fakePanel=[["UPX","Upward Inc","A Founder"],["DNX","Downward Inc","B Exec"],["NOH","Newlisted Inc","C Exec"]]
-    .map(([tk,co,ceo])=>({tk,co,ceo,pct:5,sh:1,out:1,val:1e9,conf:"high"}));
+    .map(([tk,co,ceo])=>({tk,co,ceo,pct:5,sh:1,out:1,val:1e9,conf:"high",pns:tk!=="DNX",lds:tk==="DNX"?day(6):"",ldb:tk==="UPX"?day(31):""}));
   const savedPanel=P.PANEL,savedEvents=P.EVENTS,savedF0=P.FOUNDERS;
   P.PANEL=fakePanel;P.FOUNDERS={UPX:{f:"yes",ev:"founded it",src:"x"}};
   P.EVENTS=[{tk:"DNX",ceo:"B Exec",c:"S",lb:"discretionary sale",pl:"discretionary",fd:day(5),td:day(6),sh:100,v:1e6,pc:1,ha:600,nc:-100,rs:0,u:"https://sec.gov/x"},
             {tk:"UPX",ceo:"A Founder",c:"P",lb:"open-market purchase",pl:"discretionary",fd:day(30),td:day(31),sh:30,v:3e5,pc:2,ha:150,nc:30,rs:0,u:"https://sec.gov/y"},
             {tk:"UPX",ceo:"A Founder",c:"S",lb:"exercise and sell",pl:"plan",fd:day(2),td:day(2),sh:5,v:1e4,pc:null,ha:150,nc:0,rs:0,u:""}];
   for(const r of P.PANEL){r.r1=r.tk==="UPX"?41.2:r.tk==="DNX"?-12.5:null;}   /* the 1-yr return rides on the row (universe.csv: ret_1y) */
-  state.q="";state.min=0;state.tbF=false;state.tbH=false;state.sort={key:"r1",dir:-1};
+  state.q="";Object.assign(state,P.DEFAULTS);state.sort={key:"r1",dir:-1};
   P.renderTable();
   let tb=els["#tbody"]._html;
   const order=[...tb.matchAll(/onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);
@@ -306,15 +306,15 @@ const P=runPage();
   const rowOf=tk=>{const i=tb.indexOf(`onclick="openCompany('${tk}')"`);const j=tb.indexOf("</tr>",i);return tb.slice(i,j);};
   // NEVER SOLD IS A SWITCH, NOT A COLUMN: a claim you ask for, not one made about everyone
   assert(!tb.includes('class="nsy"')&&!tb.includes("c-ns"),"no never-sold column in the table");
-  {P.state.tbH=true;P.renderTable();const on=els["#tbody"]._html;
+  {P.state.sold="none";P.renderTable();const on=els["#tbody"]._html;
    assert(on.includes("openCompany('UPX')")&&on.includes("openCompany('NOH')")&&!on.includes("openCompany('DNX')"),"the Never sold switch keeps the one who never reduced a stake and the short record, drops the seller -- options cashed don't count");
-   P.state.tbH=false;P.renderTable();}
+   P.state.sold="any";P.renderTable();}
   // the last move's kind still sorts and screens (r.ltk) but is no longer a column (2026-09-17): the table is ownership, the tape is trades
   assert(!rowOf("DNX").includes('class="c-lt"')&&!rowOf("DNX").includes('c-amt')&&!rowOf("DNX").includes('c-c12')&&!rowOf("DNX").includes('c-asof'),"the row carries the 12-month stake change, no trade cells, no date");
   assert(!tb.includes('class="c-asof"'),"no as-of column: a June filing must not read as a stale site (2026-09-17)");
   assert(!/c-lt"><span class="kind/.test(rowOf("DNX"))&&rowOf("UPX").includes('c-fd">Yes'),"no last-move words in the table; the founder flag its own column");
   assert(!rowOf("NOH").includes(" pts"),"no 12-month column (2026-09-18): the table is stake, worth, market cap");
-  state.tbH=true;P.renderTable();
+  state.sold="none";P.renderTable();
   const held=[...els["#tbody"]._html.matchAll(/onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);
   assert(held.join(",")==="UPX,NOH","the Never sold switch keeps only those who never did: "+held.join(","));
   // the export: the rows as shown, every field, quoted where it must be
@@ -323,7 +323,7 @@ const P=runPage();
   assert(hdr==="#,Company,Ticker,CEO,Founder,Ownership %,Value,Market cap,1-yr return %,Last move,Amount,Traded","the CSV is the table as shown, plus ticker and the founder flag as columns: "+hdr.slice(0,60));
   assert(csv.split("\n").length===3&&csv.includes("UPX")&&csv.includes("NOH")&&!csv.includes("DNX"),"and only the rows as filtered");
   assert(csv.split("\n")[1].split(",").length===hdr.split(",").length,"every row has every column");
-  state.tbH=false;state.sort={key:"r1",dir:1};P.renderTable();
+  state.sold="any";state.sort={key:"r1",dir:1};P.renderTable();
   const asc=[...els["#tbody"]._html.matchAll(/onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);
   assert(asc[0]==="DNX"&&asc[2]==="NOH","ascending puts the faller first and the short record still last");
   state.sort={key:"pct",dir:-1};
@@ -396,14 +396,14 @@ const P=runPage();
     P.PANEL=[{tk:"TSLA",ceo:"Elon Musk",co:"Tesla",pct:29.9,val:9e11},
              {tk:"AAPL",ceo:"Tim Cook",co:"Apple",pct:0.02,val:1e9},
              {tk:"NVDA",ceo:"Jensen Huang",co:"NVIDIA",pct:3.5,val:1e11}];
-    P.state.tbF=true;P.state.q="";P.state.min=0;P.renderTable();
+    Object.assign(P.state,P.DEFAULTS,{who:"founders"});P.state.q="";P.renderTable();
     const shown=[...els["#tbody"]._html.matchAll(/openCompany\('([A-Z.]+)'\)/g)].map(m=>m[1]);
     const allF=shown.length&&shown.every(tk=>{const i=P.fInfo(tk);return i&&i.f==="yes";});
     assert(allF,"founders-only shows only proxy-named founders: "+shown.join(","));
-    P.state.tbF=false;P.renderTable();
+    P.state.who="all";P.renderTable();
     const again=[...els["#tbody"]._html.matchAll(/openCompany\('([A-Z.]+)'\)/g)].map(m=>m[1]);
     assert(again.length>shown.length,"toggling off restores the full list");
-    assert(P.state.ev.f===false&&P.state.tbH===false,"the table's switch moved no other section's");
+    assert(P.state.ev.f===false&&P.state.sold==="any","the table's chips moved no other section's");
   }
 
   // ---- buys have manners; units-structured stakes never read as zero ----

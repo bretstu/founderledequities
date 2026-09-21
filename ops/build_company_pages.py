@@ -436,19 +436,33 @@ NAMES = {}
 # by stake value, every row a link to its company page. Built from the site's
 # own universe.csv (build_site_data), so a screen page and the interactive
 # screen agree to the row.
+# THE SCREENS ARE PRESETS (2026-09-21): each page is one setting of the
+# Companies page's five groups, tested here with the same rule the page and
+# the count file use (who runs it; the index; owns at least; years since the
+# last discretionary sale; years since the last open-market buy). The record
+# starts in 2016, and the words say so where it matters.
+def _years_since(day):
+    if not day:
+        return None
+    try:
+        return (datetime.date.today() - datetime.date.fromisoformat(day[:10])).days / 365.25
+    except ValueError:
+        return None
+
+
 SCREENS = [
     ("founder-led", "Founder-led companies",
      "US public companies worth $1B or more whose chief executive founded them, by the company's own proxy statement, with what each founder owns today",
      lambda r, f: f),
-    ("never-sold", "CEOs who have never sold a share",
-     "chief executives who have never sold a share of their company on the market, in every Form 4 they have signed since 2016",
-     lambda r, f: (r.get("never_sold") or "") == "1"),
+    ("never-sold", "CEOs with no discretionary sale since 2016",
+     "chief executives who have not sold a share of their company at their own discretion since 2016, the start of the record: every Form 4 they signed, with sales on a Rule 10b5-1 plan set aside",
+     lambda r, f: not (r.get("last_disc") or "") and ((r.get("never_sold") or "") == "1" or (r.get("lt_code") or "") != "")),
     ("own-more-than-10-percent", "CEOs who own more than 10% of their company",
      "chief executives whose stake is a tenth of the company or more, counted from the filings they signed",
      lambda r, f: _num(r.get("pct")) is not None and _num(r.get("pct")) >= 10),
     ("bought-this-year", "CEOs who bought shares this year",
-     "chief executives whose last stake-moving trade was an open-market purchase within the past twelve months",
-     lambda r, f: (r.get("lt_code") or "") == "P" and (r.get("lt_traded") or "") >= (datetime.date.today() - datetime.timedelta(days=365)).isoformat()),
+     "chief executives who bought their company's shares on the open market in the last year, with their own money",
+     lambda r, f: (_years_since(r.get("last_buy")) or 99) < 1),
     ("hired-under-1-percent", "Hired CEOs who own less than 1%",
      "chief executives the proxy statement does not name as founders, owning less than one percent of the company they run",
      lambda r, f: (not f) and _num(r.get("pct")) is not None and _num(r.get("pct")) < 1),
@@ -595,19 +609,8 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
                  .replace("<h2>Founder stakes</h2>",
                           '<h1 style="font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">{{HEADING}}</h1>{{DEF}}')
                  .replace('<div class="shead">', '<div class="shead" style="align-items:flex-start">')
-                 # THE NAMED SCREENS (step 6): four questions, each a link, above the controls
-                 .replace('<div class="controls">',
-                          '<div class="screens" id="screens">'
-                          # ONE SCREEN, ONE ADDRESS (2026-09-18): each chip is a page, /screens/<slug>/, the interactive table preset to
-                          # its question with the rows in the HTML beneath for a crawler; "Everyone" is /companies/
-                          # the chips filter in place, as they always did; the address in the bar follows (setScreen)
-                          '<a class="chip" data-screen="founder-led" href="/screens/founder-led/" onclick="setFounderLed();return false">Founder-led</a>'
-                          '<a class="chip" data-screen="never-sold" href="/screens/never-sold/" onclick="setScreen(\'never-sold\');return false">Never sold</a>'
-                          '<a class="chip" data-screen="over-10" href="/screens/own-more-than-10-percent/" onclick="setScreen(\'over-10\');return false">Own more than 10%</a>'
-                          '<a class="chip" data-screen="bought-this-year" href="/screens/bought-this-year/" onclick="setScreen(\'bought-this-year\');return false">Bought this year</a>'
-                          '<a class="chip" data-screen="hired-under-1" href="/screens/hired-under-1-percent/" onclick="setScreen(\'hired-under-1\');return false">Hired, under 1%</a>'
-                          '<a class="chip" data-screen="" href="/companies/" onclick="setScreen(\'\');return false">Everyone</a></div>'
-                          '<div class="controls">', 1))
+                 # THE CONTROLS ARE THE SCREENS (2026-09-21): no named chips; the five groups in the lifted markup are the whole question
+                 )
         tpl = open(tpl_p, encoding="utf-8").read()
         js_v = ""
         js_p = os.path.join(out_dir, "companies.js")
@@ -620,11 +623,12 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
             # only the document's title and description name the screen, for search
             # the line under the heading names the screen (the title's words), in the HTML for a crawler and live for a reader
             # the same words the page script writes, so the line does not change when the script runs
+            # the same words screenSentence() writes for the preset, so the line does not change when the script runs
             line = {"founder-led": "Companies whose CEO founded them, by the company's own proxy statement.",
-                    "never-sold": "CEOs who have never sold a share of their company on the market.",
-                    "over-10": "CEOs who own more than a tenth of the company they run.",
-                    "bought-this-year": "CEOs whose last stake-moving trade was an open-market buy, within a year.",
-                    "hired-under-1": "CEOs the proxy does not name as founders, owning less than 1% of the company they run."}.get(preset, "Every US public company worth $1B or more, with what its CEO owns.")
+                    "never-sold": "CEOs who have not sold at their own discretion since 2016.",
+                    "over-10": "CEOs who own at least 10%.",
+                    "bought-this-year": "CEOs who last bought on the open market in the last year.",
+                    "hired-under-1": "Hired CEOs who own less than 1%."}.get(preset, "Every US public company worth $1B or more, with what its CEO owns.")
             t = table.replace("{{HEADING}}", "Every company").replace("{{DEF}}", f'<div class="screenline" id="screenline">{html.escape(line)}</div>')
             pg = (tpl.replace("{{TABLE}}", t)
                      .replace("{{TOPNAV}}", topnav)

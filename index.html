@@ -427,6 +427,13 @@ table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
 /* ONE SHAPE FOR BOTH TABLES: the name columns take the left half, the
    figures sit in narrow right-aligned columns near their labels, the
    last two columns are the move and its date. The CEO cell truncates. */
+/* THE CONTROLS AS GROUPS (2026-09-21): a small mono label over a row of chips; the home preview hides the two trade groups */
+.controls{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:flex-end}
+.controls .grp{display:flex;flex-direction:column;gap:6px}
+.controls .grp .gl{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
+.controls .grp .gc{display:flex;gap:6px}
+.controls .grp .chip{margin:0}
+.tablesec.home .controls .g-trade{display:none}
 .tw-kind{width:14%}.tw-co{width:24%}.tw-ceo{width:17%}.tw-v{width:9%}.tw-sh{width:9%}.tw-ch{width:9%}.tw-st{width:8%}.tw-td{width:10%}
 table.tape th.sortable{cursor:pointer;user-select:none}table.tape th.sortable:hover{color:var(--ink)}table.tape td.fd{white-space:nowrap}
 table.tape th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
@@ -691,14 +698,20 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <input id="q" type="search" placeholder="Search company, ticker, or CEO" aria-label="Search">
     </label>
-    <button class="chip on" data-min="0">All</button>
-    <button class="chip" data-min="1">&gt; 1%</button>
-    <button class="chip" data-min="5">&gt; 5%</button>
-    <button class="chip" data-min="10">&gt; 10%</button>
-    <span class="fsw" id="fchip" role="switch" aria-checked="false" tabindex="0"
-        title="only companies still run by a person the proxy names as a founder">Founders only<span class="tr"><i></i></span></span>
-    <span class="fsw" id="hchip" role="switch" aria-checked="false" tabindex="0"
-        title="not one stake-reducing sale on record since the company was public — options cashed and units converted the same day don't count against anyone">Never sold<span class="tr"><i></i></span></span>
+    <!-- THE CONTROLS ARE QUESTIONS (2026-09-21): five groups, one choice each, no
+         named chips. Every combination is a valid screen and has an address;
+         the five screen pages are presets of these. The build counts the
+         presets with the same rule (build_site_data.passes). -->
+    <div class="grp" data-g="who"><span class="gl">Who runs it</span><span class="gc">
+      <button class="chip" data-g="who" data-v="all">Everyone</button><button class="chip" data-g="who" data-v="founders" title="a person the company's own proxy names as a founder">Founders</button><button class="chip" data-g="who" data-v="hired">Hired</button></span></div>
+    <div class="grp" data-g="sp"><span class="gl">Index</span><span class="gc">
+      <button class="chip" data-g="sp" data-v="0">All</button><button class="chip" data-g="sp" data-v="1">S&amp;P 500</button></span></div>
+    <div class="grp" data-g="min"><span class="gl">Owns at least</span><span class="gc">
+      <button class="chip" data-g="min" data-v="0">Any</button><button class="chip" data-g="min" data-v="1">1%</button><button class="chip" data-g="min" data-v="5">5%</button><button class="chip" data-g="min" data-v="10">10%</button><button class="chip" data-g="min" data-v="25">25%</button></span></div>
+    <div class="grp g-trade" data-g="sold"><span class="gl" title="a sale not on a Rule 10b5-1 plan; the record starts in 2016">Years since last discretionary sale</span><span class="gc">
+      <button class="chip" data-g="sold" data-v="any">Any</button><button class="chip" data-g="sold" data-v="lt1">&lt;1</button><button class="chip" data-g="sold" data-v="1to5">1–5</button><button class="chip" data-g="sold" data-v="5plus">5+</button><button class="chip" data-g="sold" data-v="none" title="none on record since 2016">None</button></span></div>
+    <div class="grp g-trade" data-g="buy"><span class="gl" title="an open-market purchase with the person's own money; the record starts in 2016">Years since last open-market buy</span><span class="gc">
+      <button class="chip" data-g="buy" data-v="any">Any</button><button class="chip" data-g="buy" data-v="lt1">&lt;1</button><button class="chip" data-g="buy" data-v="1to3">1–3</button><button class="chip" data-g="buy" data-v="3plus">3+</button><button class="chip" data-g="buy" data-v="none" title="none on record since 2016">None</button></span></div>
     <button class="chip export" onclick="exportTable()" title="the rows as filtered and sorted, every field, as a CSV">Export CSV ↓</button>
   </div>
   <!-- NO HORIZONTAL SCROLL. Ten columns, fixed widths that add up to the
@@ -791,7 +804,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
    &nbsp;·&nbsp; Computed from SEC EDGAR. Not investment advice.
    &nbsp;·&nbsp; <a href="about.html">About &amp; method</a>
    &nbsp;·&nbsp; <a href="/companies/" title="one page per company, every company">Every company page</a>
-   &nbsp;·&nbsp; <a href="/screens/founder-led/" title="founder-led, never sold, own more than 10%, bought this year, hired under 1%">The screens</a></div>
+   &nbsp;·&nbsp; <a href="/screens/founder-led/" title="founder-led, no discretionary sale since 2016, own more than 10%, bought this year, hired under 1%">The screens</a></div>
   <div class="mono" id="footstamp"></div>
 </div></footer>
 
@@ -845,7 +858,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,screen:"",sort:{key:"val",dir:-1},tbF:true,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,kind:"all",moved:false,sort:{key:null,dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
+const state={q:"",min:0,max:null,who:"founders",sp:false,sold:"any",buy:"any",screen:"",sort:{key:"val",dir:-1},tbF:true,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,kind:"all",moved:false,sort:{key:null,dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -990,6 +1003,7 @@ function mapPanel(recs){
     plt:r.lt_code?{c:r.lt_code,pl:r.lt_plan||"",v:num(r.lt_value),fl:!!(r.lt_flag),td:r.lt_traded||"",fd:r.lt_filed||"",
                    mk:!!(String(r.masked||"")==="1"&&!r.lt_value&&r.lt_code)}:null,
     pns:String(r.never_sold||"")==="1",
+    lds:r.last_disc||"",ldb:r.last_buy||"",   /* the last discretionary sale and open-market buy, from every filing since 2016 (2026-09-21) */
     excl:num(r.excluded_shares)||0, excld:r.excluded_detail||"",
     /* A CITED CORRECTION. When a filer states in a remark that shares
        held of record are left out of the tables (Musk's 1.30B restricted
@@ -1365,49 +1379,155 @@ function lastTrades(){
    link to one and a search can find it. Each is a predicate over the
    table's rows; the build counts the same predicate over every company
    so a free reader's screen says how many more match in Pro. */
+/* THE PRESETS (2026-09-21): the five screen pages are settings of the five
+   groups. A screen page opens with its preset on; any other combination is
+   linkable by its address but is not a page (its canonical is /companies/). */
 /*@shared*/
-const SCREENS={
-  "never-sold":{name:"Never sold",title:"CEOs who have never sold a share",desc:"CEOs who have never sold a share of their company on the market",
-    test:r=>!!r.ns},
-  "over-10":{name:"Own more than 10%",title:"CEOs who own more than 10% of their company",desc:"CEOs who own more than a tenth of the company they run",
-    test:r=>r.pct!==null&&r.pct>=10},
-  "bought-this-year":{name:"Bought this year",title:"CEOs who bought shares this year",desc:"CEOs whose last stake-moving trade was an open-market buy, within a year",
-    test:r=>r.ltk==="bought"&&!!r.ltd&&r.ltd>=new Date(Date.now()-365*86400e3).toISOString().slice(0,10)},
-  "hired-under-1":{name:"Hired, under 1%",title:"Hired CEOs who own less than 1%",desc:"CEOs the proxy does not name as founders, owning less than 1% of the company they run",
-    test:r=>!r.fd&&r.pct!==null&&r.pct<1},
+const PRESETS={
+  "founder-led":{who:"founders"},
+  "never-sold":{sold:"none"},
+  "over-10":{min:10},
+  "bought-this-year":{buy:"lt1"},
+  "hired-under-1":{who:"hired",max:1},
 };
 /*@shared*/
+const SCREENS={   /* the old name, for the harness and the count file: each preset as a test */
+  "never-sold":{name:"No sales since 2016",title:"CEOs with no discretionary sale since 2016",desc:"CEOs who have not sold a share at their own discretion since 2016, the start of the record",test:r=>passes(r,PRESETS["never-sold"])},
+  "over-10":{name:"Own more than 10%",title:"CEOs who own more than 10% of their company",desc:"CEOs who own at least a tenth of the company they run",test:r=>passes(r,PRESETS["over-10"])},
+  "bought-this-year":{name:"Bought this year",title:"CEOs who bought shares this year",desc:"CEOs who bought their company's shares on the open market in the last year",test:r=>passes(r,PRESETS["bought-this-year"])},
+  "hired-under-1":{name:"Hired, under 1%",title:"Hired CEOs who own less than 1%",desc:"CEOs the proxy does not name as founders, owning less than 1% of the company they run",test:r=>passes(r,PRESETS["hired-under-1"])},
+  "founder-led":{name:"Founder-led",title:"Companies still run by their founders",desc:"companies whose CEO founded them, by the company's own proxy statement",test:r=>passes(r,PRESETS["founder-led"])},
+};
+/*@shared*/
+const DEFAULTS={who:"all",sp:false,min:0,max:null,sold:"any",buy:"any"};
+/*@shared*/
+function yearsSince(day){
+  if(!day)return null;
+  const t=Date.parse(day.slice(0,10));if(!isFinite(t))return null;
+  return (Date.now()-t)/(365.25*86400e3);
+}
+/*@shared*/
+function bucketOf(y,edges){
+  if(y===null)return "none";
+  for(const [lo,hi,name] of edges){if((lo===null||y>=lo)&&(hi===null||y<hi))return name;}
+  return "none";
+}
+/*@shared*/
+const SOLD_EDGES=[[null,1,"lt1"],[1,5,"1to5"],[5,null,"5plus"]];
+/*@shared*/
+const BUY_EDGES=[[null,1,"lt1"],[1,3,"1to3"],[3,null,"3plus"]];
+/*@shared*/
+function passes(r,f){
+  /* ONE RULE (2026-09-21): the same test the build counts with (build_site_data.passes) */
+  if(r.masked||r.pct===null)return false;
+  const who=f.who||"all";
+  if(who==="founders"&&!r.fd)return false;
+  if(who==="hired"&&r.fd)return false;
+  if(f.sp&&!r.sp)return false;
+  if(r.pct<(f.min||0))return false;
+  if(f.max!==null&&f.max!==undefined&&r.pct>=f.max)return false;
+  const ws=f.sold||"any";
+  if(ws!=="any"){const b=bucketOf(yearsSince(r.lds),SOLD_EDGES);if(b==="none"&&!HIST[r.tk]&&!r.pns)return false;if(b!==ws)return false;}
+  const wb=f.buy||"any";
+  if(wb!=="any"&&bucketOf(yearsSince(r.ldb),BUY_EDGES)!==wb)return false;
+  return true;
+}
+/*@shared*/
+function filterState(){return {who:state.who,sp:!!state.sp,min:state.min||0,max:state.max===undefined?null:state.max,sold:state.sold||"any",buy:state.buy||"any"};}
+/*@shared*/
+function presetOf(f){
+  /* the preset this state equals exactly, if any */
+  for(const id in PRESETS){const p=Object.assign({},DEFAULTS,PRESETS[id]);
+    if(p.who===f.who&&!!p.sp===!!f.sp&&p.min===f.min&&(p.max===null?f.max===null:p.max===f.max)&&p.sold===f.sold&&p.buy===f.buy)return id;}
+  return "";
+}
+/*@shared*/
 function setScreen(id){
-  state.screen=SCREENS[id]?id:"";
-  /* a screen is the whole question: the other filters reset so the
-     answer is the screen's, and the address in the bar says which */
-  state.q="";state.min=0;state.tbF=false;state.tbH=false;
+  /* a screen page's question: its preset on, everything else at the default */
+  Object.assign(state,DEFAULTS,PRESETS[id]||{});
+  state.screen=PRESETS[id]?id:"";
+  state.q="";
   const q=typeof document!=="undefined"&&document.querySelector("#q");if(q)q.value="";
-  document.querySelectorAll("[data-min]").forEach(x=>x.classList.toggle("on",x.dataset.min==="0"));
-  screenAddress(state.screen);
+  screenAddress();
   renderTable();
 }
 /*@shared*/
-/* ONE SCREEN, ONE ADDRESS (2026-09-18): the page stays the page; the address follows the chip, so a link lands here with the filter on */
+function setFounderLed(){setScreen("founder-led");}
+/*@shared*/
+function setGroup(g,v){
+  /* a chip: one choice in its group; the state is the address */
+  if(g==="min")state.min=+v||0;
+  else if(g==="sp")state.sp=v==="1"||v===true;
+  else state[g]=v;
+  if(g==="who"&&v!=="hired")state.max=null;   /* the hidden upper bound belongs to the hired-under-1 page */
+  state.screen=presetOf(filterState());
+  screenAddress();
+  renderTable();
+}
+/*@shared*/
 const SCREEN_SLUG={"never-sold":"never-sold","over-10":"own-more-than-10-percent","bought-this-year":"bought-this-year","hired-under-1":"hired-under-1-percent","founder-led":"founder-led"};
 /*@shared*/
-function screenAddress(id){
-  if(typeof history==="undefined"||!history.replaceState||(typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0))return;
-  history.replaceState(null,"",id&&SCREEN_SLUG[id]?`/screens/${SCREEN_SLUG[id]}/`:"/companies/");
+function screenQuery(f){
+  const q=[];
+  if(f.who!=="all")q.push("who="+f.who);
+  if(f.sp)q.push("sp=1");
+  if(f.min)q.push("min="+f.min);
+  if(f.max!==null)q.push("max="+f.max);
+  if(f.sold!=="any")q.push("sold="+f.sold);
+  if(f.buy!=="any")q.push("buy="+f.buy);
+  return q.length?"?"+q.join("&"):"";
 }
 /*@shared*/
-function setFounderLed(){
-  /* the founders switch, as a screen: on, alone, at its address */
-  state.screen="";state.q="";state.min=0;state.tbH=false;state.tbF=true;
-  const q=typeof document!=="undefined"&&document.querySelector("#q");if(q)q.value="";
-  document.querySelectorAll("[data-min]").forEach(x=>x.classList.toggle("on",x.dataset.min==="0"));
-  screenAddress("founder-led");
-  renderTable();
+function screenAddress(){
+  /* ONE SCREEN, ONE ADDRESS: a preset is its page; anything else is /companies/ with the choices in the query */
+  if(typeof history==="undefined"||!history.replaceState||(typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0))return;
+  const f=filterState(),id=presetOf(f);
+  history.replaceState(null,"",id?`/screens/${SCREEN_SLUG[id]}/`:"/companies/"+screenQuery(f));
+}
+/*@shared*/
+function readAddress(){
+  /* a link with choices in it opens with those chips on; the old ?screen= form still works */
+  if(typeof location==="undefined")return;
+  const u=new URLSearchParams(location.search);
+  const sc=u.get("screen");if(sc&&PRESETS[sc]){Object.assign(state,DEFAULTS,PRESETS[sc]);state.screen=sc;return;}
+  if(!u.toString())return;
+  Object.assign(state,DEFAULTS);
+  if(u.get("who"))state.who=u.get("who");
+  if(u.get("sp")==="1")state.sp=true;
+  if(u.get("min"))state.min=+u.get("min")||0;
+  if(u.get("max"))state.max=+u.get("max");
+  if(u.get("sold"))state.sold=u.get("sold");
+  if(u.get("buy"))state.buy=u.get("buy");
+  state.screen=presetOf(filterState());
+}
+/*@shared*/
+function screenSentence(f){
+  /* the line under the heading: the choices as one sentence */
+  const who={all:"CEOs",founders:"Founders",hired:"Hired CEOs"}[f.who||"all"];
+  const parts=[];
+  if(f.sp)parts.push("of S&P 500 companies");
+  if(f.min)parts.push(`who own at least ${f.min}%`);
+  if(f.max!==null&&f.max!==undefined)parts.push(`${f.min?"and":"who"} own less than ${f.max}%`);
+  const soldW={lt1:"in the last year",_1to5:"one to five years ago","1to5":"one to five years ago","5plus":"over five years ago"};
+  const buyW={lt1:"in the last year","1to3":"one to three years ago","3plus":"over three years ago"};
+  const clauses=[];
+  if(f.sold&&f.sold!=="any")clauses.push(f.sold==="none"?"have not sold at their own discretion since 2016":`last sold at their own discretion ${soldW[f.sold]}`);
+  if(f.buy&&f.buy!=="any")clauses.push(f.buy==="none"?"have not bought on the open market since 2016":`last bought on the open market ${buyW[f.buy]}`);
+  const isDefault=!parts.length&&!clauses.length&&(f.who||"all")==="all";
+  if(isDefault)return "Every US public company worth $1B or more, with what its CEO owns.";
+  let out=who+(parts.length?" "+parts.join(" "):"");
+  if(clauses.length)out+=(parts.length?" and ":" who ")+clauses.join(" and ");
+  if(f.who==="founders"&&!parts.length&&!clauses.length)out="Companies whose CEO founded them, by the company's own proxy statement";
+  return out+".";
 }
 /*@shared*/
 function renderTable(){
-  paintSw("fchip",state.tbF);
-  paintSw("hchip",state.tbH);
+  const F=filterState();
+  document.querySelectorAll(".chip[data-g][data-v]").forEach(b=>{
+    const g=b.dataset.g,v=b.dataset.v;
+    const on=g==="min"?(+v===(F.min||0)):g==="sp"?((v==="1")===!!F.sp):F[g]===v;
+    b.classList.toggle("on",on);
+  });
   const {last,sold,fromList}=lastTrades();
   for(const r of PANEL){
     const lt=last[r.tk];
@@ -1420,7 +1540,7 @@ function renderTable(){
     r.ltk=lt?(lt.c==="P"?"bought":lt.pl==="plan"?"planned":lt.pl==="discretionary"?"discretionary":"sold"):"";
     r.man=lt?(lt.c==="P"?"Bought":lt.pl==="plan"?"Planned":lt.pl==="discretionary"?"Discretionary":"Sold"):"";
     r.fd=!!(fInfo(r.tk)&&fInfo(r.tk).f==="yes");                 /* Founder: its own column, its own sort */
-    r.ns=fromList?r.pns:(!sold.has(r.tk)&&!!HIST[r.tk]);   /* never sold, on a record that exists */
+    r.ns=r.pns;   /* NO SALES SINCE 2016, FROM THE BUILD ONLY (2026-09-21): the feed a page happens to hold is a window, and "no sale in it" is not "no sale on record" (Nextpower) */
   }
   /* THE HOME PREVIEW IS THE OPEN SET. Sorted by share, the top of the
      whole list is almost entirely outside the S&P, which is the Pro
@@ -1429,22 +1549,17 @@ function renderTable(){
      /companies/ shows every row with the blurs. */
   const homeOpen=typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0&&!state.pro;
   const screen=state.screen&&SCREENS[state.screen];
-  document.querySelectorAll("[data-screen]").forEach(b=>b.classList.toggle("on",state.screen?b.dataset.screen===state.screen:(state.tbF&&!state.q&&!state.min&&!state.tbH?b.dataset.screen==="founder-led":b.dataset.screen==="")));
   /* THE LINE UNDER THE HEADING (2026-09-19): one sentence saying which list this is; one line, always present, so nothing moves */
-  const sl=$("#screenline");if(sl)sl.textContent=screen?screen.desc.charAt(0).toUpperCase()+screen.desc.slice(1)+".":(state.tbF&&!state.q&&!state.min&&!state.tbH?"Companies whose CEO founded them, by the company's own proxy statement.":"Every US public company worth $1B or more, with what its CEO owns.");
+  const sl=$("#screenline");if(sl)sl.textContent=screenSentence(F);
   let rows=PANEL.filter(r=>{
     if(homeOpen&&r.masked)return false;
     /* a sealed row's share is not in the file: a screen that asks about
        it cannot be answered for that row, and the count beneath says so */
-    if(screen)return !r.masked&&screen.test(r);
     const q=state.q.toLowerCase();
-    const fOK=fOnly(r.tk,state.tbF)&&(!state.tbH||r.ns);
-    /* A SEALED COMPANY IS A ROW. Its name, its founder, its last trade's
-       date and kind are shown; its share, value and amount are locks. A
-       share filter (>1%, >5%) cannot be applied to a share the file does
-       not carry, so under those a sealed row is not shown; under All it is. */
-    if(r.masked)return fOK&&!state.tbH&&state.min<=0&&(!q||r.tk.toLowerCase().includes(q)||r.co.toLowerCase().includes(q)||r.ceo.toLowerCase().includes(q));
-    return fOK&&(!q||r.tk.toLowerCase().includes(q)||r.co.toLowerCase().includes(q)||r.ceo.toLowerCase().includes(q))&&r.pct>=state.min;
+    const qOK=!q||r.tk.toLowerCase().includes(q)||r.co.toLowerCase().includes(q)||r.ceo.toLowerCase().includes(q);
+    /* THE ONE RULE (2026-09-21): a search alone shows every row, the groups are the question; a masked row (none since the seal came off) only answers a search */
+    if(r.masked)return qOK&&F.who==="all"&&!F.sp&&!F.min&&F.max===null&&F.sold==="any"&&F.buy==="any";
+    return qOK&&passes(r,F);
   });
   const {key,dir}=state.sort;
   const CONF={high:3,medium:2,low:1};
@@ -1489,7 +1604,7 @@ function renderTable(){
      search there is no count (the build cannot know the search). */
   let more="";
   if((sealedN||homeOpen)&&SCREEN_COUNTS&&!state.q.trim()){
-    const key=screen?`s:${state.screen}`:`m${[0,1,5,10].includes(state.min)?state.min:0}f${state.tbF?1:0}h${state.tbH?1:0}`;
+    const key="s:"+(presetOf(F)||"");
     const all=SCREEN_COUNTS[key];
     const openMatches=rows.filter(r=>!r.masked).length;
     if(typeof all==="number"&&all>openMatches)more=` · <a onclick="openPro()" style="cursor:pointer" title="the same filter over every company worth $1B or more">${(all-openMatches).toLocaleString()} more match in Pro</a>`;
@@ -2192,8 +2307,7 @@ $("#q").addEventListener("keydown",e=>{
   const tk=exact?exact.tk:rows.length===1?rows[0].tk:null;
   if(tk){hit("open","page",tk);location.href=`/company/${tk}/`;}
 });
-wireSw("hchip",()=>{state.tbH=!state.tbH;renderTable();});
-wireSw("fchip",()=>{state.tbF=!state.tbF;renderTable();});
+
 document.querySelectorAll("th.sortable").forEach(th=>th.addEventListener("click",()=>{
   const key=th.dataset.key;
   const textish=key==="co"||key==="ceo";
@@ -2201,13 +2315,7 @@ document.querySelectorAll("th.sortable").forEach(th=>th.addEventListener("click"
   else state.sort={key,dir:textish?1:-1};
   renderTable();
 }));
-document.querySelectorAll(".chip[data-min]").forEach(c=>c.addEventListener("click",()=>{
-  document.querySelectorAll(".chip[data-min]").forEach(x=>x.classList.remove("on"));
-  c.classList.add("on");
-  const m=parseFloat(c.dataset.min);
-  state.min=isFinite(m)?m:0;          /* never let a bad value empty the table */
-  renderTable();
-}));
+document.querySelectorAll(".chip[data-g][data-v]").forEach(c=>c.addEventListener("click",()=>setGroup(c.dataset.g,c.dataset.v)));
 /* the feed's controls live in static markup, so the search box never loses
    focus to a re-render: only the feed below them is rebuilt */
 

@@ -48,26 +48,23 @@ async function boot(){
     state.live.founders=true;   /* the Founders only switch shows once the file is here (it was never set on this page: 2026-09-17) */}
   if(c){try{SCREEN_COUNTS=JSON.parse(c);}catch(x){}}
   const q=$("#q");if(q)q.addEventListener("input",()=>{state.q=q.value;renderTable();});
-  document.querySelectorAll("[data-min]").forEach(b=>b.addEventListener("click",()=>{state.min=+b.dataset.min;document.querySelectorAll("[data-min]").forEach(x=>x.classList.toggle("on",x===b));renderTable();}));
-  wireSw("fchip",()=>{state.tbF=!state.tbF;renderTable();});
-  wireSw("hchip",()=>{state.tbH=!state.tbH;renderTable();});
+  /* THE CONTROLS ARE QUESTIONS (2026-09-21): a chip sets its group; the address follows */
+  document.querySelectorAll(".chip[data-g][data-v]").forEach(b=>b.addEventListener("click",()=>setGroup(b.dataset.g,b.dataset.v)));
   document.querySelectorAll("th.sortable").forEach(th=>th.addEventListener("click",()=>{
     const key=th.dataset.key;
     if(state.sort.key===key)state.sort.dir=-state.sort.dir;else state.sort={key,dir:-1};
     renderTable();
   }));
   const ex=$("#export");if(ex)ex.addEventListener("click",()=>exportTable());
-  /* ONE SCREEN, ONE ADDRESS (2026-09-18): a screen page carries its question as
-     a preset the builder wrote into the page; the old ?screen= form still works.
-     "founder-led" is the founders switch rather than a screen. */
-  const preset=(typeof window!=="undefined"&&window.SCREEN_PRESET)||new URLSearchParams(location.search).get("screen")||"";
-  if(preset==="founder-led"){state.tbF=true;}
-  else if(preset&&SCREENS[preset])state.screen=preset;
-  /* the filter chips and switches leave a screen: they are a different question, and the address returns to /companies/ */
-  document.querySelectorAll("[data-min],#fchip,#hchip,#q").forEach(el=>el.addEventListener(el.id==="q"?"input":"click",()=>{if(state.screen||/^\/screens\//.test(location.pathname)){state.screen="";screenAddress("");}},true));
+  /* ONE SCREEN, ONE ADDRESS: a screen page carries its preset, written by the builder;
+     a shared link carries its choices in the query; either opens with the chips on */
+  const preset=(typeof window!=="undefined"&&window.SCREEN_PRESET)||"";
+  if(preset&&PRESETS[preset]){Object.assign(state,DEFAULTS,PRESETS[preset]);state.screen=preset;}
+  else readAddress();
+  const qq=$("#q");if(qq)qq.addEventListener("input",()=>{if(/^\/screens\//.test(location.pathname)){screenAddress();}});
   renderTable();
   /* the rows the builder wrote beneath for a crawler step aside once the table above is drawn */
   const st=document.getElementById("sstatic");if(st)st.style.display="none";
 }
-state.sort={key:"val",dir:-1};state.q="";state.min=0;state.screen="";state.tbF=false;state.tbH=false;state.live={panel:false,hist:false,events:false,founders:false,prices:false};
+state.sort={key:"val",dir:-1};state.q="";Object.assign(state,DEFAULTS);state.screen="";state.live={panel:false,hist:false,events:false,founders:false,prices:false};
 boot();

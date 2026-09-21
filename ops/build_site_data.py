@@ -245,17 +245,29 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
         # labels that moved the stake, no pre-IPO catch-ups; newest by filing.
         last_move = {}
         ever_sold = set()
+        # THE TWO DATES THE CONTROLS ASK ABOUT (2026-09-21): the last sale at
+        # the person's own discretion (a sale not on a Rule 10b5-1 plan) and
+        # the last open-market buy, from every filing since 2016. The
+        # Companies page's "years since" chips read these; "None" means none
+        # on record, and the page says the record starts in 2016.
+        last_disc, last_buy = {}, {}
         for r in all_rows:
             if r.get("code") not in ("P", "S") or (r.get("label") or "") in UNCHANGED_LABELS:
                 continue
             if (r.get("pre_ipo") or "") in ("1", "true", "True"):
                 continue
             t = r.get("ticker")
+            day = r.get("traded") or r.get("filed") or ""
             if r["code"] == "S":
                 ever_sold.add(t)
+                if (r.get("plan") or "") != "plan" and day > last_disc.get(t, ""):
+                    last_disc[t] = day
+            elif day > last_buy.get(t, ""):
+                last_buy[t] = day
             k = (r.get("filed") or "", r.get("traded") or "")
             if t not in last_move or k > last_move[t][0]:
                 last_move[t] = (k, r)
+        derived_facts.last_disc, derived_facts.last_buy = last_disc, last_buy
         return last_move, ever_sold, set(hist_by_t)
 
     def change_12m():
@@ -304,7 +316,7 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
                 pass
         return out
 
-    LAST_COLS = ["lt_code", "lt_plan", "lt_value", "lt_flag", "lt_traded", "lt_filed", "never_sold", "pct_12m_ago"]
+    LAST_COLS = ["lt_code", "lt_plan", "lt_value", "lt_flag", "lt_traded", "lt_filed", "never_sold", "pct_12m_ago", "last_disc", "last_buy"]
 
     def write_list(path, mask_new):
         last_move, ever_sold, has_record = derived_facts()
@@ -343,6 +355,8 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
                 # sealed with the stake outside the S&P: the change gives the stake away
                 pa = ago.get(r["ticker"])
                 row.append("" if (pa is None or masked) else f"{pa:.4f}")
+                row.append(derived_facts.last_disc.get(r["ticker"], ""))
+                row.append(derived_facts.last_buy.get(r["ticker"], ""))
                 w.writerow(row)
     n_px = write_price_shards(prices_dir, out_dir)
     print(f"  prices/<T>.csv       {n_px} daily series (public; the company page's price chart)")
@@ -534,61 +548,75 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     # line saying how many more match in Pro. That number is computed here,
     # over every company, for every combination of the screener's filters
     # (a share threshold, founders only, never sold), and read by the page.
+    # THE PRESETS, COUNTED (2026-09-21): the five screen pages are presets of
+    # the Companies page's controls (who runs it, the index, owns at least,
+    # years since the last discretionary sale, years since the last
+    # open-market buy). One rule here, the same rule in the page's
+    # `passes()`, so a screen page and its chips never disagree.
     founder_yes = {r["ticker"].upper() for r in f_rows if (r.get("founder") or "").lower() == "yes"}
-    sold = {r.get("ticker") for r in all_rows
-            if r.get("code") == "S" and (r.get("label") or "") not in UNCHANGED_LABELS}
     has_hist = set(hist_by_t)
-    counts = {}
-    for m in (0, 1, 5, 10):
-        for f in (0, 1):
-            for h in (0, 1):
-                n = 0
-                for r in panel:
-                    t = r["ticker"]
-                    pct = _num(r.get("pct"))
-                    if pct is None or (r.get("operating_partnership") or "").lower() == "true":
-                        continue
-                    if m and pct < m:
-                        continue
-                    if f and t not in founder_yes:
-                        continue
-                    if h and (t in sold or t not in has_hist):
-                        continue
-                    n += 1
-                counts[f"m{m}f{f}h{h}"] = n
-    # THE NAMED SCREENS (PLAN.md section 7, step 6): four questions with a
-    # name and a URL each, counted the same way so a free reader's screen
-    # says how many more match in Pro.
-    last_move = {}
-    for r in all_rows:
-        if r.get("code") not in ("P", "S") or (r.get("label") or "") in UNCHANGED_LABELS:
-            continue
-        if (r.get("pre_ipo") or "") in ("1", "true", "True"):
-            continue
-        k = (r.get("traded") or r.get("filed") or "", r.get("filed") or "")
-        t = r.get("ticker")
-        if t not in last_move or k > last_move[t][0]:
-            last_move[t] = (k, r)
+    if not hasattr(derived_facts, "last_disc"):
+        derived_facts()
+    last_disc, last_buy = derived_facts.last_disc, derived_facts.last_buy
     import datetime as _dt
-    year_ago = (_dt.date.today() - _dt.timedelta(days=365)).isoformat()
-    def bought_this_year(t):
-        lm = last_move.get(t)
-        return bool(lm) and lm[1].get("code") == "P" and (lm[1].get("traded") or lm[1].get("filed") or "") >= year_ago
-    screens = {
-        "never-sold": lambda t, pct: t not in sold and t in has_hist,
-        "over-10": lambda t, pct: pct >= 10,
-        "bought-this-year": lambda t, pct: bought_this_year(t),
-        "hired-under-1": lambda t, pct: t not in founder_yes and pct < 1,
+    today = _dt.date.today()
+    def years_since(day):
+        if not day:
+            return None
+        try:
+            d = _dt.date.fromisoformat(day[:10])
+        except ValueError:
+            return None
+        return (today - d).days / 365.25
+    def bucket(y, edges):
+        # None -> "none"; else the first edge it is under, then "<last>plus"
+        if y is None:
+            return "none"
+        for lo, hi, name in edges:
+            if (lo is None or y >= lo) and (hi is None or y < hi):
+                return name
+        return "none"
+    SOLD = [(None, 1, "lt1"), (1, 5, "1to5"), (5, None, "5plus")]
+    BUY = [(None, 1, "lt1"), (1, 3, "1to3"), (3, None, "3plus")]
+    PRESETS = {
+        "founder-led": {"who": "founders"},
+        "never-sold": {"sold": "none"},
+        "over-10": {"min": 10},
+        "bought-this-year": {"buy": "lt1"},
+        "hired-under-1": {"who": "hired", "max": 1},
     }
-    for name, test in screens.items():
-        n = 0
-        for r in panel:
-            pct = _num(r.get("pct"))
-            if pct is None or (r.get("operating_partnership") or "").lower() == "true":
-                continue
-            if test(r["ticker"], pct):
-                n += 1
-        counts["s:" + name] = n
+    def passes(r, f):
+        t = r["ticker"]
+        pct = _num(r.get("pct"))
+        if pct is None or (r.get("operating_partnership") or "").lower() == "true":
+            return False
+        who = f.get("who", "all")
+        if who == "founders" and t not in founder_yes:
+            return False
+        if who == "hired" and t in founder_yes:
+            return False
+        if f.get("sp") and t not in sp:
+            return False
+        if pct < f.get("min", 0):
+            return False
+        if f.get("max") is not None and pct >= f["max"]:
+            return False
+        want = f.get("sold", "any")
+        if want != "any":
+            b = bucket(years_since(last_disc.get(t)), SOLD)
+            if b == "none" and t not in has_hist:
+                return False        # no record at all is not "none since 2016"
+            if b != want:
+                return False
+        want = f.get("buy", "any")
+        if want != "any":
+            if bucket(years_since(last_buy.get(t)), BUY) != want:
+                return False
+        return True
+    counts = {}
+    for name, f in PRESETS.items():
+        counts["s:" + name] = sum(1 for r in panel if passes(r, f))
+    counts["s:"] = sum(1 for r in panel if passes(r, {}))
     with open(os.path.join(out_dir, "screen-counts.json"), "w", encoding="utf-8") as fh:
         json.dump(counts, fh)
 

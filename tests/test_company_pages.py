@@ -537,9 +537,9 @@ def test_the_screens_are_pages_when_the_site_data_is_there(tmp_path):
     assert not os.path.exists(os.path.join(out, "screens")), "no universe.csv, no screen pages"
     uni = os.path.join(out, "universe.csv")
     with open(uni, "w", encoding="utf-8") as fh:
-        fh.write("ticker,company,ceo,pct,shares,never_sold,lt_code,lt_traded,pct_12m_ago\n"
-                 "TSLA,Tesla,Elon Musk,28.44,1120000000,1,P,2026-08-01,15.8\n"
-                 "SEALD,Sealed Co,Jane Doe,0.5,1000000,0,S,2026-01-01,\n")
+        fh.write("ticker,company,ceo,pct,shares,never_sold,lt_code,lt_traded,pct_12m_ago,last_disc,last_buy\n"
+                 "TSLA,Tesla,Elon Musk,28.44,1120000000,1,P,2026-08-01,15.8,,2026-08-01\n"
+                 "SEALD,Sealed Co,Jane Doe,0.5,1000000,0,S,2026-01-01,,2026-01-01,\n")
     bcp.main(panel, founders, prices, sp, out)
     for slug in ("founder-led", "never-sold", "own-more-than-10-percent", "bought-this-year", "hired-under-1-percent"):
         page = open(os.path.join(out, "screens", slug, "index.html"), encoding="utf-8").read()

@@ -165,10 +165,10 @@ def test_the_free_record_is_a_year_and_the_screener_has_its_counts(tmp_path):
     open_rows = [r for r in feed if r["ticker"] == "OPEN"]
     assert [r["filed"] for r in open_rows] == ["2026-08-01"], "the feed carries the year; the most recent trade is inside it"
     counts = json.load(open(out / "screen-counts.json"))
-    assert counts["m0f0h0"] == 2 and counts["m10f0h0"] == 1 and counts["m0f1h0"] == 1 and counts["m0f0h1"] == 1, counts
-    # the named screens, counted over every company: SEAL never sold and owns 12%; OPEN is a founder who bought this year
+    # THE PRESETS, COUNTED (2026-09-21): everyone; the founders; no discretionary sale on record (SEAL: OPEN sold in 2019);
+    # owns at least 10% (SEAL at 12%); an open-market buy in the last year (both); hired under 1% (nobody)
+    assert counts["s:"] == 2 and counts["s:founder-led"] == 1, counts
     assert counts["s:never-sold"] == 1 and counts["s:over-10"] == 1 and counts["s:bought-this-year"] == 2 and counts["s:hired-under-1"] == 0, counts
-    # never sold: OPEN sold in 2019, SEAL never did
 
 
 def test_the_list_carries_the_last_move_and_never_sold(tmp_path):
@@ -178,7 +178,8 @@ def test_the_list_carries_the_last_move_and_never_sold(tmp_path):
     test_the_free_record_is_a_year_and_the_screener_has_its_counts(tmp_path)   # builds the fixture site
     out = tmp_path / "site-data"
     rows = {r["ticker"]: r for r in _csv.DictReader(open(out / "pro" / "universe.csv", encoding="utf-8"))}
-    assert set(("lt_code", "lt_plan", "lt_value", "lt_traded", "lt_filed", "never_sold")) <= set(rows["OPEN"].keys())
+    assert set(("lt_code", "lt_plan", "lt_value", "lt_traded", "lt_filed", "never_sold", "last_disc", "last_buy")) <= set(rows["OPEN"].keys())
     assert rows["OPEN"]["lt_code"] in ("P", "S") and rows["OPEN"]["lt_traded"]
+    assert rows["OPEN"]["last_disc"].startswith("2019") and rows["OPEN"]["last_buy"] and not rows["SEAL"]["last_disc"], "the two dates the controls read (2026-09-21)"
     free = {r["ticker"]: r for r in _csv.DictReader(open(out / "universe.csv", encoding="utf-8"))}
     assert not [r for r in free.values() if r["masked"] == "1"], "the seal is off: no row is masked"
