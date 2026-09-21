@@ -577,7 +577,7 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
                 return name
         return "none"
     SOLD = [(None, 1, "lt1"), (1, 5, "1to5"), (5, None, "5plus")]
-    BUY = [(None, 1, "lt1"), (1, 3, "1to3"), (3, None, "3plus")]
+    BUY = [(None, 1, "lt1"), (1, 5, "1to5"), (5, None, "5plus")]   # the same windows as the sale group (2026-09-21)
     PRESETS = {
         "founder-led": {"who": "founders"},
         "never-sold": {"sold": "none"},

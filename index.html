@@ -428,11 +428,13 @@ table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
    figures sit in narrow right-aligned columns near their labels, the
    last two columns are the move and its date. The CEO cell truncates. */
 /* THE CONTROLS AS GROUPS (2026-09-21): a small mono label over a row of chips; the home preview hides the two trade groups */
-.controls{display:flex;flex-direction:column;gap:14px;align-items:stretch}
-.controls .crow{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:flex-end}
+.controls{display:flex;flex-direction:column;gap:12px;align-items:stretch;margin-bottom:12px}
+.controls .crow{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:flex-end}
 .controls .crow .search{flex:0 1 420px}
-.controls .crow .export{margin-left:auto}
-.controls .grp{display:flex;flex-direction:column;gap:6px}
+.controls .grp{display:flex;flex-direction:column;gap:5px}
+.controls .grp .chip{padding:6px 9px;font-size:12.5px}
+.tablesec .shead{margin-bottom:6px}
+.tfoot .export{margin-left:auto}
 .controls .grp .gl{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
 .controls .grp .gc{display:flex;gap:6px}
 .controls .grp .chip{margin:0}
@@ -702,7 +704,6 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <input id="q" type="search" placeholder="Search company, ticker, or CEO" aria-label="Search">
     </label>
-    <button class="chip export" onclick="exportTable()" title="the rows as filtered and sorted, every field, as a CSV">Export CSV ↓</button>
    </div>
    <!-- THE CONTROLS ARE QUESTIONS (2026-09-21): five groups, one choice each, no
         named chips, on their own row under the search. Every combination is a
@@ -711,14 +712,12 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
    <div class="crow groups">
     <div class="grp" data-g="who"><span class="gl">Who runs it</span><span class="gc">
       <button class="chip" data-g="who" data-v="all">Everyone</button><button class="chip" data-g="who" data-v="founders" title="a person the company's own proxy names as a founder">Founders</button><button class="chip" data-g="who" data-v="hired">Hired</button></span></div>
-    <div class="grp" data-g="sp"><span class="gl">Index</span><span class="gc">
-      <button class="chip" data-g="sp" data-v="0">All</button><button class="chip" data-g="sp" data-v="1">S&amp;P 500</button></span></div>
     <div class="grp" data-g="min"><span class="gl">Owns at least</span><span class="gc">
       <button class="chip" data-g="min" data-v="0">Any</button><button class="chip" data-g="min" data-v="1">1%</button><button class="chip" data-g="min" data-v="5">5%</button><button class="chip" data-g="min" data-v="10">10%</button><button class="chip" data-g="min" data-v="25">25%</button></span></div>
     <div class="grp g-trade" data-g="sold"><span class="gl" title="a sale not on a Rule 10b5-1 plan; the record starts in 2016">Years since last discretionary sale</span><span class="gc">
       <button class="chip" data-g="sold" data-v="any">Any</button><button class="chip" data-g="sold" data-v="lt1">&lt;1</button><button class="chip" data-g="sold" data-v="1to5">1–5</button><button class="chip" data-g="sold" data-v="5plus">5+</button><button class="chip" data-g="sold" data-v="none" title="no discretionary sale in any filing since 2016, the start of the record">None since 2016</button></span></div>
     <div class="grp g-trade" data-g="buy"><span class="gl" title="an open-market purchase with the person's own money; the record starts in 2016">Years since last open-market buy</span><span class="gc">
-      <button class="chip" data-g="buy" data-v="any">Any</button><button class="chip" data-g="buy" data-v="lt1">&lt;1</button><button class="chip" data-g="buy" data-v="1to3">1–3</button><button class="chip" data-g="buy" data-v="3plus">3+</button><button class="chip" data-g="buy" data-v="none" title="no open-market buy in any filing since 2016, the start of the record">None since 2016</button></span></div>
+      <button class="chip" data-g="buy" data-v="any">Any</button><button class="chip" data-g="buy" data-v="lt1">&lt;1</button><button class="chip" data-g="buy" data-v="1to5">1–5</button><button class="chip" data-g="buy" data-v="5plus">5+</button><button class="chip" data-g="buy" data-v="none" title="no open-market buy in any filing since 2016, the start of the record">None since 2016</button></span></div>
    </div>
   </div>
   <!-- NO HORIZONTAL SCROLL. Ten columns, fixed widths that add up to the
@@ -749,6 +748,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
   </div>
   <div class="tfoot">
     <span id="tcount"></span>
+    <button class="chip export" onclick="exportTable()" title="the rows as filtered and sorted, every field, as a CSV">Export CSV ↓</button>
   </div>
   </div>
 </div></section>
@@ -1421,8 +1421,9 @@ function bucketOf(y,edges){
 }
 /*@shared*/
 const SOLD_EDGES=[[null,1,"lt1"],[1,5,"1to5"],[5,null,"5plus"]];
+/* the buy group's windows are the sale group's (2026-09-21) */
 /*@shared*/
-const BUY_EDGES=[[null,1,"lt1"],[1,3,"1to3"],[3,null,"3plus"]];
+const BUY_EDGES=[[null,1,"lt1"],[1,5,"1to5"],[5,null,"5plus"]];
 /*@shared*/
 function passes(r,f){
   /* ONE RULE (2026-09-21): the same test the build counts with (build_site_data.passes) */
@@ -1516,7 +1517,7 @@ function screenSentence(f){
   if(f.min)parts.push(`who own at least ${f.min}%`);
   if(f.max!==null&&f.max!==undefined)parts.push(`${f.min?"and":"who"} own less than ${f.max}%`);
   const soldW={lt1:"in the last year",_1to5:"one to five years ago","1to5":"one to five years ago","5plus":"over five years ago"};
-  const buyW={lt1:"in the last year","1to3":"one to three years ago","3plus":"over three years ago"};
+  const buyW={lt1:"in the last year","1to5":"one to five years ago","5plus":"over five years ago"};
   const clauses=[];
   if(f.sold&&f.sold!=="any")clauses.push(f.sold==="none"?"have not sold at their own discretion since 2016":`last sold at their own discretion ${soldW[f.sold]}`);
   if(f.buy&&f.buy!=="any")clauses.push(f.buy==="none"?"have not bought on the open market since 2016":`last bought on the open market ${buyW[f.buy]}`);
