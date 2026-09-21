@@ -99,6 +99,8 @@ class Ownership:
     # rather than treat them as ordinary companies that happen to look odd.
     partnership_units: float = 0.0
     operating_partnership: bool = False
+    units_counted: float = 0.0       # the Up-C rule (2026-09-24): units counted as the economic interest
+    paired_class: str = ""           # and the voting class they pair with, not counted
 
     # HOW THE STAKE WAS ACQUIRED, over their whole filing history. Lifetime
     # flows, never a position: someone can buy a million shares and sell a
@@ -416,6 +418,38 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     rec.option_titles = _titles(led.option_titles)
     rec.partnership_units = led.partnership_units
     rec.operating_partnership = bool(led.partnership_units)
+    # THE UP-C RULE (2026-09-24). A founder of an Up-C holds his economics as
+    # units of the operating LLC and his votes as a paired class of the
+    # public company, one share per unit, the pair exchanging for one Class A
+    # share. The units are pecuniary interest in a different wrapper; the
+    # paired class is the vote on the same money. So: count the units, do
+    # not count the paired class, keep every other class, and divide by the
+    # cover's total, which already sums the paired class -- and its count is
+    # the units outstanding, so the total is the exchanged base. THE PAIRING
+    # IS KNOWN FROM THE PERSON'S OWN FILING: the share class whose count
+    # equals his units is the wrapper. No class matches (a REIT's OP units,
+    # a ratio other than one): nothing is assumed and the units stay set
+    # aside as before. Nobody without units is touched.
+    rec.units_counted = 0.0
+    rec.paired_class = ""
+    if led.partnership_units > 0:
+        by_class: dict = {}
+        for g in led.groups.values():
+            by_class[g.security] = by_class.get(g.security, 0.0) + (g.shares or 0.0)
+        # a class the register already removed (a hand row for the wrapper) is a match too
+        for lab, (sh, _why, _src) in led.excluded.items():
+            cls = lab.split(" · ")[0]
+            by_class.setdefault(cls, 0.0)
+            by_class[cls] += sh
+        u = led.partnership_units
+        exact = [k for k, v in by_class.items() if v and abs(v - u) < 1]
+        near = [k for k, v in by_class.items() if v and abs(v - u) / u < 0.005]
+        wrapper = exact[0] if exact else (near[0] if len(near) == 1 else "")
+        if wrapper:
+            still_counted = sum(g.shares or 0.0 for g in led.groups.values() if g.security == wrapper)
+            rec.shares = led.total - still_counted + u
+            rec.units_counted = u
+            rec.paired_class = wrapper
     _flows(rec, led)
     rec.excluded_shares = sum(v[0] for v in led.excluded.values())
     rec.excluded_detail = " | ".join(f"{lab} = {sh:,.0f}: {why}"
@@ -509,10 +543,15 @@ def build(client, cik: int, company: str = "", ticker: str = "",
                       f"the cover page does not list, holding up to "
                       f"{total:,.0f} shares; excluded, because the denominator "
                       f"has no room for them: {rec.unnamed_class[:90]}")
-    if rec.operating_partnership:
+    if rec.operating_partnership and rec.units_counted:
+        flag(NOTE, f"an Up-C: {rec.units_counted:,.0f} units of the operating company counted as the "
+                   f"person's economic interest; {rec.paired_class} ({rec.units_counted:,.0f} shares) is "
+                   f"the paired voting class on the same units and is not counted, so the stake is "
+                   f"counted once, over the company's total including that class")
+    elif rec.operating_partnership:
         flag(NOTE, f"{rec.partnership_units:,.0f} in an operating partnership "
                    f"-- already issued and exchangeable into this issuer's "
-                   f"stock, but not part of it")
+                   f"stock, but not part of it; no paired class on the filing matches them, so they are not counted")
     if rec.lines == 0:
         if led.options:
             # NAME THE SECURITIES, DO NOT GUESS THE STRUCTURE. This asserted

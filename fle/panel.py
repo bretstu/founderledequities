@@ -60,7 +60,7 @@ COLUMNS = [
     # WHAT IS NOT IN THE FIGURE. Options and units are excluded on purpose,
     # and at an up-C that exclusion is most of the person's interest -- so
     # the row says what was left out rather than only that something was.
-    "options", "option_titles", "partnership_units", "operating_partnership",
+    "options", "option_titles", "partnership_units", "operating_partnership", "units_counted", "paired_class",
 
     # Whether the security title was read at all. One class means it was not.
     "single_class", "classes", "unnamed_class",
@@ -72,7 +72,7 @@ COLUMNS = [
     "flow_residual", "flows_reconcile", "filings_read", "splits", "split_note", "gap_days",
     # THE GRADE (fle/grade.py, 2026-09-17): four checks, filled after the
     # history stage; and the fact the statement check reads
-    "lines_stated", "chain", "statement", "classes", "denominator",
+    "lines_stated", "chain", "statement", "classes", "denominator", "proxy", "proxy_date", "proxy_shares",
 ]
 
 

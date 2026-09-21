@@ -292,7 +292,11 @@ PARTNERSHIP_MARKER = re.compile(
     r"|holdings\s+(partnership\s+)?units?\b"   # Blackstone, KKR Holdings
     r"|\bcommon units?\b"                      # TKO
     r"|\bclass\s+[A-Z]\s+units?\b"             # Carvana
-    r"|\bLP\s+units?\b",
+    r"|\bLP\s+units?\b"
+    r"|\bgroup\s+units?\b"                     # Hagerty Group Units (2026-09-24)
+    r"|\bLLC\s+units?\b"                       # "LLC Units", the plainest Up-C title
+    r"|\bmembership\s+(interests?|units?)\b"   # an LLC's own word for its units
+    r"|\bpartnership\s+units?\b",             # spelled out
     re.I)
 
 
@@ -1161,6 +1165,13 @@ def _options(root) -> tuple[float, dict]:
                 continue
             v = _num(node.find("postTransactionAmounts"),
                      "sharesOwnedFollowingTransaction")
+            if v is None:
+                # A FORM 3'S TABLE II HAS NO BALANCE FIELD (2026-09-24, Hagerty):
+                # the same schema gap the share classes had (Boost Run), on
+                # the other reader. The initial statement states a unit or
+                # an option by the underlying security's count; an LLC unit
+                # exchanges one for one, so that count is the holding.
+                v = _num(node.find("underlyingSecurity"), "underlyingSecurityShares")
             if v is None:
                 continue
             price = _t(node, "conversionOrExercisePrice")

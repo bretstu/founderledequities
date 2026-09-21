@@ -4432,3 +4432,22 @@ def test_a_form_3_reports_a_share_class_in_table_ii_by_its_underlying_count():
     </derivativeHolding></derivativeTable></ownershipDocument>"""
     rows = _rows(ET.fromstring(xml), "3", "2026-05-08", "0001493152-26-023900")
     assert len(rows) == 1 and rows[0].table == "II" and rows[0].shares == 29533018.0 and rows[0].direct == "D"
+
+
+def test_a_form_3_states_partnership_units_by_the_underlying_count():
+    """HAGERTY (2026-09-24): the Form 3 lists 50,978,823 units of The Hagerty
+    Group, LLC in Table II with no balance field; _options read nothing, so
+    the site had no units and could not see the Up-C."""
+    import xml.etree.ElementTree as ET
+    from fle.ledger import _options
+    xml = """<ownershipDocument><documentType>3</documentType><derivativeTable><derivativeHolding>
+      <securityTitle><value>Hagerty Group Units</value></securityTitle>
+      <conversionOrExercisePrice><footnoteId id="F1"/></conversionOrExercisePrice>
+      <exerciseDate><footnoteId id="F1"/></exerciseDate><expirationDate><footnoteId id="F1"/></expirationDate>
+      <underlyingSecurity><underlyingSecurityTitle><value>Class A Common Stock</value></underlyingSecurityTitle>
+        <underlyingSecurityShares><value>50978823</value></underlyingSecurityShares></underlyingSecurity>
+      <ownershipNature><directOrIndirectOwnership><value>I</value></directOrIndirectOwnership>
+        <natureOfOwnership><value>By Hagerty Holding Corp.</value></natureOfOwnership></ownershipNature>
+    </derivativeHolding></derivativeTable></ownershipDocument>"""
+    total, by_title, units = _options(ET.fromstring(xml))
+    assert units == 50978823.0 and total == 50978823.0
