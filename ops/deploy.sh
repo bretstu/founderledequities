@@ -187,8 +187,16 @@ python3 ops/letter.py publish public/ || echo "  letter: publish failed; the sit
 # ?v=<this deploy>, so the browser and the edge cache a deploy's files
 # until the next deploy changes the key.
 DATAV=$(date -u +%Y%m%d%H%M)
-sed -i "s|const DATA_V=\"dev\"|const DATA_V=\"$DATAV\"|" public/index.html public/about.html public/company.js public/tape.js
+# every built script that fetches data carries the key: companies.js was missing (2026-09-21), so the Companies page
+# fetched /universe.csv?v=dev and the edge served the first copy it ever cached
+for f in public/index.html public/about.html public/company.js public/tape.js public/companies.js; do
+  [ -f "$f" ] && sed -i "s|const DATA_V=\"dev\"|const DATA_V=\"$DATAV\"|" "$f"
+done
 echo "  data version: $DATAV"
+# and none may be left unstamped: a script fetching ?v=dev is a page that never sees a new deploy's data
+if grep -l 'DATA_V="dev"' public/*.js public/*.html 2>/dev/null | grep -q .; then
+  echo "  REFUSING TO PUBLISH -- a built page still carries DATA_V=\"dev\": $(grep -l 'DATA_V="dev"' public/*.js public/*.html | tr '\n' ' ')"; exit 1
+fi
 
 [ -s prices.csv ] && cp prices.csv public/
 # perf.csv is published by build_site_data, cut to the chart's cohort; the
