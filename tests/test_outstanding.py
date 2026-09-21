@@ -153,7 +153,7 @@ def test_a_denominator_below_the_numerator_is_a_problem():
     from fle import ownership
     src = inspect.getsource(ownership.build)
     assert "rec.outstanding < rec.shares" in src
-    assert "denominator is wrong" in " ".join(src.split())
+    assert "no percentage can be stated" in " ".join(src.split())   # and the figure is withheld (2026-09-21, Boxabl)
 
 
 def test_class_names_do_not_depend_on_a_namespace_prefix():

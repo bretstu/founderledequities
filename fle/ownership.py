@@ -556,9 +556,13 @@ def build(client, cik: int, company: str = "", ticker: str = "",
         # was right, the arithmetic was right, and the answer was
         # 8,790,139,900%.
         if rec.shares and rec.outstanding and rec.outstanding < rec.shares:
+            # AND A PERCENTAGE OVER 100 IS NOT A PERCENTAGE (2026-09-21, Boxabl:
+            # 59.6M Class B counted from a Form 3, a cover that counts 10.3M
+            # of one class, 579%). The shares are stated; the figure is not.
             flag(PROBLEM, f"shares outstanding ({rec.outstanding:,.0f}) is less "
-                          f"than the holding ({rec.shares:,.0f}); the "
-                          f"denominator is wrong")
+                          f"than the holding ({rec.shares:,.0f}); the cover page "
+                          f"omits a class the person holds, so no percentage can be stated")
+            rec.pct = None
         moved, how = jumped(out.history)
         if moved:
             # A rise is an issuance or conversion, a fall is buybacks --
