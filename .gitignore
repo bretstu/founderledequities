@@ -46,5 +46,5 @@ universe/delisted.csv
 universe/footnote-reads.csv
 universe/footnote-done.json
 universe/footnote-reads.prev.csv
-universe/footnote-reviewed.csv
-universe/partnerships-auto.csv
+history-state.json.before-full
+weekly-walk.log

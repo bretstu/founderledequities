@@ -52,11 +52,14 @@ def main(argv):
             reviewed[r["key"]] = r                # the latest verdict per line wins (the file is appended)
     from footnote_review import decided
     dec = decided(reads, reviewed)                # by key, by id, or inherited from an identical footnote
-    hand = []
+    hand, first_seen = [], {}
     if os.path.exists(reg_p):
         for r in csv.DictReader(open(reg_p, encoding="utf-8-sig")):
             if not (r.get("decided") or "").strip():
                 hand.append({c: r.get(c, "") for c in COLUMNS})
+            else:
+                # a reader row keeps the date it was first written, so the file only changes when a row does
+                first_seen[(r["ticker"], r["security"].strip().lower(), r.get("vehicle", ""))] = r["decided"]
 
     # the lines a person decided are not the person's
     picked, skipped = {}, []
@@ -86,7 +89,8 @@ def main(argv):
             continue        # the same vehicle on another filing: one row
         picked[k] = {"cik": panel[tk]["cik"], "ticker": tk, "security": r["security"].strip(), "direct": r["direct"].upper(),
                      "reason": r["quote"].strip(), "source": r["url"].strip(), "shares": "", "owner_cik": "", "since": r["accession"],
-                     "vehicle": vehicle, "decided": f"reader {dt.date.today().isoformat()}"}
+                     "vehicle": vehicle,
+                     "decided": first_seen.get((tk, r["security"].strip(), vehicle)) or first_seen.get((tk, r["security"].strip().lower(), vehicle)) or f"reader {dt.date.today().isoformat()}"}
 
     rows = hand + sorted(picked.values(), key=lambda x: (x["ticker"], x["security"], x["vehicle"]))
     print(f"  register: {len(hand)} hand row(s) kept, {len(picked)} reader row(s) from {len(reviewed)} decision(s)")
