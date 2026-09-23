@@ -202,14 +202,18 @@ def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path
     bcp.main(panel, founders, prices, sp, str(out), str(events), str(hist))
     tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
     body = tsla[tsla.index('<div id="cbody">'):tsla.index('<div class="creport"')]
-    assert "28.44%" in body and "1,120,000,000 of 3,950,000,000 shares" in body and "$370B" in body, "the answer band is in the HTML"
+    assert "28.44%" in body and "1,120,000,000 of 3,950,000,000 shares" in body and "$370B" in body, "the prose paragraph carries the figures in the HTML"
     assert "Confidence" not in body and "3-year" not in body
-    # three cards about the stake; the stock's facts are in the kicker, not cards
-    for label in ("Shares held", "Worth"):
-        assert f'<div class="k">{label}</div>' in body, "the band is the stake: share, shares, worth"
-    assert '<div class="k">Outstanding</div>' not in body, "shares outstanding is a column of the trades table, not a card"
-    for label in ("Market cap", "1Y return"):
-        assert f'<div class="k">{label}</div>' not in body, "the stock's facts are not cards"
+    # THREE CARDS, LABEL FIRST (2026-09-23): the rank and the two clocks; the
+    # share, the shares and the worth live in the H1 and the first sentence
+    for label in ("Stake rank", "Last sale", "Last buy"):
+        assert f'<div class="k">{label}</div>' in body, "the band is the rank and the two clocks"
+    assert 'class="cband kpi"' in body and "by dollar value of the stake" in body
+    assert "<small> days ago</small>" in body, "the clock is a day count, redrawn by the script from the reader's day"
+    assert "Aug 29, 2026 · $24.2M" in body, "the sale's date and size are the fine print"
+    assert "Feb 14, 2020 · $10M" in body, "the buy's date and size are the fine print"
+    for label in ("Shares held", "Worth", "Market cap", "1Y return", "Outstanding"):
+        assert f'<div class="k">{label}</div>' not in body, "the sentence's figures are not repeated as cards"
     assert "from 21.10% in 2016 to 28.44% on 2026-07-06" in body, "the record, as a sentence"
     assert "1 sale and 1 purchase" in body, "kept-apart trades do not count"
     assert "planned sale of $24.2M on 2026-08-29" in body, "the last trade that moved it"
@@ -232,12 +236,14 @@ def test_the_seo_layer(tmp_path):
     out = tmp_path / "pub"
     bcp.main(panel, founders, prices, sp, str(out), str(tmp_path / "none.csv"), str(hist))
     tsla = open(out / "company" / "TSLA" / "index.html", encoding="utf-8").read()
-    assert '<h2 class="p"><span class="k">Elon Musk owns</span>28.44%</h2>' in tsla, \
-        "the query phrase is the card, read top to bottom, with the number as the heading"
+    assert '<div class="k">Stake rank</div>' in tsla and ">None<" in tsla and "no sales since 2016" in tsla, \
+        "the KPI band is baked even with no events file: the clocks say None honestly"
+    assert "<h1>Elon Musk owns 28.44% of Tesla</h1>" in tsla, "the answer is the H1; no second card repeats it"
     assert '"@type": "BreadcrumbList"' in tsla and '/companies/' in tsla
     assert '<div id="cmore"><div class="cmore">' in tsla or '<div id="cmore"></div>' in tsla, "neighbour links live outside the block the script redraws"
     sealed = open(out / "company" / "SEALD" / "index.html", encoding="utf-8").read()
-    assert '<h2 class="p"><span class="k">Jane Doe owns</span>41.20%</h2>' in sealed, "the seal is off: the figure is the heading on every page"
+    assert "<h1>Jane Doe owns 41.20% of Sealed</h1>" in sealed and '<div class="k">Stake rank</div>' in sealed, \
+        "the seal is off: the figure is the H1 and the KPI band is baked on every page"
     sm = open(out / "sitemap.xml", encoding="utf-8").read()
     assert "<lastmod>2026-07-06</lastmod>" in sm, "a company page is dated by its as-of"
 
@@ -265,25 +271,32 @@ def test_the_record_has_two_views_and_no_prose():
     assert "hover for the trade" not in js and "dot size follows" not in js, "the key is two words"
 
 
-def test_the_band_uses_the_tables_words_and_has_no_three_year_cell():
-    """Three cards, one subject: the share, the shares, what they are worth.
-    Market cap, the close and the year's return are the stock's facts and
-    ride the kicker line beside the ticker. The 3-year change cell is gone:
-    it read "+5.0% since 2026-01" for a company eight months old."""
+def test_the_band_is_the_rank_and_the_two_clocks():
+    """THREE CARDS, LABEL FIRST (2026-09-23): Stake rank, Last sale, Last buy.
+    The share, the shares and the worth live in the H1 and the first
+    sentence; the kicker names the market cap and carries the founder flag;
+    the watch renders beside the answer, not in the band."""
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
     band = js[js.index("function stat("):js.index("/* ---- the record:")]
-    for label in ('"Shares held"', '"Worth"'):
-        assert label in band, f"{label} is a stat"
-    for label in ('"Market cap"', '"1Y return"', '"Value"'):
+    for label in ('"Stake rank"', '"Last sale"', '"Last buy"'):
+        assert f"stat({label}" in band, f"{label} is a card"
+    for label in ('"Shares held"', '"Worth"', '"Market cap"', '"1Y return"', '"Value"'):
         assert f"stat({label}" not in band, f"{label} is not a card"
-    assert "kick.innerHTML" in band and "1Y" not in band, "beside the name: the ticker and the market cap, nothing else of the stock's"
+    assert "by dollar value of the stake" in band, "the rank says what it ranks; no cross-company comparison rides it"
+    assert "SpaceX" not in js, "no sentence that only works for one company"
+    assert "kick.innerHTML" in band and "mkt cap" in band and 'class="fdl"' in band, \
+        "the kicker: ticker, the market cap named as such, and the founder flag"
     assert "3-year" not in band[band.index("function band("):] and "trajStats" not in js
     assert "never estimated" not in band, "the answer needs no sentence beside it"
-    assert 'class="cband four">' in band and 'class="cstat"' in band and "${watchCard(r)}" in band, "four cards of one width: the three numbers and the watch (2026-09-17)"
+    assert 'class="cband kpi">' in band and "${watchCard(r)}" not in band, "the watch is not a card in the band"
+    assert 'id="cwatchslot"' in open(os.path.join(ROOT, "company.html"), encoding="utf-8").read() and \
+        '$("#cwatchslot")' in js, "the watch renders in the head's slot, beside the answer (2026-09-23)"
+    assert '"None"' in band and 'C.since||"2016"' in band, "a company with no sale on record says so"
+    assert "daysSince(" in band, "the day count is drawn from the reader's own day"
     assert "confidence</summary>" not in band, "no confidence grade on the card"
-    # A LOW-CONFIDENCE STAKE SAYS WHY BESIDE THE NUMBER (2026-09-17, EquipmentShare): the same sentence the tape's "?" carries;
-    # medium and high stay a bare number
-    assert 'r.conf==="low"' in band and 'class="lowc"' in band and '(r.flags||"").split("\\n")[0]' in band
+    # A LOW-CONFIDENCE STAKE STILL SAYS WHY (2026-09-23): the Caution line
+    # under the cards carries the same sentence the tape's "?" carries
+    assert 'r.conf==="low"' in band and '(r.flags||"").split("\\n")[0]' in band and '>Caution<' in band
     assert "\u2014" not in js, "no em dashes"
 
 
@@ -294,7 +307,7 @@ def test_every_page_is_open_and_the_script_still_knows_the_seal(tmp_path):
     panel, founders, prices, sp, out = _fixture(tmp_path)
     bcp.main(panel, founders, prices, sp, out)
     sealed = open(os.path.join(out, "company", "SEALD", "index.html"), encoding="utf-8").read()
-    assert '<h2 class="p"><span class="k">Jane Doe owns</span>41.20%</h2>' in sealed
+    assert "<h1>Jane Doe owns 41.20% of Sealed</h1>" in sealed and '<div class="k">Stake rank</div>' in sealed
     assert 'class="sealed"' not in sealed, "no blurred figures anywhere"
     assert bcp.poss("Jabbok Schlacks") == "Jabbok Schlacks'"
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()

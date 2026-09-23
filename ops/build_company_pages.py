@@ -202,8 +202,10 @@ def answer_text(r, price):
         except ValueError:
             nice = when
         val = f", worth {money(sh * price)} at the latest close" if price and sh else ""
-        ans = (f"{sh:,.0f} shares{' as of the ' + html.escape(nice) + ' filing' if nice else ''}{val}, "
-               f"computed from every Form 4 since 2016 and never estimated. The record is below, every filing linked.")
+        # THE SENTENCE IS THE FACT (2026-09-23): the shares, the date, the value.
+        # The method ("computed from every filing, never estimated") is the
+        # footer's line on every page; said beside the answer it was furniture.
+        ans = f"{sh:,.0f} shares{' as of the ' + html.escape(nice) + ' filing' if nice else ''}{val}."
     else:
         h1 = f"How much of {co} does {ceo} own?"
         ans = (f"The filings on record do not state a share count the site can stand behind; the reasons are below. "
@@ -242,7 +244,8 @@ def load_summaries(events_p, hist_p):
                 continue
             if (r.get("label") or "") in UNCHANGED or (r.get("pre_ipo") or "") in ("1", "true", "True"):
                 continue
-            d = ev.setdefault(tk, {"buys": 0, "sells": 0, "last": None, "older": 0, "first": ""})
+            d = ev.setdefault(tk, {"buys": 0, "sells": 0, "last": None, "older": 0, "first": "",
+                                   "last_sale": None, "last_buy": None})
             d["buys" if r["code"] == "P" else "sells"] += 1
             fd = r.get("filed") or ""
             if not d["first"] or fd < d["first"]:
@@ -250,6 +253,12 @@ def load_summaries(events_p, hist_p):
             key = (r.get("traded") or r.get("filed") or "", r.get("filed") or "")
             if d["last"] is None or key > d["last"][0]:
                 d["last"] = (key, r)
+            # THE TWO CLOCKS (2026-09-23): the page's cards say how long since
+            # he last sold and last bought, so the newest of each is kept --
+            # the same rows the counts above count, nothing reinterpreted.
+            side = "last_buy" if r["code"] == "P" else "last_sale"
+            if d[side] is None or key > d[side][0]:
+                d[side] = (key, r)
     except OSError:
         pass
     # THE ARCHIVE (PLAN.md section 2): the trades filed more than a year
@@ -331,10 +340,20 @@ def price_line_svg(store, tk, years=5):
 
 
 def kicker_mcap(r, price) -> str:
-    """The market cap beside the ticker, beside the name. Public data, so
-    sealed pages carry it too."""
+    """The market cap beside the ticker, beside the name, SAYING WHAT IT IS
+    (2026-09-23): "$1.50T" alone read as anything. The tk span's small caps
+    set "mkt cap" in the same register. Public data, so sealed pages carry
+    it too."""
     out = num(r.get("outstanding"))
-    return f" · {money(out * price)}" if (price and out) else ""
+    return f" · {money(out * price)} mkt cap" if (price and out) else ""
+
+
+def kicker_founder(founder) -> str:
+    """FOUNDER-LED IN THE KICKER (2026-09-23): the flag sits after the ticker
+    and the market cap, in its own colour, not beside the CEO's name. The
+    receipt (the proxy's words) stays in the receipt block below; the
+    kicker is the flag alone."""
+    return ' · <span class="fdl">Founder-led</span>' if (founder or {}).get("f") == "yes" else ""
 
 
 def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filings=0, ret_1y=None,
@@ -385,13 +404,41 @@ def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filin
         return (f'<div class="cstat"><div class="k">{k}</div><div class="v {cls}">{v}</div>'
                 + (f'<div class="s">{sub}</div>' if sub else "") + '</div>')
     r1 = ret_1y.get(payload["tk"]) if ret_1y else None
-    # THREE CARDS (2026-09-14): the share, the shares, what they are worth.
-    # Shares outstanding to the share was a second ledger above the chart;
-    # it is a column of the trades table and in the kicker's market cap.
-    band = ('<div class="cband three">'
-            f'<div><h2 class="p"><span class="k">{ceo} owns</span>{pct:.2f}%</h2></div>'
-            + stat("Shares held", f"{int(sh):,}")
-            + stat("Worth", money(sh * price) if price else "&mdash;")
+    # THREE CARDS, LABEL FIRST (2026-09-23): the share, the shares and the
+    # worth all live in the H1 and the first sentence now, so the cards say
+    # what the sentence does not: the stake's rank by dollar value, and how
+    # long since the chief executive last sold and last bought. The label is
+    # the card's name; the date is the fine print; the script redraws the
+    # day counts from the reader's own day.
+    e0 = ev.get(payload["tk"]) or {}
+    today = datetime.date.today()
+
+    def clock(side):
+        hit = e0.get(side)
+        if not hit:
+            since = (e0.get("first") or "2016")[:4] or "2016"
+            return "None", f"no {'sales' if side == 'last_sale' else 'purchases'} since {since}"
+        lr = hit[1]
+        d = lr.get("traded") or lr.get("filed") or ""
+        try:
+            days = (today - datetime.date.fromisoformat(d)).days
+            v = f'{days:,}<small> days ago</small>'
+        except ValueError:
+            v = html.escape(d)
+        val = num(lr.get("value"))
+        try:
+            nice = datetime.date.fromisoformat(d).strftime("%b %-d, %Y")
+        except ValueError:
+            nice = d
+        return v, html.escape(nice) + (f" · {money(val)}" if val else "")
+
+    sv, ss = clock("last_sale")
+    bv, bs = clock("last_buy")
+    rank = payload.get("rank")
+    band = ('<div class="cband kpi">'
+            + stat("Stake rank", f"#{rank:,}" if rank else "&mdash;", "", "by dollar value of the stake")
+            + stat("Last sale", sv, "", ss)
+            + stat("Last buy", bv, "", bs)
             + '</div>'
             )
     h = hist.get(payload["tk"]) or {}
@@ -877,6 +924,13 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                      and num(r.get("shares")) and prices.get((r.get("ticker") or "").upper())),
                     key=lambda r: -(num(r.get("shares")) * prices[(r.get("ticker") or "").upper()]))
     ranked = [(r.get("ticker") or "").upper() for r in ranked]
+    # THE STAKE RANK (2026-09-23): every company with a share count and a
+    # close, ordered by what the stake is worth. The whole universe, not
+    # only founders: #1 means the most valuable CEO stake on the site.
+    by_value = sorted((r for r in panel_rows
+                       if num(r.get("shares")) and prices.get((r.get("ticker") or "").upper())),
+                      key=lambda r: -(num(r.get("shares")) * prices[(r.get("ticker") or "").upper()]))
+    vrank = {(r.get("ticker") or "").upper(): i + 1 for i, r in enumerate(by_value)}
     NAMES.clear()
     NAMES.update({(r.get("ticker") or "").upper(): (r.get("company") or "") for r in panel_rows})
     filings, last_filed = {}, {}
@@ -916,6 +970,16 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         payload = {"tk": tk, "co": r.get("company") or tk, "ceo": r.get("ceo") or "", "sp": is_sp,
                    "founder": founders.get(tk)}
         e_sum = ev.get(tk) or {}
+        # THE CARDS' DATA (2026-09-23): the rank and the two clocks ride in the
+        # payload so the script draws "N days ago" from the reader's own day.
+        if vrank.get(tk):
+            payload["rank"] = vrank[tk]
+        for side, name in (("last_sale", "ls"), ("last_buy", "lb")):
+            hit = e_sum.get(side)
+            if hit:
+                lr = hit[1]
+                payload[name] = {"d": lr.get("traded") or lr.get("filed") or "",
+                                 "v": num(lr.get("value"))}
         if e_sum.get("older"):
             payload["older"] = e_sum["older"]        # trades before the free year: the archive, in Pro
             payload["since"] = (e_sum.get("first") or "")[:4]
@@ -964,6 +1028,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                 .replace("{{DESCRIPTION}}", html.escape(desc))
                 .replace("{{TICKER}}", html.escape(tk))
                 .replace("{{MCAP}}", kicker_mcap(r, price))
+                .replace("{{FDL}}", kicker_founder(founders.get(tk)))
+                .replace("{{BODYCLS}}", "fdl" if (founders.get(tk) or {}).get("f") == "yes" else "")
                 .replace("{{COMPANY}}", html.escape(payload["co"]))
                 .replace("{{H1}}", html.escape(h1))
                 .replace("{{ANSWER}}", answer_html)

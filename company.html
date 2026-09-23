@@ -203,19 +203,48 @@
     .cshead .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
     .creport{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--mut);line-height:1.6}
     .creport a{color:var(--blue)}
+    /* THE HEAD IS A ROW (2026-09-23): the answer on the left, the watch box
+       on the right, the H1 level with the box's top; on a phone the box
+       follows the answer at full width. */
+    .cheadrow{display:flex;gap:48px;align-items:flex-start}
+    .cheadmain{flex:1;min-width:0}
+    .cwatchslot{flex:none;width:330px;margin-top:4px}
+    .cwatchslot .wcard{border:1px solid var(--ink);background:#fff;border-radius:2px;padding:16px 18px 14px;display:flex;flex-direction:column;gap:9px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+    @media(max-width:820px){.cheadrow{flex-direction:column;gap:18px}.cwatchslot{width:100%;margin-top:0}}
+    /* FOUNDER-LED IS A COLOUR (2026-09-23): the flag in the kicker and a
+       hairline of the same clay across the page's very top; a page whose
+       chief executive is not a founder carries neither. */
+    .tk .fdl{color:#8A4B1E;font-weight:600}
+    body.fdl::before{content:"";display:block;height:3px;background:#8A4B1E}
+    /* THE KPI CARDS (2026-09-23): the label names the card, the figure
+       answers it, the fine print dates it -- three registers, not one.
+       Left-aligned: these read as facts, not as a scoreboard. */
+    .cband.kpi{grid-template-columns:repeat(3,minmax(0,1fr))}
+    @media(max-width:820px){.cband.kpi{grid-template-columns:1fr}}
+    .cband.kpi>div{align-items:flex-start;text-align:left;justify-content:flex-start;min-height:0;padding:16px 18px 14px;gap:2px}
+    .cband.kpi .v{font-family:var(--disp);font-size:clamp(24px,2.2vw,32px);font-weight:600;letter-spacing:-.015em;margin-top:8px;line-height:1.05;color:var(--ink)}
+    .cband.kpi .v small{font-size:58%;font-weight:500;letter-spacing:0;color:var(--mut)}
+    .cband.kpi .s{font-family:var(--ui);font-size:12.5px;font-style:italic;color:var(--mut);margin-top:5px;letter-spacing:0}
   </style>
 </head>
-<body>
+<body class="{{BODYCLS}}">
 {{TOPNAV}}
 <main class="cpage"><div class="wrap">
   <div class="chead">
     <!-- THE ANSWER IS THE HEADLINE (2026-09-24): a searcher typed "how much of Tesla
          does Elon Musk own"; the H1 and the first sentence answer it in the HTML
-         itself, before any script runs. The company's name is the kicker. -->
-    <div class="cname"><span class="co">{{COMPANY}}</span><span class="tk" id="ctk">{{TICKER}}{{MCAP}}</span></div>
-    <h1>{{H1}}</h1>
-    <p class="answer">{{ANSWER}}</p>
-    <div class="ce"><b>{{CEO}}</b> · CEO <span id="cbadge"></span></div>
+         itself, before any script runs. The company's name is the kicker.
+         THE WATCH BESIDE THE ANSWER (2026-09-23): the one thing the page asks
+         for sits at the answer's side, not in the number band. -->
+    <div class="cheadrow">
+      <div class="cheadmain">
+        <div class="cname"><span class="co">{{COMPANY}}</span><span class="tk" id="ctk">{{TICKER}}{{MCAP}}{{FDL}}</span></div>
+        <h1>{{H1}}</h1>
+        <p class="answer">{{ANSWER}}</p>
+        <div class="ce"><b>{{CEO}}</b> · CEO</div>
+      </div>
+      <div class="cwatchslot" id="cwatchslot"></div>
+    </div>
   </div>
   <div id="cbody"></div>
   <div id="cmore"></div>

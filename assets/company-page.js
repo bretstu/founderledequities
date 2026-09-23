@@ -22,7 +22,6 @@ function nav(me){
 function setRow(row){
   PANEL=[row];
   if(C.founder)FOUNDERS[row.tk]=C.founder;
-  $("#cbadge").innerHTML=fBadge(row.tk);
 }
 
 /* whose stake: "Elon Musk's", "Jabbok Schlacks'" */
@@ -43,36 +42,51 @@ function stat(k,v,cls,sub,title){return `<div class="cstat"${title?` title="${es
    page or in any file the page loads, so there is nothing behind the blur.
    Hovering says where it is; clicking opens the box. */
 const BLUR=(shape)=>`<span class="sealed" data-shape="${shape}" aria-label="in Pro" onclick="event.stopPropagation();openPro()" title="in Pro"></span>`;
+function daysSince(d){
+  if(!d)return null;
+  const then=Date.parse(d+"T00:00:00Z");
+  if(isNaN(then))return null;
+  return Math.max(0,Math.floor((Date.now()-then)/86400000));
+}
 function band(r){
   const mcap=r.price&&r.out?r.out*r.price:null;
-  /* the card reads as one sentence around the number: MARK ZUCKERBERG
-     OWNS / 13.44% / of Meta Platforms, Inc. */
-  const who=`<div class="k">${esc(C.ceo||"The chief executive")} ${r.units||r.pct===null?"holds":"owns"}</div>`;
-  const big=r.masked?`<h2 class="p"><span class="k">${esc(C.ceo||"The chief executive")} owns</span>${BLUR("0.00%")}</h2>`
-    :r.units?`${who}<div class="p s">partnership units</div><div class="pl">Exchangeable units rather than common stock, so a percent of common shares cannot describe the stake.</div>`
-    :r.pct===null?`${who}<div class="p s">a stake not measured</div><div class="pl">${esc(r.flags||"the record could not settle on a figure")}</div>`
-    :`<h2 class="p"><span class="k">${esc(C.ceo||"The chief executive")} owns</span>${r.pct.toFixed(r.pct<1?3:2)}%${r.conf==="low"?`<span class="lowc" title="${esc("the site's confidence in this stake is low: "+((r.flags||"").split("\n")[0]||"the record could not settle on a figure"))}">?</span>`:""}</h2>${r.conf==="low"?`<div class="pl">${esc((r.flags||"").split("\n")[0]||"the record could not settle on a figure")}</div>`:""}`;
-  const asof=PRICES_ASOF||"latest";
-  const tabled=r.tabled!==null&&r.sh!==null&&r.out?`${fmt(r.tabled)} in the filing tables; the rest stated in a remark`:"";
-  /* THREE CARDS, ONE SUBJECT. The page is about what this person owns of
-     this company: the share, the shares, and what they are worth. Market
-     cap, price and the year's return are facts about the stock, context
-     for the stake and not the answer, so they sit in the kicker line with
-     the ticker and the tier, in that line's small mono register. */
-  /* the ticker and the market cap beside the name */
+  /* THE KICKER SAYS WHAT ITS NUMBERS ARE (2026-09-23): the ticker, the
+     market cap named as such, and the founder flag in its own colour --
+     the stock's facts and the page's one badge, in one small line. */
   const kick=$("#ctk");
-  if(kick)kick.innerHTML=`${esc(r.tk)}${mcap?` · ${money(mcap)}`:""}`;
+  const fdl=(fInfo(r.tk)||{}).f==="yes"?' · <span class="fdl">Founder-led</span>':"";
+  if(kick)kick.innerHTML=`${esc(r.tk)}${mcap?` · ${money(mcap)} mkt cap`:""}${fdl}`;
+  /* THREE CARDS, LABEL FIRST (2026-09-23). The share, the shares and the
+     worth live in the H1 and the first sentence; the cards say what the
+     sentence does not. The label names the card, the figure answers it,
+     the date is the fine print, and every card exists for every company:
+     STAKE RANK by dollar value, LAST SALE, LAST BUY -- "None" with the
+     record's first year when there has never been one. */
+  const clock=(hit,word)=>{
+    if(!hit||!hit.d)return ["None",`no ${word} since ${C.since||"2016"}`];
+    const n=daysSince(hit.d);
+    const v=n===null?esc(hit.d):`${fmt(n)}<small> days ago</small>`;
+    return [v,`${dayLabel(hit.d)}${hit.v?` · ${money(hit.v)}`:""}`];
+  };
+  const [sv,ss]=clock(C.ls,"sales"),[bv,bs]=clock(C.lb,"purchases");
+  const cards=`<div class="cband kpi">
+    ${stat("Stake rank",C.rank?"#"+fmt(C.rank):"&mdash;","","by dollar value of the stake","every company on the site, ordered by what the chief executive's stake is worth at the latest close")}
+    ${stat("Last sale",sv,"",ss,"the newest sale that moved the stake; exercises and same-day sell-offs that left it unchanged are not counted")}
+    ${stat("Last buy",bv,"",bs,"the newest purchase that moved the stake")}
+  </div>`;
+  /* THE FLAGS KEEP THEIR LINE (2026-09-23): the answer card that carried
+     them is gone, so a low-confidence stake, a partnership, or a stake
+     the record could not measure says so right under the cards. */
+  const flag=r.units?`Exchangeable partnership units rather than common stock, so a percent of common shares cannot describe the stake.`
+    :r.pct===null?(r.flags||"the record could not settle on a figure")
+    :r.conf==="low"?("the site's confidence in this stake is low: "+((r.flags||"").split("\n")[0]||"the record could not settle on a figure")):"";
+  const flagLine=flag?`<div class="cnot"><span class="k">Caution</span> ${esc(flag)}</div>`:"";
   /* NOT COUNTED (2026-09-19, phase two of the footnote reader): the lines the
      register removes, each with the footnote's own words. The reader can
      see why the number is lower than the filing's total. */
   const excl=(C.row&&C.row.excluded_detail)||"";
   const notCounted=excl?`<div class="cnot"><span class="k">Not counted</span> ${excl.split(" | ").map(x=>esc(x)).join("<br>")}</div>`:"";
-  return `<div class="cband four">
-    <div>${big}${notCounted}</div>
-    ${stat("Shares held",r.masked?BLUR("00,000,000"):r.sh!==null?fmt(r.sh):"&mdash;","",r.masked?"":tabled,"shares held, per the latest filing")}
-    ${stat("Worth",r.masked?BLUR("$0.0B"):r.val?money(r.val):"&mdash;","","",`the stake's value: shares held at the ${asof} close${r.price?` of $${r.price.toFixed(2)}`:""}`)}
-    ${watchCard(r)}
-  </div>`;
+  return cards+flagLine+notCounted;
 }
 
 /* ---- the record: the price and the stake, with the trades on the line ----
@@ -527,8 +541,9 @@ function reportBlock(r){
 
 function renderOpen(r,{animate=true}={}){
   window._lastRow=r;
-  /* the watch sits under the cards, before the chart: it is the page's
-     conversion, and under the trades table it was missed */
+  /* THE WATCH IS BESIDE THE ANSWER (2026-09-23): the head's right column,
+     level with the H1 -- the page's one ask, where a searcher lands */
+  const slot=$("#cwatchslot");if(slot)slot.innerHTML=watchCard(r);
   $("#cbody").innerHTML=band(r)+recordBlock(r)+tradesBlock(r)+whyBlock(r);
   const cr=$("#creport");if(cr)cr.innerHTML="";   /* the footer says where the numbers come from; the sentence that stood here was the same sentence */
   const svg=document.querySelector(".cchart svg.fchart");
