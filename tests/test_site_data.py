@@ -1,5 +1,5 @@
-"""ops/build_site_data.py: the list files carry every column the page
-reads, and a sealed row carries none of the columns that state its stake."""
+"""ops/build_site_data.py: one tree (2026-09-23) -- the list carries every
+column the page reads, for every company, nothing masked."""
 import csv
 import importlib.util
 import os
@@ -15,7 +15,7 @@ spec.loader.exec_module(bsd)
 PAGE_READS = {"ticker", "company", "ceo", "pct", "shares", "outstanding",
               "shares_as_of", "confidence", "cik", "form4_url",
               "excluded_shares", "excluded_detail", "problems", "cautions",
-              "operating_partnership", "masked", "stake_source"}
+              "operating_partnership", "stake_source"}
 
 
 def _write(path, cols, rows):
@@ -26,7 +26,6 @@ def _write(path, cols, rows):
 
 
 def test_list_files_carry_what_the_page_reads(tmp_path):
-    bsd.OPEN_TOP = 0   # two-row fixture: the sealed row stays sealed
     panel_cols = ["cik", "ticker", "company", "ceo", "pct", "shares",
                   "outstanding", "shares_as_of", "confidence", "problems",
                   "cautions", "excluded_shares", "excluded_detail",
@@ -63,26 +62,23 @@ def test_list_files_carry_what_the_page_reads(tmp_path):
                     str(tmp_path / "events.csv"), str(tmp_path / "founders.csv"),
                     str(tmp_path / "sp.csv"), str(out)) == 0
 
-    free = {r["ticker"]: r for r in csv.DictReader(open(out / "universe.csv"))}
-    pro = {r["ticker"]: r for r in csv.DictReader(open(out / "pro" / "universe.csv"))}
-    assert PAGE_READS <= set(free["BX"].keys()), \
-        "the free list drops a column the page reads: " + \
-        ", ".join(sorted(PAGE_READS - set(free["BX"].keys())))
+    rows_by_tk = {r["ticker"]: r for r in csv.DictReader(open(out / "universe.csv"))}
+    assert PAGE_READS <= set(rows_by_tk["BX"].keys()), \
+        "the list drops a column the page reads: " + \
+        ", ".join(sorted(PAGE_READS - set(rows_by_tk["BX"].keys())))
+    assert "masked" not in rows_by_tk["BX"], "the masked column left with the tier (2026-09-23)"
+    assert not (out / "pro").exists(), "no second tree"
 
-    # the open row carries the structural facts the page renders
-    assert free["BX"]["operating_partnership"] == "True"
-    assert free["BX"]["shares_as_of"] == "2026-08-01"
-    assert free["BX"]["cautions"] == "holds partnership units"
-    assert free["BX"]["masked"] == "0"
+    # the row carries the structural facts the page renders
+    assert rows_by_tk["BX"]["operating_partnership"] == "True"
+    assert rows_by_tk["BX"]["shares_as_of"] == "2026-08-01"
+    assert rows_by_tk["BX"]["cautions"] == "holds partnership units"
+    assert rows_by_tk["BX"]["sp"] == "1", "S&P membership rides as a plain fact"
 
-    # THE SEAL IS OFF (2026-09-18): a row outside the S&P carries its numbers too
-    z = free["ZZZ"]
-    assert z["masked"] == "0"
-    assert z["pct"] != "" and z["ceo"] == "A. Founder" and z["shares_as_of"] == "2026-07-01"
-
-    # the pro file is unmasked
-    assert pro["ZZZ"]["masked"] == "0" and pro["ZZZ"]["pct"] == "12.5"
-    assert pro["ZZZ"]["excluded_shares"] == "50"
+    # a row outside the S&P carries its numbers the same way
+    z = rows_by_tk["ZZZ"]
+    assert z["pct"] == "12.5" and z["ceo"] == "A. Founder" and z["shares_as_of"] == "2026-07-01"
+    assert z["excluded_shares"] == "50" and z["sp"] == "0"
 
 
 def test_the_deploy_passes_the_live_files_and_the_member_list():
@@ -131,10 +127,10 @@ def test_price_shards_are_public_for_every_ticker(tmp_path):
     assert bsd.write_price_shards(None, str(out)) == 0, "no store, no shards, no error"
 
 
-def test_the_free_record_is_a_year_and_the_screener_has_its_counts(tmp_path):
-    """PLAN.md section 2: an open company's free shard is its last twelve
-    months with every figure; the archive is the Pro shard. The free feed
-    keeps each S&P company's most recent trade whatever its date, so the
+def test_the_shards_are_whole_and_the_feed_is_a_year(tmp_path):
+    """ONE TREE (2026-09-23): a company's shard is its whole record with
+    every figure. The feed (events.csv) is the last year plus each
+    company's most recent stake-moving trade whatever its date, so the
     screener's last-trade column stays true. screen-counts.json counts the
     screener's filters over every company."""
     import json
@@ -157,13 +153,14 @@ def test_the_free_record_is_a_year_and_the_screener_has_its_counts(tmp_path):
     out = root / "site-data"
     b.main(str(root / "panel.csv"), str(root / "history.csv"), str(root / "events.csv"), str(root / "founders.csv"),
            str(root / "sp.csv"), str(out))
-    free_open = list(csv.DictReader(open(out / "events" / "OPEN.csv")))
-    pro_open = list(csv.DictReader(open(out / "pro" / "events" / "OPEN.csv")))
-    assert len(free_open) == 3 and all(r["value"] for r in free_open), "the seal is off: the free shard is the whole record, figures intact"
-    assert len(pro_open) == 3, "the Pro shard is the whole record"
-    feed = list(csv.DictReader(open(out / "events-free.csv")))
+    shard = list(csv.DictReader(open(out / "events" / "OPEN.csv")))
+    assert len(shard) == 3 and all(r["value"] for r in shard), "the shard is the whole record, figures intact"
+    assert not (out / "pro").exists(), "one tree"
+    feed = list(csv.DictReader(open(out / "events.csv")))
     open_rows = [r for r in feed if r["ticker"] == "OPEN"]
     assert [r["filed"] for r in open_rows] == ["2026-08-01"], "the feed carries the year; the most recent trade is inside it"
+    seal_rows = [r["filed"] for r in feed if r["ticker"] == "SEAL"]
+    assert seal_rows == ["2026-08-15"], "every company's year is in the feed now"
     counts = json.load(open(out / "screen-counts.json"))
     # THE PRESETS, COUNTED (2026-09-21): everyone; the founders; no discretionary sale on record (SEAL: OPEN sold in 2019);
     # owns at least 10% (SEAL at 12%); an open-market buy in the last year (both); hired under 1% (nobody)
@@ -175,11 +172,10 @@ def test_the_list_carries_the_last_move_and_never_sold(tmp_path):
     """The screener draws its Last move and Never sold columns from the list
     itself, computed at build, so the page loads no history or events."""
     import csv as _csv
-    test_the_free_record_is_a_year_and_the_screener_has_its_counts(tmp_path)   # builds the fixture site
+    test_the_shards_are_whole_and_the_feed_is_a_year(tmp_path)   # builds the fixture site
     out = tmp_path / "site-data"
-    rows = {r["ticker"]: r for r in _csv.DictReader(open(out / "pro" / "universe.csv", encoding="utf-8"))}
+    rows = {r["ticker"]: r for r in _csv.DictReader(open(out / "universe.csv", encoding="utf-8"))}
     assert set(("lt_code", "lt_plan", "lt_value", "lt_traded", "lt_filed", "never_sold", "last_disc", "last_buy")) <= set(rows["OPEN"].keys())
     assert rows["OPEN"]["lt_code"] in ("P", "S") and rows["OPEN"]["lt_traded"]
     assert rows["OPEN"]["last_disc"].startswith("2019") and rows["OPEN"]["last_buy"] and not rows["SEAL"]["last_disc"], "the two dates the controls read (2026-09-21)"
-    free = {r["ticker"]: r for r in _csv.DictReader(open(out / "universe.csv", encoding="utf-8"))}
-    assert not [r for r in free.values() if r["masked"] == "1"], "the seal is off: no row is masked"
+    assert "masked" not in rows["OPEN"], "the masked column left with the tier"

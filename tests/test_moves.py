@@ -60,7 +60,7 @@ def test_the_week_is_every_founder_filing_ranked_by_the_move(tmp_path):
     assert "crossed 5% upward" not in lines[0] and "now owns 9.06%" in lines[0]
     seal = next(l for l in lines if l.startswith("- SEAL · Bob Founder sold"))
     assert seal.startswith("- SEAL · Bob Founder sold $7.1M under a pre-set plan across 2 filings · Sep 10 · cut the stake by 23% · now owns 0.888%"), seal
-    assert "confidence medium, outside the S&P: the stake is in Pro, fell below 1%" in seal, "the flags: confidence, the seal, the milestone"
+    assert "confidence medium, outside the S&P, fell below 1%" in seal, "the flags: confidence, the index, the milestone"
     assert "read both filings on the page before this one is public" in md, "a plan or a large cut is checked first"
     assert "Di Hired" not in md, "founders only"
     assert "$9M" not in md, "a September 3 purchase is the week before"

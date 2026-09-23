@@ -39,12 +39,12 @@ def test_the_kind_is_the_tapes():
     assert post_card.short_name("SoundHound AI, Inc.", "SOUN") == "SoundHound AI" and post_card.short_name("Red Cat Holdings, Inc.", "RCAT") == "Red Cat"
 
 
-def test_the_link_card_is_the_post_card_and_the_seal_holds(tmp_path):
-    """THE LINK CARD (2026-09-18): the page's OG image is the compact card with
-    the newest trade; a sealed company shows the trade line and no stake."""
+def test_the_link_card_is_the_post_card(tmp_path):
+    """THE LINK CARD (2026-09-18): the page's OG image is the compact card
+    with the newest trade and the stake, the same for every company."""
     from PIL import Image
-    out = tmp_path / "sealed.png"
-    post_card.draw(str(out), "SEZL", "Sezzle Inc.", "Charles Youakim", True, "plan", 3_000_000, "2026-09-14", 5.2, 4.99, [], height=630, sealed=True)
+    out = tmp_path / "card.png"
+    post_card.draw(str(out), "SEZL", "Sezzle Inc.", "Charles Youakim", True, "plan", 3_000_000, "2026-09-14", 5.2, 4.99, [], height=630)
     im = Image.open(out)
     assert im.size == (1200, 630)
     import company_cards

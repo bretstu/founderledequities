@@ -41,7 +41,7 @@ def test_the_shared_code_is_extracted_whole_and_parses():
     for name in ("function parseCSV(", "function mapPanel(", "function mapHistory(", "function mapEvents(",
                  "function cleanHist(", "function evBadge(",
                  "function unchangedKind(", "function pctOf(", "function lagNote(", "const money=",
-                 "const SEAL=", "let _cleanCache="):
+                 "let _cleanCache="):
         assert name in js, f"{name} is not marked @shared"
     # the parsers and formatters never touch the DOM; the tape's renderer is
     # shared on purpose (the home page and /tape/ draw the same block) and
@@ -88,10 +88,11 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert '"price_date": "2026-09-02"' in tsla, "the close's date rides with the price (prices.csv says as_of)"
     assert 'href="https://founderledequities.com/company/TSLA/"' in tsla
     assert "co-founded the Company" in tsla, "the founder evidence rides in the shell (as data for the receipt)"
-    # THE SEAL IS OFF (2026-09-18): a company outside the S&P is an open page too
+    # ONE TREE (2026-09-23): a company outside the S&P is the same page,
+    # and the sp flag says only what it is -- index membership
     assert "<title>Jane Doe owns 41.20% of Sealed (SEALD)" in sealed
-    assert "41.2" in sealed and '"sp": true' in sealed, "the stake is on the page, whatever the index"
-    assert '"price": 10.0' in sealed, "the close is public and rides on a sealed page; the shares do not"
+    assert "41.2" in sealed and '"sp": false' in sealed, "the stake is on the page; sp states the index and gates nothing"
+    assert '"price": 10.0' in sealed
     assert "Sealed universe" not in sealed and "open to everyone" not in tsla
     # the ticker and the market cap sit beside the name, on both tiers (public data)
     assert 'id="ctk">TSLA · $' in tsla and 'id="ctk">' in sealed
@@ -110,21 +111,23 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     import glob as _g, re as _re
     n_letters = len([p for p in _g.glob(os.path.join(ROOT, "weekly", "letter-*.md"))
                      if _re.search(r"^sent:\s*\S", open(p, encoding="utf-8").read(2000), _re.M)])
-    assert sm.count("<loc>") == 8 + (1 + n_letters if n_letters else 0) and "/company/SEALD/" in sm and "/companies/" in sm and "/tape/" in sm and "/pro/" in sm and "/alerts/" in sm, \
-        "every company is in the sitemap: the open ones with the answer, the sealed ones with the question; and the alerts page (2026-09-17)"
+    assert sm.count("<loc>") == 7 + (1 + n_letters if n_letters else 0) and "/company/SEALD/" in sm and "/companies/" in sm and "/tape/" in sm and "/pro/" not in sm and "/alerts/" in sm, \
+        "every company is in the sitemap once, and the pro page is gone (2026-09-23)"
+    assert sm.count("/alerts/") == 1 and sm.count("/companies/</loc>") == 1, "no address is listed twice"
     robots = open(os.path.join(out, "robots.txt"), encoding="utf-8").read()
     assert "Sitemap:" in robots
-    # the Pro page is indexable; the data beneath the prefix is not (2026-09-16, Search Console)
-    assert "Disallow: /pro/\n" not in robots and "Disallow: /pro/history/" in robots and "Disallow: /pro/events/" in robots and "Disallow: /pro/universe.csv" in robots
+    # one tree, no gate (2026-09-23): only the workers are closed to crawlers
+    assert "/pro" not in robots and "Disallow: /api/" in robots
     js = open(os.path.join(out, "company.js"), encoding="utf-8").read()
-    assert "const BLUR=" in js and "function cleanHist(" in js, "the page's own logic follows the shared code"
+    assert "function cleanHist(" in js and "function watchThis(" in js, "the page's own logic follows the shared code"
 
 
 def test_the_nav_on_a_page_points_home():
     idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
     nav = bcp.extract_topnav(idx)
-    assert 'href="/tape/"' in nav and 'href="/companies/"' in nav and 'href="/about.html"' in nav and 'class="gopro" href="/pro/"' in nav and '<a href="/pro/">Pro</a>' not in nav and "#board" not in nav and "#perfsec" not in nav
-    assert "devtog" not in nav and "openPro()" not in nav, "no modal, no dev toggle on a static page"
+    assert 'href="/tape/"' in nav and 'href="/companies/"' in nav and 'href="/about.html"' in nav and "#board" not in nav and "#perfsec" not in nav
+    assert "devtog" not in nav and "gopro" not in nav and "openPro()" not in nav, "no dev toggle and no Join on a static page"
+    assert 'id="navq"' in nav and 'src="/search.js"' in nav, "the search box rides on every built page (2026-09-23)"
 
 
 def test_money_rounds_as_the_page_does():
@@ -160,17 +163,11 @@ def test_the_published_home_page_carries_the_numbers(tmp_path):
     assert "of them are sealed" not in page, "no second Go Pro: the nav button is the one call"
     assert 'data-pro="' not in page, "one strip, no second copy to swap in"
     assert '<tbody id="tbody"><tr' in page and 'href="/company/TSLA/"' in page and ">28.44%<" in page, "the table's first rows are real HTML, by share of the company"
-    # THE HOME PREVIEW IS THE OPEN SET: a sealed company is not in the free
-    # reader's twenty rows (it is on /companies/, named and blurred); the
-    # line beneath says how many more match in Pro
-    assert 'href="/company/SEALD/"' not in page[page.index('<tbody id="tbody">'):], \
-        "a sealed company is not in the home preview's rows"
-    assert "41.2" not in page, "and none of its numbers"
+    # ONE TREE (2026-09-23): the preview ranks every company alike
     assert 'class="hstat"' in page and "Founder-led companies" in page, "and so is the stat strip"
-    fn = open(os.path.join(ROOT, "functions", "_tier.js"), encoding="utf-8").read()
-    assert "HTMLRewriter" in fn and "isPro" in fn
-    assert "proPage" in open(os.path.join(ROOT, "functions", "index.js")).read()
-    assert "proPage" in open(os.path.join(ROOT, "functions", "company", "[[path]].js")).read()
+    assert not os.path.exists(os.path.join(ROOT, "functions", "_tier.js")), "the gate worker left with the tier"
+    assert not os.path.exists(os.path.join(ROOT, "functions", "index.js"))
+    assert not os.path.isdir(os.path.join(ROOT, "functions", "company"))
     assert "document.cookie" not in src
 
 
@@ -300,10 +297,9 @@ def test_the_band_is_the_rank_and_the_two_clocks():
     assert "\u2014" not in js, "no em dashes"
 
 
-def test_every_page_is_open_and_the_script_still_knows_the_seal(tmp_path):
-    """THE SEAL IS OFF (2026-09-18): a company outside the S&P renders exactly
-    as one inside it. The page script keeps its sealed branch (a masked row
-    would still render blurred) but no row is masked."""
+def test_every_page_is_open_and_the_script_has_no_seal(tmp_path):
+    """ONE TREE (2026-09-23): a company outside the S&P renders exactly as
+    one inside it, and the page script has no sealed branch at all."""
     panel, founders, prices, sp, out = _fixture(tmp_path)
     bcp.main(panel, founders, prices, sp, out)
     sealed = open(os.path.join(out, "company", "SEALD", "index.html"), encoding="utf-8").read()
@@ -311,7 +307,9 @@ def test_every_page_is_open_and_the_script_still_knows_the_seal(tmp_path):
     assert 'class="sealed"' not in sealed, "no blurred figures anywhere"
     assert bcp.poss("Jabbok Schlacks") == "Jabbok Schlacks'"
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
-    assert "const BLUR=" in js and "row.masked?Promise.resolve(null)" in js, "the page loads no record for a sealed company"
+    for gone in ("const BLUR=", "masked", "openPro", "state.pro", "/pro/", "/api/me"):
+        assert gone not in js, f"the tier left the page script: {gone}"
+    assert '/history/${C.tk}.csv' in js and '/events/${C.tk}.csv' in js, "the record loads from the one tree"
 
 
 def test_the_one_year_return_on_a_page_is_the_lists(tmp_path):
@@ -412,52 +410,46 @@ def test_the_tape_is_a_page(tmp_path):
         "double opt-in through a one-day token: the contact is created, then added to the letter's segment"
 
 
-def test_the_pro_page_is_the_plan(tmp_path):
-    """/pro/: one plan, the two prices, the trial, the four lines, the quiet
-    line, the copy rule; the masthead from index.html; every Go Pro on the
-    site is a link to it, and the checkout takes the plan."""
+def test_the_pro_page_is_gone(tmp_path):
+    """The paid tier left the code base (2026-09-23): no /pro/ page is
+    built, no checkout function exists, and no script points at the plan."""
     panel, founders, prices, sp, out = _fixture(tmp_path)
     bcp.main(panel, founders, prices, sp, out)
-    page = open(os.path.join(out, "pro", "index.html"), encoding="utf-8").read()
-    assert "{{TOPNAV}}" not in page and 'class="topnav"' in page
-    assert "$8" in page and "$69" in page and "14-day trial" in page and "The site is free. Members keep it that way" in page
-    assert 'href="/api/checkout?plan=monthly"' in page and 'href="/api/checkout?plan=yearly"' in page
-    assert "Alerts, watches and export are for members" in page, "the copy rule, verbatim"
+    assert not os.path.isdir(os.path.join(out, "pro"))
+    assert not os.path.exists(os.path.join(ROOT, "pro.html"))
+    assert not os.path.exists(os.path.join(ROOT, "functions", "api", "checkout.js"))
     idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
-    assert 'function openPro(){location.href="/pro/";}' in idx and '<a href="/pro/">Pro</a>' not in idx
-    for f in ("assets/company-page.js", "assets/tape-page.js"):
-        assert 'location.href="/pro/"' in open(os.path.join(ROOT, f), encoding="utf-8").read(), f
-    co = open(os.path.join(ROOT, "functions", "api", "checkout.js"), encoding="utf-8").read()
-    assert "PRICE_ID_MONTHLY" in co and "PRICE_ID_YEARLY" in co and "env.PRICE_ID " not in co and "|| env.PRICE_ID" not in co and '"subscription_data[trial_period_days]": "14"' in co and 'payment_method_collection: "always"' in co
+    assert "openPro" not in idx and "/pro/" not in idx
+    for f in ("assets/company-page.js", "assets/tape-page.js", "assets/companies-page.js"):
+        assert 'location.href="/pro/"' not in open(os.path.join(ROOT, f), encoding="utf-8").read(), f
 
-
-def test_the_watches_have_a_box_a_page_and_two_ways_to_stop(tmp_path):
-    """Every company page carries the watch box; /watches/ lists a signed-in
-    reader's names; every alert carries a stop link per name and one for
-    all; the free cap is one confirmed name."""
+def test_the_watches_have_a_box_and_two_ways_to_stop(tmp_path):
+    """Every company page carries the watch box (an email field, free, any
+    number of names); every alert carries a stop link per name and one for
+    all. The account page left with the tier (2026-09-23)."""
     panel, founders, prices, sp, out = _fixture(tmp_path)
     bcp.main(panel, founders, prices, sp, out)
-    assert os.path.exists(os.path.join(out, "account", "index.html")) and os.path.exists(os.path.join(out, "account.js")), "the account page is the control panel"
-    assert "url=/account/" in open(os.path.join(out, "watches", "index.html"), encoding="utf-8").read(), "the old watches address lands on the account"
+    assert not os.path.isdir(os.path.join(out, "account")) and not os.path.isdir(os.path.join(out, "watches"))
     nav = bcp.extract_topnav(open(os.path.join(ROOT, "index.html"), encoding="utf-8").read())
-    assert "Weekly tape, free" not in nav and "navwatches" not in nav and 'class="gopro"' in nav and 'href="/alerts/">Alerts' in nav, "the header is where you are: four pages and one button (Alerts, 2026-09-17)"
-    for f in ("functions/api/letter.js", "functions/api/logout.js"):
-        assert os.path.exists(os.path.join(ROOT, f)), f
+    assert "Weekly tape, free" not in nav and "navwatches" not in nav and "gopro" not in nav and 'href="/alerts/">Alerts' in nav, \
+        "the header is where you are: four pages and the search box"
+    for f in ("functions/api/letter.js", "functions/api/logout.js", "functions/api/login.js", "functions/api/me.js"):
+        assert not os.path.exists(os.path.join(ROOT, f)), f
     page_js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
-    # THE WATCH IS THE FOURTH CARD (2026-09-17), not a band under the numbers: a switch with the person's name and
-    # one line of fine print, "An email when the stake moves."; the definition lives on the About page and the hover
+    # THE WATCH IS THE FOURTH CARD (2026-09-17): the person's name, an email
+    # field, one line of fine print; the definition lives on the About page
     assert "function watchCard(" in page_js and "function watchBlock(" not in page_js and "band(r)+recordBlock(r)" in page_js
-    assert "An email when the stake moves." in page_js and "Never for a plan" not in page_js and "Email me if" not in page_js
-    assert 'id="wsw"' in page_js and "toggleWatch(" in page_js, "a switch, on every page"
+    assert "An email when the stake moves." in page_js and "Never for a plan" not in page_js
+    assert 'id="wemail"' in page_js and "watchThis(" in page_js, "an email field, on every page"
+    assert "toggleWatch(" not in page_js and 'id="wsw"' not in page_js, "the signed-in switch left with the tier"
     about = open(os.path.join(ROOT, "about.html"), encoding="utf-8").read()
     assert "What counts as a move" in about and "1% or more" in about, "the definition is stated once, on the About page"
     assert "Stopped. No more emails about" in page_js and "No more emails about anyone" in page_js, "the box says what a stop link did"
-    assert "One founder watch is free" not in page_js and "Copy the sentence" not in page_js, "the box carries no fine print for a free reader"
+    assert "One founder watch is free" not in page_js and "is Pro" not in page_js, "no tier in the fine print"
     w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
-    assert "A list of names is Pro" in w and "stopall" in w and "confirm=" in w
+    assert "A list of names is Pro" not in w and "stopall" in w and "confirm=" in w
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
     assert "Stop everything" in run and "alerts_sent" in run and "env.ALERTS_KEY" in run
-
 
 def test_the_display_name_is_the_one_a_person_types():
     """Titles and descriptions use the name a searcher would type, by rule:
@@ -516,32 +508,27 @@ console.log("loaded "+process.argv.slice(2).length+" scripts");process.exit(0);
     assert f"loaded {len(scripts)} scripts" in p.stdout, p.stdout
 
 
-def test_the_alerts_page_is_built_with_three_switches_on_one_rule(tmp_path):
-    """THE ALERTS PAGE (2026-09-17): one rule stated once, three grains of one
-    stream (the letter, live founder alerts, the watches), a sample email;
-    the live alert is a watch on the reserved name FOUNDERS."""
+def test_the_alerts_page_is_built_with_three_free_cards(tmp_path):
+    """THE ALERTS PAGE, ALL FREE (2026-09-23): one rule stated once, three
+    grains of one stream (the letter, live founder alerts, the watches),
+    a sample email; the live alert is a watch on the reserved name FOUNDERS."""
     panel, founders, prices, sp, out = _fixture(tmp_path)
     bcp.main(panel, founders, prices, sp, out)
     page = open(os.path.join(out, "alerts", "index.html"), encoding="utf-8").read()
     assert "When a founder" in page and "1% or more" in page and "within about ten minutes of the SEC filing" in page
-    assert page.count('class="lcard') == 3 and "The letter" in page and "Live founder alerts" in page and "Your watches" in page
-    assert "Everything founders did this week" in page and "Pick any company" in page and 'class="pro">Members' in page, "the three sentences and the members mark (2026-09-18)"
-    assert 'class="k"' not in page.split('id="lbody"')[1].split("What one looks like")[0], "no small labels above the card titles"
+    assert page.count('class="lcard') == 3 and "The letter" in page and "Live founder alerts" in page and "Watches" in page
+    assert "Everything founders did this week" in page and "Pick any company" in page
+    assert 'class="pro">Members' not in page and "trial" not in page.lower(), "no members mark: everything on the page is free"
     assert "Paul Gu bought $1.3M of Upstart" in page and "1.33% &rarr; 1.38%" in page and "Upstart on Founder Led Equities" in page, "the sample is the email as it arrives"
     assert 'href="/alerts/">Alerts' in page, "the page carries the nav with itself in it"
     js = open(os.path.join(out, "alerts.js"), encoding="utf-8").read()
-    assert 'tk:"FOUNDERS"' in js and "/api/letter" in js and "/api/subscribe" in js and "/api/watch" in js
-    # NO FAKE SWITCH (2026-09-17): a reader who is not Pro sees a trial button where the switch would be
-    assert "Start a 14-day trial" in js and 'ME&&ME.pro?sw("fsw"' in js and "Already a member?" in js
-    assert "names.slice(0,2)" in js and "Manage all" in js, "the watches card stays compact: two names and the account for the rest"
-    acct = open(os.path.join(ROOT, "assets", "account-page.js"), encoding="utf-8").read()
-    assert "<h2>Live founder alerts</h2>" in acct and "once a week" in acct and "Saturday" not in acct and "Monday" not in acct and "names_only:true" in acct   # no day of the week in the copy (2026-09-20)
+    assert 'tk:"FOUNDERS"' in js and "/api/subscribe" in js and "/api/watch" in js
+    assert "trial" not in js.lower() and "/api/me" not in js and "ME&&ME.pro" not in js, "no session, no trial button"
     w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
-    assert 'tk === "FOUNDERS"' in w and "Live founder alerts are for members" in w
+    assert 'tk === "FOUNDERS"' in w and "for members" not in w
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
     assert "tk = 'FOUNDERS'" in run and "e.founder" in run and "b.accs" in run, "FOUNDERS matches founder events; one email per event per address"
-    assert "PRO_STATUSES.has(sub.status)" in run and "proNow" in run, "a FOUNDERS watch mails only while the address is Pro (a lapsed trial stops)"
-
+    assert "PRO_STATUSES" not in run and "proNow" not in run, "no subscription check in the sender"
 
 def test_the_screens_are_pages_when_the_site_data_is_there(tmp_path):
     """THE SCREENS AS PAGES (2026-09-18): five addresses with the table in the

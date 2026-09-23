@@ -113,13 +113,9 @@ def detail_of(e):
 
 
 def move_of(e):
-    """The move as a share of the holding, or None when not stated. A
-    sealed row (outside the S&P, for the stamped free first paint) carries
-    no move, as the page's evMove returns null for a masked row. THE ONE
+    """The move as a share of the holding, or None when not stated. THE ONE
     GUARD: a filing with no purchase or sale that takes the position on
     record to zero is not ranked."""
-    if e.get("sealed"):
-        return None
     p = _num(e.get("pct_of_holding"))
     approx = False
     if p is None:
@@ -140,7 +136,7 @@ def moved(e):
 def dim(e):
     """A compensation or transfer row whose move is under 1%, or a row the
     site says did not move the stake. A purchase or a sale never dims."""
-    if e.get("sealed") or _pre(e):
+    if _pre(e):
         return False
     code = e.get("code") or ""
     if code in ("P", "S"):
@@ -192,8 +188,6 @@ def window_rows(root, until, days=7, founders_only=True):
     since = (dt.date.fromisoformat(until) - dt.timedelta(days=days)).isoformat()
     events = _read(os.path.join(root, "events.csv"))
     founders = {r["ticker"].upper(): (r.get("founder") or "") for r in _read(os.path.join(root, "founders.csv"))}
-    sp_files = sorted(f for f in os.listdir(os.path.join(root, "universe")) if f.startswith("sp500-") and f.endswith(".csv"))
-    sp = {r["ticker"].upper() for r in _read(os.path.join(root, "universe", sp_files[-1]))} if sp_files else set()
     out = []
     for e in events:
         if _pre(e) or not (since < (e.get("filed") or "") <= until):
@@ -201,7 +195,7 @@ def window_rows(root, until, days=7, founders_only=True):
         tk = (e.get("ticker") or "").upper()
         if founders_only and founders.get(tk) != "yes":
             continue
-        out.append(dict(e, tk=tk, sealed=tk not in sp))
+        out.append(dict(e, tk=tk))
     return out, since
 
 
@@ -247,24 +241,18 @@ def weather(rows):
 def row_html(e, co_of):
     """One stamped row, the page's actRow without the hovers and the doors:
     the badge and its detail, the company link, the CEO, the amount on a
-    purchase or sale, the change and the stake after (sealed outside the
-    S&P), the date. The script redraws it identically when the feed
-    arrives."""
+    purchase or sale, the change and the stake after, the date. The script
+    redraws it identically when the feed arrives."""
     k = kind_of(e)
     trade = (e.get("code") or "") in ("P", "S")
     detail = detail_of(e) if k in ("comp", "xfer", "sold") else ""
-    sealed = e.get("sealed")
     val = _num(e.get("value"))
     amt = "" if not trade or not val or (e.get("price_flag") or "") else money(val)
     m = move_of(e)
-    if sealed:
-        change = '<span class="sealed" data-shape="−0.0%" aria-label="in Pro"></span>'
-        stake = '<span class="sealed" data-shape="0.00%" aria-label="in Pro"></span>'
-    else:
-        change = (f'<span class="{"plus" if m[0] >= 0 else "minus"}">{stake_change(*m)}</span>' if m is not None
-                  else ("unchanged" if trade and (e.get("label") or "") in COMP_LABELS else ""))
-        after = _num(e.get("pct_after"))
-        stake = pct(after) if after is not None else ""
+    change = (f'<span class="{"plus" if m[0] >= 0 else "minus"}">{stake_change(*m)}</span>' if m is not None
+              else ("unchanged" if trade and (e.get("label") or "") in COMP_LABELS else ""))
+    after = _num(e.get("pct_after"))
+    stake = pct(after) if after is not None else ""
     tk = e.get("tk") or (e.get("ticker") or "").upper()
     return (f'<tr class="dayrow{" dim" if dim(e) else ""}"><td class="kd"><span class="kind {k}">{KIND_WORD[k]}</span>'
             f'{"<span class=\"detail\">" + html.escape(detail) + "</span>" if detail else ""}</td>'

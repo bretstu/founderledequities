@@ -3,34 +3,24 @@
 const DATA_V="dev";
 const withV=p=>p+(p.includes("?")?"&":"?")+"v="+DATA_V;
 const $=s=>document.querySelector(s);
-function openPro(){location.href="/pro/";}
 function openCompany(tk){location.href="/company/"+tk+"/";}
-/* one masthead button, two lives, on this page too; a signed-in reader's watches beside it */
-function nav(me){
-  const b=document.querySelector(".topnav .gopro");if(!b)return;
-  if(me&&me.pro){b.textContent="Account";b.setAttribute("href","/account/");b.title="Your letter, your watches, your billing";}
-}
 let SCREEN_COUNTS=null,TABLE_LIMIT=0;
 async function fetchText(paths){
   /* A PAGE IS NOT A FILE: the host answers an unknown path with the home
      page and a 200; a reply that starts like HTML is a miss and the next
-     path is tried (2026-09-14: /pro/history/XYZ.csv did not exist, and the
+     path is tried (2026-09-14: a shard that did not exist, and the
      stake chart parsed the home page). */
   for(const p of paths){try{const q=await fetch(withV(p));if(!q.ok)continue;const t=await q.text();if(/^\s*</.test(t))continue;return t;}catch(e){}}
   return null;
 }
 async function boot(){
   hit("view","page");   /* THE PAGE COUNTS ITS OWN VISITORS, like the home page: the same beacon, shared */
-  let me=null;
-  try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)me=await q.json();}catch(e){}
-  state.pro=!!(me&&me.pro);
-  nav(me);
   /* THE LIST IS ENOUGH (2026-09-14). The last move and never-sold are in
      the list from the build, so this page loads no history and no events:
      four files under a megabyte instead of the archive, and the table
      draws in well under a second. */
   const [p,f,c,pr]=await Promise.all([
-    fetchText(state.pro?["/pro/universe.csv","/universe.csv","/panel.csv"]:["/universe.csv","/panel.csv"]),
+    fetchText(["/universe.csv","/panel.csv"]),
     fetchText(["/founders.csv"]),
     fetchText(["/screen-counts.json"]),
     fetchText(["/prices.csv"]),

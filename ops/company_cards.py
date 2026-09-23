@@ -155,14 +155,13 @@ class Fonts:
         return self._get("IBMPlexMono-Medium.ttf", s)
 
 
-def draw_card(out, fonts, tk, co, ceo, founder, sealed, pct, value, shares, series, evs, price_asof):
+def draw_card(out, fonts, tk, co, ceo, founder, pct, value, shares, series, evs, price_asof):
     """THE LINK CARD IS THE POST CARD (2026-09-18). A card is seen for a
     second in a feed, most often under an X post about a founder move; it
     shows the company, the person, the newest trade in its colour with the
     amount and the date, the stake before and after as the largest thing
-    on it, and a year of closes as a sparkline with the day marked. A
-    sealed company's card shows the name, the person and the price line,
-    no stake and no trade: those are what a subscription buys."""
+    on it, and a year of closes as a sparkline with the day marked --
+    every company's card the same way (one tree, 2026-09-23)."""
     import post_card
     latest = None
     if evs:
@@ -173,8 +172,8 @@ def draw_card(out, fonts, tk, co, ceo, founder, sealed, pct, value, shares, seri
     return post_card.draw(out, tk, co, ceo, bool(founder), kind, latest["v"] if latest else None,
                           latest["d"] if latest else None,
                           latest.get("before") if latest else None,
-                          (latest.get("after") if latest and latest.get("after") is not None else pct) if not sealed else None,
-                          series, fonts_dir=fonts.dir, height=H, sealed=sealed)
+                          latest.get("after") if latest and latest.get("after") is not None else pct,
+                          series, fonts_dir=fonts.dir, height=H)
 
 
 def _day(s):
@@ -212,7 +211,7 @@ def main(panel_p, sp_p, prices_p, founders_p, events_p, store, out_dir, only=Non
         series = read_series(store, tk)
         try:
             draw_card(os.path.join(out_dir, f"{tk}.png"), fonts, tk, r.get("company") or tk,
-                      r.get("ceo") or "", founders.get(tk, ""), tk not in sp, pct, value, shares,
+                      r.get("ceo") or "", founders.get(tk, ""), pct, value, shares,
                       series, events.get(tk, []), price_asof)
             n += 1
         except Exception as exc:  # noqa: BLE001 - one bad card never stops the rest

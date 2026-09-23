@@ -14,8 +14,8 @@ are all filings that move the stake, and ops/kinds.py (the page's own
 taxonomy) names each. Every line carries the kind and its detail, the
 amount when the form states one, the move as a share of the holding, the
 stake after, the confidence word when it is not high, whether the company
-is outside the S&P (the stake is the site's own number, sealed on the
-page), and the company's URL, never the home page.
+is outside the S&P (an editorial fact the letter may mention), and the
+company's URL, never the home page.
 
 THE WEEK IS MONDAY TO FRIDAY. EDGAR accepts no filings at the weekend, so
 by Saturday morning the week is complete; the week file is written on
@@ -111,7 +111,7 @@ class Data:
     def founder(self, tk):
         return self.founders.get(tk) == "yes"
 
-    def sealed(self, tk):
+    def outside_sp(self, tk):
         return tk not in self.sp
 
     def conf(self, tk):
@@ -125,10 +125,7 @@ class Data:
                 continue
             if founders_only and not self.founder(e["tk"]):
                 continue
-            # THE DRAFTS CARRY EVERY NUMBER: the seal is the page's display
-            # rule, and here it is a flag on the line (kinds.move_of blanks a
-            # row keyed "sealed", so the flag has another name)
-            out.append(dict(e, outside_sp=self.sealed(e["tk"])))
+            out.append(dict(e, outside_sp=self.outside_sp(e["tk"])))
         return out
 
     def first_sale(self, e):
@@ -200,7 +197,7 @@ def line(d, e, mark=True):
     if d.conf(tk) and d.conf(tk) != "high":
         flags.append(f"confidence {d.conf(tk)}")
     if e.get("outside_sp"):
-        flags.append("outside the S&P: the stake is in Pro")
+        flags.append("outside the S&P")
     if mark:
         if str(e.get("first_buy") or "") == "1":
             flags.append("FIRST BUY EVER")
@@ -473,7 +470,7 @@ def stakes_md(d, date):
                 flags = []
                 if d.conf(tk) and d.conf(tk) != "high":
                     flags.append(f"confidence {d.conf(tk)}")
-                if d.sealed(tk):
+                if d.outside_sp(tk):
                     flags.append("outside the S&P")
                 if t["now"] == 0:
                     flags.append("STAKE TO ZERO: a departure or a misread; read the page")

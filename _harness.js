@@ -28,7 +28,6 @@ global.location={search:"", hash:""};
 global.requestAnimationFrame=f=>f();
 global.fetch=async(name)=>{
   const n=String(name).replace(/\?v=[^&]*$/,"");   // the data version key the page appends
-  if(n==="/api/me")return {ok:true,json:async()=>({pro:true,email:"harness@test"}),text:async()=>""};
   if(String(n)==="perf.csv"){
     // 24 months: founders (two tickers) double while spy adds 20%; a third
     // ticker enters late and must join without distorting the base
@@ -43,10 +42,10 @@ global.fetch=async(name)=>{
     }
     return {ok:true,text:async()=>rows};
   }
-  // THE SERVED FILES FIRST. site-data/ is what deploy.sh publishes -- the
-  // free files cut by the S&P list at its root, the full ones under pro/ --
-  // so the harness reads the tiers the site actually serves when they
-  // exist, and the root files (a fixture folder) otherwise.
+  // THE SERVED FILES FIRST. site-data/ is what deploy.sh publishes -- one
+  // tree, every number in it (the tiers left with the paid version,
+  // 2026-09-23) -- so the harness reads what the site actually serves when
+  // it exists, and the root files (a fixture folder) otherwise.
   // THE NEWEST COPY, NOT THE FIRST. site-data/ is written by deploy.sh, so
   // between a rebuild of events.csv and the next deploy it is the previous
   // deploy's file; run in that gap, the harness judged a stale copy of the
@@ -58,12 +57,6 @@ global.fetch=async(name)=>{
     if(!have.length)return null;
     return have.sort((a,b)=>fs.statSync(b).mtimeMs-fs.statSync(a).mtimeMs)[0];
   };
-  if(n.startsWith("/pro/")){
-    const f=n.replace("/pro/","");
-    const p=first("./site-data/pro/"+f,"./site-data/"+f,"./"+f);
-    if(!p)throw new Error("missing "+n);
-    return {ok:true,text:async()=>fs.readFileSync(p,"utf8")};
-  }
   const p=first("./site-data/"+n,"./"+n);
   if(!p)throw new Error("missing "+name);
   const t=fs.readFileSync(p,"utf8");
@@ -72,7 +65,7 @@ global.fetch=async(name)=>{
 
 const html=fs.readFileSync("index.html","utf8");
 const js=html.match(/<script>([\s\S]*)<\/script>/)[1];
-const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,SEAL,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setWin,actWindow,actRows,actRow,actSorted,actStats,setTapeSort,tapeHead,tapeKind,tapeGroup,tapeDetail,tapeManner,evMove,evMoved,evDim,moveWhy,setKind,setMoved,tapeCounts,soldTickers,lastTrades,exportTable,cleanHist,renderTable,setScreen,setGroup,passes,presetOf,screenSentence,DEFAULTS,PRESETS,fInfo,set TAPE_LIMIT(v){TAPE_LIMIT=v},get SCREEN_COUNTS(){return SCREEN_COUNTS},set SCREEN_COUNTS(v){SCREEN_COUNTS=v},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
+const runPage=new Function(js+"\n;return {get state(){return state},get EVENTS(){return EVENTS},set EVENTS(v){EVENTS=v},loadData,evBadge,unchangedKind,pctOf,renderActivity,evValCell,evPctCell,openCompany,money,sellKind,evSide,setWin,actWindow,actRows,actRow,actSorted,actStats,setTapeSort,tapeHead,tapeKind,tapeGroup,tapeDetail,tapeManner,evMove,evMoved,evDim,moveWhy,setKind,setMoved,tapeCounts,soldTickers,lastTrades,exportTable,cleanHist,renderTable,setScreen,setGroup,passes,presetOf,screenSentence,DEFAULTS,PRESETS,fInfo,set TAPE_LIMIT(v){TAPE_LIMIT=v},get SCREEN_COUNTS(){return SCREEN_COUNTS},set SCREEN_COUNTS(v){SCREEN_COUNTS=v},get HIST(){return HIST},set HIST(v){HIST=v},get PANEL(){return PANEL},set PANEL(v){PANEL=v},get FOUNDERS(){return FOUNDERS},set FOUNDERS(v){FOUNDERS=v},EVSAMPLE};");
 const P=runPage();
 
 (async()=>{
@@ -85,7 +78,7 @@ const P=runPage();
   assert(EVENTS.length>12000, "events loaded: "+EVENTS.length);
 
   // ---- the seal is the only gate ----
-  state.pro=false; renderActivity();
+  renderActivity();
   assert(!idxsrc.includes('classList.toggle("gated",!state.pro)'),
     "no section gates its controls by tier");
   assert(!idxsrc.includes('id="tjgate"')&&!idxsrc.includes('id="trends"'),
@@ -101,7 +94,7 @@ const P=runPage();
     "the home table is a ten-row preview with the rest a click away");
   assert(idxsrc.includes('<h2>Founder stakes</h2>')&&!idxsrc.includes("The wealthiest CEOs"),"the heading is the question, not a rich list");
   assert(idxsrc.includes('<a href="/tape/">Activity</a>')&&idxsrc.includes('<a href="/companies/">Companies</a>')&&!idxsrc.includes('>Scoreboard<')&&!idxsrc.includes('>Performance<'),
-    "the nav is Activity · Companies · Alerts · About · Join");
+    "the nav is Activity · Companies · Alerts · About");
   assert(!/class="blurred"/.test(els["#actwrap"]._html),"no blur class from the old gate anywhere: a sealed figure is a data-shape placeholder");
 
   // ---- THE TAPE: a weather line, the controls, one table grouped by kind ----
@@ -112,7 +105,7 @@ const P=runPage();
     assert(!idxsrc.includes('id="actcards"')&&!idxsrc.includes('id="actsort"'),"no card grid, no sort chips: the table is the tape");
     assert(idxsrc.includes('id="actkinds"')&&idxsrc.includes('id="tg-f"')&&!idxsrc.includes('id="tg-buys"')&&!idxsrc.includes('id="tg-nocomp"'),"founders only, and the company page's kind chips in place of the two toggles");
     assert(/id="tg-f" checked/.test(idxsrc),"founders only is on by default");
-    state.pro=true; setWin(365); state.ev.f=false; state.ev.kind="all"; state.ev.moved=false; renderActivity();
+    setWin(365); state.ev.f=false; state.ev.kind="all"; state.ev.moved=false; renderActivity();
     const rows=actSorted(actRows());
     // THE HOME PAGE IS AN EXCERPT: ten rows, the full tape a click away
     assert(idxsrc.includes("let TAPE_LIMIT=10;")&&idxsrc.includes('class="activitysec excerpt"'),"the home page's tape is a ten-row excerpt, like the scoreboard");
@@ -171,8 +164,6 @@ const P=runPage();
     const paid=+(stats.match(/<div class="n">(\d+)<\/div><div class="k">paid in shares/)||[])[1];
     const paidPeople=new Set(actWindow().filter(e=>tapeKind(e)==="comp"&&(e.c==="A"||e.c==="M"||e.lb==="exercise, part sold"||e.lb==="vested and sold")).map(e=>e.tk+"|"+e.ceo)).size;
     assert(paid===paidPeople&&paid>0,"'paid in shares' counts people who took shares as compensation, by kind, never by a sealed figure: "+paid);
-    // THE LINE IS THE SAME ON BOTH SIDES OF THE SEAL: sealing every row changes no count
-    {const savedE=P.EVENTS;P.EVENTS=savedE.map(e=>({...e,mk:true}));renderActivity();assert(els["#actstats"]._html===stats,"the weather line does not depend on a figure a free reader cannot see");P.EVENTS=savedE;renderActivity();}
     // the chips
     const chips=els["#actkinds"]._html;
     assert(/data-kind="all"[^>]*>All <small>\d+<\/small>/.test(chips)&&chips.includes('data-kind="comp"')&&chips.includes("Transfers <small>")&&chips.includes("Moved the stake &ge; 1%"),"the company page's chips, with counts: "+chips.replace(/<[^>]+>/g," ").slice(0,80));
@@ -184,13 +175,11 @@ const P=runPage();
     P.setMoved(false);
     // the subhead names the window's dates
     assert(/^(Founder-led|Every CEO) · \d+ [A-Z][a-z]{2}–\d+ [A-Z][a-z]{2}$/.test(els["#tapesub"]._text||""),"the caption is who · when (2026-09-18): "+els["#tapesub"]._text);
-    // a free reader: 7d only, the longer chips dimmed and gated, the Pro note under the chips
-    state.pro=false; setWin(7); renderActivity();
-    assert(state.ev.win==="7","7 days for a free reader");
-    // THE SEAL IS OFF (2026-09-18): every window is open to a free reader
-    setWin(30); assert(state.ev.win==="30","a longer window is open to a free reader");
-    assert((els["#pronote"]._html||"").includes("Pro"),"the Pro note sits under the chips");
-    state.pro=true; setWin(365);
+    // every window is open; the notes carry no tier
+    setWin(7); renderActivity();
+    assert(state.ev.win==="7","the 7-day window sets");
+    setWin(30); assert(state.ev.win==="30","a longer window opens");
+    setWin(365);
   }
 
   // ---- the kinds, one row of each, decided by the shared function ----
@@ -206,11 +195,11 @@ const P=runPage();
     assert(P.tapeDetail({c:"S",lb:"sale",pl:"unknown"})==="not stated"&&P.tapeDetail({c:"S",lb:"exercise, part sold",pl:"plan"})==="options cashed, part kept"&&P.tapeDetail({c:"F",lb:"shares withheld for tax"})==="withheld for tax","the detail is the filing's label in the site's words");
     assert(P.tapeManner({c:"S",lb:"sale",pl:"unknown"})==="Plan not stated"&&P.tapeManner({c:"S",lb:"scheduled sale",pl:"plan"})==="Pre-set plan","the manner on the hover");
     // THE GUARD: a filing with no purchase or sale that takes the position to zero is not ranked
-    const zero={tk:"ZERO",ceo:"Gone Person",c:"D",lb:"forfeited",pl:"unknown",sh:1402911,v:null,fd:"2026-09-01",td:"2026-09-01",pc:-100,po:0,ha:0,nc:-1402911,rs:null,u:"https://www.sec.gov/z",mk:false};
+    const zero={tk:"ZERO",ceo:"Gone Person",c:"D",lb:"forfeited",pl:"unknown",sh:1402911,v:null,fd:"2026-09-01",td:"2026-09-01",pc:-100,po:0,ha:0,nc:-1402911,rs:null,u:"https://www.sec.gov/z"};
     assert(P.evMove(zero)===null&&P.moveWhy(zero).includes("takes the position on record to zero"),"a forfeiture of the whole holding is not ranked, and the cell says why");
     assert(P.evMove({...zero,c:"S",lb:"discretionary sale",pl:"discretionary"})!==null,"a sale of the whole holding is a sale, and is ranked");
     const savedE=P.EVENTS;
-    P.EVENTS=savedE.concat([zero,{tk:"OLDS",ceo:"Old Seller",c:"S",lb:"sale",pl:"unknown",sh:1000,v:2e6,fd:"2026-09-02",td:"2026-09-01",pc:-3,po:4,ha:1e6,nc:-1000,rs:null,u:"https://www.sec.gov/o",mk:false}]);
+    P.EVENTS=savedE.concat([zero,{tk:"OLDS",ceo:"Old Seller",c:"S",lb:"sale",pl:"unknown",sh:1000,v:2e6,fd:"2026-09-02",td:"2026-09-01",pc:-3,po:4,ha:1e6,nc:-1000,rs:null,u:"https://www.sec.gov/o"}]);
     state.ev.f=false; setWin(30); renderActivity();
     const h=els["#actwrap"]._html;
     const z=h.slice(h.indexOf("openCompany('ZERO')"),h.indexOf("openCompany('ZERO')")+1400);
@@ -220,18 +209,6 @@ const P=runPage();
     P.EVENTS=savedE; setWin(365); renderActivity();
   }
 
-  // ---- a sealed filing: the amount shows, the change and the stake after are blurred ----
-  {
-    const savedE=P.EVENTS;
-    P.EVENTS=savedE.concat([{tk:"ZZSEAL",ceo:"Sealed Person",c:"S",lb:"discretionary sale",pl:"discretionary",sh:null,v:1.5e6,fd:"2026-09-01",td:"2026-08-31",pc:null,po:null,ha:null,nc:null,rs:null,u:"",mk:true}]);
-    state.ev.f=false; setWin(365); renderActivity();
-    const html=els["#actwrap"]._html; const row=html.slice(html.indexOf("ZZSEAL"),html.indexOf("ZZSEAL")+1000);
-    assert(row.includes("$1.5M"),"the amount is the Form 4's own number and shows on a sealed row");
-    assert((row.match(/class="sealed"/g)||[]).length>=2,"the shares and the stake (and the change) are the blurs a masked row would carry (no row is masked since 2026-09-18)");
-    assert(!row.includes("sec.gov"),"no filing link on a sealed row");
-    assert((els["#actnote"]._html||"").includes("outside the S&P 500"),"the note says where the sealed stakes are");
-    P.EVENTS=savedE; renderActivity();
-  }
 
   // ---- the first-ever purchase ----
   {
@@ -244,32 +221,19 @@ const P=runPage();
     P.EVENTS=savedE; setWin(365); renderActivity();
   }
 
-  // ---- the free screener says how much of the answer is sealed ----
-  {
-    const savedP=P.PANEL, savedC=P.SCREEN_COUNTS;
-    P.PANEL=[{tk:"AAA",co:"A",ceo:"a",pct:12,val:1e9,masked:false,conf:"high",asof:"2026-09-01",rp:1,rv:1},
-             {tk:"BBB",co:"B",ceo:"b",pct:null,val:null,masked:true,conf:"",asof:"",rp:2,rv:2}];
-    P.SCREEN_COUNTS={"s:":2,"s:over-10":2};
-    P.state.pro=false;Object.assign(P.state,P.DEFAULTS,{min:10});P.state.q="";P.renderTable();
-    assert((els["#tcount"]._html||"").includes("1 more match in Pro"),"under >10% the sealed match is counted: "+els["#tcount"]._html);
-    P.state.q="AAA";P.renderTable();
-    assert(!(els["#tcount"]._html||"").includes("more match"),"under a search there is no count");
-    P.state.q="";P.state.min=0;P.PANEL=savedP;P.SCREEN_COUNTS=savedC;P.renderTable();
-  }
+
 
   // ---- the named screens: four questions, each a predicate the build also counts ----
   {
     const savedP=P.PANEL,savedC=P.SCREEN_COUNTS,savedL=P.state.screen;
-    P.PANEL=[{tk:"NS",co:"Never",ceo:"a",pct:12,val:1,masked:false,conf:"high",asof:"2026-09-01",fd:true},
-             {tk:"HI",co:"Hired",ceo:"b",pct:0.3,val:1,masked:false,conf:"high",asof:"2026-09-01",fd:false},
-             {tk:"SL",co:"Sealed",ceo:"c",pct:null,val:null,masked:true,conf:"",asof:"",fd:true,rp:1,rv:1}];
+    P.PANEL=[{tk:"NS",co:"Never",ceo:"a",pct:12,val:1,conf:"high",asof:"2026-09-01",fd:true},
+             {tk:"HI",co:"Hired",ceo:"b",pct:0.3,val:1,conf:"high",asof:"2026-09-01",fd:false}];
     P.SCREEN_COUNTS={"s:over-10":3,"s:hired-under-1":2};
-    P.TABLE_LIMIT=0;P.state.pro=false;
+    P.TABLE_LIMIT=0;
     P.setScreen("over-10");
     const rowsOf=()=>[...els["#tbody"]._html.matchAll(/<tr onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);
     let tks=rowsOf();
-    assert(tks.length===1&&tks[0]==="NS","over-10 keeps the one who owns more than a tenth; a sealed row cannot be judged: "+JSON.stringify(tks));
-    assert((els["#tcount"]._html||"").includes("2 more match in Pro"),"and the count says how many more match in Pro: "+els["#tcount"]._html);
+    assert(tks.length===1&&tks[0]==="NS","over-10 keeps the one who owns more than a tenth: "+JSON.stringify(tks));
     P.setScreen("hired-under-1");
     tks=rowsOf();
     assert(tks.length===1&&tks[0]==="HI","hired under 1% keeps the hired CEO with the small stake");
@@ -452,20 +416,15 @@ const P=runPage();
                   "corrections@founderledequities.com"])
     assert(about.includes(t),"about.html carries: "+t);
 
-  // ---- payments wiring on the page ----
-  assert(idx.includes('href="/pro/"')&&idx.includes("$69 a year or $8 a month"),
-    "the Pro box points at the plan page at the real price");
-  const pro=require("fs").readFileSync("pro.html","utf8");
-  assert(pro.includes('href="/api/checkout?plan=monthly"')&&pro.includes('href="/api/checkout?plan=yearly"')&&pro.includes("14-day trial"),
-    "the plan page sells the real thing: two prices, a trial");
-  assert(!idx.includes("Notify%20me%20when%20Pro%20opens"),"the waitlist CTA is gone");
-  assert(!idx.includes("pro=1/.test"),"?pro=1 no longer grants anything");
-  assert(idx.includes('"/api/me"')&&idx.includes('"/pro/events.csv"')&&idx.includes('"events-free.csv"'),
-    "data loading is session-aware with free fallbacks");
-  assert(idx.includes("function signIn")&&idx.includes('location.href="/account/"'),
-    "sign-in is reachable and Account is the control panel (billing is a row on it)");
-  const acct=require("fs").readFileSync("assets/account-page.js","utf8");
-  assert(acct.includes("/api/portal")&&acct.includes("/api/letter")&&acct.includes("remove:true")&&acct.includes("/api/logout"),"the account page holds billing, the letter, the watches and sign out");
+  // ---- one version, no tiers (2026-09-23) ----
+  assert(!idx.includes("/api/me")&&!idx.includes("/pro/")&&!idx.includes("openPro")&&!idx.includes("state.pro"),
+    "no session ask, no pro paths, no gate on the page");
+  assert(idx.includes('["universe.csv","panel.csv"]')&&idx.includes('["events.csv"]')&&idx.includes('"history-lite.csv"'),
+    "the data loads from one tree at the root");
+  assert(!require("fs").existsSync("pro.html")&&!require("fs").existsSync("account.html")&&!require("fs").existsSync("functions/api/checkout.js")&&!require("fs").existsSync("functions/pro"),
+    "the plan page, the account and the payment functions are gone from the code base");
+  assert(idx.includes('id="navq"')&&idx.includes('src="/search.js"'),
+    "the header carries the search box on every page (the topnav is shared)");
   assert(idx.includes('og:title')&&idx.includes('twitter:card')&&idx.includes('rel="canonical"'),
     "a pasted link unfurls as a card");
   {const head=idx.slice(0,idx.indexOf("</head>"));
@@ -475,9 +434,7 @@ const P=runPage();
      "and the deploy draws it from tonight's numbers");
    assert(!/S&P 500 CEO ownership/.test(head)&&!/Every S&P 500 chief executive/.test(head),"the title and descriptions no longer describe an S&P-only site");
    assert(/2,000\+/.test(head)&&!/2,100\+/.test(head),"and say how many companies the site covers: 2,000+ since the partnership register (2026-09-16) took the site below 2,100");
-   const box=idx.slice(idx.indexOf('id="promodal"'),idx.indexOf("</script>",idx.indexOf('id="promodal"')));
-   assert(!box.includes("all 500 companies")&&box.includes('id="mcount"')&&box.includes("more companies"),
-     "the Pro box sells the other companies, with the count filled from the data");
+   assert(!idx.includes('id="promodal"')&&!idx.includes('id="mcount"'),"the membership box is gone");
    assert(!about.includes("Until that page exists"),"About no longer promises a page that now exists");
    /* CEO wherever a reader scans; "chief executive" only inside About's prose */
    const visible=idx.replace(/<!--[\s\S]*?-->/g,"").replace(/\/\*[\s\S]*?\*\//g,"").replace(/^\s*\/\/.*$/gm,"");
@@ -491,23 +448,22 @@ const P=runPage();
    assert(!idx.includes("Everything else is Pro."),"no pricing line on the fold: the one Pro hint on / is the scoreboard's count line");
 
 
-   assert(idx.includes('"CEOs own more than 5%"')&&idx.includes('"S&P 500 CEOs own more than 5%"'),"the rarity is the strip's first cell: a known denominator or none");
+   assert(idx.includes('"CEOs own more than 5%"')&&!idx.includes('"S&P 500 CEOs own more than 5%"'),"the rarity is one count over every company: no tiered denominator");
    assert(head.includes("what every CEO owns")&&idx.includes("CEOs own more than 5%")&&idx.includes('data-key="ceo">CEO<'),"the title, the strip and the screener say CEO");}
-  assert(require("fs").readFileSync("pro.html","utf8").includes("mailto:hello@founderledequities.com?subject=Refund"),
-    "the refund promise carries its address, on the plan page");
   assert(idx.includes('"/api/hit"')&&idx.includes("fle_nohit")&&idx.includes('hit("view","page")'),
     "the page counts its own visitors, and the owner can switch it off");
   assert(!idx.includes("document.cookie"),"and sets no cookie to do it");
   assert(idx.includes("Filings through")&&idx.includes("EVENTS.reduce"),
     "the footer dates the newest filing read, not the newest that moved a stake");
   const terms=require("fs").readFileSync("terms.html","utf8");
-  for(const t of ["$8 per month","$69 per year","14-day trial","7 days","hello@founderledequities.com","not investment advice"])
+  for(const t of ["free to read","no account and no paid tier","one-click stop link","hello@founderledequities.com","not investment advice"])
     assert(terms.toLowerCase().includes(t.toLowerCase()),"terms.html carries: "+t);
+  assert(!/Stripe|refund|trial|subscription/i.test(terms),"and sells nothing");
 
-  // ---- the free file: every S&P event, the seal is the only gate ----
+  // ---- the feed: a real year of the record, purchases and sales alike ----
   {
-    const freeCsv=require("fs").readFileSync(require("fs").existsSync("site-data/events-free.csv")?"site-data/events-free.csv":"events-free.csv","utf8");
-    const lines=freeCsv.trim().split("\n");
+    const feedCsv=require("fs").readFileSync(require("fs").existsSync("site-data/events.csv")?"site-data/events.csv":"events.csv","utf8");
+    const lines=feedCsv.trim().split("\n");
     const head=lines[0].split(",");
     const iCode=head.indexOf("code");
     let buys=0,sells=0;
@@ -516,8 +472,8 @@ const P=runPage();
       if(c[iCode]==="P")buys++;
       else if(c[iCode]==="S")sells++;
     }
-    assert(buys>500,"the free file keeps every purchase: "+buys);
-    assert(sells>100,"and every sale — free means the whole S&P record: "+sells);
+    assert(buys>500,"the feed carries the year's purchases: "+buys);
+    assert(sells>100,"and its sales: "+sells);
   }
 
 

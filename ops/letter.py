@@ -374,7 +374,8 @@ def parse(md):
         if m_img:
             flush(); blocks.append(("img", (m_img.group(1), m_img.group(2)))); continue
         if s.strip() == "---members---":
-            # THE PAID PART (2026-09-20): everything below is for members
+            # a rule in old issues (the paid part, retired 2026-09-23):
+            # rendered as a divider, everything below open to everyone
             flush(); blocks.append(("members", "")); continue
         para.append(s)
     flush()
@@ -454,8 +455,7 @@ def render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal=None):
                     h = head[i] if i < len(head) else ""
                     if i == 0:
                         tds.append(f'<td style="padding:8px 6px 8px 0;border-top:1px solid {LINE2};font-size:12px;font-weight:bold;color:{KIND_COLOR[k]};white-space:nowrap;">{html.escape(c)}</td>')
-                    elif h in ("New stake", "Change") and c == "Pro":
-                        tds.append(f'<td align="right" style="padding:8px 6px 8px 0;border-top:1px solid {LINE2};"><a href="{SITE}/#pro" style="display:inline-block;font-size:9px;font-weight:bold;letter-spacing:.06em;color:{FAINT};border:1px solid {LINE};padding:1px 6px;text-decoration:none;">Pro</a></td>')
+
                     elif h in ("Amount", "Change", "New stake"):
                         tds.append(f'<td align="right" style="padding:8px 6px 8px 0;border-top:1px solid {LINE2};font-family:Menlo,Consolas,monospace;font-size:12px;color:{col};white-space:nowrap;">{html.escape(c)}</td>')
                     elif h == "Company":
@@ -484,14 +484,13 @@ def render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal=None):
 def archive_page(md, topnav, css_href="/site.css"):
     """The letter as a page of the site: /letter/<date>/ (2026-09-20; the
     old /tape/<date>/ address redirects there). The same blocks the email
-    renders, in the site's shell; a ---members--- marker ends the free part
-    for a visitor and the page asks /api/me for the rest."""
+    renders, in the site's shell; a ---members--- marker in an old issue
+    renders as a divider (everything is open, 2026-09-23)."""
     meta, blocks = parse(md)
-    body, free = [], True
+    body = []
     for kind, val in blocks:
         if kind == "members":
-            body.append('</div><div class="lmembers" id="lmembers" hidden>')
-            free = False
+            body.append('<div class="lrule"></div>')   # old issues keep their divider; everything is open
             continue
         if kind == "h1":
             body.append(f'<h1 class="lt">{inline(val)}</h1>')
@@ -504,7 +503,7 @@ def archive_page(md, topnav, css_href="/site.css"):
             body.append('<ul class="lul">' + "".join(f"<li>{inline(x)}</li>" for x in val) + "</ul>")
         elif kind == "p":
             if val.startswith("[See all activity]"):
-                body.append('<p><a class="gopro" href="/tape/" style="display:inline-block;text-decoration:none">All activity &rarr;</a></p>')
+                body.append('<p><a class="exit" href="/tape/">All activity &rarr;</a></p>')
             else:
                 body.append(f'<p class="lp">{inline(val)}</p>')
         elif kind == "table":
@@ -530,10 +529,7 @@ def archive_page(md, topnav, css_href="/site.css"):
     featured = (meta.get("featured") or "").strip().upper()
     og = f"{SITE}/og/{featured}.png" if featured else f"{SITE}/og.png"
     desc = meta.get("description") or f"The week of {meta.get('week','')}: who bought, who cut a stake, who sold on a plan. Founders first."
-    members_js = ("" if free else
-                  '<script>(async function(){try{const r=await fetch("/api/me",{cache:"no-store"});if(!r.ok)return;const me=await r.json();'
-                  'if(me&&me.pro){const m=document.getElementById("lmembers");if(m)m.hidden=false;const g=document.getElementById("lgate");if(g)g.hidden=true;}}catch(e){}})();</script>')
-    gate = ("" if free else '<div class="lgate" id="lgate"><p>The rest of this issue is for members. <a href="/pro/">Membership &rarr;</a></p></div>')
+
     try:
         nice = dt.date.fromisoformat(date).strftime("%B %-d, %Y") if date else ""
     except ValueError:
@@ -548,8 +544,8 @@ def archive_page(md, topnav, css_href="/site.css"):
             f'<link rel="stylesheet" href="{css_href}">'
             f'<style>{LETTER_CSS}</style></head><body>'
             f'{topnav}<main class="letter"><div class="lcol"><div class="lkick"><a href="/letter/">Founder Moves</a> · {html.escape(nice)}{kick_feat}</div>'
-            f'<div class="lfree">' + "\n".join(body) + "</div>" + gate +
-            f'<div class="lfoot">{html.escape(COPY_RULE)} Nothing here is investment advice. <a href="/letter/">Every issue &rarr;</a></div></div></main>{members_js}</body></html>')
+            f'<div class="lfree">' + "\n".join(body) + "</div>" +
+            f'<div class="lfoot">{html.escape(COPY_RULE)} Nothing here is investment advice. <a href="/letter/">Every issue &rarr;</a></div></div></main></body></html>')
 
 
 LETTER_CSS = """
@@ -567,7 +563,7 @@ LETTER_CSS = """
 .letter table.ltable td{padding:8px 10px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
 .letter table.ltable th.n,.letter table.ltable td.n{text-align:right;white-space:nowrap}
 .letter table.ltable th:last-child,.letter table.ltable td:last-child{padding-right:0}
-.letter .lgate{border:1px solid var(--line);padding:16px 18px;margin:24px 0;font-size:15px;color:var(--mut)}.letter .lgate a{color:var(--ink)}
+.letter .lrule{border-top:1px solid var(--line);margin:14px 0}
 .letter .lfoot{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 0;font-size:12.5px;color:var(--mut)}
 .lindex{max-width:var(--max);margin:0 auto;padding:clamp(28px,4vw,52px) clamp(20px,3.5vw,48px) 72px}
 .lindex .lcol{max-width:720px}

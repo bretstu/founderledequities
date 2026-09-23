@@ -17,10 +17,9 @@ the chart, the honesty rules) is extracted here and the page's own logic
 (assets/company-page.js) appended, so the two pages cannot drift. The
 stylesheet is index.html's <style>, extracted the same way.
 
-THE SEAL IS THE ONLY GATE, ON PAGES TOO. An S&P company's page carries its
-numbers in the HTML. A sealed company's page carries the company, the CEO
-and the founder verdict -- public already -- and no figure; company.js fills
-the numbers in from /pro/ for a signed-in subscriber.
+EVERY PAGE CARRIES ITS NUMBERS IN THE HTML (the tiers left 2026-09-23):
+the stake, the shares, the worth and the KPI cards are baked in; company.js
+fills the record, the trades and the prices in from the one data tree.
 """
 import csv
 import datetime
@@ -31,7 +30,6 @@ import os
 import re
 import sys
 
-OPEN_ALL = True   # the seal is off (2026-09-18): see build_site_data.main
 
 SITE = "https://founderledequities.com"
 
@@ -99,12 +97,9 @@ def extract_topnav(index_html: str) -> str:
     if not m:
         raise SystemExit("no top nav in index.html")
     nav = m.group(1)
-    # links become absolute, back to the home page's sections; the dev
-    # toggle and Go Pro stay off a static page that has no modal
+    # links become absolute, back to the home page's sections; the search
+    # box and its /search.js ride along, the same on every built page
     nav = nav.replace('href="#', 'href="/#').replace('href="about.html"', 'href="/about.html"')
-    nav = re.sub(r'\s*<button class="devtog".*?</button>', "", nav, flags=re.S)
-    nav = re.sub(r'<button class="gopro" onclick="openPro\(\)">[^<]*</button>',
-                 '<a class="gopro" href="/pro/" style="text-decoration:none">Join</a>', nav)
     nav = nav.replace("onclick=\"window.scrollTo({top:0,behavior:'smooth'})\"", "onclick=\"location.href='/'\"")
     nav = nav.replace("onkeydown=\"if(event.key==='Enter')window.scrollTo({top:0,behavior:'smooth'})\"",
                       "onkeydown=\"if(event.key==='Enter')location.href='/'\"")
@@ -161,13 +156,13 @@ def display_name(co: str) -> str:
     return name or (co or "")
 
 
-def page_text(r, sp: bool, price):
-    """Title and description: the number for an open company, none for a
-    sealed one -- the HTML is public, and the seal is the product. The
-    company's name is the one a person would type (display_name)."""
+def page_text(r, price):
+    """Title and description: the number when the record settles on one, the
+    question verbatim when it does not. The company's name is the one a
+    person would type (display_name)."""
     ceo, co, tk = r["ceo"] or "The chief executive", display_name(r["company"] or r["ticker"]), r["ticker"]
     pct = num(r.get("pct"))
-    if sp and pct is not None:
+    if pct is not None:
         title = f"{ceo} owns {pct:.2f}% of {co} ({tk}) · Founder Led Equities"
         sh = num(r.get("shares")) or 0
         val = f", worth {money(sh * price)} at the latest close" if price and sh else ""
@@ -179,9 +174,9 @@ def page_text(r, sp: bool, price):
         # searcher types; the page carries it as its title and heading, the
         # public facts around it, and the honest partial answer.
         title = f"How much of {co} does {ceo} own? ({tk}) · Founder Led Equities"
-        desc = (f"{ceo} is the chief executive of {co}. The stake, computed from SEC filings and never "
-                f"estimated, the shares, the value and every trade are in Pro; the company's price, market cap "
-                f"and the filings on record are here.")
+        desc = (f"{ceo} is the chief executive of {co}. The stake this site computes from SEC filings "
+                f"has not settled on a single figure for this company; the price, the market cap and "
+                f"every filing on record are here.")
     return title, desc[:300]
 
 
@@ -244,7 +239,7 @@ def load_summaries(events_p, hist_p):
                 continue
             if (r.get("label") or "") in UNCHANGED or (r.get("pre_ipo") or "") in ("1", "true", "True"):
                 continue
-            d = ev.setdefault(tk, {"buys": 0, "sells": 0, "last": None, "older": 0, "first": "",
+            d = ev.setdefault(tk, {"buys": 0, "sells": 0, "last": None, "first": "",
                                    "last_sale": None, "last_buy": None})
             d["buys" if r["code"] == "P" else "sells"] += 1
             fd = r.get("filed") or ""
@@ -261,20 +256,6 @@ def load_summaries(events_p, hist_p):
                 d[side] = (key, r)
     except OSError:
         pass
-    # THE ARCHIVE (PLAN.md section 2): the trades filed more than a year
-    # before the newest filing are the Pro record; a free page shows the
-    # year and says how many older trades there are.
-    newest = max((d["last"][0][1] for d in ev.values() if d["last"]), default="")
-    if newest:
-        import datetime as _dt
-        year_ago = (_dt.date.fromisoformat(newest) - _dt.timedelta(days=366)).isoformat()
-        try:
-            for r in csv.DictReader(open(events_p, encoding="utf-8-sig")):
-                tk = (r.get("ticker") or "").upper()
-                if tk in ev and r.get("code") in ("P", "S") and (r.get("filed") or "") < year_ago:
-                    ev[tk]["older"] += 1
-        except OSError:
-            pass
     hist = {}
     try:
         for r in csv.DictReader(open(hist_p, encoding="utf-8-sig")):
@@ -295,8 +276,7 @@ def load_summaries(events_p, hist_p):
 
 def founder_quote(founder) -> str:
     """The proxy's own sentence, trimmed to whole sentences: public on every
-    page (the badge's receipt), and the one thing that makes a sealed page
-    say something a crawler can index."""
+    page (the badge's receipt): the words behind the founder verdict."""
     ev = (founder or {}).get("ev") or ""
     ev = " ".join(ev.split())
     if len(ev) < 40:
@@ -310,39 +290,10 @@ def founder_quote(founder) -> str:
     return html.escape(ev[:400])
 
 
-def price_line_svg(store, tk, years=5):
-    """The stock's closes over the last years, as a small SVG line: public
-    data, drawn statically so a sealed page shows something true and
-    complete without the trade dots that belong to the record."""
-    if not store:
-        return ""
-    try:
-        with open(os.path.join(store, f"{tk}.csv"), encoding="utf-8", newline="") as fh:
-            rd = csv.reader(fh); next(rd, None)
-            pts = [(d, float(c)) for d, c in rd if d]
-    except (OSError, ValueError):
-        return ""
-    if len(pts) < 20:
-        return ""
-    cut = (datetime.date.fromisoformat(pts[-1][0]) - datetime.timedelta(days=365 * years)).isoformat()
-    pts = [p for p in pts if p[0] >= cut] or pts
-    W, H, pad = 760, 220, 8
-    lo, hi = min(c for _, c in pts), max(c for _, c in pts)
-    span = (hi - lo) or 1.0
-    xs = [pad + i * (W - 2 * pad) / (len(pts) - 1) for i in range(len(pts))]
-    ys = [H - pad - (c - lo) / span * (H - 2 * pad) for _, c in pts]
-    d = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs, ys))
-    first, last = pts[0], pts[-1]
-    return (f'<div class="csec crec" data-nosnippet><div class="cshead"><h2>Price</h2>'
-            f'<div class="sub">{html.escape(first[0][:4])} to {html.escape(last[0])}: ${first[1]:,.2f} to ${last[1]:,.2f}</div></div>'
-            f'<svg class="pricesvg" viewBox="0 0 {W} {H}" preserveAspectRatio="none" role="img" aria-label="{html.escape(tk)} share price, last {years} years">'
-            f'<path d="{d}" fill="none" stroke="var(--ink)" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg></div>')
-
-
 def kicker_mcap(r, price) -> str:
     """The market cap beside the ticker, beside the name, SAYING WHAT IT IS
     (2026-09-23): "$1.50T" alone read as anything. The tk span's small caps
-    set "mkt cap" in the same register. Public data, so sealed pages carry
+    set "mkt cap" in the same register. Public data, so every page carries
     it too."""
     out = num(r.get("outstanding"))
     return f" · {money(out * price)} mkt cap" if (price and out) else ""
@@ -356,42 +307,20 @@ def kicker_founder(founder) -> str:
     return ' · <span class="fdl">Founder-led</span>' if (founder or {}).get("f") == "yes" else ""
 
 
-def static_body(payload, r, is_sp, price, price_date, ev, hist, founder, n_filings=0, ret_1y=None,
-                last_filed="", scale=None, price_svg=""):
+def static_body(payload, r, price, price_date, ev, hist, founder, n_filings=0, ret_1y=None,
+                last_filed="", scale=None):
     """THE PAGE SAYS ITS NUMBERS IN HTML. A fetch without scripts (a
     crawler's first pass, an assistant, a reader in the second before the
     data arrives) read a name and a footer; the stake, the value, the
     record and the last trade all arrived by script. Now the answer band
     and a paragraph are written into the page; the script redraws over
-    them. A sealed page gets the paragraph without the numbers."""
+    them."""
     co = html.escape(payload["co"]); ceo = html.escape(payload["ceo"] or "the chief executive")
     fsent = ""
     if founder and founder.get("f") == "yes":
         fsent = f" The company's proxy statement names {ceo} a founder."
     elif founder and founder.get("f") == "uncertain":
         fsent = f" The proxy's language on whether {ceo} founded the company is ambiguous."
-    if not is_sp:
-        q = founder_quote(founder)
-        quote = f' <span class="cq">The proxy statement says: &ldquo;{q}&rdquo;</span>' if q else ""
-        onrec = (f" {n_filings} Form 4 filings on record since 2016"
-                 + (f", the most recent filed {html.escape(last_filed)}." if last_filed else ".")) if n_filings else ""
-        out = num(r.get("outstanding"))
-        def stat(k, v, cls=""):
-            return f'<div class="cstat"><div class="k">{k}</div><div class="v {cls}">{v}</div></div>'
-        # THE OPEN PAGE'S SHAPE, WITH THE SEALS ON THE FIGURES. The same four
-        # cards; a blurred placeholder where the stake, the shares and the
-        # worth would be (the numbers are not on the page), the cover page's
-        # count shown. One line of prose. No box: the nav's button is the one.
-        blur = lambda shape: f'<span class="sealed" data-shape="{shape}" aria-label="in Pro" onclick="openPro()" title="in Pro"></span>'
-        cards = ('<div class="cband three">'
-                 f'<div><h2 class="p"><span class="k">{ceo} owns</span>{blur("0.00%")}</h2></div>'
-                 + stat("Shares held", blur("00,000,000"))
-                 + stat("Worth", blur("$0.0B"))
-                 + '</div>')
-        co_s = co[:-1] if co.endswith(".") else co   # "Inc." takes no second period
-        return (f'<h2 class="cq2">How much of {co} does {ceo} own?</h2>'
-                f'<p class="cprose">{ceo} is the chief executive of {co_s}.{fsent}{onrec}</p>'
-                + cards + price_svg)
     pct = num(r.get("pct")); sh = num(r.get("shares")); out = num(r.get("outstanding"))
     if pct is None or sh is None:
         return f'<p class="cprose">{ceo} is the chief executive of {co}.{fsent} The record could not settle on a figure; the reasons are on the row.</p>'
@@ -652,7 +581,7 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
         items = []
         for r in sorted(by[letter], key=lambda x: x["tk"]):
             badge = ' <span class="fb yes">FOUNDER</span>' if (founders.get(r["tk"]) or {}).get("f") == "yes" else ""
-            seal = "" if r["tk"] in sp else ' <span class="seal">Pro</span>'
+            seal = ""
             items.append(f'<li><a href="/company/{html.escape(r["tk"])}/">{html.escape(r["tk"])}</a> '
                          f'<span class="co">{html.escape(r["co"])}</span> <span class="ceo">{html.escape(r["ceo"])}</span>{badge}{seal}</li>')
         parts.append(f'<section><h2 id="{letter}">{letter}</h2><ul>{"".join(items)}</ul></section>')
@@ -758,7 +687,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     header = ('/* generated by ops/build_company_pages.py -- do not edit; the source is\n'
               '   index.html (the declarations marked @shared) and assets/company-page.js */\n'
               'let PANEL=[],HIST={},PRICES={},PRICES_ASOF="",FOUNDERS={},EVENTS=[];\n'
-              'const state={pro:false,live:{}};\n')
+              'const state={live:{}};\n')
     os.makedirs(out_dir, exist_ok=True)
     js_text = header + shared + "\n\n" + page_js
     css_text = extract_style(index_html)
@@ -772,6 +701,14 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     # at company.js?v=<hash> and site.css?v=<hash>, so a change is fetched.
     js_v = hashlib.sha256(js_text.encode("utf-8")).hexdigest()[:10]
     css_v = hashlib.sha256(css_text.encode("utf-8")).hexdigest()[:10]
+    # THE HEADER SEARCH (2026-09-23): one standalone script on every page
+    # (the topnav carries its tag), one index behind it. The script rides
+    # over verbatim; ops/deploy.sh stamps its DATA_V like every data loader,
+    # so /search.json?v= changes with the deploy and caches until the next.
+    sjs_p = os.path.join(root, "assets", "search.js")
+    if os.path.exists(sjs_p):
+        with open(os.path.join(out_dir, "search.js"), "w", encoding="utf-8") as fh:
+            fh.write(open(sjs_p, encoding="utf-8").read())
     # THE TAPE AS A PAGE (PLAN.md section 5): /tape/ is the same block the
     # home page carries, built from the same shared declarations plus its
     # own script, with the Monday-tape signup beside it.
@@ -836,36 +773,6 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         os.makedirs(os.path.join(out_dir, "alerts"), exist_ok=True)
         with open(os.path.join(out_dir, "alerts", "index.html"), "w", encoding="utf-8") as fh:
             fh.write(a_html)
-    # THE ACCOUNT PAGE: the control panel (the letter, the watches, the
-    # plan), a static shell with its own small script and the masthead
-    w_tpl_p = os.path.join(root, "account.html")
-    w_js_p = os.path.join(root, "assets", "account-page.js")
-    if os.path.exists(w_tpl_p) and os.path.exists(w_js_p):
-        # the shared block too: the account page counts its view with the same beacon
-        w_js = header + shared + "\n\n" + open(w_js_p, encoding="utf-8").read()
-        with open(os.path.join(out_dir, "account.js"), "w", encoding="utf-8") as fh:
-            fh.write(w_js)
-        w_v = hashlib.sha256(w_js.encode("utf-8")).hexdigest()[:10]
-        w_html = (open(w_tpl_p, encoding="utf-8").read()
-                  .replace("{{TOPNAV}}", extract_topnav(index_html))
-                  .replace('href="/site.css"', f'href="/site.css?v={css_v}"')
-                  .replace('src="/account.js"', f'src="/account.js?v={w_v}"'))
-        os.makedirs(os.path.join(out_dir, "account"), exist_ok=True)
-        with open(os.path.join(out_dir, "account", "index.html"), "w", encoding="utf-8") as fh:
-            fh.write(w_html)
-        # the old address of the watches list lands on the account
-        os.makedirs(os.path.join(out_dir, "watches"), exist_ok=True)
-        with open(os.path.join(out_dir, "watches", "index.html"), "w", encoding="utf-8") as fh:
-            fh.write('<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=/account/"><a href="/account/">Account</a>')
-    # THE PRO PAGE (PLAN.md section 5): static, the masthead from index.html
-    pro_tpl_p = os.path.join(root, "pro.html")
-    if os.path.exists(pro_tpl_p):
-        pro_html = (open(pro_tpl_p, encoding="utf-8").read()
-                    .replace("{{TOPNAV}}", extract_topnav(index_html))
-                    .replace('href="/site.css"', f'href="/site.css?v={css_v}"'))
-        os.makedirs(os.path.join(out_dir, "pro"), exist_ok=True)
-        with open(os.path.join(out_dir, "pro", "index.html"), "w", encoding="utf-8") as fh:
-            fh.write(pro_html)
     topnav = extract_topnav(index_html)
     # THE ABOUT PAGE: a template with the masthead from index.html, written
     # where the site has always served it (/about.html)
@@ -886,9 +793,9 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
             fh.write(open(nf_p, encoding="utf-8").read().replace("{{TOPNAV}}", topnav)
                      .replace('href="/site.css"', f'href="/site.css?v={css_v}"'))
 
+    # the S&P set is a fact the pages may show (the sp flag, neighbour order);
+    # it gates nothing
     sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
-    if OPEN_ALL:   # THE SEAL IS OFF (2026-09-18): every page shows its number
-        sp = {(r.get("ticker") or "").upper() for r in csv.DictReader(open(panel_p, encoding="utf-8-sig"))}
     prices, price_date = {}, ""
     try:
         for r in csv.DictReader(open(prices_p, encoding="utf-8-sig")):
@@ -916,7 +823,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                                               for r in csv.DictReader(open(panel_p, encoding="utf-8-sig"))])
     # the founder-led companies ranked by stake value, for the neighbour links;
     # the names for those links; and per company, how many filings the
-    # history walk saw (a count a sealed page may say)
+    # history walk saw (a count the prose may say)
     panel_rows = [r for r in csv.DictReader(open(panel_p, encoding="utf-8-sig"))
                   if re.match(r"^[A-Z0-9.\-]{1,8}$", (r.get("ticker") or "").upper())]
     ranked = sorted((r for r in panel_rows
@@ -931,6 +838,23 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                        if num(r.get("shares")) and prices.get((r.get("ticker") or "").upper())),
                       key=lambda r: -(num(r.get("shares")) * prices[(r.get("ticker") or "").upper()]))
     vrank = {(r.get("ticker") or "").upper(): i + 1 for i, r in enumerate(by_value)}
+    # the search box's index: ticker, display name, CEO, stake, founder flag,
+    # stake value (the ranking key). One small file for 2,000 companies.
+    srows = []
+    for r in panel_rows:
+        t = (r.get("ticker") or "").upper()
+        if not t:
+            continue
+        sh, px = num(r.get("shares")), prices.get(t)
+        srows.append({"t": t,
+                      "c": display_name(r.get("company") or t),
+                      "e": r.get("ceo") or "",
+                      "p": (round(num(r.get("pct")), 2) if num(r.get("pct")) is not None else None),
+                      "f": 1 if (founders.get(t) or {}).get("f") == "yes" else 0,
+                      "v": int(sh * px) if sh and px else 0})
+    srows.sort(key=lambda x: -x["v"])
+    with open(os.path.join(out_dir, "search.json"), "w", encoding="utf-8") as fh:
+        json.dump({"rows": srows}, fh, separators=(",", ":"))
     NAMES.clear()
     NAMES.update({(r.get("ticker") or "").upper(): (r.get("company") or "") for r in panel_rows})
     filings, last_filed = {}, {}
@@ -944,7 +868,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                     last_filed[t] = r.get("date") or ""
     except OSError:
         pass
-    # the scale a sealed page offers: in the free set, how many own more than 5%
+    # scale for the prose: how many CEOs on the site own more than 5%
     sp_rows = [r for r in panel_rows if (r.get("ticker") or "").upper() in sp and num(r.get("pct")) is not None]
     scale = (sum(1 for r in sp_rows if num(r.get("pct")) > 5), len(sp_rows)) if sp_rows else None
     urls = []
@@ -956,7 +880,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     sys.path.insert(0, os.path.join(root, ""))
     from fle.partnerships import read_register, note_for
     register = read_register(os.path.join(os.path.dirname(os.path.abspath(sp_p)), "partnerships.csv"))   # beside the universe files
-    n_open = n_sealed = 0
+    n_open = 0
     for r in panel_rows:
         tk = (r.get("ticker") or "").upper()
         if not tk or not re.match(r"^[A-Z0-9.\-]{1,8}$", tk):
@@ -965,7 +889,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
             continue      # the register's decision wins over a panel row that has not yet been rebuilt without it
         is_sp = tk in sp
         price = prices.get(tk)
-        title, desc = page_text(r, is_sp, price)
+        title, desc = page_text(r, price)
         h1, answer_html = answer_text(r, price)
         payload = {"tk": tk, "co": r.get("company") or tk, "ceo": r.get("ceo") or "", "sp": is_sp,
                    "founder": founders.get(tk)}
@@ -980,30 +904,22 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                 lr = hit[1]
                 payload[name] = {"d": lr.get("traded") or lr.get("filed") or "",
                                  "v": num(lr.get("value"))}
-        if e_sum.get("older"):
-            payload["older"] = e_sum["older"]        # trades before the free year: the archive, in Pro
-            payload["since"] = (e_sum.get("first") or "")[:4]
-        if is_sp:
-            row = {k: r.get(k, "") for k in ("ticker", "company", "ceo", "pct", "shares", "outstanding",
-                                             "shares_as_of", "confidence", "cik", "form4_url",
-                                             "excluded_shares", "excluded_detail", "problems", "cautions",
-                                             "operating_partnership", "stake_source")}
-            if ret_1y and tk in ret_1y:
-                row["ret_1y"] = f"{ret_1y[tk]:.4f}"
-            payload["row"] = row
-            n_open += 1
-        else:
-            n_sealed += 1
-            # the cover page's count is public; the page shows it in its card
-            payload["out"] = num(r.get("outstanding"))
-            payload["oasof"] = r.get("outstanding_as_of") or ""
-        if price:   # the close is public data; a sealed page carries it and no shares
+        if e_sum.get("first"):
+            payload["since"] = (e_sum.get("first") or "")[:4]   # the record's first year: the KPI clock's "no sales since"
+        row = {k: r.get(k, "") for k in ("ticker", "company", "ceo", "pct", "shares", "outstanding",
+                                         "shares_as_of", "confidence", "cik", "form4_url",
+                                         "excluded_shares", "excluded_detail", "problems", "cautions",
+                                         "operating_partnership", "stake_source")}
+        if ret_1y and tk in ret_1y:
+            row["ret_1y"] = f"{ret_1y[tk]:.4f}"
+        payload["row"] = row
+        n_open += 1
+        if price:
             payload["price"] = price
             payload["price_date"] = price_date
         index_rows.append({"tk": tk, "co": payload["co"], "ceo": payload["ceo"]})
-        body = static_body(payload, r, is_sp, price, price_date, ev, hist, founders.get(tk), filings.get(tk, 0), ret_1y,
-                           last_filed=last_filed.get(tk, ""), scale=scale,
-                           price_svg=(price_line_svg(prices_dir, tk) if not is_sp else ""))
+        body = static_body(payload, r, price, price_date, ev, hist, founders.get(tk), filings.get(tk, 0), ret_1y,
+                           last_filed=last_filed.get(tk, ""), scale=scale)
         lastmods[tk] = (r.get("shares_as_of") or "")[:10]
         # WHEN THE PAGE WAS LAST TRUE: dateModified is the newest filing the
         # figure rests on (a crawler reads it; a reader sees the same date on
@@ -1039,10 +955,6 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                 .replace('src="/company.js"', f'src="/company.js?v={js_v}"')
                 .replace("{{COMPANY_JSON}}", json.dumps(payload).replace("</", "<\\/")))
         page = card_tags(page, tk, og_dir)
-        # A SEALED PAGE IS A SEARCH RESULT AGAIN, now that it answers what it
-        # can: the question as its heading, the chief executive, the founder
-        # sentence, the filings on record, the price, the market cap, the
-        # year's return, and the honest sentence about where the stake is.
         d = os.path.join(out_dir, "company", tk)
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
@@ -1068,20 +980,15 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     with open(os.path.join(out_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
         fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
         today = datetime.date.today().isoformat()
-        for u in [f"{SITE}/", f"{SITE}/tape/", f"{SITE}/pro/", f"{SITE}/about.html"] + urls:
+        for u in [f"{SITE}/", f"{SITE}/tape/", f"{SITE}/about.html"] + urls:
             m = re.search(r"/company/([A-Z0-9.\-]+)/$", u)
             lm = (lastmods.get(m.group(1)) if m else "") or today
             fh.write(f"  <url><loc>{html.escape(u)}</loc><lastmod>{lm}</lastmod></url>\n")
         fh.write("</urlset>\n")
     with open(os.path.join(out_dir, "robots.txt"), "w", encoding="utf-8") as fh:
-        # THE PRO PAGE IS INDEXABLE; ONLY THE DATA UNDER IT IS NOT (2026-09-16):
-        # "Disallow: /pro/" blocked the page that sells the subscription, and
-        # Search Console said so. The data files beneath the prefix answer 401
-        # to anyone without a subscription anyway; the rules name them so the
-        # crawler does not spend its budget asking.
-        fh.write(f"User-agent: *\nAllow: /\nDisallow: /pro/universe.csv\nDisallow: /pro/history/\nDisallow: /pro/events/\n"
-                 f"Disallow: /api/\nSitemap: {SITE}/sitemap.xml\n")
-    print(f"  company pages: {n_open} open, {n_sealed} sealed; company.js, site.css, sitemap.xml, robots.txt")
+        # the workers under /api/ are not pages; nothing else is closed
+        fh.write(f"User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: {SITE}/sitemap.xml\n")
+    print(f"  company pages: {n_open}; company.js, search.js, search.json, site.css, sitemap.xml, robots.txt")
     return 0
 
 

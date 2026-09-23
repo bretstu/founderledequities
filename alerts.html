@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="/site.css">
   <style>
     /* THE ALERTS PAGE (2026-09-17): one rule, three grains of the same stream.
-       The week (the letter, free), every founder (live, Pro), a name (the
+       The week (the letter), every founder (live), a name (the
        watches). Each card is one sentence and one switch; the definition is
        stated once above them; a sample email shows what arrives. */
     .lpage{max-width:var(--max);margin:0 auto;padding:clamp(36px,4.5vw,60px) clamp(20px,3.5vw,48px) 80px}
@@ -21,9 +21,7 @@
     .lgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:28px}
     @media(max-width:820px){.lgrid{grid-template-columns:1fr}}
     .lcard{border:1px solid var(--line);border-radius:2px;background:var(--panel);padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px;min-height:168px}
-    .lcard.pro{border-color:var(--ink);background:var(--bg)}
     .lcard h2{font-family:var(--disp);font-weight:500;font-size:24px;letter-spacing:-.01em;line-height:1.15;margin:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-    .lcard h2 .pro{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--bg);background:var(--ink);padding:3px 6px;border-radius:2px;position:relative;top:-3px}
     .lcard .d{font-size:14px;line-height:1.5;color:var(--mut);flex:1}
     .wtog{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
     .wtog input{position:absolute;opacity:0;width:0;height:0}
@@ -63,7 +61,7 @@
 <main class="lpage">
   <h1>When a founder&#8217;s stake moves.</h1>
   <p class="lead">One rule for every alert: an open-market purchase or a discretionary sale of any size, or any other filing that moves the holding by 1% or more. Pick how much of it you want.</p>
-  <div id="lbody"><div class="lgrid"><div class="lcard"><h2>The letter</h2><div class="d">Everything founders did this week, in one email. Free.</div></div><div class="lcard pro"><h2>Live founder alerts <span class="pro">Members</span></h2><div class="d">Every founder&#8217;s move, within about ten minutes of the SEC filing.</div></div><div class="lcard"><h2>Your watches</h2><div class="d">Pick any company and get an email when its chief executive&#8217;s stake moves. One company is free; more is for members.</div></div></div></div>
+  <div id="lbody"><div class="lgrid"><div class="lcard"><h2>The letter</h2><div class="d">Everything founders did this week, in one email. Sundays.</div></div><div class="lcard"><h2>Live founder alerts</h2><div class="d">Every founder&#8217;s move, within about ten minutes of the SEC filing.</div></div><div class="lcard"><h2>Watches</h2><div class="d">Pick any company and get an email when its chief executive&#8217;s stake moves.</div></div></div></div>
   <div class="lk">What one looks like</div>
   <div class="sample">
     <div class="from">Founder Led Equities</div>

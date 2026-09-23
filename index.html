@@ -87,7 +87,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    ground -- the brand blue reads as mud on ink, so the accent lightens. */
 /* ONE SURFACE. The nav was a black band on a paper page: the heaviest
    thing on the screen, and it read as a different product bolted on top.
-   Same paper, a hairline, dark text; the Account button is the one accent. */
+   Same paper, a hairline, dark text; the search box is the one fixture. */
 /* THE MASTHEAD IS INK. An edge-to-edge band in the site's own colour
    separates navigation from the page without a rule, and states the
    scheme in the first row of pixels. */
@@ -100,13 +100,6 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .topnav{display:flex;align-items:center;gap:22px;font-size:13.5px;font-weight:600;flex-wrap:wrap}
 .topnav a{color:var(--mut)}
 .topnav a:hover{color:var(--ink);text-decoration:none}
-.topnav a.gopro,.topnav a.gopro:hover{color:var(--bg)}   /* the company pages' nav button is a link */
-.top .devtog{color:var(--mut);border-color:var(--line)}
-.devtog{font-family:var(--mono);font-size:11.5px;font-weight:500;padding:7px 12px;border:1px dashed var(--rule);border-radius:8px;color:var(--mut)}
-.devtog.on{border-style:solid;border-color:var(--ink);color:var(--ink);background:var(--panel)}
-.gopro{font-size:13.5px;font-weight:600;color:var(--bg);background:var(--ink);border-radius:0;padding:9px 18px;border:1px solid var(--ink)}
-.gopro:hover{background:#000}
-.top .gopro{padding:8px 17px}
 
 /* ---------- sections ----------
    THE DIVIDER AND THE TITLE, AND NOTHING ELSE.
@@ -125,8 +118,6 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .hero h1 b{font-weight:500}
 .herosub{margin:18px 0 0;font-size:clamp(15px,1.25vw,18px);line-height:1.5;color:var(--mut)}
 @media(max-width:900px){.herosub{white-space:normal;max-width:52ch}}
-.herosub .sealnote{display:block;margin-top:8px;color:var(--faint)}
-.herosub .sealnote .gopro{font-size:12.5px;padding:7px 14px;margin-left:10px;vertical-align:middle}
 /* THE HEADLINE MAKES THE CLAIM; THE STRIP CARRIES THE EVIDENCE.
    Three sizes of grey prose with a mono date wedged mid-sentence buried
    the only numbers worth reading. One quiet line of method, a hairline,
@@ -142,18 +133,17 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .hero .wrap{display:block}
 .herostats{margin-top:30px;padding:22px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:row;flex-wrap:wrap;gap:20px 44px;align-items:flex-start}
 /* the tape excerpt on the home page: no controls; the full tape a click away */
-.excerpt .tapectl,.excerpt .pronote,.excerpt .actstats{display:none}
+.excerpt .tapectl,.excerpt .actstats{display:none}
 /* THE WEEKLY LETTER'S BAND: one line, the promise on the left, the field
    and Send on the right, inside the same column as the tables, with its
    own air above the footer. No weekday (a send is a week, not a
-   calendar), no price. Hidden for a Pro session. */
+   calendar), no price. */
 .hometape{margin-top:28px;padding:14px 18px;border:1px solid var(--ink);display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap}
 .hometape .homesub{display:contents}
 .hometape .hs-k{font-family:var(--disp);font-size:18px;font-weight:500;margin-right:auto;line-height:1.25}
 .hometape .hs-msg{flex-basis:100%;font-size:13.5px;color:var(--mut)}
 .hometape .hs-msg:empty{display:none}
 .hometape .hs-free{color:var(--mut);font-weight:400}
-body.pro .hometape{display:none}
 .homesub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .homesub .hs-k{font-size:14px;font-weight:600;margin-right:4px}
 .homesub input{font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;width:220px}
@@ -197,17 +187,7 @@ body.pro .hometape{display:none}
    they sit on the track beside it, so a name inside the bar and one past
    its edge are set the same way; a screenshot is done without a cursor on
    it. Hover deepens the tone. */
-/* THE SEAL PILL: a small ink-outlined pill where a sealed company's number
-   would be. One shape everywhere (board, table, strip); it opens the Pro
-   box. The number is not in the file, so there is nothing to un-blur.
-   (Not named .lock: that is the old gate overlay, position:absolute and
-   inset:0, and the pill inherited it for the length of a first paint.) */
-/* the placeholder's digits are drawn by CSS from data-shape, so the page's
-   text says nothing where a sealed figure would be: a crawler does not see
-   a blur, and "owns 0.00%" as text would be a false sentence */
-.sealed{filter:blur(3.5px);opacity:.5;user-select:none;cursor:pointer;color:var(--ink)}
-.sealed::before{content:attr(data-shape)}
-.sealed:hover{opacity:.8}
+/* (the seal, its pill and the blur CSS left with the paid tier, 2026-09-23) */
 .bsub{margin:-10px 0 18px;font-size:13px;color:var(--mut)}
 
 /* ---------- table ---------- */
@@ -402,8 +382,7 @@ td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .
    chosen one filled ink -- so they read as the filter they are */
 /* THE DAY IS A TABLE. Kind, company, value, stake, manner, transaction,
    filing: seven columns, every row the same shape, so twelve filings
-   scan as a table and not as twelve sentences of different lengths. A
-   sealed row keeps the shape: value and stake blurred, the rest shown. */
+   scan as a table and not as twelve sentences of different lengths. */
 /* THE TAPE (PLAN.md section 5): a weather line, the controls, one table
    grouped by kind; no card grid. Tables are the site. */
 .tapehead{align-items:flex-start;margin-bottom:8px}
@@ -420,8 +399,6 @@ td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .
 .toggles{display:flex;gap:22px;flex-wrap:wrap;margin-left:6px}
 .tg{font-size:13.5px;color:var(--ink);display:inline-flex;align-items:center;gap:7px;cursor:pointer}
 .tg input{accent-color:var(--ink);width:14px;height:14px;margin:0}
-.pronote{font-family:var(--mono);font-size:11px;color:var(--faint);margin:10px 0 16px}
-.pronote a{color:var(--faint);text-decoration:underline;text-underline-offset:2px}
 .tapewrap{overflow:auto}
 table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
 /* ONE SHAPE FOR BOTH TABLES: the name columns take the left half, the
@@ -539,13 +516,6 @@ table.tape td.td .dt,table.tape td.fd .dt{color:var(--ink);font-family:var(--ui)
    explaining. */
 
 .actnote a:hover{color:var(--blue)}
-/* THE CONTROLS ARE THE SALES COPY.
-   A free reader sees the whole instrument panel -- every chip, the search,
-   the window, each carrying its real count of what sits behind the seal --
-   and one transparent cover over the lot. Any touch of it opens the Pro
-   sheet: the interface explains the paid tier without a sentence of copy,
-   and the click arrives at the exact moment of curiosity. */
-.controls.gated{position:relative;opacity:.92}
 /* TWO KINDS OF CHIP, TOLD APART BY TONE.
    Views and directions are white; the chips after the divider -- the
    manners of selling, the founders-only modifier -- sit on the panel wash,
@@ -640,6 +610,23 @@ footer .row{display:flex;justify-content:space-between;align-items:baseline;gap:
 footer .fname{font-family:var(--disp);font-weight:500;color:var(--ink)}
 footer a{color:var(--mut)}
 footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the footer's own face */
+/* THE SEARCH IS THE NAV (2026-09-23): a ticker box in the header, on every
+   page. It matches tickers, companies AND chief executives, because the
+   queries that reach the site are people's names. /search.js fills it. */
+.navsearch{position:relative;margin-left:6px}
+.navsearch input{font-family:var(--mono);font-size:12.5px;width:210px;max-width:38vw;padding:8px 10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:0}
+.navsearch input:focus{outline:none;border-color:var(--ink)}
+.navqd{position:absolute;right:0;top:calc(100% + 6px);width:min(430px,92vw);background:var(--bg);border:1px solid var(--ink);box-shadow:0 6px 18px rgba(0,0,0,.10);z-index:60;max-height:60vh;overflow:auto}
+.navqd .qrow{display:flex;gap:10px;align-items:baseline;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.navqd .qrow:last-child{border-bottom:0}
+.navqd .qrow.on,.navqd .qrow:hover{background:var(--panel)}
+.navqd .qtk{font-family:var(--mono);font-size:12px;font-weight:600;min-width:52px}
+.navqd .qco{font-size:13.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.navqd .qceo{font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:34%}
+.navqd .qpct{font-family:var(--mono);font-size:12px;font-weight:600;white-space:nowrap}
+.navqd .qf{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:#8A4B1E;font-weight:700}
+.navqd .qnone{padding:10px 12px;font-size:13px;color:var(--mut)}
+@media(max-width:700px){.navsearch input{width:120px}}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Founder Led Equities","url":"https://founderledequities.com/","logo":"https://founderledequities.com/og.png","sameAs":["https://x.com/FounderLedEq"]},{"@type":"WebSite","name":"Founder Led Equities","url":"https://founderledequities.com/","description":"What every CEO owns of the company they run, computed from SEC filings."}]}</script>
 </head>
@@ -655,8 +642,11 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
     <a href="/letter/">Letter</a>
     <a href="/alerts/">Alerts</a>
     <a href="about.html">About</a>
-    <button class="devtog" id="devtog" onclick="toggleDev()" title="Developer preview — see the site as a Pro subscriber">Preview: Free</button>
-    <button class="gopro" onclick="openPro()">Join</button>
+    <div class="navsearch" id="navsearch">
+      <input type="search" id="navq" placeholder="Company or CEO…" autocomplete="off" spellcheck="false" aria-label="Find a company or CEO" aria-expanded="false" role="combobox" aria-controls="navqd">
+      <div class="navqd" id="navqd" role="listbox" hidden></div>
+    </div>
+    <script defer src="/search.js"></script>
   </div>
 </div></div>
 
@@ -671,17 +661,15 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
   <!-- The fold is headline, method line, three numbers, then the table
        that teaches the product. The week's sentence stood here until
        2026-09-14; it lives on /tape/ as the weather line and in the letter,
-       and the tape block lower on this page carries the week. The one Pro
-       hint on this page is the scoreboard's count line. -->
+       and the tape block lower on this page carries the week. -->
 </div></section>
 
 
 <section class="tablesec home" id="table"><div class="wrap">
   <!-- ONE LIST, TWO DEPTHS (PLAN.md section 5; decided 2026-09-14). This is
-       the screener's table at a depth of twenty: what they own now, the
-       S&P's founders for a free reader, by stake value (the same order as
-       /companies/, a different depth; the share is one click on its
-       header). /companies/ is the same table in full, with its search,
+       the screener's table at a depth of twenty: what they own now, by
+       stake value (the same order as /companies/, a different depth; the
+       share is one click on its header). /companies/ is the same table in full, with its search,
        filters and export. The controls are in the markup so the two pages
        share one script; on the home page they are hidden and the link at
        the foot opens the rest. -->
@@ -763,10 +751,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
   </div>
   <div class="sbody">
     <div class="actstats" id="actstats"></div>
-    <!-- THE TAPE'S CONTROLS: a window (7 days free; the longer ones open the
-         Pro box for a free reader and are drawn dimmed so they never look
-         free), and founders only. The Pro note sits under them, never in
-         their row. -->
+    <!-- THE TAPE'S CONTROLS: a window and founders-only, in one row. -->
     <div class="tapectl">
       <span class="chips" id="actwin" role="group" aria-label="window">
         <button class="chip win" data-win="week" title="filings that reached EDGAR since Monday">Week</button>
@@ -783,13 +768,12 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
            "Moved the stake ≥ 1%"; drawn by the script, on the same row. -->
       <span class="chips tchips" id="actkinds" role="group" aria-label="kind"></span>
     </div>
-    <div class="pronote" id="pronote"></div>
     <div class="tapewrap" id="actwrap"></div>
     <div class="actnote" id="actnote"></div>
     <!-- THE LETTER, ON THE PAGE THAT SHOWS ITS CONTENTS. One field, one
          button, the same signup /tape/ carries. -->
     <!-- THE ASK IS A BAND, not footer furniture: after the tape, above the
-         footer, its own air; hidden for a Pro session (Account carries it) -->
+         footer, its own air -->
     <div class="hometape" id="hometape">
       <form class="homesub" id="homesub" onsubmit="return subscribeHome(event)">
         <span class="hs-k">Every founder move of the week, in one email. <span class="hs-free">Free.</span></span>
@@ -815,17 +799,6 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
   <div class="mono" id="footstamp"></div>
 </div></footer>
 
-<div class="modal" id="promodal" role="dialog" aria-modal="true">
-  <div class="mcard">
-    <button class="mclose" onclick="closePro()" aria-label="Close">✕</button>
-    <div class="seal">◆</div>
-    <h3>Membership</h3>
-    <p>Every US public company worth $1 billion or more, in full: the stake, the shares and their worth for <span id="mcount">1,635</span> more companies; every trade since 2016 on every name; the tape at every window; export; a watchlist.</p>
-    <a class="mwide" style="display:block;text-align:center;text-decoration:none" href="/pro/">Become a member, $69 a year or $8 a month &middot; 14-day trial</a>
-    <div class="mfine">Already subscribed? <a href="#" onclick="signIn();return false">Sign in</a> &middot; your email is the sign-in, no password &middot;
-      <a class="mlater" href="#" onclick="closePro();return false" style="display:inline;margin:0">Close</a></div>
-  </div>
-</div>
 
 <script>
 /* ================================================================
@@ -841,7 +814,6 @@ const $=s=>document.querySelector(s);
    cleaned series excludes, how a trade is badged) have ONE source and the
    two pages cannot drift. Nothing marked may touch the DOM or app state. */
 /*@shared*/
-const SEAL="◆";   /* the glyph of a stake behind the seal; referenced in five places and, until now, defined in none */
 /*@shared*/
 const fmt=n=>Math.round(n).toLocaleString("en-US");
 /* ROUNDING CAN CROSS THE BOUNDARY IT WAS TESTED AGAINST.
@@ -865,7 +837,7 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
-const state={q:"",min:0,max:null,who:"founders",sp:false,sold:"any",buy:"any",screen:"",sort:{key:"val",dir:-1},tbF:true,tbH:false,pro:false,meKnown:false,acct:"",ev:{win:"7",f:true,kind:"all",moved:false,sort:{key:null,dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
+const state={q:"",min:0,max:null,who:"founders",sp:false,sold:"any",buy:"any",screen:"",sort:{key:"val",dir:-1},tbF:true,tbH:false,ev:{win:"7",f:true,kind:"all",moved:false,sort:{key:null,dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
 
 
 /* ---------------- what real people do here ----------------
@@ -893,7 +865,7 @@ const HIT=(()=>{
   const flush=()=>{
     timer=null;if(!q.length||off||!ok)return;
     const batch=q.splice(0,60);
-    try{navigator.sendBeacon("/api/hit",new Blob([JSON.stringify({vid,sid,pro:!!state.pro,
+    try{navigator.sendBeacon("/api/hit",new Blob([JSON.stringify({vid,sid,
       device:(typeof innerWidth==="number"&&innerWidth<760)?"mobile":"desktop",events:batch})],{type:"application/json"}));}catch(e){}
   };
   const hit=(kind,name,detail)=>{
@@ -1007,8 +979,7 @@ function mapPanel(recs){
     c12:(num(r.pct)!==null&&num(r.pct_12m_ago)!==null)?num(r.pct)-num(r.pct_12m_ago):null,
     /* the last move and never-sold, computed at build (build_site_data):
        the screener needs no history or events file to draw its columns */
-    plt:r.lt_code?{c:r.lt_code,pl:r.lt_plan||"",v:num(r.lt_value),fl:!!(r.lt_flag),td:r.lt_traded||"",fd:r.lt_filed||"",
-                   mk:!!(String(r.masked||"")==="1"&&!r.lt_value&&r.lt_code)}:null,
+    plt:r.lt_code?{c:r.lt_code,pl:r.lt_plan||"",v:num(r.lt_value),fl:!!(r.lt_flag),td:r.lt_traded||"",fd:r.lt_filed||""}:null,
     pns:String(r.never_sold||"")==="1",
     lds:r.last_disc||"",ldb:r.last_buy||"",   /* the last discretionary sale and open-market buy, from every filing since 2016 (2026-09-21) */
     excl:num(r.excluded_shares)||0, excld:r.excluded_detail||"",
@@ -1027,17 +998,11 @@ function mapPanel(recs){
        page say it too instead of printing the misleading zero. */
     units:(r.operating_partnership||"").toLowerCase()==="true"
           &&num(r.pct)!==null&&num(r.pct)<0.05,
-    /* a universe row outside the free tier: the person and the badge are
-       public, the stake sits behind the seal */
-    masked:String(r.masked||"")==="1",
     sp:String(r.sp||"")==="1",
-    /* the row's place, computed by the build over the whole panel: a
-       sealed row is drawn where it belongs, with its name and no number */
-    rv:num(r.rank_value),rp:num(r.rank_pct),
     /* "SC 13G/A 2024-02-13" when the figure is a dated schedule stake,
        not a Section 16 sum -- the row must say so */
     src13:r.stake_source||"",
-  })).filter(r=>r.tk&&(r.masked||(r.pct!==null&&r.sh!==null)));
+  })).filter(r=>r.tk&&r.pct!==null&&r.sh!==null);
 }
 /*@shared*/
 function mapHistory(recs){
@@ -1077,9 +1042,6 @@ function mapEvents(recs){
     sh:num(r.shares)||0,v:num(r.value),ap:num(r.avg_price),apa:num(r.avg_price_adjusted),
     pc:num(r.pct_of_holding),pa:num(r.pct_approx),nc:num(r.net_change),dn:num(r.day_net),ha:num(r.holding_after),
     os:num(r.outstanding),po:num(r.pct_after),
-    /* a sealed company's filing: the ticker, the name, the dates and the
-       kind are here; every figure is blank and mk says so */
-    mk:String(r.masked||"")==="1",
     fb:String(r.first_buy||"")==="1",   /* this person's first open-market purchase on record */
     rs:num(r.residue),pl:r.plan||"unknown",u:r.url||"",fl:r.price_flag||"",acc:r.accession||"",
     als:num(r.also_shares),ald:r.also_detail||"",   /* the day's other disposition beside the trade (Red Cat, 2026-09-18) */
@@ -1088,9 +1050,8 @@ function mapEvents(recs){
 }
 
 async function fetchFirst(paths,handle){
-  /* the tier's file, with honest fallbacks: a pro reader whose session just
-     lapsed gets the free file, and a localhost folder with the full files
-     at the root still works for development */
+  /* honest fallbacks: a localhost folder with the files at the root
+     still works for development */
   for(const p of paths){
     try{
       const r=await fetch(withV(p));
@@ -1101,37 +1062,27 @@ async function fetchFirst(paths,handle){
   return false;
 }
 async function loadData(){
-  /* WHO IS ASKING decides WHAT IS FETCHED.
-     /api/me answers from the signed cookie and the subscription record;
-     everything after keys off it. On a static dev server the call 404s and
-     the site is simply free. */
-  try{const r=await fetch("/api/me",{cache:"no-store"});
-      if(r.ok){const j=await r.json();state.pro=!!j.pro;state.acct=j.email||"";state.meKnown=true;}}catch(e){}
-  syncNav();   /* an answer that never came leaves the server-rendered label alone */
-
   /* TWO WAVES, EACH IN PARALLEL.
      The files used to arrive one after another, each waiting for the last,
-     with the 52KB of prices fetched after 19MB of history and trades. A
-     subscriber watched the board sit without values or founder badges for
+     with the 52KB of prices fetched after 19MB of history and trades: the
+     board sat without values or founder badges for
      five seconds. The small files the first screen needs (panel, prices,
      founders, trends, perf: under 1.5MB) are fetched together and the hero,
      strip and board render once, complete. The two large files (history
      for the trend arrows, trades for the feed) arrive in a second wave and
      re-render only the sections that use them. */
-  const loadPanel=fetchFirst(state.pro
-      ?["/pro/universe.csv","universe.csv","panel.csv"]
-      :["universe.csv","panel.csv"],
+  const loadPanel=fetchFirst(["universe.csv","panel.csv"],
     t=>{const p=mapPanel(parseCSV(t));
         if(!p.length)return false;
         PANEL=p;state.live.panel=true;return true;});
-  const loadFounders=fetchFirst(state.pro?["/pro/founders.csv","founders.csv"]:["founders.csv"],
+  const loadFounders=fetchFirst(["founders.csv"],
     t=>{const m={};
         for(const r of parseCSV(t))if(r.ticker)m[r.ticker.toUpperCase()]=
           {f:(r.founder||"").toLowerCase(),ev:r.evidence||"",src:r.source||""};
         if(!Object.keys(m).length)return false;
         FOUNDERS=m;state.live.founders=true;return true;});
-  /* THE SCREENER'S COUNTS OVER EVERY COMPANY (build_site_data): what a
-     free reader's filter would return in Pro, per filter combination */
+  /* THE SCREENER'S COUNTS OVER EVERY COMPANY (build_site_data), per
+     filter combination: the chips say their real counts before the data lands */
   const loadCounts=(async()=>{try{const q=await fetch(withV("screen-counts.json"));if(q.ok){SCREEN_COUNTS=await q.json();return true;}}catch(e){}return false;})();
   const loadPrices=(async()=>{try{const t=await (await fetch(withV("prices.csv"))).text();
       const m={};let asof="";
@@ -1158,15 +1109,11 @@ async function loadData(){
   keep(renderAll);
 
   /* the second wave: the record and the trades */
-  const loadHist=fetchFirst(state.pro
-      ?["/pro/history-lite.csv","/pro/history.csv","history-free-lite.csv","history-free.csv","history.csv"]
-      :["history-free-lite.csv","history-free.csv","history.csv"],
+  const loadHist=fetchFirst(["history-lite.csv","history.csv"],
     t=>{const h=mapHistory(parseCSV(t));
         if(!Object.keys(h).length)return false;
         HIST=h;state.live.hist=true;return true;});
-  const loadEvents=fetchFirst(state.pro
-      ?["/pro/events.csv","events-free.csv","events.csv"]
-      :["events-free.csv","events.csv"],
+  const loadEvents=fetchFirst(["events.csv"],
     /* EVERY FILING LOADS (2026-09-15; the P/S filter that stood here from
        the first version is gone). The tape is every filing by the chief
        executive, ranked by what it did to the stake; the screener's trade
@@ -1230,15 +1177,7 @@ function applyPrices(){
 }
 
 /* ---------------- render ---------------- */
-function renderAll(){if(typeof document!=="undefined"&&document.body&&document.body.classList)document.body.classList.toggle("pro",!!state.pro);syncNav();renderStatus();renderHero();renderTable();renderActivity();
-  if(/[?&]welcome=1/.test(location.search)&&!state._welcomed){
-    state._welcomed=true;
-    const t=document.createElement("div");
-    t.className="toast";t.textContent=state.pro?"Membership active - welcome. No password needed: on any other device, sign in with your email.":"Payment received — finishing up, one moment…";
-    document.body.appendChild(t);
-    setTimeout(()=>t.remove(),6000);
-    history.replaceState(null,"",location.pathname);
-  }}
+function renderAll(){renderStatus();renderHero();renderTable();renderActivity();}
 
 function renderStatus(){
   // WHICH FILES ARE LIVE IS NOT THE READER'S PROBLEM.
@@ -1258,26 +1197,17 @@ let SCREEN_COUNTS=null;
 function renderHero(){
   /* THE STRIP IS THE SAME FOR EVERYONE. Its four numbers are aggregates
      over every company (how many own more than 5%, how many are founder-
-     led, what those founders hold, what share of all CEO wealth): no
-     company's stake is in them, and they say how much the site covers. A
-     free reader's file cannot compute them (the sealed stakes are not in
-     it), so the stamped numbers stay and only the dates are appended. */
+     led, what those founders hold): no company's stake is in them, and
+     they say how much the site covers. */
   if(HERO_STAMP===null){const hs=$("#herostats");HERO_STAMP=hs?[...hs.querySelectorAll(".hstat:not(.end)")].map(e=>e.outerHTML).join(""):"";}
   const above5=PANEL.filter(r=>r.pct>5).length;
-  const open=PANEL.filter(r=>!r.masked).length, sealed=PANEL.length-open;
-  /* the Pro box quotes the sealed count from the same panel */
-  const mc=$("#mcount");if(mc&&sealed)mc.textContent=sealed.toLocaleString();
-  /* EVERY NUMBER ON THIS PAGE SPEAKS FOR THE OPEN SET. Free = the S&P
-     500; Pro = everything. The sealed remainder is one stated fact (the
-     subline), never a component of a statistic. */
-  const OPEN=PANEL.filter(r=>!r.masked);
+  const open=PANEL.length;
+  const OPEN=PANEL;
   /* THE HEADLINE SAYS WHAT THE SITE IS; THE STRIP CARRIES THE NUMBERS.
      The hero used to be a statistic ("199 of 2,100 chief executives own
      more than 5%..."), which reads as a riddle to a first-time visitor:
-     why 2,100? The sentence is now the purpose, the same for both tiers,
-     and the rarity is the first cell of the strip, where a denominator a
-     reader knows (the S&P 500) or none at all (the count) does the work. */
-  /* the free hero adds one stated fact about the seal, never a statistic */
+     why 2,100? The sentence is now the purpose, and the rarity is the
+     first cell of the strip. */
 
   // WHAT THE SITE IS ACTUALLY ABOUT, said with the numbers we have.
   //
@@ -1294,14 +1224,11 @@ function renderHero(){
   const asofs=OPEN.map(r=>r.asof).filter(Boolean).sort();
   const stat=(n,k,hl)=>`<div class="hstat"><div class="n${hl?" hl":""}">${n}</div><div class="k">${k}</div></div>`;
   let out="";
-  /* THE RARITY, FIRST. Free: "19 of 500" against a denominator everyone
-     knows. Pro: the count alone; "of 2,100" only ever raised a question. */
   /* THREE NUMBERS (PLAN.md section 5), the same three the stamp wrote:
-     founder-led companies first, the rarity second (a free reader's file
-     can only count the S&P, so "19 of 500"), what those founders hold. */
+     founder-led companies first, the rarity second (the count alone;
+     "of 2,100" only ever raised a question), what those founders hold. */
   if(led.length)out+=stat(led.length,"Founder-led companies",true);
-  out+=sealed?stat(`${above5} of ${open.toLocaleString()}`,"S&P 500 CEOs own more than 5%")
-             :stat(above5.toLocaleString(),"CEOs own more than 5%");
+  out+=stat(above5.toLocaleString(),"CEOs own more than 5%");
   if(state.live.prices){
     if(led.length)out+=stat(money(ledVal),"Held by those founders");
     else out+=stat(money(allVal),"Held by all CEOs");
@@ -1324,8 +1251,6 @@ function renderHero(){
   if(fs)fs.innerHTML=`<span title="the most recent Form 4 read into the site${panelOn&&panelOn!==filedOn?`; the newest filing that changed a headline stake was ${panelOn}`:""}">Filings through ${dd(filedOn)}</span>`
     +(state.live.prices?` · <span title="the close every value and market cap on this page is priced at">Prices as of the ${dd(PRICES_ASOF)} close</span>`:"")
     +(state.live.panel?"":" · sample data");
-  /* a free reader: the stamped three */
-  if(sealed&&HERO_STAMP)out=HERO_STAMP;
   if(state.live.panel)$("#herostats").innerHTML=out;
 }
 /* INSIDE WHEN IT FITS, MEASURED BY THE BROWSER. A fixed fifth of the track
@@ -1333,8 +1258,6 @@ function renderHero(){
    yardstick, Dell at 17% sat outside a bar that had room for him. Every
    label is drawn inside, then the ones the layout engine reports as
    overflowing their bar are moved out beside it. Re-run on resize. */
-/*@shared*/
-const LOCK=(what,shape)=>`<span class="sealed" data-shape="${shape||"$0.0B"}" aria-label="in Pro" onclick="event.stopPropagation();openPro()" title="${what||"in Pro"}"></span>`;
 /*@shared*/
 function exportTable(){
   /* THE TABLE, AS FILTERED AND SORTED, EXACTLY AS SHOWN. The file is the
@@ -1385,7 +1308,7 @@ function lastTrades(){
    with a name and a URL (/companies/?screen=never-sold), so a letter can
    link to one and a search can find it. Each is a predicate over the
    table's rows; the build counts the same predicate over every company
-   so a free reader's screen says how many more match in Pro. */
+   so a chip says its real count before the data lands. */
 /* THE PRESETS (2026-09-21): the five screen pages are settings of the five
    groups. A screen page opens with its preset on; any other combination is
    linkable by its address but is not a page (its canonical is /companies/). */
@@ -1427,7 +1350,7 @@ const BUY_EDGES=[[null,1,"lt1"],[1,5,"1to5"],[5,null,"5plus"]];
 /*@shared*/
 function passes(r,f){
   /* ONE RULE (2026-09-21): the same test the build counts with (build_site_data.passes) */
-  if(r.masked||r.pct===null)return false;
+  if(r.pct===null)return false;
   const who=f.who||"all";
   if(who==="founders"&&!r.fd)return false;
   if(who==="hired"&&r.fd)return false;
@@ -1550,33 +1473,20 @@ function renderTable(){
     r.fd=!!(fInfo(r.tk)&&fInfo(r.tk).f==="yes");                 /* Founder: its own column, its own sort */
     r.ns=r.pns;   /* NO SALES SINCE 2016, FROM THE BUILD ONLY (2026-09-21): the feed a page happens to hold is a window, and "no sale in it" is not "no sale on record" (Nextpower) */
   }
-  /* THE HOME PREVIEW IS THE OPEN SET. Sorted by share, the top of the
-     whole list is almost entirely outside the S&P, which is the Pro
-     catalog; a free reader's twenty rows are the S&P's, with full
-     figures, and the line beneath says how many more match in Pro.
-     /companies/ shows every row with the blurs. */
-  const homeOpen=typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0&&!state.pro;
+  /* THE HOME PREVIEW: twenty rows by stake value; /companies/ is the
+     same table in full. */
+  const homeExcerpt=typeof TABLE_LIMIT==="number"&&TABLE_LIMIT>0;
   const screen=state.screen&&SCREENS[state.screen];
   /* THE LINE UNDER THE HEADING (2026-09-19): one sentence saying which list this is; one line, always present, so nothing moves */
   const sl=$("#screenline");if(sl)sl.textContent=screenSentence(F);
   let rows=PANEL.filter(r=>{
-    if(homeOpen&&r.masked)return false;
-    /* a sealed row's share is not in the file: a screen that asks about
-       it cannot be answered for that row, and the count beneath says so */
     const q=state.q.toLowerCase();
     const qOK=!q||r.tk.toLowerCase().includes(q)||r.co.toLowerCase().includes(q)||r.ceo.toLowerCase().includes(q);
-    /* THE ONE RULE (2026-09-21): a search alone shows every row, the groups are the question; a masked row (none since the seal came off) only answers a search */
-    if(r.masked)return qOK&&F.who==="all"&&!F.sp&&!F.min&&F.max===null&&F.sold==="any"&&F.buy==="any";
     return qOK&&passes(r,F);
   });
   const {key,dir}=state.sort;
   const CONF={high:3,medium:2,low:1};
   rows.sort((a,b)=>{
-    /* a sealed row's place under a share or value sort is its build rank */
-    if((key==="pct"||key==="val")&&(a.masked||b.masked)){
-      const ra=key==="pct"?a.rp:a.rv, rb=key==="pct"?b.rp:b.rv;
-      if(ra!==null&&rb!==null&&ra!==undefined&&rb!==undefined)return dir<0?ra-rb:rb-ra;
-    }
     let va=a[key],vb=b[key];
     if(key==="conf"){va=CONF[va]||0;vb=CONF[vb]||0;}
     /* a company with no three-year record sorts below every real change,
@@ -1599,26 +1509,13 @@ function renderTable(){
      <td class="c-co"><div class="tk"><a href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></div><div class="nm" title="${r.co.replace(/"/g,"&quot;")}">${r.co}</div></td>
      <td class="ceo h-ceo"><span class="ceow"><span class="cn" title="${r.ceo.replace(/"/g,"&quot;")}">${r.ceo}</span></span></td>
      <td class="c-fd">${r.fd?"Yes":""}</td>
-     <td class="n num c-own">${r.masked?LOCK("in Pro","0.000%"):r.units?`<span class="nopr" title="ownership held as exchangeable partnership units, not common stock">units</span>`:r.pct.toFixed(r.pct<1?3:2)+"%"}</td>
-     <td class="n num">${r.masked?LOCK("in Pro","$00.0M"):r.val?money(r.val):""}</td>
+     <td class="n num c-own">${r.units?`<span class="nopr" title="ownership held as exchangeable partnership units, not common stock">units</span>`:r.pct.toFixed(r.pct<1?3:2)+"%"}</td>
+     <td class="n num">${r.val?money(r.val):""}</td>
      <td class="n num c-mc">${r.mcap?money(r.mcap):""}</td>
      <td class="n num c-r1">${r.r1===null||r.r1===undefined?`<span class="nopr"></span>`:`${r.r1>=0?"+":""}${r.r1.toFixed(1)}%`}</td>
     </tr>`}).join("");
-  const sealedN=PANEL.filter(r=>r.masked).length;
-  /* THE FREE SCREEN SAYS HOW MUCH OF THE ANSWER IS SEALED. Under a share
-     threshold or never-sold, a sealed row cannot be evaluated and is not
-     shown; the build's count over every company says how many would be,
-     so the line reads "20 companies · 138 more match in Pro". Under a
-     search there is no count (the build cannot know the search). */
-  let more="";
-  if((sealedN||homeOpen)&&SCREEN_COUNTS&&!state.q.trim()){
-    const key="s:"+(presetOf(F)||"");
-    const all=SCREEN_COUNTS[key];
-    const openMatches=rows.filter(r=>!r.masked).length;
-    if(typeof all==="number"&&all>openMatches)more=` · <a onclick="openPro()" style="cursor:pointer" title="the same filter over every company worth $1B or more">${(all-openMatches).toLocaleString()} more match in Pro</a>`;
-  }
   $("#tcount").innerHTML=
-    `${shownRows.length<total?`${shownRows.length} of `:""}${total.toLocaleString()} compan${total===1?"y":"ies"}${more}${state.live.panel?"":" · embedded sample — serve universe.csv beside this file to load all 500"}`;
+    `${shownRows.length<total?`${shownRows.length} of `:""}${total.toLocaleString()} compan${total===1?"y":"ies"}${state.live.panel?"":" · embedded sample — serve universe.csv beside this file to load all 500"}`;
   document.querySelectorAll("th.sortable").forEach(th=>{
     const on=th.dataset.key===state.sort.key;
     th.querySelector(".arr").textContent=on?(state.sort.dir<0?" ↓":" ↑"):"";
@@ -1866,8 +1763,6 @@ function sellKind(e){
   if(e.c!=="S"&&e.c!=="P")return"";
   return e.pl==="plan"?"plan":e.pl==="discretionary"?"disc":"unknown";
 }
-/* the sealed filings of the window, counted for the column's header: the
-   sizes that would rank them are in Pro, said once, quietly */
 /* ================================================================
    RECENT ACTIVITY: one table, ranked by what moved the stake.
    The questions a reader brings, in order: what happened lately that
@@ -1876,9 +1771,7 @@ function sellKind(e){
    and three cards) and the fourth with one table over the window, sorted
    by stake change by default, with value and date one click away. The
    two bar columns that ranked by dollars are gone: the site's premise is
-   the stake, and dollars mostly rank company size. A sealed filing is a
-   row with its figures blurred; the ranked cards use open rows only,
-   since a blurred figure cannot be the biggest of anything.
+   the stake, and dollars mostly rank company size.
    ================================================================ */
 function evSide(e){
   if(unchangedKind(e)!==null)return"exsell";
@@ -1979,7 +1872,7 @@ function kindNote(e){
    explain), and its cell says so. */
 /*@shared*/
 function evMove(e){
-  if(e.mk||e.cover)return null;
+  if(e.cover)return null;
   const p=pctOf(e);
   if(!p)return null;
   if(e.c!=="P"&&e.c!=="S"&&e.po===0)return null;
@@ -2004,10 +1897,10 @@ function evDim(e){
      NEVER DIMS (2026-09-15, the same day: the first version dimmed every
      row under 1% and half the tape went grey, every discretionary sale
      and a $30.8M planned one among them; a trade is news by itself, a
-     grant only through its effect). Not stated and sealed rows are not
-     dimmed: the site does not know. The "Moved the stake" chip still
+     grant only through its effect). Not-stated rows are not dimmed:
+     the site does not know. The "Moved the stake" chip still
      filters every kind alike. */
-  if(e.mk||e.pre)return false;
+  if(e.pre)return false;
   if(e.c==="P"||e.c==="S")return unchangedKind(e)!==null;
   const p=evMove(e);
   return !!p&&Math.abs(p.v)<1;
@@ -2043,20 +1936,20 @@ function actRows(){
 /* KIND GROUPS IN ORDER, RANKED BY THE STAKE'S MOVE WITHIN EACH, whatever
    the direction: a sale by how much it cut, a purchase or a grant by how
    much it added, a withholding by how much it took. A row with no figure
-   (a sealed one, or an unstated move) follows the ranked rows of its
-   group, in date order. */
+   (an unstated move) follows the ranked rows of its group, in date
+   order. */
 /*@shared*/
 function actSorted(rows){
   const mv=e=>{const p=evMove(e);return p?Math.abs(p.v):null;};
   const sv=(state.ev&&state.ev.sort)||{};const sk=sv.key,sd=sv.dir||-1;
   if(sk&&sk!=="kind"){
-    /* a header sort: the column's value, sealed or unstated figures last whichever way it points */
+    /* a header sort: the column's value, unstated figures last whichever way it points */
     const val=e=>{
       if(sk==="co")return coOf(e.tk)||e.tk;if(sk==="ceo")return e.ceo||"";
       if(sk==="v")return (e.c==="P"||e.c==="S")&&e.v&&!e.fl?e.v:null;
-      if(sk==="sh"){return e.mk||!e.sh?null:signedShares(e);}
+      if(sk==="sh"){return !e.sh?null:signedShares(e);}
       if(sk==="ch"){const p=evMove(e);return p?p.v:null;}
-      if(sk==="st")return e.mk?null:(e.po===null||e.po===undefined?null:e.po);
+      if(sk==="st")return (e.po===null||e.po===undefined?null:e.po);
       if(sk==="td")return e.td||e.fd;if(sk==="fd")return e.fd;return null;};
     return [...rows].sort((a,b)=>{
       const va=val(a),vb=val(b),na=va===null||va===undefined||va==="",nb=vb===null||vb===undefined||vb==="";
@@ -2077,8 +1970,6 @@ function actSorted(rows){
 }
 /*@shared*/
 function setWin(w){
-  /* the longer windows are Pro; a free reader's click opens the box */
-  /* the tape's windows are open to everyone (2026-09-18); export is Pro */
   state.ev.win=String(w);renderActivity();
 }
 function ago(d){
@@ -2113,9 +2004,7 @@ function weekLine(){
   return `<b>Past seven days:</b> ${b} founder${b===1?"":"s"} bought. ${d} sold without a plan. ${p} sale${p===1?" was":"s were"} already scheduled.`;
 }
 /* THE WEATHER LINE: what the window held, counted by kind, never by a
-   figure: a free reader's sealed rows carry no move, and a line that read
-   differently by tier would be the site saying two things. People for the
-   decisions and the pay (one person, four filings, one count). "Paid in
+   figure. People for the decisions and the pay (one person, four filings, one count). "Paid in
    shares" is a filing where shares came in as compensation: an award, an
    exercise held, a vest or an exercise with part kept. */
 /*@shared*/
@@ -2146,18 +2035,17 @@ function signedShares(e){const sh=Math.abs(e.sh||0);if(!sh)return 0;if(e.c==="P"
 function actRow(e){
   const k=tapeKind(e),dim=evDim(e),trade=e.c==="P"||e.c==="S";
   const detail=(k==="comp"||k==="xfer"||k==="sold")?tapeDetail(e):"";
-  const link=(inner,title)=>e.u&&!e.mk?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${title}">${inner}</a>`:inner;
+  const link=(inner,title)=>e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${title}">${inner}</a>`:inner;
   const pr=PANEL.find(p=>p.tk===e.tk)||{};
   /* THE "?" SAYS WHY (2026-09-17): the company's own first problem or caution, the sentence the page shows, not a guess */
   const why=(pr.flags||"").split("\n")[0]||"the record could not settle on a figure";
-  const low=pr.conf==="low"&&!e.mk?`<span class="lowc" title="${("the site's confidence in this stake is low: "+why).replace(/"/g,"&quot;").replace(/</g,"&lt;").slice(0,300)}">?</span>`:"";
+  const low=pr.conf==="low"?`<span class="lowc" title="${("the site's confidence in this stake is low: "+why).replace(/"/g,"&quot;").replace(/</g,"&lt;").slice(0,300)}">?</span>`:"";
   const fp=x=>x.toFixed(x<1?3:2)+"%";
   /* THE STAKE AFTER THE FILING (2026-09-18): one figure; the shares column says what moved */
-  const stake=e.mk?LOCK("the stake after the filing is in Pro","0.00%"):(e.po===null||e.po===undefined)?`<span class="nopr">&mdash;</span>`:fp(e.po)+low;
-  const shs=e.mk?LOCK("in Pro","0,000"):(!e.sh?`<span class="nopr">&mdash;</span>`:`${signedShares(e)>0?"+":"\u2212"}${Math.abs(signedShares(e)).toLocaleString("en-US")}`);
+  const stake=(e.po===null||e.po===undefined)?`<span class="nopr">&mdash;</span>`:fp(e.po)+low;
+  const shs=(!e.sh?`<span class="nopr">&mdash;</span>`:`${signedShares(e)>0?"+":"\u2212"}${Math.abs(signedShares(e)).toLocaleString("en-US")}`);
   const p=evMove(e);
-  const change=e.mk?LOCK("what the filing did to the stake is in Pro","−0.0%")
-    :p?`<span title="what this filing did to the stake, as a share of the stake before it${p.approx?"; "+approxNote(e):""}">${stakeChange(p.v,p.approx).replace(/^≈ /,"≈").replace(/stake /,"")}</span>`
+  const change=p?`<span title="what this filing did to the stake, as a share of the stake before it${p.approx?"; "+approxNote(e):""}">${stakeChange(p.v,p.approx).replace(/^≈ /,"≈").replace(/stake /,"")}</span>`
     :`<span class="nopr" title="${moveWhy(e)}">${unchangedKind(e)!==null&&unchangedKind(e)!=="pre"?"unchanged":"&mdash;"}</span>`;
   const amt=!trade?`<span class="nopr" title="the filing states no price for this row; the change column says what it did to the stake">&mdash;</span>`:(e.fl?`<span class="nopr" title="${e.fl}">${evValCell(e)}</span>`:evValCell(e));
   return `<tr class="dayrow${dim?" dim":""}" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
@@ -2207,9 +2095,8 @@ function renderActivity(){
   const chips=$("#actkinds");
   if(chips)chips.innerHTML=["all","bought","sold","comp","xfer"].map(g=>`<button class="chip kd${(state.ev.kind||"all")===g?" on":""}" data-kind="${g}" onclick="setKind('${g}')">${g==="all"?"All":GROUP_WORD[g]} <small>${cnt(g)}</small></button>`).join("")
     +`<span class="tsep"></span><button class="chip big${state.ev.moved?" on":""}" onclick="setMoved(!state.ev.moved)" title="only the rows that moved the stake by at least 1% of what it was">Moved the stake &ge; 1%</button>`;
-  const pn=$("#pronote");if(pn)pn.innerHTML=state.pro?"":`Export is for <a onclick="openPro()" style="cursor:pointer">members</a>.`;
   const rows=actSorted(actRows());
-  const sealedN=rows.filter(e=>e.mk).length,dimN=rows.filter(evDim).length;
+  const dimN=rows.filter(evDim).length;
   /* THE HOME PAGE CARRIES AN EXCERPT (the first rows, the full tape a
      click away); /tape/ carries every row. Same block, one limit. */
   const limit=typeof TAPE_LIMIT==="number"?TAPE_LIMIT:0;
@@ -2219,7 +2106,7 @@ function renderActivity(){
     :`<div class="dayempty">No filings of this kind in this window.</div>`;
   document.querySelectorAll("#actwrap th.sortable").forEach(th=>th.addEventListener("click",()=>setTapeSort(th.dataset.key)));
   const excerpt=typeof TAPE_LIMIT==="number"&&TAPE_LIMIT>0;
-  $("#actnote").innerHTML=`${shown.length<rows.length?`${shown.length} of `:""}${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${sealedN&&!excerpt?` · the change and the stake after are in <a onclick="openPro()" style="cursor:pointer">Pro</a> for the ${sealedN.toLocaleString()} from companies outside the S&P 500`:""}${dimN&&!excerpt?` · ${dimN.toLocaleString()} moved the stake by less than 1%, dimmed`:""}`;
+  $("#actnote").innerHTML=`${shown.length<rows.length?`${shown.length} of `:""}${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${dimN&&!excerpt?` · ${dimN.toLocaleString()} moved the stake by less than 1%, dimmed`:""}`;
 }
 /*@shared*/
 function setTapeSort(key){
@@ -2241,40 +2128,6 @@ function setMoved(on){state.ev.moved=!!on;renderActivity();}
    was a second, smaller version of that page; the page won. */
 function openCompany(tk){if(tk)location.href="/company/"+encodeURIComponent(tk)+"/";}
 
-/* ---------------- dev / pro toggle ---------------- */
-function toggleDev(){
-  state.pro=!state.pro;syncDev();renderTable();renderActivity();}
-/* THE SCAFFOLDING COMES DOWN FOR VISITORS.
-   A public "Preview: Pro" button reads as a site the developer never
-   finished. The toggle now exists only when the owner asks for it by URL
-   (?dev=1 keeps the button; ?pro=1 still opens straight into the preview).
-   Everyone else sees the finished thing: free view, locks, one Go Pro. */
-function syncDev(){
-  const b=$("#devtog");
-  if(b&&!/[?&](dev|pro)=1/.test(location.search)){if(b.remove)b.remove();else b.classList.add("hide");return;}
-  b.textContent=state.pro?"Preview: Pro":"Preview: Free";
-  b.classList.toggle("on",state.pro);
-}
-function signIn(){
-  const email=prompt("The email you subscribed with (a sign-in link will be emailed - no password needed):");
-  if(!email)return;
-  fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({email:email.trim()})})
-    .then(r=>r.json()).then(j=>alert(j.message||"If that email has an active subscription, a sign-in link is on its way."))
-    .catch(()=>alert("Couldn't reach the sign-in service — try again in a minute."));
-}
-function syncNav(){
-  /* one button, two lives: the ask before, the account after. Until
-     /api/me has answered, the server-rendered label stands. */
-  const b=document.querySelector(".gopro");
-  if(!b||!state.meKnown)return;
-  if(state.pro){b.textContent="Account";b.onclick=()=>{location.href="/account/"};
-    b.title="Your letter, your watches, your billing";}
-  else{b.textContent="Join";b.onclick=openPro;b.title="";}
-}
-/* Go Pro is a page (PLAN.md section 5). The box stays for signing in. */
-function openPro(){location.href="/pro/";}
-function openSignIn(){$("#promodal").classList.add("on")}
 let TAPE_LIMIT=10;     /* the home page's tape is an excerpt of ten rows, like the scoreboard; /tape/ has every row */
 let TABLE_LIMIT=10;    /* the home page's list is ten rows: a preview whose job is recognition; /companies/ has every row */
 /* THE HOME PREVIEW'S GRID IS FIVE COLUMNS. The markup is the screener's
@@ -2300,8 +2153,6 @@ async function subscribeHome(ev){
   }catch(e){m.textContent="Something went wrong; write to hello@founderledequities.com.";btn.disabled=false;btn.textContent="Send it";}
   return false;
 }
-function closePro(){$("#promodal").classList.remove("on")}
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closePro();});
 
 /* ---------------- wire controls ---------------- */
 $("#q").addEventListener("input",e=>{state.q=e.target.value;renderTable()});
@@ -2340,21 +2191,16 @@ document.querySelectorAll(".chip.win").forEach(c=>
   const wrap=(name,kind,label,arg)=>{const o=globalThis[name];if(typeof o!=="function")return;
     globalThis[name]=function(...a){hit(kind,label,arg?arg(...a):"");return o.apply(this,a);};};
   wrap("openCompany","open","page",tk=>tk);
-  wrap("signIn","click","signin");
   wrap("exportTable","click","export");
   wrap("setWin","window","days",w=>w);
   /* chips, switches, column heads and filing links are wired with listeners,
      so one delegated listener counts them by what they say */
   if(typeof document!=="undefined"&&document.addEventListener){
     document.addEventListener("click",e=>{
-      const t=e.target&&e.target.closest?e.target.closest("button.chip,.fsw,th.sortable,a[href*='sec.gov'],a[href='/api/checkout'],.gopro,.gatecover,[onclick*='openPro']"):null;
+      const t=e.target&&e.target.closest?e.target.closest("button.chip,.fsw,th.sortable,a[href*='sec.gov']"):null;
       if(!t)return;
       const scn=t.closest("section");
       const sec=(scn&&(scn.id||(scn.className||"").split(" ")[0]))||(t.closest(".top")?"nav":t.closest("#drawer")?"drawer":t.closest(".modal")?"modal":"");
-      if(t.matches("a[href='/api/checkout']"))return hit("click","checkout");
-      /* WHICH Go Pro: the nav button, the hero's "more companies", a sealed
-         row in the feed, a locked cover -- the section it sits in says */
-      if(t.matches(".gopro,.gatecover,[onclick*='openPro']"))return hit("click","gopro",sec||"page");
       if(t.matches("a[href*='sec.gov']"))return hit("click","filing",(t.closest("tr,.dayrow,.drow,.abar")||{}).textContent?.match(/\b[A-Z]{1,5}(?:[.-][A-Z])?\b/)?.[0]||"");
       if(t.matches("th.sortable"))return hit("sort",sec,t.dataset.key||t.textContent.trim());
       if(t.matches(".fsw"))return hit("switch",sec,t.id);
@@ -2369,7 +2215,6 @@ document.querySelectorAll(".chip.win").forEach(c=>
   }
   hit("view","page");
 }
-syncDev();
 /* THE FIRST PAINT IS THE STAMP, NOT A SAMPLE. The hero, the strip and the
    board are written into this file at deploy with the real numbers
    (ops/stamp_static.py). A paint from the 28-company sample that used to
@@ -2377,9 +2222,7 @@ syncDev();
    percentage board titled "The largest ownership stakes": a page that
    changed its mind twice before settling. Now nothing draws until the
    live data is in; the sections with no stamp wait empty. */
-syncNav();renderStatus();
-if(location.hash==="#signin")openSignIn();    /* "Already subscribed? Sign in" from another page lands on the box */
-if(location.hash==="#pro")location.replace("/pro/");
+renderStatus();
 loadData();                                   /* the live CSVs, then one render */
 </script>
 </body>

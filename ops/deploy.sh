@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
 # Assemble the public site and push it to Cloudflare Pages.
 #
-# LAYOUT IS THE PAYWALL. public/ carries the pages and the free data at the
-# root, and the full data under public/pro/ -- where functions/pro/[[path]].js
-# stands in front of EVERY request with the subscription check (a catch-all,
-# so the sharded tree under pro/ is gated by construction).
+# ONE TREE, NO GATE (the paid tier left the code base 2026-09-23). public/
+# carries the pages and every data file at the root; functions/api/ holds
+# the watch and letter workers and nothing stands in front of the data.
 #
 # ONE REFRESH, ONE LIST. The nightly rebuilds the whole universe into the
-# root files (panel.csv holds every member). The S&P list is passed here
-# for ONE purpose: deciding which rows
-# are open at the root and which sit sealed under /pro/. The overlay of a
-# fresh S&P onto a frozen snapshot is gone with the snapshot.
+# root files (panel.csv holds every member). The S&P list rides along as a
+# data column (universe.csv's sp) and orders a page's neighbour links;
+# it gates nothing.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -118,7 +116,7 @@ if [ -s og.png ]; then
   echo "  og image: published as og.png?v=$OGV"
 fi
 
-# ---- 2. free tier, at the root: the generator's output plus prices ----
+# ---- 2. the data, at the root: the generator's output plus prices ----
 cp -r site-data/. public/
 # (2b, the weekly briefing, ops/weekly.py, retired 2026-09-15: its week-over-week
 #  section lives in ops/moves.py stakes, computed from the record, no snapshot)
@@ -189,7 +187,7 @@ python3 ops/letter.py publish public/ || echo "  letter: publish failed; the sit
 DATAV=$(date -u +%Y%m%d%H%M)
 # every built script that fetches data carries the key: companies.js was missing (2026-09-21), so the Companies page
 # fetched /universe.csv?v=dev and the edge served the first copy it ever cached
-for f in public/index.html public/about.html public/company.js public/tape.js public/companies.js; do
+for f in public/index.html public/about.html public/company.js public/tape.js public/companies.js public/alerts.js public/search.js; do
   [ -f "$f" ] && sed -i "s|const DATA_V=\"dev\"|const DATA_V=\"$DATAV\"|" "$f"
 done
 echo "  data version: $DATAV"
@@ -201,17 +199,13 @@ fi
 [ -s prices.csv ] && cp prices.csv public/
 # perf.csv is published by build_site_data, cut to the chart's cohort; the
 # full file (every company's closes) stays on disk for the 3-year returns.
-# NO ROOT COPY OF THE PANEL. It is the whole unmasked universe, and a copy
-# at the root would publish every sealed stake. The page reads universe.csv.
-
 # ---- 3. sanity before the world sees it ----
-# THE SEAL IS OFF (2026-09-18): the root universe.csv is the whole panel with
-# every number, the same as the pro file, on purpose. What must still hold:
-# the root file exists, has every company, and no row is masked.
-python3 - << 'PYOPEN' || { echo "REFUSING: the public universe.csv is short or carries masked rows"; exit 2; }
+# the root universe.csv is the whole panel with every number: the file
+# exists, has every company, and the top rows carry their stakes.
+python3 - << 'PYOPEN' || { echo "REFUSING: the public universe.csv is short or missing its numbers"; exit 2; }
 import csv, sys
 rows = list(csv.DictReader(open("public/universe.csv", encoding="utf-8-sig")))
-ok = len(rows) > 1500 and not any((r.get("masked") or "").strip() == "1" for r in rows) and all(r.get("pct") for r in rows[:50])
+ok = len(rows) > 1500 and all(r.get("pct") for r in rows[:50])
 sys.exit(0 if ok else 1)
 PYOPEN
 

@@ -17,10 +17,9 @@ import os
 import sys
 
 
-def numbers(panel_p, sp_p, prices_p, founders_p, everyone=False):
-    """The hero's numbers over the open set (the S&P 500), or with
-    `everyone` over the whole universe: what a Pro reader sees."""
-    sp = {r["ticker"] for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
+def numbers(panel_p, sp_p, prices_p, founders_p):
+    """The hero's numbers over the whole universe (one tree, 2026-09-23);
+    sp_p rides in the signature so every caller passes the same files."""
     prices = {}
     try:
         for r in csv.DictReader(open(prices_p, encoding="utf-8-sig")):
@@ -37,8 +36,8 @@ def numbers(panel_p, sp_p, prices_p, founders_p, everyone=False):
                 founders.add(r["ticker"].upper())
     except OSError:
         pass
-    # THE HERO'S OWN STRIP, BY THE HERO'S OWN RULES: everything over the
-    # open (S&P) set, so the card says exactly what a visitor then sees.
+    # THE HERO'S OWN STRIP, BY THE HERO'S OWN RULES: everything over every
+    # company, so the card says exactly what a visitor then sees.
     total = open_n = above5 = led = 0
     led_value = all_value = 0.0
     for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
@@ -53,8 +52,6 @@ def numbers(panel_p, sp_p, prices_p, founders_p, everyone=False):
         except ValueError:
             continue
         total += 1
-        if t not in sp and not everyone:
-            continue
         open_n += 1
         if pct > 5:
             above5 += 1
@@ -126,7 +123,7 @@ def draw(n, out, fonts_dir):
 
     # the hero's stat strip, the same three numbers in the same order
     d.line((72, 452, W - 72, 452), fill=LINE, width=2)
-    facts = [(f"{n['above5']} of {n['open']:,}", "S&P 500 CEOs own more than 5%", BLUE),
+    facts = [(f"{n['above5']}", "CEOs own more than 5%", BLUE),
              (f"{n['led']}", "Founder-led companies", INK),
              (money(n["led_value"]), "Held by those founders", INK),
              (f"{n['share']}%", "Of all CEO wealth", INK)]

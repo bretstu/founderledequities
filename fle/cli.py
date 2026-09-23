@@ -1736,21 +1736,11 @@ def _refresh(args, log) -> int:
         if os.path.exists(ppath):
             shutil.copy2(ppath, path("perf.csv"))
 
-    # 6.5 -- free variants. The paywall is only as real as the files behind
-    # it: with everything at public URLs, a blur is an honour system. The
-    # rule for what a free file carries is exactly WHAT THE FREE PAGE SHOWS:
-    # every purchase (the standing promise), plus the last 90 days of sales
-    # -- not because free readers see sale rows (they don't; those are
-    # blurred) but because the Selling-down cards, the teaser, and the
-    # counts on the gated filter chips are all computed from them, and a
-    # tease of "Sold 0" would gut the free page. The decade archive, the
-    # thing Pro actually sells, deploys behind the gate.
-    # (The free-tier variants once written here are the deploy's job now:
-    # ops/build_site_data.py cuts the free files from these full ones by the
-    # S&P list, and it is the only place that rule lives.)
+    # (6.5, the free-tier variants, retired 2026-09-23 with the paid tier:
+    # ops/build_site_data.py writes ONE tree, every number in it.)
 
     # 7 -- publish, atomically. panel.csv is one row per company in the
-    # universe; the S&P list decides at deploy which rows are open.
+    # universe.
     published = []
     for name in ("panel.csv", "history.csv", "prices.csv", "founders.csv",
                  "events.csv", "universe.html"):
@@ -1795,28 +1785,6 @@ def _refresh(args, log) -> int:
         log("deployed")
     # the heartbeat is sent by cmd_refresh, for every exit path
     return 0
-
-
-FREE_HISTORY_TICKERS = {"META", "TSLA", "COIN"}
-
-
-def _write_variant(src: str, dst: str, keep) -> None:
-    """Filter one published CSV into its free-tier sibling, header intact."""
-    import csv as _csv
-    if not os.path.exists(src) or os.path.getsize(src) == 0:
-        return
-    with open(src, encoding="utf-8-sig", newline="") as fh:
-        reader = _csv.DictReader(fh)
-        rows = [r for r in reader if keep(r)]
-        fields = reader.fieldnames or []
-    if not fields:
-        return
-    tmp = dst + ".tmp"
-    with open(tmp, "w", encoding="utf-8", newline="") as fh:
-        writer = _csv.DictWriter(fh, fieldnames=fields)
-        writer.writeheader()
-        writer.writerows(rows)
-    os.replace(tmp, dst)
 
 
 def _progress_pings(log, minutes: int = 30) -> None:

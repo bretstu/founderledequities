@@ -7,16 +7,8 @@ const withV=p=>p+(p.includes("?")?"&":"?")+"v="+DATA_V;
    declarations marked @shared). Below: what this page does with it. */
 const C=window.COMPANY||{};
 const $=s=>document.querySelector(s);
-/* the Pro box lives on the home page; a click on a seal here lands on it */
-function openPro(){location.href="/pro/";}
 const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
 let VIEW="all",BIG=false;   /* BIG: only rows that moved the stake by 1% or more */
-
-function nav(me){
-  /* one button, two lives, on this page too */
-  const b=document.querySelector(".topnav .gopro");if(!b)return;
-  if(me&&me.pro){b.textContent="Account";b.setAttribute("href","/account/");b.title="Your letter, your watches, your billing";}
-}
 
 
 function setRow(row){
@@ -37,11 +29,6 @@ const poss=n=>n+(/s$/i.test(n)?"'":"'s");
    chart's job, not a "3-year change" card that had to say "since 2026-01"
    when the record was eight months old. */
 function stat(k,v,cls,sub,title){return `<div class="cstat"${title?` title="${esc(title)}"`:""}><div class="k">${k}</div><div class="v ${cls||""}">${v}</div>${sub?`<div class="s">${sub}</div>`:""}</div>`;}
-/* THE SEAL IS A BLUR. A sealed company's page is the open page with a
-   blurred placeholder wherever a figure would be: the number is not on the
-   page or in any file the page loads, so there is nothing behind the blur.
-   Hovering says where it is; clicking opens the box. */
-const BLUR=(shape)=>`<span class="sealed" data-shape="${shape}" aria-label="in Pro" onclick="event.stopPropagation();openPro()" title="in Pro"></span>`;
 function daysSince(d){
   if(!d)return null;
   const then=Date.parse(d+"T00:00:00Z");
@@ -312,10 +299,10 @@ function recordBlock(r){
   /* the chips carry the only words: what each line is, on hover */
   const modes=[["price","Price","the share price: daily closes, split-adjusted. Dots sit at the price on the filing"],
                ["pct","Stake","the share of the company, one point per month-end: it moves when the holding changes and when the share count changes. Steps without a dot are grants, gifts, or the share count changing"]];
-  const chips=`<div class="chips" role="group" aria-label="chart view">${modes.filter(m=>m[0]==="price"?havePx:(haveRec||r.masked)).map(m=>`<button class="chip${mode===m[0]?" on":""}" onclick="${r.masked&&m[0]!=="price"?"openPro()":`setChartMode('${m[0]}')`}" title="${r.masked&&m[0]!=="price"?"the stake's record is in Pro":m[2]}">${m[1]}</button>`).join("")}</div>`;
+  const chips=`<div class="chips" role="group" aria-label="chart view">${modes.filter(m=>m[0]==="price"?havePx:haveRec).map(m=>`<button class="chip${mode===m[0]?" on":""}" onclick="setChartMode('${m[0]}')" title="${m[2]}">${m[1]}</button>`).join("")}</div>`;
   /* the dots follow the table's filter: Bought draws purchases, Sold sales,
      All both; the other kinds have no dots to draw */
-  const moving=EVENTS.filter(e=>e.tk===r.tk&&!e.mk&&unchangedKind(e)===null&&(e.c==="P"||e.c==="S")
+  const moving=EVENTS.filter(e=>e.tk===r.tk&&unchangedKind(e)===null&&(e.c==="P"||e.c==="S")
     &&(VIEW==="all"||(VIEW==="buys"&&e.c==="P")||(VIEW==="sells"&&e.c==="S")));
   const key=moving.length?`<div class="ckey"><span class="b"><i></i>bought</span><span class="s"><i></i>sold</span></div>`:"";
   if(mode==="price"&&havePx){
@@ -334,7 +321,7 @@ function recordBlock(r){
 /* ---- the trades ---- */
 function tradesBlock(r){
   const all=EVENTS.filter(e=>e.tk===r.tk).sort((a,b)=>(b.td||b.fd).localeCompare(a.td||a.fd)||b.fd.localeCompare(a.fd));
-  if(!all.length)return `<div class="csec"><h2>Trades</h2><div class="sub">${!state.pro&&C.older?`No purchase or sale in the last twelve months. ${C.older.toLocaleString()} earlier trade${C.older===1?"":"s"}, back to ${C.since||"2016"}, are the archive: in <a href="/pro/">Pro</a>.`:"No purchase or sale on record."}</div></div>`;
+  if(!all.length)return `<div class="csec"><h2>Trades</h2><div class="sub">No purchase or sale on record.</div></div>`;
   /* FIVE KINDS, NAMED FOR WHAT THE ROW IS, AND THE TAPE'S (2026-09-15):
      the group is tapeGroup, the badge is tapeKind, the grey word is
      tapeDetail, all shared with index.html so the two pages cannot drift.
@@ -388,13 +375,6 @@ function tradesBlock(r){
       <td class="n lv po">${e.po!==null&&e.po!==undefined?e.po.toFixed(e.po<1?3:2)+"%":"&mdash;"}</td>
       <td class="f">${e.u?`<a href="${e.u}" target="_blank" rel="noopener" title="the filing, on EDGAR">${esc(e.form)} ↗</a>`:""}</td></tr>`;
     const {kd,p,uk,stkTxt,stkCls,span}=cell(e);
-    if(e.mk)return `<tr><td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
-      <td class="ty" title="${esc(kd.n)}">${kd.t?`<span class="kind ${kd.k}">${kd.t}</span>`:""}${kd.word?`<span class="detail">${kd.word}</span>`:""}</td>
-      <td class="n v">${BLUR("$0.0M")}</td><td class="n sh">${BLUR("−00,000")}</td><td class="n stk">${BLUR("−0.00%")}</td>
-      <td class="n lv">${BLUR("00,000,000")}</td>
-      <td class="n lv">${e.os?fmt(e.os):"&mdash;"}</td>
-      <td class="n lv po">${BLUR("0.00%")}</td>
-      <td class="f">${BLUR("Form 4")}</td></tr>`;
     return `<tr><td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
       <td class="ty" title="${esc(kd.n)}">${kd.t?`<span class="kind ${kd.k}">${kd.t}</span>`:""}${kd.word?`<span class="detail">${kd.word}</span>`:""}</td>
       <td class="n v ${e.c==="P"?"up":e.c==="S"?"down":"lv"}">${e.c==="P"||e.c==="S"?evValCell(e):"&mdash;"}</td>
@@ -417,21 +397,20 @@ function tradesBlock(r){
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${r.tk}-trades.csv`;a.click();
   };
   const bigChip=`<button class="chip big${BIG?" on":""}" onclick="BIG=!BIG;renderOpen(PANEL[0])" title="only the rows that moved the stake by at least 1% of what it was">Moved the stake &ge; 1%</button>`;
-  return `<div class="csec ctrades"><div class="thead"><h2>Trades</h2><button class="export" onclick="${r.masked?"openPro()":"exportTrades()"}" title="${r.masked?"the record is in Pro":"the rows below, as a CSV"}">Export CSV</button></div>
+  return `<div class="csec ctrades"><div class="thead"><h2>Trades</h2><button class="export" onclick="exportTrades()" title="the rows below, as a CSV">Export CSV</button></div>
     <div class="tchips">${chip("all","All",count("all"))}${chip("buys","Bought",count("buys"))}${chip("sells","Sold",count("sells"))}${chip("comp","Compensation",count("comp"))}${chip("transfers","Transfers",count("transfers"))}${chip("covers","Share count",count("covers"))}<span class="tsep"></span>${bigChip}</div>
-    ${rows?`<table><thead><tr><th>Date</th><th>Trade</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Change</th><th class="n lv">Held</th><th class="n lv">Outstanding</th><th class="n lv">Owned</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">${r.masked?"No filings in the last twelve months; the full record is in Pro.":"Nothing in this view."}</div>`}
+    ${rows?`<table><thead><tr><th>Date</th><th>Trade</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Change</th><th class="n lv">Held</th><th class="n lv">Outstanding</th><th class="n lv">Owned</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
     ${VIEW==="comp"?`<div class="sub" style="margin-top:10px">Compensation: what the company gave and what was sold of it. Awards granted, options exercised and held or cashed, vests, tax withholding, forfeitures. None of it is counted as buying or selling in the site's summaries; the Change column says what each did to the stake.</div>`:""}
     ${VIEW==="transfers"?`<div class="sub" style="margin-top:10px">Transfers: gifts, conversions between classes, pre-IPO catch-ups and other non-market transactions the filing reports.</div>`:""}
     ${VIEW==="sells"&&evs.some(e=>tapeKind(e)==="sold")?`<div class="sub" style="margin-top:10px">Not stated: Form 4 had no Rule 10b5-1 box before April 2023, so whether a sale filed before then was planned is not on the form. Every sale since is Discretionary or Planned.</div>`:""}
     ${VIEW==="covers"?`<div class="sub" style="margin-top:10px">Share count: the company's cover pages that changed the number of shares outstanding. The stake moves with them though nothing of the chief executive's did.</div>`:""}
-    ${!state.pro&&C.older?`<div class="sub archive" style="margin-top:12px">The last twelve months. ${C.older.toLocaleString()} earlier trade${C.older===1?"":"s"}, back to ${C.since||"2016"}, are the archive: <a onclick="openPro()" style="cursor:pointer">in Pro</a>.</div>`:""}
   </div>`;
 }
 
 /* ---- the receipt for the badge ---- */
 /* THE WATCH (PLAN.md sections 2 and 5): "email me if this founder buys on the
    open market or makes a discretionary sale." One is free, confirmed by a
-   click; a signed-in Pro reader is watching at once and can watch a list.
+   click; any number of names, each managed by the links in its own emails.
    The box sits under the record on every page, sealed or open: what a
    person does is not behind the seal, only what they own. */
 let WATCHING=null;   /* the signed-in reader's watch on this company, once known */
@@ -452,52 +431,26 @@ function watchCard(r){
   /* THE FIELD FIRST (2026-09-24). A reader from a search typed the person's
      name; the card asks the one thing they want next, with the field in
      view. The switch is for a signed-in member, who is watching at once. */
-  if(!state.pro&&!on){
-    return `<div class="wcard" id="cwatch" title="a buy or a discretionary sale of any size, or any other filing that moves the stake 1% or more">
+  return `<div class="wcard" id="cwatch" title="a buy or a discretionary sale of any size, or any other filing that moves the stake 1% or more">
     <div class="k">Alerts</div>
-    <div class="wq">Email me when ${esc(who)}'s stake moves</div>
+    <div class="wq">Get an email when ${esc(who)}'s stake moves.</div>
     <form class="wform" onsubmit="return watchThis('${r.tk}',event)"><input type="email" id="wemail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email"><button class="wbtn" type="submit">Watch</button></form>
     <div class="wfine" id="wfine">${said?`<b>${esc(said)}</b> `:""}${fine}</div>
   </div>`;
-  }
-  return `<div class="wcard${on?" on":""}" id="cwatch" title="a buy or a discretionary sale of any size, or any other filing that moves the stake 1% or more">
-    <div class="k">Alerts</div>
-    <label class="wtog"><input type="checkbox" id="wsw" ${on?"checked":""} onchange="toggleWatch('${r.tk}',this)"><span class="wsw" aria-hidden="true"></span><span class="wlab">${on?"Watching":`Watch ${esc(who)}`}</span></label>
-    <div class="wfine" id="wfine">${said?`<b>${esc(said)}</b> `:""}${fine}${state.pro?` <a href="/account/">Your watches &rarr;</a>`:""}</div>
-  </div>`;
-}
-function toggleWatch(tk,sw){
-  if(sw.checked){
-    if(state.pro){watchThis(tk);return;}
-    /* signed out: the switch asks for an email in the same card */
-    const f=$("#wfine");
-    f.innerHTML=`<form class="wform" onsubmit="return watchThis('${tk}',event)"><input type="email" id="wemail" placeholder="you@example.com" required autocomplete="email"><button class="wbtn" type="submit">Send</button></form>`;
-    const e=$("#wemail");if(e)e.focus();
-    sw.checked=false;
-  } else unwatchThis(tk);
-}
-async function unwatchThis(tk){
-  const f=$("#wfine"),sw=$("#wsw");
-  try{
-    const q=await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk,remove:true})});
-    const j=await q.json();
-    if(j.ok){WATCHING=null;history.replaceState(null,"",location.pathname+"?watch=off");renderOpen(PANEL[0],{animate:false});}
-    else{if(sw)sw.checked=true;if(f)f.textContent=j.message||"";}
-  }catch(e){if(sw)sw.checked=true;if(f)f.textContent="Something went wrong; write to hello@founderledequities.com.";}
 }
 async function watchThis(tk,ev){
   if(ev)ev.preventDefault();
-  const f=$("#wfine"),btn=document.querySelector("#cwatch .wbtn"),sw=$("#wsw");
+  const f=$("#wfine"),btn=document.querySelector("#cwatch .wbtn");
   const email=$("#wemail")?($("#wemail").value||"").trim():"";
-  if(!state.pro&&!email)return false;
+  if(!email)return false;
   if(btn){btn.disabled=true;btn.textContent="…";}
   try{
     const q=await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk,ceo:C.ceo||"",email})});
     const j=await q.json();
     if(j.ok&&j.watching){WATCHING={tk};renderOpen(PANEL[0],{animate:false});}
     else if(j.ok){if(f)f.innerHTML=`<b>Sent.</b> ${esc(j.message||"Confirm from the email and the watch is on.")}`;}
-    else{if(sw)sw.checked=false;if(f)f.innerHTML=j.pro?`${esc(j.message||"")} <a href="/pro/">The plan &rarr;</a>`:esc(j.message||"That didn't work.");}
-  }catch(e){if(sw)sw.checked=false;if(f)f.textContent="Something went wrong; write to hello@founderledequities.com.";}
+    else{if(f)f.textContent=j.message||"That didn't work.";}
+  }catch(e){if(f)f.textContent="Something went wrong; write to hello@founderledequities.com.";}
   return false;
 }
 /* THE SENTENCE, COPYABLE (distribution): the stake as of the filing, the
@@ -509,7 +462,7 @@ function factSentence(r){
   const co=r.co||C.co||r.tk,ceo=r.ceo||C.ceo||"the CEO";
   const who=(fInfo(r.tk)||{}).f==="yes"?"a founder":"hired";
   const asof=r.asof?new Date(r.asof+"T00:00:00Z").toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"}):"";
-  const stake=r.masked?"a stake this site holds in Pro":`${r.pct!==null&&r.pct!==undefined?(r.pct<1?r.pct.toFixed(3):r.pct.toFixed(2))+"%":"an unstated share"} of ${co}`;
+  const stake=`${r.pct!==null&&r.pct!==undefined?(r.pct<1?r.pct.toFixed(3):r.pct.toFixed(2))+"%":"an unstated share"} of ${co}`;
   return `${ceo} owns ${stake} (${r.tk})${asof?` as of the ${asof} filing`:""}, ${who}. Since 2016: ${buys} open-market buy${buys===1?"":"s"}, ${sells} sale${sells===1?"":"s"} that moved the stake.\n${location.origin}/company/${r.tk}/`;
 }
 async function copyFact(r){
@@ -518,7 +471,6 @@ async function copyFact(r){
   catch(e){if(m)m.textContent=t;}
 }
 function whyBlock(r){
-  if(r.masked)return "";
   const fi=fInfo(r.tk);if(!fi||!fi.ev)return"";
   /* whole sentences only: trim the window to its first and last full stop */
   let ev=fi.ev.replace(/\s+/g," ").trim();
@@ -553,7 +505,7 @@ function renderOpen(r,{animate=true}={}){
 async function fetchText(paths){
   /* A PAGE IS NOT A FILE: the host answers an unknown path with the home
      page and a 200; a reply that starts like HTML is a miss and the next
-     path is tried (2026-09-14: /pro/history/XYZ.csv did not exist, and the
+     path is tried (2026-09-14: a shard that did not exist, and the
      stake chart parsed the home page). */
   for(const p of paths){try{const q=await fetch(withV(p));if(!q.ok)continue;const t=await q.text();if(/^\s*</.test(t))continue;return t;}catch(e){}}
   return null;
@@ -561,36 +513,21 @@ async function fetchText(paths){
 
 (async function main(){
   hit("view","page");   /* THE PAGE COUNTS ITS OWN VISITORS, like the home page: the same beacon, shared */
-  let me=null;
-  try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)me=await q.json();}catch(e){}
-  nav(me);
-  const pro=!!(me&&me.pro);
-  state.pro=pro;   /* the shared renderers read state.pro (the archive note, the watch box's fine print): the session must be there, not only in a local (2026-09-14) */
-  document.body.classList.toggle("pro",pro);
-  if(me&&me.pro){try{const w=await (await fetch("/api/watch?tk="+encodeURIComponent(C.tk),{cache:"no-store"})).json();if(w.watches&&w.watches.length)WATCHING=w.watches[0];}catch(e){}}
   let row=C.row?mapPanel([C.row])[0]:null;
-  if(!row&&pro){
-    const t=await fetchText(["/pro/universe.csv"]);
-    if(t){const p=mapPanel(parseCSV(t)).find(x=>x.tk===C.tk);if(p)row=p;}
-  }
   if(!row){
-    /* a sealed company: the same page, the seals on the figures; a free
-       shard of the last year's filings, dates and kinds only, fills the table */
-    row={tk:C.tk,co:C.co,ceo:C.ceo,pct:null,sh:null,out:C.out||null,oasof:C.oasof||"",asof:"",conf:"medium",masked:true,tabled:null};
+    /* a company whose record could not settle on a figure: the same page,
+       the honest empty figures, the filings in the table */
+    row={tk:C.tk,co:C.co,ceo:C.ceo,pct:null,sh:null,out:C.out||null,oasof:C.oasof||"",asof:"",conf:"medium",tabled:null};
   }
   if(C.price){row.price=C.price;row.val=row.sh?row.sh*C.price:null;PRICES_ASOF=C.price_date||"";}
   setRow(row);
   renderOpen(row,{animate:false});   /* the numbers first; the record and trades fill in */
-  /* A PRO READER LOADS THE PRO SHARDS FOR EVERY COMPANY (2026-09-14). The
-     free shard is a year of the record whether or not the company is in
-     the S&P; for a founder whose last trade is older than that (Dorsey,
-     June 2025) it is empty, and a Pro reader was shown "no purchase or
-     sale on record" over 87 of them. */
-  const base=pro?"/pro":"";
+  /* ONE TREE (2026-09-23): every company's full record and trades live at
+     the root; the shards carry everything since 2016. */
   const [h,e,p]=await Promise.all([
-    row.masked?Promise.resolve(null):fetchText([`${base}/history/${C.tk}.csv`,`/history/${C.tk}.csv`]),
-    fetchText([`${base}/events/${C.tk}.csv`,`/events/${C.tk}.csv`]),
-    fetchText([`/prices/${C.tk}.csv`])]);   /* prices are public on every page */
+    fetchText([`/history/${C.tk}.csv`]),
+    fetchText([`/events/${C.tk}.csv`]),
+    fetchText([`/prices/${C.tk}.csv`])]);
   if(h){const m=mapHistory(parseCSV(h));if(m[C.tk])HIST=m;}
   if(e){EVENTS=mapEvents(parseCSV(e)).filter(x=>x.tk===C.tk);}
   if(p){PRICES_DAILY=parseCSV(p).map(r=>[String(r.date||"").slice(0,10),num(r.close)]).filter(x=>x[0].length===10&&x[1]>0);if(!PRICES_DAILY.length)PRICES_DAILY=null;}

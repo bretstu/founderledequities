@@ -1,42 +1,25 @@
-/* THE ALERTS PAGE: three switches on one stream (alerts.html). A signed-in
-   reader flips them; a signed-out one is asked for an email for the letter,
-   and sent to the plan for the rest. The live founder alert is a watch on
-   the reserved name FOUNDERS (functions/api/watch.js), so it shares the
-   confirmation, the stop links and the sent-record with every other watch. */
+/* THE ALERTS PAGE: everything is free (2026-09-23; the paid tier is gone).
+   Three cards, one stream: the weekly letter (Resend), the live founder
+   alerts (a watch on the reserved name FOUNDERS, confirmed by one click
+   from the inbox like any other watch), and a pointer to the watches,
+   which live on the company pages and are managed by the links in their
+   own emails. No accounts, no sign-in. */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let ME=null,LETTER={on:false},WATCHES=[];
-const sw=(id,on,label,fn)=>`<label class="wtog"><input type="checkbox" id="${id}" ${on?"checked":""} onchange="${fn}(this)"><span class="wsw" aria-hidden="true"></span><span class="wlab">${label}</span></label>`;
-async function boot(){
+function boot(){
   hit("view","page");
-  try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)ME=await q.json();}catch(e){}
-  if(ME&&ME.pro){const b=document.querySelector(".topnav .gopro");if(b){b.textContent="Account";b.setAttribute("href","/account/");}}
-  await render();
-}
-async function render(){
-  const signed=!!(ME&&ME.email);
-  if(signed){
-    try{const q=await fetch("/api/letter",{cache:"no-store"});if(q.ok)LETTER=await q.json();}catch(e){}
-    try{const q=await fetch("/api/watch",{cache:"no-store"});if(q.ok)WATCHES=(await q.json()).watches||[];}catch(e){}
-  }
-  const live=WATCHES.some(w=>w.tk==="FOUNDERS"),names=WATCHES.filter(w=>w.tk!=="FOUNDERS");
+  const q=new URLSearchParams(location.search).get("watch");
+  const said={on:"Confirmed. Every founder's move, as it is filed.",expired:"That link expired; ask again here."}[q]||"";
   $("#lbody").innerHTML=`<div class="lgrid">
-    <div class="lcard"><h2>The letter</h2><div class="d">Everything founders did this week, in one email. Free.</div>
-      <div class="ctl">${signed?sw("lsw",LETTER.on,LETTER.on?"Subscribed":"Subscribe","setLetter"):`<form class="lform" onsubmit="return joinLetter(event)"><input type="email" id="lemail" placeholder="you@example.com" required autocomplete="email"><button class="lbtn" type="submit">Send it</button></form>`}
-      <div class="fine" id="lfine"></div></div></div>
-    <div class="lcard pro"><h2>Live founder alerts <span class="pro">Members</span></h2><div class="d">Every founder&#8217;s move, within about ten minutes of the SEC filing.</div>
-      <div class="ctl">${ME&&ME.pro?sw("fsw",live,live?"On":"Turn on","setLive"):`<a class="lbtn" href="/pro/">Start a 14-day trial</a>`}
-      <div class="fine" id="ffine">${ME&&ME.pro?"":signed?"":`Already a member? <a href="/#signin">Sign in</a>`}</div></div></div>
-    <div class="lcard"><h2>Your watches</h2><div class="d">Pick any company and get an email when its chief executive&#8217;s stake moves.${ME&&ME.pro?"":" One company is free; more is for members."}</div>
-      <div class="ctl">${signed?(names.length?`<div class="wlist"><div class="fine">${names.length} ${names.length===1?"company":"companies"}</div>${names.slice(0,2).map(w=>`<div class="row"><span><span class="tk"><a href="/company/${esc(w.tk)}/" style="color:inherit;text-decoration:none">${esc(w.tk)}</a></span>${esc(w.ceo||"")}</span><button class="stop" onclick="stopWatch('${esc(w.tk)}')">stop</button></div>`).join("")}<div class="fine">${names.length>2?`and ${names.length-2} more &middot; `:""}<a href="/account/">Manage all &rarr;</a></div></div>`:`<div class="fine">You are not watching any company yet. <a href="/companies/">Find one &rarr;</a></div>`):`<div class="fine"><a href="/companies/">Find a company &rarr;</a></div>`}</div>
-    </div>
+    <div class="lcard"><h2>The letter</h2><div class="d">Everything founders did this week, in one email. Sundays.</div>
+      <div class="ctl"><form class="lform" onsubmit="return joinLetter(event)"><input type="email" id="lemail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email"><button class="lbtn" type="submit">Send it</button></form></div>
+      <div class="fine" id="lfine"></div></div>
+    <div class="lcard"><h2>Live founder alerts</h2><div class="d">Every founder&#8217;s open-market buy and discretionary sale, within about ten minutes of the SEC filing.</div>
+      <div class="ctl"><form class="lform" onsubmit="return joinLive(event)"><input type="email" id="femail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email"><button class="lbtn" type="submit">Turn on</button></form></div>
+      <div class="fine" id="ffine">${esc(said)||"One click from your inbox confirms it; one click from any alert stops it."}</div></div>
+    <div class="lcard"><h2>Watches</h2><div class="d">Pick any company and get an email when its chief executive&#8217;s stake moves.</div>
+      <div class="ctl"><div class="fine"><a href="/companies/">Find a company &rarr;</a> The field is on every company page; the links in each email manage it.</div></div></div>
   </div>`;
-}
-async function setLetter(el){
-  const on=el.checked;
-  try{const q=await fetch("/api/letter",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({on})});const j=await q.json();if(!j.ok){el.checked=!on;$("#lfine").textContent=j.message||"";return;}}
-  catch(e){el.checked=!on;$("#lfine").textContent="Something went wrong; write to hello@founderledequities.com.";return;}
-  render();
 }
 async function joinLetter(ev){
   ev.preventDefault();
@@ -46,15 +29,12 @@ async function joinLetter(ev){
   catch(e){f.textContent="Something went wrong; write to hello@founderledequities.com.";}
   return false;
 }
-async function setLive(el){
-  const on=el.checked,f=$("#ffine");
-  if(!(ME&&ME.pro)){el.checked=false;f.innerHTML=`Live founder alerts are for members. <a href="/pro/">Membership &rarr;</a>`;return;}
-  try{
-    const q=await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(on?{tk:"FOUNDERS",ceo:"every founder"}:{tk:"FOUNDERS",remove:true})});
-    const j=await q.json();
-    if(!j.ok){el.checked=!on;f.textContent=j.message||"";return;}
-  }catch(e){el.checked=!on;f.textContent="Something went wrong; write to hello@founderledequities.com.";return;}
-  render();
+async function joinLive(ev){
+  ev.preventDefault();
+  const email=($("#femail").value||"").trim(),f=$("#ffine");
+  if(!email)return false;
+  try{const q=await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk:"FOUNDERS",ceo:"every founder",email})});const j=await q.json();f.textContent=j.message||"";if(j.ok&&!j.watching)$("#femail").disabled=true;}
+  catch(e){f.textContent="Something went wrong; write to hello@founderledequities.com.";}
+  return false;
 }
-async function stopWatch(tk){await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk,remove:true})});render();}
 boot();

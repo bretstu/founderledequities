@@ -61,12 +61,8 @@
   <h2>Why</h2>
   <p>The person running a company is the one insider whose stake is a statement about it. Whether they still own it, and what they did about it this week, is public in the filings but hard to read there. This site reads them.</p>
 
-  <p class="fine">Every company, every stake and every trade on this site is free to read. Members keep it that way: live founder alerts by email, watches on any chief executive, and the data as CSV, for $69 a year or $8 a month. Nothing here is investment advice. If a number here is wrong, write to corrections@founderledequities.com with the filing, and it will be read.</p>
+  <p class="fine">Every company, every stake, every trade, every alert and every export on this site is free. Nothing here is investment advice. If a number here is wrong, write to corrections@founderledequities.com with the filing, and it will be read.</p>
 </main>
-<script>
-/* the nav's last button is Join for a visitor and Account for a member; a static page asks once */
-(async function(){try{const r=await fetch("/api/me",{cache:"no-store"});if(!r.ok)return;const me=await r.json();
-  if(me&&me.pro){const b=document.querySelector(".topnav .gopro");if(b){b.textContent="Account";b.setAttribute("href","/account/");}}}catch(e){}})();
-</script>
+
 </body>
 </html>

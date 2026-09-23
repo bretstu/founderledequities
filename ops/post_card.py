@@ -61,12 +61,12 @@ def money(v):
     return f"${v:,.0f}"
 
 
-def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_after, series, fonts_dir=None, height=None, sealed=False):
+def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_after, series, fonts_dir=None, height=None):
     """1200x630, the link-card ratio. Top to bottom: the company and the
     person; a year of closes across the full width, the day marked; the
     newest trade in its colour; the stake before and after, large. No brand
     line and no address (X prints the site under the card), no sales line
-    (a sealed company simply shows no stake), and nothing in the bottom
+    (a company with no settled figure simply shows no stake), and nothing in the bottom
     70px, where X lays the page title over the image."""
     from PIL import Image, ImageDraw
     H = height or 630
@@ -111,14 +111,13 @@ def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_aft
     color = KIND_COLOR.get(kind, MUT)
     if kind:
         kl = KIND_WORD.get(kind, "TRADE") + (f"  ·  {money(amount)}" if amount else "") + (f"  ·  {mdy(when)}" if when else "")
-        # a sealed card (no stake: the OG images are public files, and the
-        # stake is what a subscription buys) carries the trade line larger,
+        # a card with no stake to show carries the trade line larger,
         # where the stake would sit, so the card reads whole
-        if sealed:
+        if pct_after is None:
             d.text((pad, H - 176), kl, font=fonts.mono(34), fill=color)
         else:
             d.text((pad, H - 200), kl, font=fonts.mono(24), fill=color)
-    if not sealed:
+    if pct_after is not None or pct_before is not None:
         if pct_before is not None and pct_after is not None and abs(pct_before - pct_after) > 0.0005 and kind:
             stake = f"{f(pct_before)}  →  {f(pct_after)}"
         elif pct_after is not None:

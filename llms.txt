@@ -13,6 +13,6 @@ For each of about 2,100 companies (those whose chief executive holds the busines
 
 ## How to cite a figure
 
-State the person, the share, the company, and the date of the filing it rests on, and link the company page. Example: "Jen-Hsun Huang owns 3.37% of NVIDIA as of the June 17, 2026 filing (founderledequities.com/company/NVDA/)." Figures for S&P 500 companies and each company's last twelve months of trades are open; the full record and the figures for companies outside the S&P 500 are behind a subscription.
+State the person, the share, the company, and the date of the filing it rests on, and link the company page. Example: "Jen-Hsun Huang owns 3.37% of NVIDIA as of the June 17, 2026 filing (founderledequities.com/company/NVDA/)." Every figure and every company's full record since 2016 are open; nothing on the site is paywalled.
 
 Nothing on the site is investment advice.

@@ -145,11 +145,11 @@ def test_the_window_is_every_filing_founders_only_pre_ipo_out(tmp_path):
     assert ("HIRE", "A") not in tks, "founders only"
     assert ("OPEN", "P") in tks and ("OPEN", "A") in tks and ("SEAL", "G") in tks and ("OPEN", "D") in tks, "every code is a row"
     assert not any(r["filed"] == "2026-09-08" for r in rows), "a pre-IPO catch-up stays off the tape"
-    # the order: bought, then plan (the sale group), then compensation ranked by |move| among the open rows
-    # (award 40.3 before withholding 0.4), then the unranked ones by filing day then ticker (the guarded
-    # forfeiture and the sealed exercise, both filed Sep 13: a sealed row has no move for the free first
-    # paint, as on the page), then the transfer
-    assert tks == [("OPEN", "P"), ("SEAL", "S"), ("OPEN", "A"), ("OPEN", "F"), ("OPEN", "D"), ("SEAL", "S"), ("SEAL", "G")], tks
+    # the order (one tree, 2026-09-23; every row ranks by its own move):
+    # bought, then plan (the sale group), then compensation by |move|
+    # (exercise 166, award 40.3, withholding 0.4, then the guarded
+    # forfeiture, unranked), then the transfer
+    assert tks == [("OPEN", "P"), ("SEAL", "S"), ("SEAL", "S"), ("OPEN", "A"), ("OPEN", "F"), ("OPEN", "D"), ("SEAL", "G")], tks
     kinds_ = [kinds.kind_of(r) for r in kinds.sorted_rows(rows)]
     assert kinds_ == ["bought", "plan", "comp", "comp", "comp", "comp", "xfer"]
 
@@ -162,10 +162,7 @@ def test_the_weather_line_and_the_stamped_table(tmp_path):
     w = kinds.weather(rows)
     assert w == ("<b>1</b> CEO bought · <b>1</b> for the first time ever · <b>0</b> cut a stake · <b>1</b> sold on a plan · <b>2</b> paid in shares · "
                  "<b>1</b> gave shares away"), w
-    assert "did not move a stake" not in w and "moved nothing" not in w, "no count that a sealed figure could change"
-    sealed = [dict(r, sealed=True) for r in rows]
-    assert kinds.counts(sealed) == c, "the line is the same on both sides of the seal"
-    assert all(kinds.move_of(r) is None and not kinds.dim(r) for r in sealed), "a sealed row has no move to rank or dim by, as on the page"
+    assert "did not move a stake" not in w and "moved nothing" not in w
     t = kinds.table_html(kinds.sorted_rows(rows), {"OPEN": "Open Co", "SEAL": "Sealed Co"})
     assert t.startswith(kinds.TAPE_HEAD) and 'data-key="ch">Change' in t and 'data-key="fd"' in t and t.count("<tr ") == 7
     assert '<td class="fd"><span class="dt">2026-09-10</span></td>' in t, "the filed day is a column of the stamp too"
@@ -173,12 +170,11 @@ def test_the_weather_line_and_the_stamped_table(tmp_path):
     assert '<span class="kind xfer">Transfer</span><span class="detail">gift</span>' in t
     assert '<td class="n v">$61.5M</td>' in t, "the sale inside an exercise shows the Form 4's number"
     assert '<span class="plus">+40%</span>' in t and '<span class="minus">−0.40%</span>' in t and 'class="dayrow dim"' in t, "the change, in the page's format; the withholding dimmed"
-    assert "−23%" not in t, "a sealed company's change is blurred, never printed"
+    assert "−23%" in t, "every company's change is printed (one tree, 2026-09-23)"
     forf = t[t.index("forfeited"):t.index("forfeited") + 400]
     assert '<td class="n ch"></td>' in forf and "sold out" not in forf, "the guarded change is blank in the stamp"
-    seal = t[t.index('href="/company/SEAL/"') - 300:]
-    assert seal.count('class="sealed"') >= 2 and "$61.5M" in seal, "sealed: the change and the stake blurred, the amount shown"
-    assert "9.06%" in t and "0.91" not in seal.split("</tr>")[0]
+    assert 'class="sealed"' not in t, "no blurred figures anywhere"
+    assert "9.06%" in t and "$61.5M" in t
 
 
 def test_no_script_keeps_its_own_copy_of_the_kinds():

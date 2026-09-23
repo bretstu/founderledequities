@@ -28,11 +28,8 @@ import kinds  # noqa: E402
 from og_image import money, numbers  # noqa: E402
 
 
-OPEN_TOP = 0    # keep equal to build_site_data.OPEN_TOP: the seal is the S&P and nothing else
-
-
 def top_rows(panel_p, sp_p, prices_p, founders_p, n=10):
-    sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
+    # sp_p rides in the signature so every caller passes the same files
     prices = {}
     for r in csv.DictReader(open(prices_p, encoding="utf-8-sig")):
         try:
@@ -45,9 +42,8 @@ def top_rows(panel_p, sp_p, prices_p, founders_p, n=10):
             founders[r["ticker"].upper()] = ((r.get("founder") or "").lower(), r.get("evidence") or "")
     except OSError:
         pass
-    # EVERY COMPANY IN ITS PLACE. The stamped board is what a free reader
-    # sees first: the true ranking over the whole panel, with a sealed
-    # company's row carrying its name and a lock where the value would be.
+    # EVERY COMPANY IN ITS PLACE: the true ranking over the whole panel,
+    # every row with its numbers (one tree, 2026-09-23).
     rows = []
     for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
         tk = (r.get("ticker") or "").upper()
@@ -60,18 +56,11 @@ def top_rows(panel_p, sp_p, prices_p, founders_p, n=10):
         if not val:
             continue
         rows.append({"tk": tk, "ceo": r.get("ceo") or "", "co": r.get("company") or tk, "pct": pct, "val": val,
-                     "out": float(r.get("outstanding") or 0), "f": founders.get(tk, ("", "")), "sealed": tk not in sp})
-    # THE FRACTION FIRST (PLAN.md section 5): the board opens by share of
-    # the company, the order the live render draws; the dollar view is the
-    # toggle. The top OPEN_TOP by share are everyone's, as build_site_data
-    # ranks them.
-    # THE HOME PREVIEW (PLAN.md section 5, 2026-09-14): founders only, the
-    # open set, by stake value, the same order as /companies/ at a
-    # different depth (the share is one click on its header); a free
-    # reader's first twenty rows carry full figures and the line beneath
-    # says how many more match in Pro. (OPEN_TOP is 0: the seal is the S&P
-    # and nothing else.)
-    rows = [r for r in rows if r["f"][0] == "yes" and not r["sealed"]]
+                     "out": float(r.get("outstanding") or 0), "f": founders.get(tk, ("", ""))})
+    # THE HOME PREVIEW (PLAN.md section 5, 2026-09-14): founders only, by
+    # stake value, the same order as /companies/ at a different depth (the
+    # share is one click on its header), every figure real.
+    rows = [r for r in rows if r["f"][0] == "yes"]
     rows.sort(key=lambda x: -x["val"])
     return rows[:n]
 
@@ -106,21 +95,16 @@ def last_trades(events_p, tickers):
 
 
 def rows_html(rows, last, outstanding, prices):
-    """The first twenty rows of the table, as renderTable draws them (one
-    list, two depths: this is the home page's depth). A sealed row keeps
-    its name and blurred placeholders."""
+    """The first rows of the table, as renderTable draws them (one list,
+    two depths: this is the home page's depth), every figure real."""
     out = []
     for i, r in enumerate(rows):
         tk = r["tk"]
         lt = last.get(tk)
         mcap = outstanding.get(tk, 0) * prices.get(tk, 0)
         fd = "Yes" if r["f"][0] == "yes" else ""
-        if r["sealed"]:
-            own = '<span class="sealed" data-shape="0.000%" aria-label="in Pro" title="in Pro"></span>'
-            val = '<span class="sealed" data-shape="$00.0M" aria-label="in Pro" title="in Pro"></span>'
-        else:
-            own = f"{r['pct']:.3f}%" if r["pct"] < 1 else f"{r['pct']:.2f}%"
-            val = money(r["val"]) if r["val"] else ""
+        own = f"{r['pct']:.3f}%" if r["pct"] < 1 else f"{r['pct']:.2f}%"
+        val = money(r["val"]) if r["val"] else ""
         if lt:
             code = lt.get("code")
             pl = lt.get("plan") or ""
@@ -138,8 +122,7 @@ def rows_html(rows, last, outstanding, prices):
                 v = float(lt.get("value") or 0)
             except ValueError:
                 v = 0
-            amt = ('<span class="sealed" data-shape="$0.0M" aria-label="in Pro"></span>' if r["sealed"]
-                   else (money(v) if v and not (lt.get("price_flag") or "") else '<span class="nopr"></span>'))
+            amt = money(v) if v and not (lt.get("price_flag") or "") else '<span class="nopr"></span>' 
             ltd = f'<span class="ltd">{when}</span>'
         else:
             kind, amt, ltd = '<span class="nopr"></span>', '<span class="nopr"></span>', '<span class="nopr"></span>'
@@ -159,30 +142,13 @@ def rows_html(rows, last, outstanding, prices):
 
 
 def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
-    n = numbers(panel_p, sp_p, prices_p, founders_p)
-    # THE PRO NUMBERS RIDE ALONG. A subscriber's first paint used to be the
-    # free hero (19 of 500), replaced seconds later by 199 of 2,135 once
-    # /api/me and a 1.3MB universe file had arrived. Both sentences are
-    # stamped; the page picks one before anything loads (see the tier
-    # cookie in index.html), and the fetched data only confirms it.
-    p = numbers(panel_p, sp_p, prices_p, founders_p, everyone=True)
+    n = numbers(panel_p, sp_p, prices_p, founders_p)   # one universe (2026-09-23)
     rows = top_rows(panel_p, sp_p, prices_p, founders_p)
     page = open(index_out, encoding="utf-8").read()
     # THE HEADLINE IS THE PURPOSE AND NEEDS NO STAMP. The numbers live in
-    # the strip beneath it: the rarity first (19 of 500 for the free
-    # reader, the bare count for a subscriber), then the founder facts.
-    # Both strips are written; the function on / picks the Pro one.
+    # the strip beneath it.
     if '<h1 id="thesis">' not in page:
         raise SystemExit("stamp_static: the hero was not found in index.html")
-    # sealed = every panel row outside the open set, measured or not, which
-    # is what the page counts (masked rows stay in a free reader's list)
-    rows_all = sum(1 for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")) if (r.get("ticker") or "").strip())
-    sealed = rows_all - n["open"]
-    # THE STRIP IS THE SAME FOR EVERYONE: four aggregates over every
-    # company, none of them a company's stake, all of them the size of
-    # what the site covers. The "N of them are sealed · Go Pro" line is
-    # gone; the nav button is the one call, and the locks on the sealed
-    # rows sell in context.
     # THREE NUMBERS (PLAN.md section 5): how many companies are still run
     # by a founder, how many chief executives own more than 5%, what those
     # founders hold. The share of all CEO wealth was a fourth that said the
@@ -192,7 +158,7 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
                 f'<div class="hstat"><div class="n">{m["above5"]:,}</div><div class="k">CEOs own more than 5%</div></div>'
                 f'<div class="hstat"><div class="n">{money(m["led_value"])}</div><div class="k">Held by those founders</div></div>')
     page = page.replace('<div class="herostats" id="herostats"></div>',
-                        f'<div class="herostats" id="herostats">{stats(p)}</div>', 1)
+                        f'<div class="herostats" id="herostats">{stats(n)}</div>', 1)
     prices = {}
     try:
         for r in csv.DictReader(open(prices_p, encoding="utf-8-sig")):

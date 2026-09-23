@@ -5,26 +5,20 @@ const withV=p=>p+(p.includes("?")?"&":"?")+"v="+DATA_V;
 /* the tape page: loads the panel, the founders and the events for the
    reader's tier, then renders the same block the home page carries */
 const $=s=>document.querySelector(s);
-function openPro(){location.href="/pro/";}
 async function fetchText(paths){
   /* A PAGE IS NOT A FILE: the host answers an unknown path with the home
      page and a 200; a reply that starts like HTML is a miss and the next
-     path is tried (2026-09-14: /pro/history/XYZ.csv did not exist, and the
+     path is tried (2026-09-14: a shard that did not exist, and the
      stake chart parsed the home page). */
   for(const p of paths){try{const q=await fetch(withV(p));if(!q.ok)continue;const t=await q.text();if(/^\s*</.test(t))continue;return t;}catch(e){}}
   return null;
 }
 async function boot(){
   hit("view","page");   /* THE PAGE COUNTS ITS OWN VISITORS, like the home page: the same beacon, shared */
-  let me=null;
-  try{const q=await fetch("/api/me",{cache:"no-store"});if(q.ok)me=await q.json();}catch(e){}
-  state.pro=!!(me&&me.pro);
-  document.body.classList.toggle("pro",state.pro);   /* the letter's band is hidden for Pro */
-  {const b=document.querySelector(".topnav .gopro");if(b&&state.pro){b.textContent="Account";b.setAttribute("href","/account/");b.title="Your letter, your watches, your billing";}}
   const [p,f,e]=await Promise.all([
-    fetchText(state.pro?["/pro/universe.csv","/universe.csv","/panel.csv"]:["/universe.csv","/panel.csv"]),
+    fetchText(["/universe.csv","/panel.csv"]),
     fetchText(["/founders.csv"]),
-    fetchText(state.pro?["/pro/events.csv","/events-free.csv"]:["/events-free.csv"]),
+    fetchText(["/events.csv"]),
   ]);
   if(p)PANEL=mapPanel(parseCSV(p));
   if(f)for(const r of parseCSV(f)){if(r.ticker)FOUNDERS[r.ticker.toUpperCase()]={f:(r.founder||"").toLowerCase(),ev:r.evidence||"",src:r.source||""};}
