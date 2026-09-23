@@ -40,10 +40,12 @@
        heading: inside the h1 a crawler read "lockheed martin corp lmt ·
        $125b" as the company's name */
     .chead .cname{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+    .chead .cname .co{font-family:var(--disp);font-size:18px;font-weight:500;color:var(--mut)}
+    .chead .answer{font-size:16px;line-height:1.5;color:var(--ink);margin:2px 0 10px;max-width:72ch}
     .chead .tk{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--faint);text-transform:uppercase;font-weight:500;white-space:nowrap}
     /* the chart is drawn, not read: its toggle and axis labels are not a
        description of the page ("Price Stake $500 $700 2022" was one) */
-    .chead h1{font-family:var(--disp);font-weight:500;letter-spacing:-.015em;line-height:1.02;font-size:clamp(30px,4vw,54px);margin:8px 0 6px}
+    .chead h1{font-family:var(--disp);font-weight:500;letter-spacing:-.015em;line-height:1.04;font-size:clamp(28px,3.6vw,46px);margin:6px 0 8px;max-width:26ch}
     .chead .ce{font-size:16px;color:var(--mut)}
     .chead .ce b{color:var(--ink);font-weight:600}
     /* THE ANSWER BAND: five cards in a row. The answer in the tinted one,
@@ -179,6 +181,7 @@
     .wcard .wtog input:checked+.wsw::after{left:16px}
     .wcard .wtog input:focus-visible+.wsw{outline:2px solid var(--ink);outline-offset:2px}
     .wcard .wlab{font-size:13.5px;font-weight:600;line-height:1.2}
+    .wcard .wq{font-size:13.5px;font-weight:600;line-height:1.25}
     .wcard.on .wlab{color:var(--buy)}
     .wcard .wfine{font-size:11.5px;color:var(--mut);line-height:1.35}
     .wcard .wfine a{color:var(--mut)}
@@ -206,7 +209,12 @@
 {{TOPNAV}}
 <main class="cpage"><div class="wrap">
   <div class="chead">
-    <div class="cname"><h1>{{COMPANY}}</h1><span class="tk" id="ctk">{{TICKER}}{{MCAP}}</span></div>
+    <!-- THE ANSWER IS THE HEADLINE (2026-09-24): a searcher typed "how much of Tesla
+         does Elon Musk own"; the H1 and the first sentence answer it in the HTML
+         itself, before any script runs. The company's name is the kicker. -->
+    <div class="cname"><span class="co">{{COMPANY}}</span><span class="tk" id="ctk">{{TICKER}}{{MCAP}}</span></div>
+    <h1>{{H1}}</h1>
+    <p class="answer">{{ANSWER}}</p>
     <div class="ce"><b>{{CEO}}</b> · CEO <span id="cbadge"></span></div>
   </div>
   <div id="cbody"></div>

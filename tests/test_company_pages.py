@@ -95,7 +95,8 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert "Sealed universe" not in sealed and "open to everyone" not in tsla
     # the ticker and the market cap sit beside the name, on both tiers (public data)
     assert 'id="ctk">TSLA · $' in tsla and 'id="ctk">' in sealed
-    assert "<h1>Tesla, Inc.</h1>" in tsla, "the heading is the company's name and nothing else"
+    assert "<h1>Elon Musk owns 28.44% of Tesla</h1>" in tsla and '<span class="co">Tesla, Inc.</span>' in tsla, "the answer is the heading, the company the kicker (2026-09-24)"
+    assert 'class="answer">1,120,000,000 shares as of the' in tsla, "the first sentence carries the shares and the date in the HTML itself"
     # every page is indexable and answers its own question (the seal is off)
     assert '<meta name="robots"' not in sealed and "41.20%" in sealed
     assert "41.20%" in sealed, "the seal is off: the figure is on every page"

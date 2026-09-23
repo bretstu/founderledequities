@@ -434,7 +434,18 @@ function watchCard(r){
   const on=!!(WATCHING&&WATCHING.tk===r.tk);
   const q=new URLSearchParams(location.search).get("watch");
   const said={on:`You're watching ${who}.`,off:`Stopped. No more emails about ${who}.`,alloff:"Stopped. No more emails about anyone.",expired:"That link expired; ask again here."}[q];
-  const fine=on?`You'll get an email when the stake moves.`:`An email when the stake moves.`;
+  const fine=on?`You'll get an email when the stake moves.`:`A buy or a discretionary sale of any size, or a filing that moves the stake 1% or more. Free; one click to confirm.`;
+  /* THE FIELD FIRST (2026-09-24). A reader from a search typed the person's
+     name; the card asks the one thing they want next, with the field in
+     view. The switch is for a signed-in member, who is watching at once. */
+  if(!state.pro&&!on){
+    return `<div class="wcard" id="cwatch" title="a buy or a discretionary sale of any size, or any other filing that moves the stake 1% or more">
+    <div class="k">Alerts</div>
+    <div class="wq">Email me when ${esc(who)}'s stake moves</div>
+    <form class="wform" onsubmit="return watchThis('${r.tk}',event)"><input type="email" id="wemail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email"><button class="wbtn" type="submit">Watch</button></form>
+    <div class="wfine" id="wfine">${said?`<b>${esc(said)}</b> `:""}${fine}</div>
+  </div>`;
+  }
   return `<div class="wcard${on?" on":""}" id="cwatch" title="a buy or a discretionary sale of any size, or any other filing that moves the stake 1% or more">
     <div class="k">Alerts</div>
     <label class="wtog"><input type="checkbox" id="wsw" ${on?"checked":""} onchange="toggleWatch('${r.tk}',this)"><span class="wsw" aria-hidden="true"></span><span class="wlab">${on?"Watching":`Watch ${esc(who)}`}</span></label>

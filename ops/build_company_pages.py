@@ -185,6 +185,32 @@ def page_text(r, sp: bool, price):
     return title, desc[:300]
 
 
+def answer_text(r, price):
+    """THE H1 AND THE FIRST SENTENCE (2026-09-24): the answer to the question
+    the searcher typed, in the static HTML. With a number: "Elon Musk owns
+    28.44% of Tesla" and the shares, the date and the value. Without one:
+    the question as the heading and an honest sentence."""
+    ceo = r["ceo"] or "The chief executive"
+    co = display_name(r["company"] or r["ticker"])
+    pct = num(r.get("pct"))
+    sh = num(r.get("shares")) or 0
+    if pct is not None:
+        h1 = f"{ceo} owns {pct:.2f}% of {co}"
+        when = r.get("shares_as_of") or ""
+        try:
+            nice = datetime.date.fromisoformat(when).strftime("%B %-d, %Y") if when else ""
+        except ValueError:
+            nice = when
+        val = f", worth {money(sh * price)} at the latest close" if price and sh else ""
+        ans = (f"{sh:,.0f} shares{' as of the ' + html.escape(nice) + ' filing' if nice else ''}{val}, "
+               f"computed from every Form 4 since 2016 and never estimated. The record is below, every filing linked.")
+    else:
+        h1 = f"How much of {co} does {ceo} own?"
+        ans = (f"The filings on record do not state a share count the site can stand behind; the reasons are below. "
+               f"The company's price, market cap and every filing are here.")
+    return h1, ans
+
+
 def poss(name: str) -> str:
     """Whose stake: "Elon Musk's", "Jabbok Schlacks'"."""
     return name + ("'" if name.lower().endswith("s") else "'s")
@@ -886,6 +912,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         is_sp = tk in sp
         price = prices.get(tk)
         title, desc = page_text(r, is_sp, price)
+        h1, answer_html = answer_text(r, price)
         payload = {"tk": tk, "co": r.get("company") or tk, "ceo": r.get("ceo") or "", "sp": is_sp,
                    "founder": founders.get(tk)}
         e_sum = ev.get(tk) or {}
@@ -938,6 +965,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                 .replace("{{TICKER}}", html.escape(tk))
                 .replace("{{MCAP}}", kicker_mcap(r, price))
                 .replace("{{COMPANY}}", html.escape(payload["co"]))
+                .replace("{{H1}}", html.escape(h1))
+                .replace("{{ANSWER}}", answer_html)
                 .replace("{{CEO}}", html.escape(payload["ceo"]))
                 .replace("{{TOPNAV}}", topnav)
                 .replace('href="/site.css"', f'href="/site.css?v={css_v}"')
