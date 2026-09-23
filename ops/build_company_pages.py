@@ -296,15 +296,44 @@ def kicker_mcap(r, price) -> str:
     set "mkt cap" in the same register. Public data, so every page carries
     it too."""
     out = num(r.get("outstanding"))
-    return f" · {money(out * price)} mkt cap" if (price and out) else ""
+    return f" · {money(out * price)} market cap" if (price and out) else ""
 
 
-def kicker_founder(founder) -> str:
-    """FOUNDER-LED IN THE KICKER (2026-09-23): the flag sits after the ticker
-    and the market cap, in its own colour, not beside the CEO's name. The
-    receipt (the proxy's words) stays in the receipt block below; the
-    kicker is the flag alone."""
-    return ' · <span class="fdl">Founder-led</span>' if (founder or {}).get("f") == "yes" else ""
+def founder_row(founder) -> str:
+    """FOUNDER-LED, WITH THE RECEIPT (design v4, 2026-09-23): the clay pill
+    and the proxy's own words beside it, quoted and linked to the filing.
+    Showing the receipt instead of a badge is the site's ethos as a design
+    element, and unique crawlable text per page. Proxies that wrote a
+    paragraph where Tesla wrote a phrase are clipped at ~110 characters at
+    the last clause boundary; a page with no usable sentence keeps the pill
+    alone. Non-founder pages carry nothing."""
+    if (founder or {}).get("f") != "yes":
+        return ""
+    q = founder_quote(founder)
+    if q and len(q) > 110:
+        cut = max(q.rfind(", ", 0, 110), q.rfind("; ", 0, 110))
+        if cut < 40:
+            cut = q.rfind(" ", 0, 110)
+        q = (q[:cut].rstrip(",; ") + " &hellip;") if cut > 40 else (q[:110] + "&hellip;")
+    # the source rides as "DEF 14A 2025-09-17 0001104659-25-090866" (or a URL):
+    # the date gives the label its year, the accession and the cik give the
+    # words their link back to EDGAR -- the receipt is a receipt.
+    src = (founder or {}).get("src") or ""
+    ym = re.search(r"\b((?:19|20)\d{2})-\d{2}-\d{2}\b", src)
+    label = f"the {ym.group(1)} proxy" if ym else "the proxy statement"
+    href = src if src.startswith("http") else ""
+    if not href:
+        am = re.search(r"\b(\d{10}-\d{2}-\d{6})\b", src)
+        cik = str((founder or {}).get("cik") or "").lstrip("0")
+        if am and cik:
+            href = f"https://www.sec.gov/Archives/edgar/data/{cik}/{am.group(1).replace('-', '')}/"
+    if q:
+        link = f'<a href="{html.escape(href)}" target="_blank" rel="noopener">{label}</a>' if href else label
+        quote = f'<span class="fq">&ldquo;{q}&rdquo; <span class="fsrc">&mdash; {link}</span></span>'
+    else:
+        quote = ""
+    return '<div class="frow"><span class="fpill">Founder-led</span>' + quote + '</div>'
+
 
 
 def static_body(payload, r, price, price_date, ev, hist, founder, n_filings=0, ret_1y=None,
@@ -359,7 +388,8 @@ def static_body(payload, r, price, price_date, ev, hist, founder, n_filings=0, r
             nice = datetime.date.fromisoformat(d).strftime("%b %-d, %Y")
         except ValueError:
             nice = d
-        return v, html.escape(nice) + (f" · {money(val)}" if val else "")
+        # the sale's fine print is its date; the buy carries its size too (design v4)
+        return v, html.escape(nice) + (f" · {money(val)}" if val and side == "last_buy" else "")
 
     sv, ss = clock("last_sale")
     bv, bs = clock("last_buy")
@@ -413,22 +443,35 @@ INDEX_CSS = ("""
 """)
 
 
-def neighbours_html(tk, ranked, sp, k=5):
-    """Five nearby founder-led companies by stake rank, open ones first, so
-    every page has five incoming links and a reader has somewhere to go."""
-    if tk not in ranked:
-        return ""
-    i = ranked.index(tk)
-    cand = [t for t in ranked[max(0, i - 12): i + 13] if t != tk]
-    cand.sort(key=lambda t: (t not in sp, abs(ranked.index(t) - i)))
-    picks = cand[:k]
-    if not picks:
-        return ""
-    items = "".join(f'<li><a href="/company/{html.escape(t)}/">{html.escape(t)}</a> <span>{html.escape(NAMES.get(t, ""))}</span></li>' for t in picks)
-    return f'<div class="cmore"><div class="k">More founder-led companies</div><ul>{items}</ul></div>'
+def neighbours_html(tk, ranked, sp, k=2):
+    """KEEP READING (design v4): a labeled row of chips, each a sentence a
+    reader might follow -- the tape, up to two neighbouring founders' own
+    stake sentences (the cross-links the old list carried), the founder-led
+    screen with its count, and the letter. Every page gets the row; only
+    the neighbour chips need the ranked list."""
+    chips = ['<a href="/tape/">Founders who bought this week &rarr;</a>']
+    if ranked:
+        if tk in ranked:
+            i = ranked.index(tk)
+            cand = [t for t in ranked[max(0, i - 12): i + 13] if t != tk]
+            cand.sort(key=lambda t: (t not in sp, abs(ranked.index(t) - i)))
+        else:
+            cand = [t for t in ranked if t != tk]
+        for t in cand[:k]:
+            ceo, pct = CEOS.get(t, ""), PCTS.get(t)
+            co = display_name(NAMES.get(t) or t)
+            if ceo and pct is not None:
+                chips.append(f'<a href="/company/{html.escape(t)}/">{html.escape(ceo)} owns {pct:.2f}% of {html.escape(co)} &rarr;</a>')
+            else:
+                chips.append(f'<a href="/company/{html.escape(t)}/">{html.escape(co)} &rarr;</a>')
+        chips.append(f'<a href="/screens/founder-led/">All {len(ranked):,} founder-led companies &rarr;</a>')
+    chips.append('<a href="/letter/">The weekly letter &rarr;</a>')
+    return f'<div class="cmore"><div class="k">Keep reading</div><div class="chiprow">{"".join(chips)}</div></div>'
 
 
 NAMES = {}
+CEOS = {}
+PCTS = {}
 
 
 # THE SCREENS AS PAGES (2026-09-18): the reference's list pages. The Companies
@@ -809,7 +852,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     try:
         for r in csv.DictReader(open(founders_p, encoding="utf-8-sig")):
             founders[r["ticker"].upper()] = {"f": (r.get("founder") or "").lower(),
-                                             "ev": r.get("evidence") or "", "src": r.get("source") or ""}
+                                             "ev": r.get("evidence") or "", "src": r.get("source") or "",
+                                             "cik": r.get("cik") or ""}
     except OSError:
         pass
 
@@ -857,6 +901,11 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         json.dump({"rows": srows}, fh, separators=(",", ":"))
     NAMES.clear()
     NAMES.update({(r.get("ticker") or "").upper(): (r.get("company") or "") for r in panel_rows})
+    CEOS.clear(); PCTS.clear()
+    for _pr in panel_rows:
+        _t = (_pr.get("ticker") or "").upper()
+        CEOS[_t] = _pr.get("ceo") or ""
+        PCTS[_t] = num(_pr.get("pct"))
     filings, last_filed = {}, {}
     try:
         for r in csv.DictReader(open(hist_p, encoding="utf-8-sig")):
@@ -936,15 +985,33 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
              "about": {"@type": "Organization", "name": payload["co"], "tickerSymbol": tk}}]})
         if tk in register and register[tk]["action"] == "keep":
             body += f'<p class="sub structure-note">{html.escape(note_for(register[tk]))}</p>'
+        # THE WATCH IS ON THE PAGE BEFORE THE SCRIPT (design v4): the card and
+        # the dark band are baked, so a reader without the script still sees
+        # the ask; the script redraws the card with the reader's own state.
+        ceo_esc = html.escape(payload["ceo"] or "this chief executive")
+        watch_static = ('<div class="wcard" id="cwatch">'
+                        + f'<div class="wq">Get an email when {ceo_esc}&rsquo;s stake moves.</div>'
+                        + f'<form class="wform" onsubmit="return watchThis(&quot;{tk}&quot;,event)">'
+                        + '<input type="email" id="wemail" placeholder="you@email.com" required autocomplete="email" aria-label="Email address">'
+                        + '<button class="wbtn" type="submit">Watch &rarr;</button></form>'
+                        + '<div class="wfine" id="wfine">Free. No account.</div></div>')
+        capture = (('<div class="ccap">'
+                    + f'<div class="ct">One email when {html.escape(poss(payload["ceo"])).replace("&#x27;", "&rsquo;")} stake moves.</div>'
+                    + f'<form onsubmit="return watchThis(&quot;{tk}&quot;,event)">'
+                    + '<input type="email" placeholder="you@email.com" required autocomplete="email" aria-label="Email address">'
+                    + '<button class="wbtn2" type="submit">Watch &rarr;</button></form>'
+                    + '<div class="wfine"></div></div>') if payload["ceo"] else "")
         page = (template
                 .replace('<div id="cbody"></div>', '<div id="cbody">' + body + '</div>')
                 .replace('<div id="cmore"></div>', '<div id="cmore">' + neighbours_html(tk, ranked, sp) + '</div>')
+                .replace('<div id="ccap"></div>', '<div id="ccap">' + capture + '</div>')
+                .replace('<div class="cwatchslot" id="cwatchslot"></div>', '<div class="cwatchslot" id="cwatchslot">' + watch_static + '</div>')
                 .replace('</head>', f'<script type="application/ld+json">{crumbs}</script>\n</head>')
                 .replace("{{TITLE}}", html.escape(title))
                 .replace("{{DESCRIPTION}}", html.escape(desc))
                 .replace("{{TICKER}}", html.escape(tk))
                 .replace("{{MCAP}}", kicker_mcap(r, price))
-                .replace("{{FDL}}", kicker_founder(founders.get(tk)))
+                .replace("{{FOUNDERROW}}", founder_row(founders.get(tk)))
                 .replace("{{BODYCLS}}", "fdl" if (founders.get(tk) or {}).get("f") == "yes" else "")
                 .replace("{{COMPANY}}", html.escape(payload["co"]))
                 .replace("{{H1}}", html.escape(h1))

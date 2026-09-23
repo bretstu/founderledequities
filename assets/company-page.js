@@ -37,25 +37,25 @@ function daysSince(d){
 }
 function band(r){
   const mcap=r.price&&r.out?r.out*r.price:null;
-  /* THE KICKER SAYS WHAT ITS NUMBERS ARE (2026-09-23): the ticker, the
-     market cap named as such, and the founder flag in its own colour --
-     the stock's facts and the page's one badge, in one small line. */
+  /* THE KICKER SAYS WHAT ITS NUMBERS ARE (design v4): the ticker and the
+     market cap named as such, one small mono line under the sentence. The
+     founder flag lives in the hero's clay pill, baked by the build. */
   const kick=$("#ctk");
-  const fdl=(fInfo(r.tk)||{}).f==="yes"?' · <span class="fdl">Founder-led</span>':"";
-  if(kick)kick.innerHTML=`${esc(r.tk)}${mcap?` · ${money(mcap)} mkt cap`:""}${fdl}`;
+  if(kick)kick.innerHTML=`${esc(r.tk)}${mcap?` · ${money(mcap)} market cap`:""}`;
   /* THREE CARDS, LABEL FIRST (2026-09-23). The share, the shares and the
      worth live in the H1 and the first sentence; the cards say what the
      sentence does not. The label names the card, the figure answers it,
      the date is the fine print, and every card exists for every company:
      STAKE RANK by dollar value, LAST SALE, LAST BUY -- "None" with the
      record's first year when there has never been one. */
-  const clock=(hit,word)=>{
+  const clock=(hit,word,withVal)=>{
     if(!hit||!hit.d)return ["None",`no ${word} since ${C.since||"2016"}`];
     const n=daysSince(hit.d);
     const v=n===null?esc(hit.d):`${fmt(n)}<small> days ago</small>`;
-    return [v,`${dayLabel(hit.d)}${hit.v?` · ${money(hit.v)}`:""}`];
+    return [v,`${dayLabel(hit.d)}${withVal&&hit.v?` · ${money(hit.v)}`:""}`];
   };
-  const [sv,ss]=clock(C.ls,"sales"),[bv,bs]=clock(C.lb,"purchases");
+  /* the sale's fine print is its date; the buy carries its size too (design v4) */
+  const [sv,ss]=clock(C.ls,"sales",false),[bv,bs]=clock(C.lb,"purchases",true);
   const cards=`<div class="cband kpi">
     ${stat("Stake rank",C.rank?"#"+fmt(C.rank):"&mdash;","","by dollar value of the stake","every company on the site, ordered by what the chief executive's stake is worth at the latest close")}
     ${stat("Last sale",sv,"",ss,"the newest sale that moved the stake; exercises and same-day sell-offs that left it unchanged are not counted")}
@@ -186,6 +186,23 @@ function priceChart(px,evs){
   out+=`<path class="line" d="${d}" fill="none" stroke="var(--ink)" stroke-opacity="0.8" stroke-width="1.2" stroke-linejoin="round"/>`;
   const closeAt=dt=>{let v=px[0][1];for(const p of px){if(p[0]<=dt)v=p[1];else break;}return v;};
   out+=dots(drawn,X,Y,e=>{const dt=e.td||e.fd;return e.apa>0?[e.apa,` at ${dollars(e.apa)}${e.ap&&Math.abs(e.ap-e.apa)>0.005?` (filed at ${dollars(e.ap)}, before splits)`:""}`]:[closeAt(dt),` at the ${dollars(closeAt(dt))} close (price on the filing not restated)`];},fr);
+  /* THE TWO DOTS THAT MATTER ARE NAMED (design v4): the newest sale and the
+     newest buy carry a small mono label beside the dot -- "last sale, Dec
+     2022", "$1.0B buy, Sep 2025" -- in the dot's own colour. The label
+     leans away from the nearest edge and never leaves the frame. */
+  const latest=code=>{let best=null;for(const e of drawn){if(e.c!==code)continue;const dt=e.td||e.fd;if(!best||dt>(best.td||best.fd))best=e;}return best;};
+  const ann=[],place=(e,txt,color)=>{
+    if(!e)return;
+    const dt=e.td||e.fd,x=X(dt),y=Y(e.apa>0?e.apa:closeAt(dt));
+    const end=x>(w-pad.r)-Math.min(200,(w-pad.l-pad.r)*0.28);
+    const tx=end?x-12:x+12,ty=Math.min(h-pad.b-6,Math.max(pad.t+10,y+4));
+    ann.push({x:tx,y:ty,end,txt,color});
+  };
+  const lastS=latest("S"),lastB=latest("P");
+  place(lastS,lastS?`last sale, ${monthLabel((lastS.td||lastS.fd).slice(0,7))}`:"",SELL);
+  place(lastB,lastB?`${lastB.v?`${money(lastB.v)} buy`:"last buy"}, ${monthLabel((lastB.td||lastB.fd).slice(0,7))}`:"","var(--buy)");
+  if(ann.length===2&&Math.abs(ann[0].x-ann[1].x)<140&&Math.abs(ann[0].y-ann[1].y)<14)ann[1].y=Math.max(pad.t+10,ann[1].y-15);
+  for(const a of ann)out+=`<text class="ann" x="${a.x.toFixed(1)}" y="${a.y.toFixed(1)}" text-anchor="${a.end?"end":"start"}" font-family="var(--mono)" font-size="10.5" fill="${a.color}">${esc(a.txt)}</text>`;
   const last=px[px.length-1];
   /* the last close, labelled above its point; when the point sits in the
      top of the range the label would cross the line's peak, so it goes
@@ -300,20 +317,27 @@ function recordBlock(r){
   const modes=[["price","Price","the share price: daily closes, split-adjusted. Dots sit at the price on the filing"],
                ["pct","Stake","the share of the company, one point per month-end: it moves when the holding changes and when the share count changes. Steps without a dot are grants, gifts, or the share count changing"]];
   const chips=`<div class="chips" role="group" aria-label="chart view">${modes.filter(m=>m[0]==="price"?havePx:haveRec).map(m=>`<button class="chip${mode===m[0]?" on":""}" onclick="setChartMode('${m[0]}')" title="${m[2]}">${m[1]}</button>`).join("")}</div>`;
+  /* THE SECTION HAS A NAME (design v4): "When Elon Musk bought and sold",
+     the toggle at its right; under the chart, the legend and one caption
+     saying what the line is and what the toggle shows. */
+  const head=`<h2>When ${esc(C.ceo||"the chief executive")} bought and sold</h2>`;
   /* the dots follow the table's filter: Bought draws purchases, Sold sales,
      All both; the other kinds have no dots to draw */
   const moving=EVENTS.filter(e=>e.tk===r.tk&&unchangedKind(e)===null&&(e.c==="P"||e.c==="S")
     &&(VIEW==="all"||(VIEW==="buys"&&e.c==="P")||(VIEW==="sells"&&e.c==="S")));
-  const key=moving.length?`<div class="ckey"><span class="b"><i></i>bought</span><span class="s"><i></i>sold</span></div>`:"";
+  const caption=mode==="price"
+    ?`The trades against the share price.${haveRec?` Toggle to Stake for the position since ${esc(C.since||"2016")}.`:""}`
+    :`The stake at each month-end since ${esc(C.since||"2016")}.${havePx?" Toggle to Price for the trades against the share price.":""}`;
+  const key=`<div class="ckey">${moving.length?`<span class="b"><i></i>bought</span><span class="s"><i></i>sold</span>`:""}<span class="knote">${caption}</span></div>`;
   if(mode==="price"&&havePx){
-    return `<div class="csec crec" data-nosnippet><div class="cshead">${chips}</div>
+    return `<div class="csec crec" data-nosnippet><div class="cshead">${head}${chips}</div>
       <div class="cchart">${priceChart(px,moving)}</div>${key}
     </div>`;
   }
   if(!haveRec)return "";
   const pts=cleanHist(r.tk);
   const series=pts.length>1?pts:raw;
-  return `<div class="csec crec" data-nosnippet><div class="cshead">${chips}</div>
+  return `<div class="csec crec" data-nosnippet><div class="cshead">${head}${chips}</div>
     <div class="cchart">${stakeChart(series,moving)}</div>${key}
   </div>`;
 }
@@ -368,20 +392,26 @@ function tradesBlock(r){
   };
   const rows=evs.map(e=>{
     if(e.cover)return `<tr class="cov"><td class="d" title="the company's cover page, dated ${e.fd}">${e.fd}</td>
-      <td class="ty neu" title="the company restated its shares outstanding on this cover page; nothing of the chief executive's moved"><i></i>Shares outstanding restated (${esc(e.form)})</td>
-      <td class="n v lv">&mdash;</td><td class="n sh lv">&mdash;</td><td class="n stk">&mdash;</td>
+      <td class="ty" title="the company restated its shares outstanding to ${fmt(e.os)} on this cover page; nothing of the chief executive's moved">Shares outstanding restated (${esc(e.form)})</td>
+      <td class="n sh lv">&mdash;</td>
       <td class="n lv">${e.ha?fmt(e.ha):"&mdash;"}</td>
-      <td class="n lv">${fmt(e.os)}</td>
       <td class="n lv po">${e.po!==null&&e.po!==undefined?e.po.toFixed(e.po<1?3:2)+"%":"&mdash;"}</td>
       <td class="f">${e.u?`<a href="${e.u}" target="_blank" rel="noopener" title="the filing, on EDGAR">${esc(e.form)} ↗</a>`:""}</td></tr>`;
     const {kd,p,uk,stkTxt,stkCls,span}=cell(e);
+    /* WHAT HAPPENED IS ONE CELL (design v4): the kind in plain ink -- "Open-
+       market purchase", "Planned sale", "Options exercised, tax withheld" --
+       with the trade's value folded in after a dot. What each filing did to
+       the stake and the day's denominator stay in the tooltips and the
+       export; the Owned column carries the level. */
+    const what=e.c==="P"?"Open-market purchase"
+      :e.c==="S"?(kd.k==="plan"?"Planned sale":kd.k==="disc"?"Discretionary sale":"Sale")
+      :(kd.word?kd.word.charAt(0).toUpperCase()+kd.word.slice(1):kd.t);
+    const wordTail=e.c==="S"&&kd.k==="sold"&&kd.word?`<span class="detail">${kd.word}</span>`:"";
+    const valTail=(e.c==="P"||e.c==="S")&&!e.fl&&e.v?`<span class="detail">· ${money(e.v)}</span>`:"";
     return `<tr><td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
-      <td class="ty" title="${esc(kd.n)}">${kd.t?`<span class="kind ${kd.k}">${kd.t}</span>`:""}${kd.word?`<span class="detail">${kd.word}</span>`:""}</td>
-      <td class="n v ${e.c==="P"?"up":e.c==="S"?"down":"lv"}">${e.c==="P"||e.c==="S"?evValCell(e):"&mdash;"}</td>
+      <td class="ty" title="${esc(kd.n)}${!p?`; ${esc(moveWhy(e))}`:""}">${kd.t&&kd.t.startsWith("Pre-IPO")?kd.t:what}${wordTail}${valTail}</td>
       <td class="n sh ${e.c==="P"?"up":e.c==="S"?"down":(e.nc>=0?"up":"down")}">${e.c==="P"||(e.c!=="S"&&e.nc>=0)?"+":"−"}${fmt(e.sh)}</td>
-      <td class="n stk ${stkCls}" title="${!p?esc(moveWhy(e)):"what this filing did to the stake, against the stake as the day opened"}">${stkTxt.replace(/^stake /,"")}</td>
       <td class="n lv" title="shares held at the end of this filing's day, per the record; filings on one day share it">${e.ha?fmt(e.ha):"&mdash;"}</td>
-      <td class="n lv" title="shares outstanding on record that day: the company's last cover page before it">${e.os?fmt(e.os):"&mdash;"}</td>
       <td class="n lv po" title="the stake at the end of the day: held over outstanding">${e.po!==null&&e.po!==undefined?e.po.toFixed(e.po<1?3:2)+"%":"&mdash;"}</td>
       <td class="f">${e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" title="the filing, on EDGAR">Form 4 ↗</a>`:""}</td></tr>`}).join("");
   /* the export is the same rows as text, in the same order */
@@ -396,11 +426,11 @@ function tradesBlock(r){
     const blob=new Blob([lines.join("\n")],{type:"text/csv"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${r.tk}-trades.csv`;a.click();
   };
-  const bigChip=`<button class="chip big${BIG?" on":""}" onclick="BIG=!BIG;renderOpen(PANEL[0])" title="only the rows that moved the stake by at least 1% of what it was">Moved the stake &ge; 1%</button>`;
-  return `<div class="csec ctrades"><div class="thead"><h2>Trades</h2><button class="export" onclick="exportTrades()" title="the rows below, as a CSV">Export CSV</button></div>
+  const bigChip=`<button class="chip big${BIG?" on":""}" onclick="BIG=!BIG;renderOpen(PANEL[0])" title="only the rows that moved the stake by at least 1% of what it was">Big moves only &ge; 1%</button>`;
+  return `<div class="csec ctrades"><div class="thead"><h2>The record, filing by filing</h2><button class="export" onclick="exportTrades()" title="the rows below, as a CSV; it carries the value, the stake change and the denominator every row">Export CSV</button></div>
     <div class="tchips">${chip("all","All",count("all"))}${chip("buys","Bought",count("buys"))}${chip("sells","Sold",count("sells"))}${chip("comp","Compensation",count("comp"))}${chip("transfers","Transfers",count("transfers"))}${chip("covers","Share count",count("covers"))}<span class="tsep"></span>${bigChip}</div>
-    ${rows?`<table><thead><tr><th>Date</th><th>Trade</th><th class="n">Value</th><th class="n">Shares</th><th class="n">Change</th><th class="n lv">Held</th><th class="n lv">Outstanding</th><th class="n lv">Owned</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
-    ${VIEW==="comp"?`<div class="sub" style="margin-top:10px">Compensation: what the company gave and what was sold of it. Awards granted, options exercised and held or cashed, vests, tax withholding, forfeitures. None of it is counted as buying or selling in the site's summaries; the Change column says what each did to the stake.</div>`:""}
+    ${rows?`<table><thead><tr><th>Date</th><th>What happened</th><th class="n">Shares</th><th class="n lv">Held after</th><th class="n">Owned</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
+    ${VIEW==="comp"?`<div class="sub" style="margin-top:10px">Compensation: what the company gave and what was sold of it. Awards granted, options exercised and held or cashed, vests, tax withholding, forfeitures. None of it is counted as buying or selling in the site's summaries; what each did to the stake is in the row's tooltip and the export.</div>`:""}
     ${VIEW==="transfers"?`<div class="sub" style="margin-top:10px">Transfers: gifts, conversions between classes, pre-IPO catch-ups and other non-market transactions the filing reports.</div>`:""}
     ${VIEW==="sells"&&evs.some(e=>tapeKind(e)==="sold")?`<div class="sub" style="margin-top:10px">Not stated: Form 4 had no Rule 10b5-1 box before April 2023, so whether a sale filed before then was planned is not on the form. Every sale since is Discretionary or Planned.</div>`:""}
     ${VIEW==="covers"?`<div class="sub" style="margin-top:10px">Share count: the company's cover pages that changed the number of shares outstanding. The stake moves with them though nothing of the chief executive's did.</div>`:""}
@@ -427,21 +457,27 @@ function watchCard(r){
   const on=!!(WATCHING&&WATCHING.tk===r.tk);
   const q=new URLSearchParams(location.search).get("watch");
   const said={on:`You're watching ${who}.`,off:`Stopped. No more emails about ${who}.`,alloff:"Stopped. No more emails about anyone.",expired:"That link expired; ask again here."}[q];
-  const fine=on?`You'll get an email when the stake moves.`:`A buy or a discretionary sale of any size, or a filing that moves the stake 1% or more. Free; one click to confirm.`;
+  const fine=on?`You'll get an email when the stake moves.`:`Free. No account.`;
   /* THE FIELD FIRST (2026-09-24). A reader from a search typed the person's
      name; the card asks the one thing they want next, with the field in
      view. The switch is for a signed-in member, who is watching at once. */
   return `<div class="wcard" id="cwatch" title="a buy or a discretionary sale of any size, or any other filing that moves the stake 1% or more">
-    <div class="k">Alerts</div>
     <div class="wq">Get an email when ${esc(who)}'s stake moves.</div>
-    <form class="wform" onsubmit="return watchThis('${r.tk}',event)"><input type="email" id="wemail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email"><button class="wbtn" type="submit">Watch</button></form>
+    <form class="wform" onsubmit="return watchThis('${r.tk}',event)"><input type="email" id="wemail" placeholder="you@email.com" required autocomplete="email" aria-label="Email address"><button class="wbtn" type="submit">Watch &rarr;</button></form>
     <div class="wfine" id="wfine">${said?`<b>${esc(said)}</b> `:""}${fine}</div>
   </div>`;
 }
 async function watchThis(tk,ev){
   if(ev)ev.preventDefault();
-  const f=$("#wfine"),btn=document.querySelector("#cwatch .wbtn");
-  const email=$("#wemail")?($("#wemail").value||"").trim():"";
+  /* TWO FORMS, ONE FLOW (design v4): the card beside the answer and the
+     dark band at the page's foot both submit here; each reads its own
+     field and writes its own fine print. */
+  const form=ev&&ev.target&&ev.target.tagName==="FORM"?ev.target:document.querySelector("#cwatch .wform");
+  const inp=form?form.querySelector("input[type=email]"):$("#wemail");
+  const scope=form?form.parentElement:null;
+  const f=(scope&&scope.querySelector(".wfine"))||$("#wfine");
+  const btn=form?form.querySelector("button"):document.querySelector("#cwatch .wbtn");
+  const email=inp?(inp.value||"").trim():"";
   if(!email)return false;
   if(btn){btn.disabled=true;btn.textContent="…";}
   try{

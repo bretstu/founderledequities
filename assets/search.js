@@ -15,7 +15,7 @@
 var box=document.getElementById("navq"),dd=document.getElementById("navqd");
 if(!box||!dd)return;
 var IDX=null,LOADING=null,SEL=0,ROWS=[];
-var DATA_V="dev";   /* stamped by ops/deploy.sh, like every data-loading script */
+const DATA_V="dev";   /* stamped by ops/deploy.sh, like every data-loading script: the deploy sed matches the const spelling exactly */
 var esc=function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");};
 function load(){
   if(IDX||LOADING)return LOADING;

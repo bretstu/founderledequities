@@ -96,7 +96,12 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert "Sealed universe" not in sealed and "open to everyone" not in tsla
     # the ticker and the market cap sit beside the name, on both tiers (public data)
     assert 'id="ctk">TSLA · $' in tsla and 'id="ctk">' in sealed
-    assert "<h1>Elon Musk owns 28.44% of Tesla</h1>" in tsla and '<span class="co">Tesla, Inc.</span>' in tsla, "the answer is the heading, the company the kicker (2026-09-24)"
+    assert "<h1>Elon Musk owns 28.44% of Tesla</h1>" in tsla and '<span class="co">' not in tsla, "the answer is the heading; the company's name lives only in it (design v4)"
+    assert "market cap" in tsla, "the kicker names its figure: TSLA · $1.50T market cap (design v4)"
+    assert 'class="fpill">Founder-led</span>' in tsla and 'class="frow"' in tsla, "the clay pill and the proxy row (design v4)"
+    assert 'class="fpill"' not in sealed, "a non-founder page carries no pill"
+    assert 'id="cwatch"' in tsla and "Free. No account." in tsla, "the watch card is baked, field first (design v4)"
+    assert 'class="ccap"' in tsla and "One email when Elon Musk" in tsla, "the bottom capture band is on the page (design v4)"
     assert 'class="answer">1,120,000,000 shares as of the' in tsla, "the first sentence carries the shares and the date in the HTML itself"
     # every page is indexable and answers its own question (the seal is off)
     assert '<meta name="robots"' not in sealed and "41.20%" in sealed
@@ -207,7 +212,7 @@ def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path
         assert f'<div class="k">{label}</div>' in body, "the band is the rank and the two clocks"
     assert 'class="cband kpi"' in body and "by dollar value of the stake" in body
     assert "<small> days ago</small>" in body, "the clock is a day count, redrawn by the script from the reader's day"
-    assert "Aug 29, 2026 · $24.2M" in body, "the sale's date and size are the fine print"
+    assert "Aug 29, 2026" in body and "Aug 29, 2026 · $" not in body, "the sale's fine print is its date alone (design v4)"
     assert "Feb 14, 2020 · $10M" in body, "the buy's date and size are the fine print"
     for label in ("Shares held", "Worth", "Market cap", "1Y return", "Outstanding"):
         assert f'<div class="k">{label}</div>' not in body, "the sentence's figures are not repeated as cards"
@@ -259,11 +264,14 @@ def test_the_record_has_two_views_and_no_prose():
     assert "e.apa" in js, "dots sit at the filed price restated in today's shares"
     assert 'fetchText([`/prices/${C.tk}.csv`])' in js, "prices are fetched from the public root on every page"
     assert "function attachHover(" in js and "function drawIn(" in js
-    assert 'class="ann"' not in js and "linearGradient" in js
+    assert 'class="ann"' in js and "last sale," in js and "linearGradient" in js, \
+        "the newest sale and the newest buy are named on the line (design v4)"
     assert 'class="dot"' in js and 'class="dot"><circle' not in js and 'rel="noopener" class="dot"' not in js, "dots are marks, not links; the list carries the filing link"
     assert "steps without a dot are grants, gifts, or the share count changing" in js.lower()
     rec = js[js.index("function recordBlock("):js.index("/* ---- the trades ---- */")]
-    assert "<h2>" not in rec and 'class="sub"' not in rec, "the chart section carries no heading and no caption"
+    assert "bought and sold</h2>" in rec and 'class="knote"' in rec, \
+        "the section is named -- When <the CEO> bought and sold -- with the legend's caption (design v4)"
+    assert 'class="sub"' not in rec
     assert "daily closes" in rec[rec.index("const modes="):rec.index("const chips=")], "what a line is lives on the toggle"
     assert "hover for the trade" not in js and "dot size follows" not in js, "the key is two words"
 
@@ -281,8 +289,9 @@ def test_the_band_is_the_rank_and_the_two_clocks():
         assert f"stat({label}" not in band, f"{label} is not a card"
     assert "by dollar value of the stake" in band, "the rank says what it ranks; no cross-company comparison rides it"
     assert "SpaceX" not in js, "no sentence that only works for one company"
-    assert "kick.innerHTML" in band and "mkt cap" in band and 'class="fdl"' in band, \
-        "the kicker: ticker, the market cap named as such, and the founder flag"
+    assert "kick.innerHTML" in band and "market cap" in band, \
+        "the kicker: ticker and the market cap named as such (design v4)"
+    assert 'class="fdl"' not in band, "the founder flag is the hero's clay pill, baked by the build, not a kicker span"
     assert "3-year" not in band[band.index("function band("):] and "trajStats" not in js
     assert "never estimated" not in band, "the answer needs no sentence beside it"
     assert 'class="cband kpi">' in band and "${watchCard(r)}" not in band, "the watch is not a card in the band"
