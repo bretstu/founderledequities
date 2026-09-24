@@ -665,7 +665,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
 .chipl{font-family:var(--mono);font-size:13.5px;border:1px solid var(--line);padding:9px 16px;text-decoration:none;color:var(--ink)}
 .chipl:hover{border-color:var(--clay,#8a4b1e);color:var(--clay,#8a4b1e)}
 .method{border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:44px}
-.mrow{display:flex;gap:48px;padding:38px 0}
+.mrow{display:flex;gap:48px;padding-top:38px;padding-bottom:38px}   /* longhand: the shorthand was erasing .wrap's side padding and the section ran wider than the page (2026-09-24) */
 .mcol{flex:1 1 0}
 .mk{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--clay,#8a4b1e);margin-bottom:8px}
 .mt{font-size:15.5px;color:var(--mut);line-height:1.55}
@@ -796,13 +796,12 @@ table.tape .kd .detail.tdt{color:var(--faint)}
   <!-- ONE ASK, AFTER TRUST: the site's core event as a subscription. The
        sender is ops (the nightly pipeline knows every move); this form is
        the same double-opt-in list as ever (/api/subscribe). -->
-  <div class="caph">An email the day any founder&rsquo;s stake moves more than 1%.</div>
+  <div class="caph">An email within minutes of any founder&rsquo;s stake moving more than 1%.</div>
   <form class="homesub" id="homesub" onsubmit="return subscribeHome(event)">
     <input type="email" id="homeemail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email">
     <button type="submit">Watch the founders &rarr;</button>
   </form>
   <span class="hs-msg" id="homemsg"></span>
-  <div class="capfine">Free. No account. Per-company alerts live on every company page; <a href="/letter/">the weekly letter</a> is one click up.</div>
 </div></section>
 
 
