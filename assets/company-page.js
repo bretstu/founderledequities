@@ -195,23 +195,10 @@ function priceChart(px,evs){
   out+=`<path class="line" d="${d}" fill="none" stroke="var(--ink)" stroke-opacity="0.8" stroke-width="1.2" stroke-linejoin="round"/>`;
   const closeAt=dt=>{let v=px[0][1];for(const p of px){if(p[0]<=dt)v=p[1];else break;}return v;};
   out+=dots(drawn,X,Y,e=>{const dt=e.td||e.fd;return e.apa>0?[e.apa,` at ${dollars(e.apa)}${e.ap&&Math.abs(e.ap-e.apa)>0.005?` (filed at ${dollars(e.ap)}, before splits)`:""}`]:[closeAt(dt),` at the ${dollars(closeAt(dt))} close (price on the filing not restated)`];},fr);
-  /* THE TWO DOTS THAT MATTER ARE NAMED (design v4): the newest sale and the
-     newest buy carry a small mono label beside the dot -- "last sale, Dec
-     2022", "$1.0B buy, Sep 2025" -- in the dot's own colour. The label
-     leans away from the nearest edge and never leaves the frame. */
-  const latest=code=>{let best=null;for(const e of drawn){if(e.c!==code)continue;const dt=e.td||e.fd;if(!best||dt>(best.td||best.fd))best=e;}return best;};
-  const ann=[],place=(e,txt,color)=>{
-    if(!e)return;
-    const dt=e.td||e.fd,x=X(dt),y=Y(e.apa>0?e.apa:closeAt(dt));
-    const end=x>(w-pad.r)-Math.min(200,(w-pad.l-pad.r)*0.28);
-    const tx=end?x-12:x+12,ty=Math.min(h-pad.b-6,Math.max(pad.t+10,y+4));
-    ann.push({x:tx,y:ty,end,txt,color});
-  };
-  const lastS=latest("S"),lastB=latest("P");
-  place(lastS,lastS?`last sale, ${monthLabel((lastS.td||lastS.fd).slice(0,7))}`:"",SELL);
-  place(lastB,lastB?`${lastB.v?`${money(lastB.v)} buy`:"last buy"}, ${monthLabel((lastB.td||lastB.fd).slice(0,7))}`:"","var(--buy)");
-  if(ann.length===2&&Math.abs(ann[0].x-ann[1].x)<140&&Math.abs(ann[0].y-ann[1].y)<14)ann[1].y=Math.max(pad.t+10,ann[1].y-15);
-  for(const a of ann)out+=`<text class="ann" x="${a.x.toFixed(1)}" y="${a.y.toFixed(1)}" text-anchor="${a.end?"end":"start"}" font-family="var(--mono)" font-size="10.5" fill="${a.color}">${esc(a.txt)}</text>`;
+  /* THE DOTS GO UNNAMED (2026-09-24): the small mono labels naming the
+     newest sale and buy overlapped their neighbours in dense stretches;
+     the cards above already name both dates, and every dot still speaks
+     on hover. */
   const last=px[px.length-1];
   /* the last close, labelled above its point; when the point sits in the
      top of the range the label would cross the line's peak, so it goes
@@ -417,7 +404,7 @@ function tradesBlock(r){
        market purchase", "Planned sale", "Options exercised, tax withheld" --
        with the trade's value folded in after a dot. What each filing did to
        the stake and the day's denominator stay in the tooltips and the
-       export; the Owned column carries the level. */
+       export; the Stake column carries the level. */
     const what=e.c==="P"?"Open-market purchase"
       :e.c==="S"?(kd.k==="plan"?"Planned sale":kd.k==="disc"?"Discretionary sale":"Sale")
       :(kd.word?kd.word.charAt(0).toUpperCase()+kd.word.slice(1):kd.t);
@@ -444,7 +431,7 @@ function tradesBlock(r){
   const bigChip=`<button class="chip big${BIG?" on":""}" onclick="BIG=!BIG;renderOpen(PANEL[0])" title="only the rows that moved the stake by at least 1% of what it was">Big moves only &ge; 1%</button>`;
   return `<div class="csec ctrades"><div class="thead"><h2>The record, filing by filing</h2><button class="export" onclick="exportTrades()" title="the rows below, as a CSV; it carries the value, the stake change and the denominator every row">Export CSV</button></div>
     <div class="tchips">${chip("all","All",count("all"))}${chip("buys","Bought",count("buys"))}${chip("sells","Sold",count("sells"))}${chip("comp","Compensation",count("comp"))}${chip("transfers","Transfers",count("transfers"))}${chip("covers","Share count",count("covers"))}<span class="tsep"></span>${bigChip}</div>
-    ${rows?`<table><thead><tr><th>Date</th><th>What happened</th><th class="n">Shares</th><th class="n lv">Held after</th><th class="n">Owned</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
+    ${rows?`<table><thead><tr><th>Date</th><th>What happened</th><th class="n">Shares</th><th class="n lv">Held after</th><th class="n">Stake</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
     ${evs.length>shownEvs.length?`<button class="chip tmore" onclick="TRADES_ALL=true;renderOpen(PANEL[0])">Show all ${evs.length} filings &darr;</button>`:""}
     ${VIEW==="comp"?`<div class="sub" style="margin-top:10px">Compensation: what the company gave and what was sold of it. Awards granted, options exercised and held or cashed, vests, tax withholding, forfeitures. None of it is counted as buying or selling in the site's summaries; what each did to the stake is in the row's tooltip and the export.</div>`:""}
     ${VIEW==="transfers"?`<div class="sub" style="margin-top:10px">Transfers: gifts, conversions between classes, pre-IPO catch-ups and other non-market transactions the filing reports.</div>`:""}

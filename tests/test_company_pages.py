@@ -283,8 +283,8 @@ def test_the_record_has_two_views_and_no_prose():
     assert "e.apa" in js, "dots sit at the filed price restated in today's shares"
     assert 'fetchText([`/prices/${C.tk}.csv`])' in js, "prices are fetched from the public root on every page"
     assert "function attachHover(" in js and "function drawIn(" in js
-    assert 'class="ann"' in js and "last sale," in js and "linearGradient" in js, \
-        "the newest sale and the newest buy are named on the line (design v4)"
+    assert 'class="ann"' not in js and "last sale," not in js and "linearGradient" in js, \
+        "the dots go unnamed (2026-09-24): the labels collided in dense stretches; the cards name both dates and hover speaks per dot"
     assert 'class="dot"' in js and 'class="dot"><circle' not in js and 'rel="noopener" class="dot"' not in js, "dots are marks, not links; the list carries the filing link"
     assert "steps without a dot are grants, gifts, or the share count changing" in js.lower()
     rec = js[js.index("function recordBlock("):js.index("/* ---- the trades ---- */")]
