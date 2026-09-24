@@ -281,7 +281,7 @@ const P=runPage();
   // the last move's kind still sorts and screens (r.ltk) but is no longer a column (2026-09-17): the table is ownership, the tape is trades
   assert(!rowOf("DNX").includes('class="c-lt"')&&!rowOf("DNX").includes('c-amt')&&!rowOf("DNX").includes('c-c12')&&!rowOf("DNX").includes('c-asof'),"the row carries the 12-month stake change, no trade cells, no date");
   assert(!tb.includes('class="c-asof"'),"no as-of column: a June filing must not read as a stale site (2026-09-17)");
-  assert(!/c-lt"><span class="kind/.test(rowOf("DNX"))&&rowOf("UPX").includes('c-fd">Yes'),"no last-move words in the table; the founder flag its own column");
+  assert(!/c-lt"><span class="kind/.test(rowOf("DNX"))&&rowOf("UPX").includes('class="fb yes">FOUNDER')&&!rowOf("UPX").includes('c-fd'),"no last-move words in the table; the founder flag is the clay badge in the CEO cell (2026-09-24)");
   assert(!rowOf("NOH").includes(" pts"),"no 12-month column (2026-09-18): the table is stake, worth, market cap");
   state.sold="none";P.renderTable();
   const held=[...els["#tbody"]._html.matchAll(/onclick="openCompany\('([A-Z]+)'\)"/g)].map(m=>m[1]);

@@ -598,12 +598,15 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
         for r in sorted(by[letter], key=lambda x: x["tk"]):
             badge = ' <span class="fb yes">FOUNDER</span>' if (founders.get(r["tk"]) or {}).get("f") == "yes" else ""
             seal = ""
-            items.append(f'<li><a href="/company/{html.escape(r["tk"])}/">{html.escape(r["tk"])}</a> '
-                         f'<span class="co">{html.escape(r["co"])}</span> <span class="ceo">{html.escape(r["ceo"])}</span>{badge}{seal}</li>')
+            # THE NAME RIDES THE ANCHOR (2026-09-24): the ticker alone was the
+            # link text; the company's name inside it is the anchor a name
+            # query deserves.
+            items.append(f'<li><a href="/company/{html.escape(r["tk"])}/">{html.escape(r["tk"])} '
+                         f'<span class="co">{html.escape(r["co"])}</span></a> <span class="ceo">{html.escape(r["ceo"])}</span>{badge}{seal}</li>')
         parts.append(f'<section><h2 id="{letter}">{letter}</h2><ul>{"".join(items)}</ul></section>')
     nav = " ".join(f'<a href="#{l}">{l}</a>' for l in sorted(by))
     n = f"{len(rows):,}"
-    index_html_block = (f"<div class=\"cidx\"><div class=\"wrap\"><h2 style=\"font-family:var(--disp);font-weight:500;font-size:24px;letter-spacing:-.01em;color:var(--ink);margin:40px 0 6px\">Every company, A to Z</h2>"
+    index_html_block = (f"<div class=\"cidx\"><div class=\"wrap\"><h2 style=\"font-family:var(--disp);font-weight:500;font-size:22px;letter-spacing:-.01em;color:var(--ink);margin:28px 0 4px\">The index, A to Z</h2>"
                         f"<div class=\"sub\">{n} US public companies worth $1B or more, each with a page for what its chief executive owns.</div>"
                         f"<div class=\"letters\">{nav}</div>{''.join(parts)}</div></div>")
     # THE SCREENER IN FULL (PLAN.md section 5): the page is the template
@@ -664,8 +667,22 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
                 pg = pg.replace('src="/companies.js"', f'src="/companies.js?v={js_v}"')
             return pg
 
+        # START SOMEWHERE (2026-09-24): the five screens as the page's first
+        # row, each a named idea and a static link; the founder-led count
+        # rides the first chip in clay.
+        n_led = sum(1 for r in rows if (founders.get(r["tk"]) or {}).get("f") == "yes")
+        chips = ('<div class="screenchips">'
+                 f'<a href="/screens/founder-led/">Founder-led<b>{n_led}</b></a>'
+                 '<a href="/screens/never-sold/">Never sold a share &rarr;</a>'
+                 '<a href="/screens/bought-this-year/">Bought this year &rarr;</a>'
+                 '<a href="/screens/own-more-than-10-percent/">Own more than 10% &rarr;</a>'
+                 '<a href="/screens/hired-under-1-percent/">Hired, under 1% &rarr;</a></div>')
         page = companies_page("Every company", "", "", index_html_block, "Every company",
                               "", "https://founderledequities.com/companies/")
+        line = "Every US public company worth $1B or more, with what its CEO owns."
+        marker = f'<div class="screenline" id="screenline">{line}</div>'
+        assert marker in page, "the companies screenline moved"
+        page = page.replace(marker, marker + chips, 1)
         global _PAGE_FN
         _PAGE_FN = companies_page
     os.makedirs(os.path.join(out_dir, "companies"), exist_ok=True)

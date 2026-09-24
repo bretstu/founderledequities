@@ -225,7 +225,7 @@ table.screen{table-layout:fixed;width:100%}
 table.screen td{overflow:hidden}   /* the two text columns truncate; a header never does */
 .tscroll{overflow-x:hidden}
 /* /companies/: eleven columns, widths that sum to 100 */
-.w-rk{width:4%}.w-co{width:30%}.w-ceo{width:20%}.w-fd{width:8%}.w-own{width:10%}.w-val{width:10%}.w-mc{width:10%}.w-r1{width:8%}
+.w-rk{width:4%}.w-co{width:31%}.w-ceo{width:27%}.w-own{width:10%}.w-val{width:10%}.w-mc{width:10%}.w-r1{width:8%}
 .c-ltd .ltd,.c-ltf .ltd{font-family:var(--mono);font-size:11px;color:var(--faint);white-space:nowrap}   /* as the tape's Traded and Filed columns */
 table.screen thead th{letter-spacing:.06em}
 table.screen thead th .arr{width:auto}
@@ -589,7 +589,7 @@ td.asrc a:hover{color:var(--blue)}
 .actlock{margin-top:16px}
 
 .fb{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;border-radius:4px;padding:2px 6px;margin-left:8px;vertical-align:1px}
-.fb.yes{background:var(--ink);color:#fff}
+.fb.yes{background:#8A4B1E;color:var(--bg)}
 .fb.unc{border:1px solid var(--faint);color:var(--mut)}
 /* ---------- links that open a company's page ---------- */
 a.pglink{color:inherit;text-decoration:none}
@@ -680,6 +680,26 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
 @media(max-width:900px){.stakecards{grid-template-columns:1fr}.mrow{flex-direction:column;gap:26px}}
 @media(max-width:640px){.fwbadge{display:none}.hero h1{font-size:34px}}
 .home .topnav .navsearch{display:none}
+
+/* ---- COMPANIES REDESIGN (2026-09-24): the screener is the page ---- */
+.tablesec:not(.home) .controls{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0;margin:22px 0 0}
+.screenchips{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 2px}
+.screenchips a{font-family:var(--mono);font-size:13px;border:1px solid var(--line);padding:8px 15px;text-decoration:none;color:var(--ink)}
+.screenchips a:hover{border-color:#8a4b1e;color:#8a4b1e}
+.screenchips b{color:#8a4b1e;font-weight:600;margin-left:4px}
+.cidx{margin-top:56px;border-top:1px solid var(--line)}
+.cidx>.wrap>h2:first-of-type{margin-top:28px}
+.cidx .letters{font-family:var(--mono);font-size:12px;letter-spacing:.2em;margin:10px 0 4px}
+.cidx .letters a{color:var(--mut);text-decoration:none;margin-right:2px}
+.cidx section h2{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--faint);margin:20px 0 4px}
+.cidx ul{columns:4;column-gap:44px;list-style:none;margin:0;padding:0}
+.cidx li{font-size:12.5px;line-height:1.9;break-inside:avoid;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cidx li a{color:var(--ink);text-decoration:none}
+.cidx li a:hover{color:#8a4b1e}
+.cidx li .co{color:var(--mut)}
+.cidx li .ceo{color:var(--faint)}
+.cidx li .fb{font-size:8px;padding:1px 5px;margin-left:5px}
+@media(max-width:1000px){.cidx ul{columns:2}}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Founder Led Equities","url":"https://founderledequities.com/","logo":"https://founderledequities.com/og.png","sameAs":["https://x.com/FounderLedEq"]},{"@type":"WebSite","name":"Founder Led Equities","url":"https://founderledequities.com/","description":"What every CEO owns of the company they run, computed from SEC filings."}]}</script>
 </head>
@@ -848,13 +868,12 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
   <div class="tscroll">
   <table class="screen">
     <colgroup>
-      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-fd"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-r1">
+      <col class="w-rk"><col class="w-co"><col class="w-ceo"><col class="w-own"><col class="w-val"><col class="w-mc"><col class="w-r1">
     </colgroup>
     <thead><tr>
       <th class="n">№</th>
       <th class="sortable" data-key="co">Company<span class="arr"></span></th>
       <th class="sortable h-ceo" data-key="ceo">CEO<span class="arr"></span></th>
-      <th class="sortable h-fd" data-key="fd" title="the proxy names this CEO a founder">Founder<span class="arr"></span></th>
       <th class="sortable n" data-key="pct" title="the CEO's share of the company, from the filings">Stake<span class="arr"></span></th>
       <th class="sortable n" data-key="val" title="the stake's worth: shares held at the latest close">Worth<span class="arr"></span></th>
       <th class="sortable n h-mc" data-key="mcap" title="market capitalization at the latest close">Market cap<span class="arr"></span></th>
@@ -1579,8 +1598,7 @@ function renderTable(){
     return `<tr onclick="openCompany('${r.tk}')" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${r.tk}')">
      <td class="rk">${String(i+1).padStart(2,"0")}</td>
      <td class="c-co"><div class="tk"><a href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></div><div class="nm" title="${r.co.replace(/"/g,"&quot;")}">${r.co}</div></td>
-     <td class="ceo h-ceo"><span class="ceow"><span class="cn" title="${r.ceo.replace(/"/g,"&quot;")}">${r.ceo}</span></span></td>
-     <td class="c-fd">${r.fd?"Yes":""}</td>
+     <td class="ceo h-ceo"><span class="ceow"><span class="cn" title="${r.ceo.replace(/"/g,"&quot;")}">${r.ceo}</span>${r.fd?'<span class="fb yes">FOUNDER</span>':""}</span></td>
      <td class="n num c-own">${r.units?`<span class="nopr" title="ownership held as exchangeable partnership units, not common stock">units</span>`:r.pct.toFixed(r.pct<1?3:2)+"%"}</td>
      <td class="n num">${r.val?money(r.val):""}</td>
      <td class="n num c-mc">${r.mcap?money(r.mcap):""}</td>
