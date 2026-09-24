@@ -56,7 +56,13 @@ function band(r){
   };
   /* the sale's fine print is its date; the buy carries its size too (design v4) */
   const [sv,ss]=clock(C.ls,"sales",false),[bv,bs]=clock(C.lb,"purchases",true);
+  /* THE STAKE LEADS THE CARDS (2026-09-24): the home page teaches that the
+     stake is a big clay number in a white card; the company page now keeps
+     that promise. The H1 still says the sentence; the card is where a
+     scanning eye finds the figure. */
+  const wsub=r.pct!=null?(r.price&&r.shares?`worth ${money(r.shares*r.price)} at the latest close`:"of the common shares"):"see the note below";
   const cards=`<div class="cband kpi">
+    ${stat("The stake",r.pct!=null?r.pct.toFixed(2)+"%":"&mdash;","clay",wsub,"shares held over shares outstanding, from the newest filing")}
     ${stat("Stake rank",C.rank?"#"+fmt(C.rank):"&mdash;","","by dollar value of the stake","every company on the site, ordered by what the chief executive's stake is worth at the latest close")}
     ${stat("Last sale",sv,"",ss,"the newest sale that moved the stake; exercises and same-day sell-offs that left it unchanged are not counted")}
     ${stat("Last buy",bv,"",bs,"the newest purchase that moved the stake")}

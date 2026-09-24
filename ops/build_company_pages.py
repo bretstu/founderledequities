@@ -367,7 +367,11 @@ def static_body(payload, r, price, price_date, ev, hist, founder, n_filings=0, r
     sv, ss = clock("last_sale")
     bv, bs = clock("last_buy")
     rank = payload.get("rank")
+    # THE STAKE LEADS THE CARDS (2026-09-24): the same clay figure the home
+    # page's stakes cards teach, first in the row; the worth is its caption.
+    wsub = (f"worth {money(sh * price)} at the latest close" if price and sh else "of the common shares")
     band = ('<div class="cband kpi">'
+            + stat("The stake", f"{pct:.2f}%", "clay", wsub)
             + stat("Stake rank", f"#{rank:,}" if rank else "&mdash;", "", "by dollar value of the stake")
             + stat("Last sale", sv, "", ss)
             + stat("Last buy", bv, "", bs)
