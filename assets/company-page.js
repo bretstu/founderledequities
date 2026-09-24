@@ -60,7 +60,7 @@ function band(r){
      stake is a big clay number in a white card; the company page now keeps
      that promise. The H1 still says the sentence; the card is where a
      scanning eye finds the figure. */
-  const wsub=r.pct!=null?(r.price&&r.shares?`worth ${money(r.shares*r.price)} at the latest close`:"of the common shares"):"see the note below";
+  const wsub=r.pct!=null?(r.price&&r.sh?`worth ${money(r.sh*r.price)} at the latest close`:"of the common shares"):"see the note below";
   const cards=`<div class="cband kpi">
     ${stat("The stake",r.pct!=null?r.pct.toFixed(2)+"%":"&mdash;","clay",wsub,"shares held over shares outstanding, from the newest filing")}
     ${stat("Stake rank",C.rank?"#"+fmt(C.rank):"&mdash;","","by dollar value of the stake","every company on the site, ordered by what the chief executive's stake is worth at the latest close")}

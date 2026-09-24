@@ -106,7 +106,7 @@
     .cq{display:block;margin-top:8px;color:var(--ink)}
     .cstat .v{font-family:var(--disp);font-size:clamp(30px,2.6vw,40px);font-weight:500;letter-spacing:-.02em;margin-top:14px;line-height:1}
     .cstat .v.up{color:#0b7a4b}.cstat .v.down{color:#c22a2a}.cstat .v.none{color:var(--faint)}
-    .cstat .v.clay{color:var(--clay)}   /* the stake wears the home page's colour (2026-09-24) */
+    .cstat .v.clay{color:var(--clay,#8A4B1E)}   /* the stake wears the home page's colour (2026-09-24); --clay has no :root definition, so the fallback is the colour */
     .cstat .s{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
     .sealed{filter:blur(4px);opacity:.55;user-select:none;cursor:pointer;color:var(--mut)}
     .sealed::before{content:attr(data-shape)}
