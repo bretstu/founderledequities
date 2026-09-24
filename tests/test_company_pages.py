@@ -146,30 +146,46 @@ def test_money_rounds_as_the_page_does():
 
 
 def test_the_published_home_page_carries_the_numbers(tmp_path):
-    """A fetch without scripts must read tonight's hero and top ten, not
-    the placeholder '20 of 500' and an empty board."""
+    """A fetch without scripts must read tonight's front door whole: the
+    thesis, four pills, the week's five biggest founder moves, the three
+    stake cards and the founder-led count -- no placeholder, no empty div."""
     import stamp_static as st
     st.OPEN_TOP = 0   # the fixture has two rows; keep the sealed one sealed (by share it would lead)
     panel, founders, prices, sp, _ = _fixture(tmp_path)
+    events = tmp_path / "events.csv"
+    import datetime as _dt
+    day = _dt.date.today().isoformat()
+    events.write_text("ticker,code,label,traded,filed,value,plan,pre_ipo,pct_of_holding,ceo\n"
+                      f"TSLA,S,discretionary sale,{day},{day},44400000,discretionary,0,1.4,Elon Musk\n"
+                      f"TSLA,S,scheduled sale,{day},{day},512000,plan,0,3.0,Elon Musk\n", encoding="utf-8")
     out = tmp_path / "index.html"
     src = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
     out.write_text(src, encoding="utf-8")
-    st.main(panel, sp, prices, founders, str(out))
+    st.main(panel, sp, prices, founders, str(out), str(events))
     page = out.read_text(encoding="utf-8")
-    assert '<h1 id="thesis">How much of the company does the CEO own?</h1>' in page, \
+    assert '<h1 id="thesis">What every CEO owns of the company they run.</h1>' in page, \
         "the headline is the purpose, the same for every reader, and needs no stamp"
-    # ONE STRIP FOR EVERYONE: three aggregates over every company, no company's stake
+    # FOUR PILLS FOR EVERYONE: aggregates over every company, no company's stake
     assert '<div class="n">2</div><div class="k">CEOs own more than 5%</div>' in page, \
         "the strip counts over every company, the sealed one included"
-    strip = page[page.index('id="herostats"'):page.index('id="table"')]
-    assert strip.index("Founder-led companies") < strip.index("CEOs own more than 5%") < strip.index("Held by those founders"), \
-        "three numbers in the plan's order"
-    assert "Of all CEO wealth" not in page, "the fourth number said the same thing as the third"
-    assert "of them are sealed" not in page, "no second Go Pro: the nav button is the one call"
-    assert 'data-pro="' not in page, "one strip, no second copy to swap in"
-    assert '<tbody id="tbody"><tr' in page and 'href="/company/TSLA/"' in page and ">28.44%<" in page, "the table's first rows are real HTML, by share of the company"
-    # ONE TREE (2026-09-23): the preview ranks every company alike
-    assert 'class="hstat"' in page and "Founder-led companies" in page, "and so is the stat strip"
+    strip = page[page.index('id="herostats"'):page.index('id="fweek"')]
+    assert strip.index("Founder-led companies") < strip.index("CEOs own more than 5%") \
+        < strip.index("Held by those founders") < strip.index("Companies, computed nightly"), \
+        "four numbers: the thesis, the concentration, the wealth, the coverage"
+    assert "Of all CEO wealth" not in page, "the fourth number is coverage, not a restatement of the third"
+    assert 'data-pro="' not in page and "of them are sealed" not in page
+    # THE WEEK, STAMPED: five at most, by the size of the trade, sale first here
+    week = page[page.index('id="fwrows"'):page.index('id="stakes"')]
+    assert 'class="fwrow"' in week and 'href="/company/TSLA/"' in week, "the week's rows are real HTML"
+    assert week.index("$44.4M") < week.index("$512,000"), "ranked by the dollar value of the trade"
+    assert "1.4% of the stake" in week and "DISCRETIONARY SALE" in week, "a row says how much of the stake moved"
+    # THE CARDS: the largest founder stakes by value, each a link
+    cards = page[page.index('id="stakecards"'):page.index('id="lednum"')]
+    assert 'class="scard"' in cards and 'href="/company/TSLA/"' in cards and ">28.44%<" in cards, \
+        "the cards are the flagship stakes as rich links"
+    assert '<span id="lednum">1</span>' in page, "the founder-led count is stamped into the chip"
+    assert page.index('<template id="pagesrc">') < page.index('class="tablesec'), \
+        "the table markup survives only as the inert extraction source for /companies/"
     assert not os.path.exists(os.path.join(ROOT, "functions", "_tier.js")), "the gate worker left with the tier"
     assert not os.path.exists(os.path.join(ROOT, "functions", "index.js"))
     assert not os.path.isdir(os.path.join(ROOT, "functions", "company"))

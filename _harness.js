@@ -83,35 +83,41 @@ const P=runPage();
     "no section gates its controls by tier");
   assert(!idxsrc.includes('id="tjgate"')&&!idxsrc.includes('id="trends"'),
     "the Trajectories section is gone");
-  // ONE LIST, TWO DEPTHS (PLAN.md section 5): the home page is the hero, what
-  // they own now (the screener's table at twenty rows), this week's tape,
-  // the footer. No board of bars, no index chart, no second copy of the list.
-  assert(idxsrc.indexOf('class="hero"')<idxsrc.indexOf('id="table"')&&idxsrc.indexOf('id="table"')<idxsrc.indexOf('id="activity"')&&idxsrc.indexOf('id="activity"')<idxsrc.indexOf('<footer>'),
-    "sections run hero, what they own now, the tape, footer");
-  assert(!idxsrc.includes('id="board"')&&!idxsrc.includes('id="perfsec"')&&!idxsrc.includes('id="bars"')&&!idxsrc.includes("function renderBars(")&&!idxsrc.includes("function perfSeries("),
-    "the bars and the index chart are gone from the page (the chart is a static image on Method)");
-  assert(idxsrc.includes('class="tablesec home"')&&idxsrc.includes("let TABLE_LIMIT=10;")&&idxsrc.includes('<a class="exit" href="/companies/">All companies'),
-    "the home table is a ten-row preview with the rest a click away");
-  assert(idxsrc.includes('<h2>Founder stakes</h2>')&&!idxsrc.includes("The wealthiest CEOs"),"the heading is the question, not a rich list");
+  // THE FRONT DOOR (2026-09-23): the home page is the thesis, the search,
+  // four stamped pills, the five biggest founder moves of the week, the
+  // three largest stakes, the method, one ask. No table, no tape module:
+  // /companies/ and /tape/ are one click away and the page competes with
+  // neither.
+  assert(idxsrc.indexOf('class="hero"')<idxsrc.indexOf('id="fweek"')&&idxsrc.indexOf('id="fweek"')<idxsrc.indexOf('id="stakes"')&&idxsrc.indexOf('id="stakes"')<idxsrc.indexOf('id="methodsec"')&&idxsrc.indexOf('id="methodsec"')<idxsrc.indexOf('id="homecap"')&&idxsrc.indexOf('id="homecap"')<idxsrc.indexOf('<footer>'),
+    "sections run hero, the week, the stakes, the method, the ask, footer");
+  assert(!idxsrc.includes('class="activitysec')&&!idxsrc.includes('id="actwrap"'),
+    "the tape module left the home page for /tape/");
+  assert(idxsrc.indexOf('<template id="pagesrc">')>-1&&idxsrc.indexOf('class="tablesec')>idxsrc.indexOf('<template id="pagesrc">')&&idxsrc.indexOf('id="tbody"')>idxsrc.indexOf('<template id="pagesrc">'),
+    "the table markup survives only inside the inert extraction template");
+  assert(idxsrc.includes('class="navsearch herosearch"')&&idxsrc.includes('id="hq"')&&idxsrc.includes(".home .topnav .navsearch{display:none}"),
+    "the hero carries the big search (#hq, bound first by search.js); the nav's box hides on the home page and rides every other page");
+  assert(idxsrc.includes('id="fwrows"')&&idxsrc.includes('id="stakecards"')&&idxsrc.includes('id="lednum"')&&idxsrc.includes('id="herostats"'),
+    "every section is a stamp anchor: the page is real HTML before any script");
+  assert(idxsrc.includes('<a class="exit" href="/tape/">The full tape &rarr;</a>')&&idxsrc.includes('<a class="exit" href="/companies/">All companies &rarr;</a>'),
+    "both previews exit the same way: heading left, the full page right");
+  assert(idxsrc.includes('id="homesub"')&&idxsrc.includes("/api/subscribe")&&idxsrc.includes("moves more than 1%")&&idxsrc.includes("Watch the founders"),
+    "one ask: the day a founder's stake moves more than 1%");
+  assert(idxsrc.includes('excluded, not guessed'),"the method strip carries the honesty line");
+  assert(idxsrc.includes('if($("#tbody")){renderStatus();loadData();}'),
+    "the stamped home page loads no CSVs: the machinery boots only where its anchors exist");
   assert(idxsrc.includes('<a href="/tape/">Activity</a>')&&idxsrc.includes('<a href="/companies/">Companies</a>')&&!idxsrc.includes('>Scoreboard<')&&!idxsrc.includes('>Performance<'),
-    "the nav is Activity · Companies · Alerts · About");
+    "the nav is Activity · Companies · Letter · Alerts · About");
   assert(!/class="blurred"/.test(els["#actwrap"]._html),"no blur class from the old gate anywhere: a sealed figure is a data-shape placeholder");
 
   // ---- THE TAPE: a weather line, the controls, one table grouped by kind ----
   // EVERY FILING BY THE CHIEF EXECUTIVE IS A ROW (2026-09-15), on the tape
   // and the company page alike; the kind chips are the company page's.
   {
-    assert(idxsrc.includes('id="actwin"')&&idxsrc.includes('data-win="7"')&&idxsrc.includes('data-win="365"'),"the window chips run 7d to 12m");
     assert(!idxsrc.includes('id="actcards"')&&!idxsrc.includes('id="actsort"'),"no card grid, no sort chips: the table is the tape");
-    assert(idxsrc.includes('id="actkinds"')&&idxsrc.includes('id="tg-f"')&&!idxsrc.includes('id="tg-buys"')&&!idxsrc.includes('id="tg-nocomp"'),"founders only, and the company page's kind chips in place of the two toggles");
-    assert(/id="tg-f" checked/.test(idxsrc),"founders only is on by default");
     setWin(365); state.ev.f=false; state.ev.kind="all"; state.ev.moved=false; renderActivity();
     const rows=actSorted(actRows());
     // THE HOME PAGE IS AN EXCERPT: ten rows, the full tape a click away
-    assert(idxsrc.includes("let TAPE_LIMIT=10;")&&idxsrc.includes('class="activitysec excerpt"'),"the home page's tape is a ten-row excerpt, like the scoreboard");
     assert((els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===10&&/^10 of [\d,]+ filings/.test(els["#actnote"]._html),"ten rows, and the note says of how many: "+els["#actnote"]._html.slice(0,40));
-    assert(idxsrc.includes('<a class="exit" href="/tape/">All activity &rarr;</a>')&&idxsrc.includes('<a class="exit" href="/companies/">All companies &rarr;</a>'),"both previews exit the same way: heading left, the full page right");
-    assert(idxsrc.includes('id="homesub"'),"the letter's signup sits under the tape excerpt");
     P.TAPE_LIMIT=0;
     assert(rows.length>50,"the window holds the year's filings: "+rows.length);
     assert(rows.some(e=>e.c==="A")&&rows.some(e=>e.c==="G")&&rows.some(e=>e.c==="F"),"awards, gifts and withholding are rows of the tape, not filtered before the kind is decided");
@@ -153,7 +159,6 @@ const P=runPage();
     const bigComp=rows.find(e=>{const p=P.evMove(e);return p&&Math.abs(p.v)>=5&&tapeKind(e)==="comp";});
     assert(smallTrade&&!P.evDim(smallTrade)&&smallComp&&P.evDim(smallComp)&&bigComp&&!P.evDim(bigComp),"a purchase or a sale never dims; a grant or a withholding under 1% does, one that moved the stake does not");
     assert(P.evDim({c:"S",lb:"exercise and sell",pl:"discretionary",pc:null,po:2}),"a sale the site says left the position unchanged is dimmed");
-    assert(idxsrc.indexOf('id="tg-f"')<idxsrc.indexOf('id="actkinds"')&&idxsrc.slice(idxsrc.indexOf('id="tg-f"'),idxsrc.indexOf('id="actkinds"')).indexOf('class="tapectl')===-1,"the kind chips sit on the same control row as the window and founders only");
     const stats=els["#actstats"]._html;
     assert(/class="hstat"><div class="n">\d+<\/div><div class="k">bought on the open market<\/div>.*sold at their own discretion.*sold on a plan.*paid in shares.*gave shares away/.test(stats),"the week in five numbers, as stat blocks (2026-09-18): "+stats.replace(/<[^>]+>/g,""));
     assert(!/did not move a stake/.test(stats)&&!idxsrc.includes("did not move a stake"),"the tape never again says a filing did not move a stake unless its move was under 1%");
@@ -440,7 +445,7 @@ const P=runPage();
    const visible=idx.replace(/<!--[\s\S]*?-->/g,"").replace(/\/\*[\s\S]*?\*\//g,"").replace(/^\s*\/\/.*$/gm,"");
    const labels=visible;
    assert(!/chief executive/i.test(labels),"no label on the page says chief executive: "+(labels.match(/.{0,40}chief executive.{0,40}/i)||[""])[0]);
-   assert(idx.includes('<h1 id="thesis">How much of the company does the CEO own?</h1>'),"the hero says what the site is, the same for every reader");
+   assert(idx.includes('<h1 id="thesis">What every CEO owns of the company they run.</h1>'),"the hero says what the site is, the same for every reader");
    assert(!idx.includes('See what moved')&&!idx.includes('Go Pro &middot; $15/mo</a>')&&!idx.includes("herobtns"),"no buttons on the fold: the sentence is the door, Pro is the header's");
    assert(!idx.includes('id="thisweek"'),"the fold is headline, method line, three numbers, the table: the week's sentence lives on /tape/ and in the letter");
    assert(!idx.includes('<a href="/pro/">Pro</a>')&&!idx.includes("Weekly tape, free")&&!idx.includes("navwatches"),"the header is where you are: Tape · Companies · Method and one button");

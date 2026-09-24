@@ -12,7 +12,7 @@
    default), Escape closes, and "/" anywhere on the page focuses the box. */
 (function(){
 "use strict";
-var box=document.getElementById("navq"),dd=document.getElementById("navqd");
+var box=document.getElementById("hq")||document.getElementById("navq"),dd=document.getElementById("hqd")||document.getElementById("navqd");
 if(!box||!dd)return;
 var IDX=null,LOADING=null,SEL=0,ROWS=[];
 const DATA_V="dev";   /* stamped by ops/deploy.sh, like every data-loading script: the deploy sed matches the const spelling exactly */

@@ -143,7 +143,7 @@ def rows_html(rows, last, outstanding, prices):
 
 def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
     n = numbers(panel_p, sp_p, prices_p, founders_p)   # one universe (2026-09-23)
-    rows = top_rows(panel_p, sp_p, prices_p, founders_p)
+    rows = top_rows(panel_p, sp_p, prices_p, founders_p, n=3)
     page = open(index_out, encoding="utf-8").read()
     # THE HEADLINE IS THE PURPOSE AND NEEDS NO STAMP. The numbers live in
     # the strip beneath it.
@@ -156,44 +156,86 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
     def stats(m):
         return (f'<div class="hstat"><div class="n hl">{m["led"]}</div><div class="k">Founder-led companies</div></div>'
                 f'<div class="hstat"><div class="n">{m["above5"]:,}</div><div class="k">CEOs own more than 5%</div></div>'
-                f'<div class="hstat"><div class="n">{money(m["led_value"])}</div><div class="k">Held by those founders</div></div>')
+                f'<div class="hstat"><div class="n">{money(m["led_value"])}</div><div class="k">Held by those founders</div></div>'
+                f'<div class="hstat"><div class="n">{m["open"]:,}</div><div class="k">Companies, computed nightly</div></div>')
     page = page.replace('<div class="herostats" id="herostats"></div>',
                         f'<div class="herostats" id="herostats">{stats(n)}</div>', 1)
-    prices = {}
-    try:
-        for r in csv.DictReader(open(prices_p, encoding="utf-8-sig")):
-            prices[(r.get("ticker") or "").upper()] = float(r.get("close") or 0)
-    except (OSError, ValueError):
-        pass
-    last = last_trades(events_p, {r["tk"] for r in rows})
-    outstanding = {r["tk"]: r["out"] for r in rows}
-    page = page.replace('<tbody id="tbody"></tbody>',
-                        f'<tbody id="tbody">{rows_html(rows, last, outstanding, prices)}</tbody>', 1)
-    # THE TAPE EXCERPT, STAMPED (2026-09-14; every filing since 2026-09-15):
-    # it was drawn by the script from the filings feed, the one download
-    # the page waits for, so it appeared two seconds after everything else.
-    # The same rows the page draws (ops/kinds.py: founders, seven days by
-    # filing date, the kinds in order, ranked by the stake's move) are
-    # written into the HTML; the script redraws them, identically, when
-    # the feed arrives.
+    # THE FIVE BIGGEST FOUNDER MOVES OF THE WEEK (2026-09-23): founders only,
+    # ranked by the dollar value of the trade; a row that moved the stake says
+    # by how much. Seven days, widened to 14 then 30 when the week is quiet,
+    # so the section never publishes empty on a slow week.
     try:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         import kinds as _kinds
         import datetime as _dt
-        wrows, _since = _kinds.window_rows(os.path.dirname(os.path.abspath(events_p)) or ".", _dt.date.today().isoformat())
-    except Exception:  # noqa: BLE001 - no events file: the script still draws
-        wrows = []
+        names = _kinds.company_names(panel_p)
+        evdir = os.path.dirname(os.path.abspath(events_p)) or "."
+        today = _dt.date.today().isoformat()
+        wrows, days = [], 7
+        for days in (7, 14, 30):
+            wrows, _since = _kinds.window_rows(evdir, today, days=days, founders_only=True)
+            if len(wrows) >= 5:
+                break
+    except Exception:  # noqa: BLE001 - no events file: the section says so
+        wrows, days, names = [], 7, {}
+        _kinds = None
+    def fwrow(e):
+        tk = e.get("tk") or ""
+        filed = (e.get("filed") or "")[:10]
+        try:
+            day = _dt.date.fromisoformat(filed).strftime("%b %-d")
+        except ValueError:
+            day = filed
+        label = (e.get("label") or "trade")
+        v = None
+        try:
+            v = float(str(e.get("value")).replace(",", ""))
+        except (TypeError, ValueError):
+            pass
+        mv = _kinds.move_of(e) if _kinds else None
+        kind = _kinds.kind_of(e) if _kinds else ""
+        cls = "sell" if kind in ("disc", "sold") else "buy" if kind == "bought" else ""
+        who = e.get("ceo") or names.get(tk, tk)
+        bits = [f"<b>{who}</b> &mdash; {label}"]
+        if v:
+            bits[-1] += f", <b>{money(v)}</b>"
+        if mv is not None:
+            bits.append(f"{abs(mv[0]):.1f}% of the stake")
+        co = names.get(tk, "")
+        if co and co != who:
+            bits.append(co)
+        return (f'<div class="fwrow"><span class="fwdate">{day}</span>'
+                f'<a class="fwtk" href="/company/{tk}/">{tk}</a>'
+                f'<span class="fwtxt">{" &middot; ".join(bits)}</span>'
+                f'<span class="fwbadge {cls}">{label.upper()}</span></div>')
     if wrows:
-        wrows = _kinds.sorted_rows(wrows)
-        shown = wrows[:10]
-        table = _kinds.table_html(shown, _kinds.company_names(panel_p))
-        page = page.replace('<div class="tapewrap" id="actwrap"></div>', f'<div class="tapewrap" id="actwrap">{table}</div>', 1)
-        page = page.replace('<div class="actnote" id="actnote"></div>',
-                            f'<div class="actnote" id="actnote">{len(shown)} of {len(wrows)} filings</div>', 1)
+        def _val(e):
+            try:
+                return float(str(e.get("value")).replace(",", ""))
+            except (TypeError, ValueError):
+                return 0.0
+        wrows.sort(key=lambda e: -_val(e))
+        rows5 = wrows[:5]
+        fw = "".join(fwrow(e) for e in rows5)
+    else:
+        fw = '<div class="fwempty">A quiet week on the tape &mdash; <a href="/tape/">the full record</a> is a click away.</div>'
+    page = page.replace('<div class="fwrows" id="fwrows"></div>', f'<div class="fwrows" id="fwrows">{fw}</div>', 1)
+    # THE THREE LARGEST FOUNDER STAKES, BY VALUE: the cards are the home
+    # page's authority flowing to the flagship pages.
+    cards = []
+    for r in rows[:3]:
+        sub = f'{r["ceo"]}&rsquo;s stake &mdash; {money(r["val"])} at the latest close'
+        cards.append(f'<a class="scard" href="/company/{r["tk"]}/">'
+                     f'<div class="sck">{r["tk"]} &middot; {(r["co"] or r["tk"]).upper()}</div>'
+                     f'<div class="scn">{r["pct"]:.2f}%</div>'
+                     f'<div class="sct">{sub}</div></a>')
+    page = page.replace('<div class="stakecards" id="stakecards"></div>',
+                        f'<div class="stakecards" id="stakecards">{"".join(cards)}</div>', 1)
+    page = page.replace('<span id="lednum"></span>', f'<span id="lednum">{n["led"]}</span>', 1)
     with open(index_out, "w", encoding="utf-8") as fh:
         fh.write(page)
-    print(f"  stamped: {n['above5']} of {n['open']} in the strip, {len(rows)} table rows, "
-          f"{n['led']} founder-led / {money(n['led_value'])}")
+    print(f"  stamped: {n['above5']} of {n['open']} in the strip, {len(wrows[:5]) if wrows else 0} week rows ({days}d window), "
+          f"{len(cards)} stake cards, {n['led']} founder-led / {money(n['led_value'])}")
     return 0
 
 
