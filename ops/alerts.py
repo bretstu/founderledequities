@@ -336,11 +336,13 @@ def post(site, key, evs):
 def test_mail(site, key):
     """--test (2026-09-17): re-send the newest founder move on the tape to every
     live founder alert watcher, under a test accession so the sent-record
-    does not stop it. What a subscriber gets, seen by the owner."""
+    does not stop it. What a subscriber gets, seen by the owner. The pick
+    must clear the stream's 1% bar (2026-09-24): the run endpoint filters
+    FOUNDERS watches by move1, so a sub-1% pick would post and send nothing."""
     import time
-    evs = [e for e in decisions(os.path.join(ROOT, "events.csv"), since="2000-01-01") if e["founder"]]
+    evs = [e for e in decisions(os.path.join(ROOT, "events.csv"), since="2000-01-01") if e["founder"] and e["move1"]]
     if not evs:
-        print("  alerts: no founder move on the tape to send")
+        print("  alerts: no founder move of 1%+ on the tape to send")
         return 1
     e = max(evs, key=lambda x: x["filed"])
     e = dict(e, accession=f"test-{int(time.time())}-{e['accession']}", sentence=f"Test: {e['sentence']}")
