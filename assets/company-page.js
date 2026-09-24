@@ -41,7 +41,7 @@ function band(r){
      market cap named as such, one small mono line under the sentence. The
      founder flag lives in the hero's clay pill, baked by the build. */
   const kick=$("#ctk");
-  if(kick)kick.innerHTML=`${esc(r.tk)}${mcap?` · ${money(mcap)} market cap`:""}`;
+  if(kick){const fi=fInfo(r.tk);const b=fi&&fi.f==="yes"?` · <span class="kbadge">Founder-led</span>`:"";kick.innerHTML=`${esc(r.tk)}${mcap?` · ${money(mcap)} market cap`:""}${b}`;}
   /* THREE CARDS, LABEL FIRST (2026-09-23). The share, the shares and the
      worth live in the H1 and the first sentence; the cards say what the
      sentence does not. The label names the card, the figure answers it,
@@ -506,19 +506,8 @@ async function copyFact(r){
   try{await navigator.clipboard.writeText(t);if(m)m.textContent="Copied.";}
   catch(e){if(m)m.textContent=t;}
 }
-function whyBlock(r){
-  const fi=fInfo(r.tk);if(!fi||!fi.ev)return"";
-  /* whole sentences only: trim the window to its first and last full stop */
-  let ev=fi.ev.replace(/\s+/g," ").trim();
-  const i=ev.search(/[.!?]\s+[A-Z]/);if(i>0&&i<ev.length-40&&!/^[A-Z]/.test(ev))ev=ev.slice(i+1).trim();
-  const j=ev.lastIndexOf(".");if(j>40)ev=ev.slice(0,j+1);
-  const verdict=fi.f==="yes"?"Named a founder":fi.f==="no"?"Not a founder":"Founder status unclear";
-  const src=(fi.src||"").trim();const m=src.match(/(\d{10}-\d{2}-\d{6})/);
-  const link=m&&r.cik?`https://www.sec.gov/Archives/edgar/data/${r.cik}/${m[1].replace(/-/g,"")}/`:"";
-  return `<div class="cwhy"><div class="k">Why the badge</div>
-    <b style="color:var(--ink)">${verdict}</b>. The proxy statement says: <q>${esc(ev)}</q>
-    <span class="src">${link?`<a href="${link}" target="_blank" rel="noopener">${esc(src)} ↗</a>`:esc(src||"the proxy statement")}</span></div>`;
-}
+/* whyBlock left the page (2026-09-24): the badge asserts, the record earns
+   the trust; the proxy evidence stays in founders.csv and the export. */
 
 function reportBlock(r){
   const subj=encodeURIComponent(`${r.tk}: a figure looks wrong`);
@@ -532,7 +521,7 @@ function renderOpen(r,{animate=true}={}){
   /* THE WATCH IS BESIDE THE ANSWER (2026-09-23): the head's right column,
      level with the H1 -- the page's one ask, where a searcher lands */
   const slot=$("#cwatchslot");if(slot)slot.innerHTML=watchCard(r);
-  $("#cbody").innerHTML=band(r)+recordBlock(r)+tradesBlock(r)+whyBlock(r);
+  $("#cbody").innerHTML=band(r)+recordBlock(r)+tradesBlock(r);
   const cr=$("#creport");if(cr)cr.innerHTML="";   /* the footer says where the numbers come from; the sentence that stood here was the same sentence */
   const svg=document.querySelector(".cchart svg.fchart");
   if(svg){attachHover(svg);if(animate)drawIn(svg);}

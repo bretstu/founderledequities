@@ -98,8 +98,10 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert 'id="ctk">TSLA · $' in tsla and 'id="ctk">' in sealed
     assert "<h1>Elon Musk owns 28.44% of Tesla</h1>" in tsla and '<span class="co">' not in tsla, "the answer is the heading; the company's name lives only in it (design v4)"
     assert "market cap" in tsla, "the kicker names its figure: TSLA · $1.50T market cap (design v4)"
-    assert 'class="fpill">Founder-led</span>' in tsla and 'class="frow"' in tsla, "the clay pill and the proxy row (design v4)"
-    assert 'class="fpill"' not in sealed, "a non-founder page carries no pill"
+    assert '&middot; <span class="kbadge">Founder-led</span>' in tsla, "the clay badge rides the kicker after the market cap (2026-09-24)"
+    assert 'class="frow"' not in tsla and "the 2026 proxy" not in tsla and "proxy statement" not in tsla, \
+        "the quote row and every proxy line left the page: the badge asserts, the record earns"
+    assert 'class="kbadge"' not in sealed, "a non-founder page carries no badge"
     assert 'id="cwatch"' in tsla and "Free. No account." in tsla, "the watch card is baked, field first (design v4)"
     assert 'class="ccap"' in tsla and "One email when Elon Musk" in tsla, "the bottom capture band is on the page (design v4)"
     assert 'class="answer">1,120,000,000 shares as of the' in tsla, "the first sentence carries the shares and the date in the HTML itself"
@@ -235,7 +237,7 @@ def test_the_page_says_its_numbers_in_html_and_every_company_has_a_link(tmp_path
     assert "from 21.10% in 2016 to 28.44% on 2026-07-06" in body, "the record, as a sentence"
     assert "1 sale and 1 purchase" in body, "kept-apart trades do not count"
     assert "planned sale of $24.2M on 2026-08-29" in body, "the last trade that moved it"
-    assert "names Elon Musk a founder" in body
+    assert "proxy statement" not in body, "the prose proves nothing: the badge asserts, the record earns (2026-09-24)"
     sealed = open(out / "company" / "SEALD" / "index.html", encoding="utf-8").read()
     sbody = sealed[sealed.index('<div id="cbody">'):sealed.index('<div class="creport"')]
     assert "41.20%" in sbody and 'class="sealed"' not in sbody, "the seal is off: the figure is on every page"

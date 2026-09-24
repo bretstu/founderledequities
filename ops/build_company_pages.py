@@ -300,40 +300,13 @@ def kicker_mcap(r, price) -> str:
 
 
 def founder_row(founder) -> str:
-    """FOUNDER-LED, WITH THE RECEIPT (design v4, 2026-09-23): the clay pill
-    and the proxy's own words beside it, quoted and linked to the filing.
-    Showing the receipt instead of a badge is the site's ethos as a design
-    element, and unique crawlable text per page. Proxies that wrote a
-    paragraph where Tesla wrote a phrase are clipped at ~110 characters at
-    the last clause boundary; a page with no usable sentence keeps the pill
-    alone. Non-founder pages carry nothing."""
-    if (founder or {}).get("f") != "yes":
+    """The badge alone (2026-09-24): the clay tag rides the kicker line
+    after the market cap. The proxy quote and its link left the page --
+    the badge asserts, the site's record earns the trust. The evidence
+    stays in founders.csv and in the export for anyone who asks."""
+    if not founder or (founder.get("f") or founder.get("founder") or "").lower() != "yes":
         return ""
-    q = founder_quote(founder)
-    if q and len(q) > 110:
-        cut = max(q.rfind(", ", 0, 110), q.rfind("; ", 0, 110))
-        if cut < 40:
-            cut = q.rfind(" ", 0, 110)
-        q = (q[:cut].rstrip(",; ") + " &hellip;") if cut > 40 else (q[:110] + "&hellip;")
-    # the source rides as "DEF 14A 2025-09-17 0001104659-25-090866" (or a URL):
-    # the date gives the label its year, the accession and the cik give the
-    # words their link back to EDGAR -- the receipt is a receipt.
-    src = (founder or {}).get("src") or ""
-    ym = re.search(r"\b((?:19|20)\d{2})-\d{2}-\d{2}\b", src)
-    label = f"the {ym.group(1)} proxy" if ym else "the proxy statement"
-    href = src if src.startswith("http") else ""
-    if not href:
-        am = re.search(r"\b(\d{10}-\d{2}-\d{6})\b", src)
-        cik = str((founder or {}).get("cik") or "").lstrip("0")
-        if am and cik:
-            href = f"https://www.sec.gov/Archives/edgar/data/{cik}/{am.group(1).replace('-', '')}/"
-    if q:
-        link = f'<a href="{html.escape(href)}" target="_blank" rel="noopener">{label}</a>' if href else label
-        quote = f'<span class="fq">&ldquo;{q}&rdquo; <span class="fsrc">&mdash; {link}</span></span>'
-    else:
-        quote = ""
-    return '<div class="frow"><span class="fpill">Founder-led</span>' + quote + '</div>'
-
+    return ' &middot; <span class="kbadge">Founder-led</span>'
 
 
 def static_body(payload, r, price, price_date, ev, hist, founder, n_filings=0, ret_1y=None,
@@ -347,9 +320,9 @@ def static_body(payload, r, price, price_date, ev, hist, founder, n_filings=0, r
     co = html.escape(payload["co"]); ceo = html.escape(payload["ceo"] or "the chief executive")
     fsent = ""
     if founder and founder.get("f") == "yes":
-        fsent = f" The company's proxy statement names {ceo} a founder."
+        fsent = ""
     elif founder and founder.get("f") == "uncertain":
-        fsent = f" The proxy's language on whether {ceo} founded the company is ambiguous."
+        fsent = ""
     pct = num(r.get("pct")); sh = num(r.get("shares")); out = num(r.get("outstanding"))
     if pct is None or sh is None:
         return f'<p class="cprose">{ceo} is the chief executive of {co}.{fsent} The record could not settle on a figure; the reasons are on the row.</p>'
@@ -1010,9 +983,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                 .replace("{{TITLE}}", html.escape(title))
                 .replace("{{DESCRIPTION}}", html.escape(desc))
                 .replace("{{TICKER}}", html.escape(tk))
-                .replace("{{MCAP}}", kicker_mcap(r, price))
-                .replace("{{FOUNDERROW}}", founder_row(founders.get(tk)))
-                .replace("{{BODYCLS}}", "fdl" if (founders.get(tk) or {}).get("f") == "yes" else "")
+                .replace("{{MCAP}}", kicker_mcap(r, price) + founder_row(founders.get(tk)))
+                                .replace("{{BODYCLS}}", "fdl" if (founders.get(tk) or {}).get("f") == "yes" else "")
                 .replace("{{COMPANY}}", html.escape(payload["co"]))
                 .replace("{{H1}}", html.escape(h1))
                 .replace("{{ANSWER}}", answer_html)
