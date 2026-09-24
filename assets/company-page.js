@@ -8,7 +8,7 @@ const withV=p=>p+(p.includes("?")?"&":"?")+"v="+DATA_V;
 const C=window.COMPANY||{};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
-let VIEW="all",BIG=false;   /* BIG: only rows that moved the stake by 1% or more */
+let VIEW="all",BIG=false,TRADES_ALL=false;   /* BIG: only rows that moved the stake by 1% or more; TRADES_ALL: the record past its first 25 rows */
 
 
 function setRow(row){
@@ -390,7 +390,13 @@ function tradesBlock(r){
     const span=e.tf&&e.tf!==e.td?`${e.tf} to ${e.td.slice(5)}`:(e.td||e.fd);
     return {kd,p,uk,stkTxt,stkCls,span};
   };
-  const rows=evs.map(e=>{
+  /* THE RECORD OPENS AT 25 (2026-09-24): a decade of filings ran the page
+     very long; the first twenty-five rows answer the visit, and one button
+     unfolds the rest in place -- no window inside the window, so find-in-page
+     and a phone's one scrollbar keep working. The export always carries
+     every row. */
+  const shownEvs=(TRADES_ALL||evs.length<=25)?evs:evs.slice(0,25);
+  const rows=shownEvs.map(e=>{
     if(e.cover)return `<tr class="cov"><td class="d" title="the company's cover page, dated ${e.fd}">${e.fd}</td>
       <td class="ty" title="the company restated its shares outstanding to ${fmt(e.os)} on this cover page; nothing of the chief executive's moved">Shares outstanding restated (${esc(e.form)})</td>
       <td class="n sh lv">&mdash;</td>
@@ -430,6 +436,7 @@ function tradesBlock(r){
   return `<div class="csec ctrades"><div class="thead"><h2>The record, filing by filing</h2><button class="export" onclick="exportTrades()" title="the rows below, as a CSV; it carries the value, the stake change and the denominator every row">Export CSV</button></div>
     <div class="tchips">${chip("all","All",count("all"))}${chip("buys","Bought",count("buys"))}${chip("sells","Sold",count("sells"))}${chip("comp","Compensation",count("comp"))}${chip("transfers","Transfers",count("transfers"))}${chip("covers","Share count",count("covers"))}<span class="tsep"></span>${bigChip}</div>
     ${rows?`<table><thead><tr><th>Date</th><th>What happened</th><th class="n">Shares</th><th class="n lv">Held after</th><th class="n">Owned</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
+    ${evs.length>shownEvs.length?`<button class="chip tmore" onclick="TRADES_ALL=true;renderOpen(PANEL[0])">Show all ${evs.length} filings &darr;</button>`:""}
     ${VIEW==="comp"?`<div class="sub" style="margin-top:10px">Compensation: what the company gave and what was sold of it. Awards granted, options exercised and held or cashed, vests, tax withholding, forfeitures. None of it is counted as buying or selling in the site's summaries; what each did to the stake is in the row's tooltip and the export.</div>`:""}
     ${VIEW==="transfers"?`<div class="sub" style="margin-top:10px">Transfers: gifts, conversions between classes, pre-IPO catch-ups and other non-market transactions the filing reports.</div>`:""}
     ${VIEW==="sells"&&evs.some(e=>tapeKind(e)==="sold")?`<div class="sub" style="margin-top:10px">Not stated: Form 4 had no Rule 10b5-1 box before April 2023, so whether a sale filed before then was planned is not on the form. Every sale since is Discretionary or Planned.</div>`:""}
