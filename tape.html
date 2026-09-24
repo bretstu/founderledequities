@@ -33,8 +33,9 @@
     .tapehead .hstat .n{font-size:clamp(22px,2vw,27px)}
     .tapehead .hstat .k{font-size:9.5px}
     /* the dark band at the foot: the home page's clothes (site.css), fitted */
-    .tapepage .homecap{margin-top:46px}
-    .homecap .capin{padding:44px clamp(20px,4vw,48px) 40px}
+    .homecap{margin-top:46px}
+    .homecap .capin{padding:44px 0 40px}
+    .tapepage .tapewrap{margin-top:16px}
     .homecap .hs-msg:empty{display:none}
     .homecap .done{border:1px solid var(--bg);padding:18px 22px;max-width:560px}
     .homecap .done h3{font-family:var(--disp);font-weight:500;font-size:24px;margin:0 0 6px}
@@ -87,7 +88,9 @@
        band with the same promise; the company pages, which ask up top in
        the white box, are the sole exception. Here the promise is this very
        page as a subscription. -->
-  <section class="homecap" id="subscribe"><div class="capin">
+  </section>
+</div>
+  <section class="homecap" id="subscribe"><div class="wrap capin">
     <div class="caph">An email the day any founder&rsquo;s stake moves more than 1%.</div>
     <form class="homesub" id="subform" onsubmit="return subscribe(event)">
       <input type="email" id="subemail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email">
@@ -96,11 +99,11 @@
     <span class="hs-msg" id="submsg"></span>
     <div class="capfine">This page, delivered: the moves as they file, the tape every Monday. Free. No account.</div>
   </div></section>
+<div class="tapepage">
   <div class="tapefoot">
     <span><a href="/about.html">About</a> · <a href="mailto:corrections@founderledequities.com">Corrections</a> · <a href="mailto:hello@founderledequities.com">Ideas</a> · Nothing here is investment advice · Every figure links to the filing</span>
     <span class="site">founderledequities.com</span>
   </div>
-</section>
 </div>
 <script src="/tape.js"></script>
 </body>
