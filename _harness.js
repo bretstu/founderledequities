@@ -84,7 +84,7 @@ const P=runPage();
   assert(!idxsrc.includes('id="tjgate"')&&!idxsrc.includes('id="trends"'),
     "the Trajectories section is gone");
   // THE FRONT DOOR (2026-09-23): the home page is the thesis, the search,
-  // four stamped pills, the five biggest founder moves of the week, the
+  // four stamped pills, the three biggest founder moves of the week, the
   // three largest stakes, the method, one ask. No table, no tape module:
   // /companies/ and /tape/ are one click away and the page competes with
   // neither.

@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Founder Led Equities — what every CEO owns of the company they run</title>
+<title>Founder Led Equities: what every CEO owns of the company they run</title>
   <link rel="canonical" href="https://founderledequities.com">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Founder Led Equities">
   <meta property="og:url" content="https://founderledequities.com">
-  <meta property="og:title" content="Founder Led Equities — what every CEO owns of the company they run">
+  <meta property="og:title" content="Founder Led Equities: what every CEO owns of the company they run">
   <meta property="og:description" content="The stake every CEO of 2,000+ US public companies holds, computed from the filings they signed. Who bought, who sold, and where every stake is heading. The S&P 500 is open to everyone.">
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:image" content="https://founderledequities.com/og.png">
@@ -16,7 +16,7 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="How many CEOs own more than 5% of the company they run, computed from SEC filings">
   <meta name="twitter:image" content="https://founderledequities.com/og.png">
-  <meta name="description" content="CEO ownership for 2,000+ US public companies, computed from SEC filings — never estimated. Who bought, who sold, and where every stake is heading. S&P 500 current stakes are open.">
+  <meta name="description" content="CEO ownership for 2,000+ US public companies, computed from SEC filings, never estimated. Who bought, who sold, and where every stake is heading. S&P 500 current stakes are open.">
   <!-- THE MARK (2026-09-23): the stake wedge, cut at 28.44 percent -- the
        flagship page's number. Google reads the home page's icon for every
        result the site ever ranks for; the SVG is the mark, the 96px PNG is
@@ -636,7 +636,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
 @media(max-width:700px){.navsearch input{width:120px}}
 
 /* ---- THE FRONT-DOOR HOME PAGE (2026-09-23) ---- */
-.heroin{display:flex;flex-direction:column;align-items:center;text-align:center;padding:64px 0 44px}
+.hero .wrap.heroin{display:flex;flex-direction:column;align-items:center;text-align:center;padding:64px 0 44px}
 .hero h1{max-width:21ch}
 .herosub{max-width:62ch}
 .herosearch{position:relative;display:flex;align-items:center;gap:12px;width:min(640px,100%);height:58px;background:#fff;border:1.5px solid var(--ink);padding:0 12px 0 18px;margin:26px 0 8px}
@@ -662,7 +662,6 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
 .sct{font-size:15px;color:var(--mut);line-height:1.45}
 .homechips{display:flex;gap:12px;flex-wrap:wrap}
 .chipl{font-family:var(--mono);font-size:13.5px;border:1px solid var(--line);padding:9px 16px;text-decoration:none;color:var(--ink)}
-.chipl.strong{border-color:var(--ink)}
 .chipl:hover{border-color:var(--clay,#8a4b1e);color:var(--clay,#8a4b1e)}
 .method{border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:44px}
 .mrow{display:flex;gap:48px;padding:38px 0}
@@ -711,10 +710,10 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
        in ten seconds and routes out. Nothing here competes with /tape/ or
        the company pages. -->
   <h1 id="thesis">What every CEO owns of the company they run.</h1>
-  <p class="herosub" id="herosub">Every US public company worth $1B or more, computed from the SEC filings they signed &mdash; updated nightly, never estimated.</p>
+  <p class="herosub" id="herosub">Every US public company worth $1B or more, computed from the SEC filings they signed. Updated nightly, never estimated.</p>
   <div class="navsearch herosearch" id="navsearch">
     <svg class="hsico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
-    <input type="search" id="hq" placeholder="A ticker, a company, or a CEO &mdash; TSLA, Medpace, Elon Musk&hellip;" autocomplete="off" spellcheck="false" aria-label="Find a company or CEO" aria-expanded="false" role="combobox" aria-controls="hqd">
+    <input type="search" id="hq" placeholder="A ticker, a company, or a CEO: TSLA, Medpace, Elon Musk&hellip;" autocomplete="off" spellcheck="false" aria-label="Find a company or CEO" aria-expanded="false" role="combobox" aria-controls="hqd">
     <span class="hskey" aria-hidden="true">/</span>
     <div class="navqd" id="hqd" role="listbox" hidden></div>
   </div>
@@ -730,7 +729,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
   <div class="shead tapehead">
     <div>
       <h2>Filed this week</h2>
-      <div class="tapesub">The five biggest founder moves, by the size of the trade</div>
+      <div class="tapesub">The three biggest founder moves, by the size of the trade</div>
     </div>
     <a class="exit" href="/tape/">The full tape &rarr;</a>
   </div>
@@ -750,7 +749,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
   </div>
   <div class="stakecards" id="stakecards"></div>
   <div class="homechips">
-    <a class="chipl strong" href="/screens/founder-led/">All <span id="lednum"></span> founder-led companies &rarr;</a>
+    <a class="chipl" href="/screens/founder-led/">All <span id="lednum"></span> founder-led companies &rarr;</a>
     <a class="chipl" href="/screens/never-sold/">CEOs who never sold a share &rarr;</a>
     <a class="chipl" href="/screens/bought-this-year/">CEOs who bought this year &rarr;</a>
     <a class="chipl" href="/screens/own-more-than-10-percent/">Stakes above 10% &rarr;</a>
@@ -759,7 +758,7 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
 
 <section class="method" id="methodsec"><div class="wrap mrow">
   <div class="mcol"><div class="mk">01 &middot; READ THE FILINGS</div><div class="mt">Every Form 4 and every proxy statement, pulled from SEC EDGAR nightly. The record starts in 2016.</div></div>
-  <div class="mcol"><div class="mk">02 &middot; COMPUTE THE STAKE</div><div class="mt">Shares held over shares outstanding &mdash; a fraction, not an estimate. When a footnote is ambiguous, the company is excluded, not guessed.</div></div>
+  <div class="mcol"><div class="mk">02 &middot; COMPUTE THE STAKE</div><div class="mt">Shares held over shares outstanding: a fraction, not an estimate. When a footnote is ambiguous, the company is excluded, not guessed.</div></div>
   <div class="mcol"><div class="mk">03 &middot; LINK EVERY TRADE</div><div class="mt">Every number carries the filing it came from. Click through to EDGAR and check it yourself.</div></div>
 </div></section>
 
@@ -1228,14 +1227,14 @@ function wireSw(id,flip){
 function fMark(tk){
   const i=fInfo(tk);
   if(!i||i.f!=="yes")return"";
-  return `<span class="fm" title="founder — ${(i.ev||"named a founder in the proxy").replace(/"/g,"&quot;").slice(0,300)}">F</span>`;
+  return `<span class="fm" title="founder: ${(i.ev||"named a founder in the proxy").replace(/"/g,"&quot;").slice(0,300)}">F</span>`;
 }
 /*@shared*/
 function fBadge(tk){
   const i=fInfo(tk);
   if(!i)return"";
   if(i.f==="yes")return `<span class="fb yes" title="${(i.ev||"named a founder in the proxy").replace(/"/g,"&quot;").slice(0,300)}">FOUNDER</span>`;
-  if(i.f==="uncertain")return `<span class="fb unc" title="founder language near the name, but the proxy sentence is ambiguous — see founders.csv">FOUNDER?</span>`;
+  if(i.f==="uncertain")return `<span class="fb unc" title="founder language near the name, but the proxy sentence is ambiguous; see founders.csv">FOUNDER?</span>`;
   return"";
 }
 /*@shared*/
@@ -1588,7 +1587,7 @@ function renderTable(){
      <td class="n num c-r1">${r.r1===null||r.r1===undefined?`<span class="nopr"></span>`:`${r.r1>=0?"+":""}${r.r1.toFixed(1)}%`}</td>
     </tr>`}).join("");
   $("#tcount").innerHTML=
-    `${shownRows.length<total?`${shownRows.length} of `:""}${total.toLocaleString()} compan${total===1?"y":"ies"}${state.live.panel?"":" · embedded sample — serve universe.csv beside this file to load all 500"}`;
+    `${shownRows.length<total?`${shownRows.length} of `:""}${total.toLocaleString()} compan${total===1?"y":"ies"}${state.live.panel?"":" · embedded sample: serve universe.csv beside this file to load all 500"}`;
   document.querySelectorAll("th.sortable").forEach(th=>{
     const on=th.dataset.key===state.sort.key;
     th.querySelector(".arr").textContent=on?(state.sort.dir<0?" ↓":" ↑"):"";
@@ -1714,12 +1713,12 @@ function unchangedKind(e){
 /*@shared*/
 function evBadge(e){
   if(e.pre)return{t:"PRE-IPO",k:"neu",
-    n:`traded before the company's first ownership filing (${e.reg}) — a pre-registration transaction reported in the catch-up Form 4, not a trade in the public stock`};
+    n:`traded before the company's first ownership filing (${e.reg}): a pre-registration transaction reported in the catch-up Form 4, not a trade in the public stock`};
   if(e.lb==="purchase, position unchanged")return{t:"UNCHANGED",k:"neu",
-    n:"shares bought and the position on record left where it was — this measurement did not register them; open the filing"};
+    n:"shares bought and the position on record left where it was: this measurement did not register them; open the filing"};
   if(e.c==="P")return{t:"BOUGHT",k:e.pl==="plan"?"soft":"up",
-    n:e.pl==="plan"?"planned — a purchase made under a pre-set Rule 10b5-1 plan, rarer still than an open-market buy"
-     :"an open-market purchase — their own money, at the market's price"};
+    n:e.pl==="plan"?"planned: a purchase made under a pre-set Rule 10b5-1 plan, rarer still than an open-market buy"
+     :"an open-market purchase: their own money, at the market's price"};
   if(e.lb==="exercise and sell")return{t:"EX &amp; SELL",k:"neu",
     n:"options exercised and the shares sold in the same filing: compensation cashed, the stake unchanged"};
   if(e.lb==="exercise, part sold")return{t:"EX, PART SOLD",k:"neu",
@@ -1727,22 +1726,22 @@ function evBadge(e){
   if(e.lb==="vested and sold")return{t:"VESTED &amp; SOLD",k:"neu",
     n:"shares vested and part sold in the same filing, usually to cover tax: compensation, not a reduction. The number says how much was kept"};
   if(e.lb==="convert and sell")return{t:"CONVERTED",k:"neu",
-    n:"units or a convertible exchanged into shares and sold the same day — the common-stock position this site measures did not move, though the holder's economic stake did"};
+    n:"units or a convertible exchanged into shares and sold the same day: the common-stock position this site measures did not move, though the holder's economic stake did"};
   if(e.lb==="sale, position unchanged")return{t:"UNCHANGED",k:"neu",
-    n:"shares sold and the position left where it was — this filing does not show where the shares came from; open it"};
+    n:"shares sold and the position left where it was: this filing does not show where the shares came from; open it"};
   if(e.pl==="discretionary")return{t:"SOLD",k:"down",
-    n:"a sale NOT marked as pre-scheduled — their decision, their timing"};
+    n:"a sale NOT marked as pre-scheduled: their decision, their timing"};
   if(e.pl==="plan")return{t:"SOLD",k:"dsoft",
-    n:"planned — sold under a Rule 10b5-1 plan, scheduled long before the trade date"};
+    n:"planned: sold under a Rule 10b5-1 plan, scheduled long before the trade date"};
   return{t:"SOLD",k:"dsoft",
-    n:"a sale — the 10b5-1 checkbox did not exist before April 2023, so scheduled-or-not is unknown"};
+    n:"a sale: the 10b5-1 checkbox did not exist before April 2023, so scheduled-or-not is unknown"};
 }
 /*@shared*/
 function evValCell(e){
   if(e.v===null||e.v===undefined)return '<span class="nopr" title="the filing reports no price on these rows">—</span>';
   const m=money(e.v);
-  if(e.fl)return `<span class="pwarn" title="as the filing states it — ${e.fl}. Almost certainly the filer\u2019s error; open the filing and see for yourself">${m} ⚠</span>`;
-  return `<span title="$${fmt(e.v)} — at the execution prices the Form 4 reports, not a market close">${m}</span>`;
+  if(e.fl)return `<span class="pwarn" title="as the filing states it: ${e.fl}. Almost certainly the filer\u2019s error; open the filing and see for yourself">${m} ⚠</span>`;
+  return `<span title="$${fmt(e.v)}: at the execution prices the Form 4 reports, not a market close">${m}</span>`;
 }
 /* TWO DATES, AND WHICH ONE LEADS DEPENDS ON THE QUESTION.
    Where the subject is disclosure -- the day strip, the trade table's
@@ -1757,7 +1756,7 @@ function evValCell(e){
 function lagNote(e){
   if(!e.td||!e.fd||e.td===e.fd)return"";
   const days=Math.round((Date.parse(e.fd)-Date.parse(e.td))/86400e3);
-  return days>4?` — filed ${days} days after the trade (the first Form 4 after a registration reports everything since the Form 3)`:" — filings lag trades by up to two business days";
+  return days>4?` · filed ${days} days after the trade (the first Form 4 after a registration reports everything since the Form 3)`:" · filings lag trades by up to two business days";
 }
 /*@shared*/
 function pctOf(e){
@@ -1790,7 +1789,7 @@ function spanDay(e,f){
 }
 /*@shared*/
 function approxNote(e){
-  return `≈ the walk left ${fmt(Math.abs(e.rs||0))} share${Math.abs(e.rs||0)===1?"":"s"} unexplained that day — under 1% of the trade and 0.1% of the position, so the figure cannot move`;
+  return `≈ the walk left ${fmt(Math.abs(e.rs||0))} share${Math.abs(e.rs||0)===1?"":"s"} unexplained that day: under 1% of the trade and 0.1% of the position, so the figure cannot move`;
 }
 /*@shared*/
 function pctWhy(e){
@@ -1802,11 +1801,11 @@ function pctWhy(e){
      rides on the cell. */
   if(e.rs)return `the day's filings moved the position by ${Math.abs(Math.round(e.rs)).toLocaleString("en-US")} shares the transactions do not explain (often a purchase the rules let the filer report later, on a Form 5), so the trade's share of the holding is not asserted`;
   if(e.ha&&(e.nc===null||e.nc===undefined))return "the record has no point on this filing's day, so what it did to the stake is not stated";
-  if(!e.ha)return "no common-stock position on record to measure against — Blackstone's CEO, for one, holds partnership units rather than issued stock of the company";
+  if(!e.ha)return "no common-stock position on record to measure against; Blackstone's CEO, for one, holds partnership units rather than issued stock of the company";
   return "the position before this trade computes to zero, and a percentage of nothing is not a number";
 }
 function evPctCell(e){
-  if(e.pre)return '<span class="nopr" title="before the company was public — not measured against the public-company stake">pre-IPO</span>';
+  if(e.pre)return '<span class="nopr" title="before the company was public, not measured against the public-company stake">pre-IPO</span>';
   const p=pctOf(e);
   /* a kept-apart row may still carry a number: a vest that doubled the
      stake with part sold to cover tax reads "stake ×2.2", not "unchanged" */
@@ -1953,7 +1952,7 @@ function evMove(e){
 }
 /*@shared*/
 function moveWhy(e){
-  if(e.c!=="P"&&e.c!=="S"&&e.po===0&&pctOf(e))return "this filing takes the position on record to zero with no sale; the change is not ranked until a later filing explains it — open the filing";
+  if(e.c!=="P"&&e.c!=="S"&&e.po===0&&pctOf(e))return "this filing takes the position on record to zero with no sale; the change is not ranked until a later filing explains it; open the filing";
   if(unchangedKind(e)!==null&&!pctOf(e))return "the shares sold did not come out of the position on record; a percentage of a stake that did not move is not a number";
   return pctWhy(e);
 }

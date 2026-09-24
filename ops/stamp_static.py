@@ -160,10 +160,12 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
                 f'<div class="hstat"><div class="n">{m["open"]:,}</div><div class="k">Companies, computed nightly</div></div>')
     page = page.replace('<div class="herostats" id="herostats"></div>',
                         f'<div class="herostats" id="herostats">{stats(n)}</div>', 1)
-    # THE FIVE BIGGEST FOUNDER MOVES OF THE WEEK (2026-09-23): founders only,
+    # THE THREE BIGGEST FOUNDER MOVES OF THE WEEK (2026-09-23): founders only,
     # ranked by the dollar value of the trade; a row that moved the stake says
-    # by how much. Seven days, widened to 14 then 30 when the week is quiet,
-    # so the section never publishes empty on a slow week.
+    # by how much. Seven days, widened to 14 then 30 when
+    # the week is quiet, so the section never publishes empty on a slow week.
+    # Three rows (2026-09-24): the section is a proof of life, not the tape;
+    # more of the page shows without a scroll.
     try:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         import kinds as _kinds
@@ -174,7 +176,7 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
         wrows, days = [], 7
         for days in (7, 14, 30):
             wrows, _since = _kinds.window_rows(evdir, today, days=days, founders_only=True)
-            if len(wrows) >= 5:
+            if len(wrows) >= 3:
                 break
     except Exception:  # noqa: BLE001 - no events file: the section says so
         wrows, days, names = [], 7, {}
@@ -196,7 +198,7 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
         kind = _kinds.kind_of(e) if _kinds else ""
         cls = "sell" if kind in ("disc", "sold") else "buy" if kind == "bought" else ""
         who = e.get("ceo") or names.get(tk, tk)
-        bits = [f"<b>{who}</b> &mdash; {label}"]
+        bits = [f"<b>{who}</b>: {label}"]
         if v:
             bits[-1] += f", <b>{money(v)}</b>"
         if mv is not None:
@@ -215,16 +217,16 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
             except (TypeError, ValueError):
                 return 0.0
         wrows.sort(key=lambda e: -_val(e))
-        rows5 = wrows[:5]
+        rows5 = wrows[:3]
         fw = "".join(fwrow(e) for e in rows5)
     else:
-        fw = '<div class="fwempty">A quiet week on the tape &mdash; <a href="/tape/">the full record</a> is a click away.</div>'
+        fw = '<div class="fwempty">A quiet week on the tape. <a href="/tape/">The full record</a> is a click away.</div>'
     page = page.replace('<div class="fwrows" id="fwrows"></div>', f'<div class="fwrows" id="fwrows">{fw}</div>', 1)
     # THE THREE LARGEST FOUNDER STAKES, BY VALUE: the cards are the home
     # page's authority flowing to the flagship pages.
     cards = []
     for r in rows[:3]:
-        sub = f'{r["ceo"]}&rsquo;s stake &mdash; {money(r["val"])} at the latest close'
+        sub = f'{r["ceo"]}&rsquo;s stake, worth {money(r["val"])} at the latest close'
         cards.append(f'<a class="scard" href="/company/{r["tk"]}/">'
                      f'<div class="sck">{r["tk"]} &middot; {(r["co"] or r["tk"]).upper()}</div>'
                      f'<div class="scn">{r["pct"]:.2f}%</div>'
@@ -234,7 +236,7 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
     page = page.replace('<span id="lednum"></span>', f'<span id="lednum">{n["led"]}</span>', 1)
     with open(index_out, "w", encoding="utf-8") as fh:
         fh.write(page)
-    print(f"  stamped: {n['above5']} of {n['open']} in the strip, {len(wrows[:5]) if wrows else 0} week rows ({days}d window), "
+    print(f"  stamped: {n['above5']} of {n['open']} in the strip, {len(rows5) if wrows else 0} week rows ({days}d window), "
           f"{len(cards)} stake cards, {n['led']} founder-led / {money(n['led_value'])}")
     return 0
 
