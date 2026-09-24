@@ -81,7 +81,10 @@ def main(argv):
         groups = sorted(led.groups.items(), key=lambda kv: -kv[1].shares)
         open_sum = 0.0
         for key, g in groups:
-            sec, di = key
+            # the walk keys groups by the class title alone (a string);
+            # direct-or-indirect lives on the group and in the vehicle keys
+            sec = key if isinstance(key, str) else " · ".join(str(p) for p in key if p)
+            di = getattr(g, "direct", "") or "?"
             gone = key in closed
             if not gone:
                 open_sum += g.shares
