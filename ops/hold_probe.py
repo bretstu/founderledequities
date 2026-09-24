@@ -7,7 +7,7 @@ register). This pass fights nothing: it RUNS THE LEDGER -- the same
 build_ledger the nightly uses, same exclusions, same keying -- and prints
 its final state: every (class, direct-or-indirect) group the newest filings
 state, vehicle by vehicle, with the statement's date and accession. The sum
-is led.total(), the very number the pipeline reports, so the question "do
+is led.total, the very number the pipeline reports, so the question "do
 the vehicles tally to what we publish" is answered by construction; what
 the eye is here to judge is the DECOMPOSITION -- whether the lines read
 like a section the page could show.
@@ -25,7 +25,7 @@ sys.path.insert(0, ROOT)
 from fle.edgar import EdgarClient                    # noqa: E402
 from fle.exclusions import read_exclusions           # noqa: E402
 from fle.identity import peo_from_certification      # noqa: E402
-from fle.ledger import build_ledger                  # noqa: E402
+from fle.ledger import build_ledger, closed_groups   # noqa: E402
 from fle.outstanding import shares_outstanding       # noqa: E402
 
 
@@ -74,19 +74,27 @@ def main(argv):
         except Exception as e:
             print(f"\n== {tk}: walk failed: {e} ==")
             continue
-        total = led.total()
+        total = led.total          # a @property: groups_total over the groups, split-adjusted
         print(f"\n== {tk} · {r.get('ceo','')} · panel {want:,.0f} ({r.get('pct','?')}%) · ledger total {total:,.0f} "
               f"({'ties' if want and abs(total-want)<=max(1.0,(want)*0.001) else f'off by {total-(want or 0):+,.0f}'}) ==")
-        groups = sorted(led.groups.items(), key=lambda kv: -sum(kv[1].vehicles().values()))
-        for (sec, di), g in groups:
+        closed = {k for k, _g, _c in closed_groups(led.groups, getattr(led, "retired", None) or {}, "")}
+        groups = sorted(led.groups.items(), key=lambda kv: -kv[1].shares)
+        open_sum = 0.0
+        for key, g in groups:
+            sec, di = key
+            gone = key in closed
+            if not gone:
+                open_sum += g.shares
+            print(f"   {sec}  ·  {di}  ·  {g.shares:,.0f} shares  ·  stated {g.as_of or g.filed}  ·  {g.accession}"
+                  + ("  ·  CLOSED (not in the total)" if gone else ""))
             vs = g.vehicles()
-            gsum = sum(vs.values())
-            print(f"   {sec}  ·  {di}  ·  {gsum:,.0f} shares  ·  stated {g.as_of or g.filed}  ·  {g.accession}")
             for veh, amt in sorted(vs.items(), key=lambda kv: -kv[1]):
-                share = f"{amt/want*100:5.1f}%" if want else "    ?"
+                share = f"{amt/want*100:5.1f}%" if want and not gone else "    ·"
                 name = veh if isinstance(veh, str) else " ".join(str(p) for p in veh if p)
                 label = name or ("direct" if di == "D" else "indirect, unstated")
                 print(f"        {amt:>15,.0f}  {share}  {label[:64]}")
+        if abs(open_sum - total) > 1:
+            print(f"   (open groups as filed sum {open_sum:,.0f}; the total {total:,.0f} is split-adjusted)")
         if led.partnership_units:
             print(f"   partnership units beside the classes: {led.partnership_units:,.0f}")
         if led.note:
