@@ -548,7 +548,7 @@ def test_the_alerts_page_is_built_with_three_free_cards(tmp_path):
     assert "When a founder" in page and "1% or more" in page
     assert "within about ten minutes" in page, "the live chain (live.py -> now.sh -> deploy -> alerts.py) makes the claim true"
     assert page.count('class="lcard') == 2 and "Watch the founders" in page and "Watch one company" in page
-    assert "every Monday" in page and "one-click stop" in page
+    assert "every Sunday" in page and "one-click stop" in page
     assert 'class="pro">Members' not in page and "trial" not in page.lower(), "no members mark: everything on the page is free"
     assert "Paul Gu bought $1.3M of Upstart" in page and "1.33% &rarr; 1.38%" in page and "Upstart on Founder Led Equities" in page, "the sample is the email as it arrives"
     assert 'href="/alerts/">Alerts' in page, "the page carries the nav with itself in it"
