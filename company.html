@@ -127,6 +127,7 @@
     .csec .sub{font-size:13px;color:var(--mut);margin-bottom:14px}
     .crec{margin-top:30px;padding-top:12px;border-top:1px solid var(--line)}
     .crec .cshead{justify-content:flex-end;margin-bottom:8px}
+    .cchart{border:1px solid var(--line);background:#fff;padding:18px 20px 10px;margin-top:6px}
     .cchart svg{width:100%;height:auto;display:block;overflow:visible}
     /* the dots arrive after the line has drawn; the reduced-motion rule in
        site.css switches every animation off */
@@ -217,7 +218,7 @@
     /* THE HEAD IS A ROW (2026-09-23): the answer on the left, the watch box
        on the right, the H1 level with the box's top; on a phone the box
        follows the answer at full width. */
-    .cwatchslot{margin-top:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:15px 0}
+    .cwatchslot{margin-top:24px;border:1.5px solid var(--ink);background:#fff;padding:16px 22px}
     .cwatchslot .wcard{display:flex;align-items:center;flex-wrap:wrap;gap:12px 26px}
     .cwatchslot .wq{flex:1 1 auto;min-width:260px}
     .cwatchslot .wform{flex-direction:row;flex:none}
@@ -236,11 +237,12 @@
        ruled top and bottom by the page's hairline, three columns split by
        left hairlines -- no borders, no fills, no shadows. The label names
        the column, the figure answers it, the date is the mono fine print. */
-    .cband.kpi{grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:30px}
+    .cband.kpi{grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:26px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
     @media(max-width:820px){.cband.kpi{grid-template-columns:1fr}
-      .cband.kpi>div{padding:12px 0 10px}}
-    .cband.kpi>div{align-items:flex-start;text-align:left;justify-content:flex-start;min-height:0;padding:4px 28px 6px;gap:2px;border:0;border-radius:0;background:transparent;box-shadow:none}
-    .cband.kpi>div:first-child{padding-left:0}
+      .cband.kpi>div{border-left:0;border-top:1px solid var(--line);padding:16px 0 14px}
+      .cband.kpi>div:first-child{border-top:0}}
+    .cband.kpi>div{align-items:flex-start;text-align:left;justify-content:flex-start;min-height:0;padding:22px 28px 20px;gap:2px;border:0;border-radius:0;background:transparent;box-shadow:none}
+    .cband.kpi>div+div{border-left:1px solid var(--line)}
     .cband.kpi>div:first-child{padding-left:0;background:transparent;border-color:var(--line)}
     .cband.kpi>div:last-child{padding-right:0}
     .cband.kpi .v{font-family:var(--disp);font-size:clamp(23px,2.1vw,28px);font-weight:700;letter-spacing:-.015em;margin-top:7px;line-height:1.05;color:var(--ink)}
