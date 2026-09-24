@@ -63,7 +63,12 @@ export async function onRequestPost({ request, env }) {
   // however many of a reader's watches it matches (a name and FOUNDERS both)
   const byEmail = new Map();
   for (const w of watches) {
-    const mine = w.tk === "FOUNDERS" ? events.filter((e) => e.founder) : events.filter((e) => String(e.tk).toUpperCase() === w.tk);
+    // TWO PROMISES (2026-09-24): a per-company watch takes every event of its
+    // ticker; the site-wide FOUNDERS stream promises "moves the stake 1% or
+    // more" and takes only events that clear that bar (move1 from the
+    // pipeline; older posts without it fall back to the move field).
+    const clears1 = (e) => (e.move1 != null ? !!Number(e.move1) : Math.abs(Number(e.move) || 0) >= 1);
+    const mine = w.tk === "FOUNDERS" ? events.filter((e) => e.founder && clears1(e)) : events.filter((e) => String(e.tk).toUpperCase() === w.tk);
     for (const e of mine) {
       const seen = await env.HITS.prepare("SELECT 1 FROM alerts_sent WHERE watch_id = ?1 AND accession = ?2").bind(w.id, e.accession).first();
       if (seen) continue;

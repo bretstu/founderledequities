@@ -537,23 +537,31 @@ console.log("loaded "+process.argv.slice(2).length+" scripts");process.exit(0);
 
 
 def test_the_alerts_page_is_built_with_three_free_cards(tmp_path):
-    """THE ALERTS PAGE, ALL FREE (2026-09-23): one rule stated once, three
-    grains of one stream (the letter, live founder alerts, the watches),
-    a sample email; the live alert is a watch on the reserved name FOUNDERS."""
+    """THE ALERTS PAGE, ONE SIGNUP (2026-09-24): two cards -- the site-wide
+    signup (the >=1% founder alert plus the Monday email, one address, both
+    streams) and the pointer to the per-company watches. No fork, no
+    accounts: every email manages itself with its own stop links. The old
+    three-card chooser (letter / live / watches) is gone."""
     panel, founders, prices, sp, out = _fixture(tmp_path)
     bcp.main(panel, founders, prices, sp, out)
     page = open(os.path.join(out, "alerts", "index.html"), encoding="utf-8").read()
-    assert "When a founder" in page and "1% or more" in page and "within about ten minutes of the SEC filing" in page
-    assert page.count('class="lcard') == 3 and "The letter" in page and "Live founder alerts" in page and "Watches" in page
-    assert "Everything founders did this week" in page and "Pick any company" in page
+    assert "When a founder" in page and "1% or more" in page
+    assert "within about ten minutes" not in page, "the sender runs with the nightly; the page does not overclaim"
+    assert page.count('class="lcard') == 2 and "Watch the founders" in page and "Watch one company" in page
+    assert "every Monday" in page and "one-click stop" in page
     assert 'class="pro">Members' not in page and "trial" not in page.lower(), "no members mark: everything on the page is free"
     assert "Paul Gu bought $1.3M of Upstart" in page and "1.33% &rarr; 1.38%" in page and "Upstart on Founder Led Equities" in page, "the sample is the email as it arrives"
     assert 'href="/alerts/">Alerts' in page, "the page carries the nav with itself in it"
     js = open(os.path.join(out, "alerts.js"), encoding="utf-8").read()
-    assert 'tk:"FOUNDERS"' in js and "/api/subscribe" in js and "/api/watch" in js
+    assert "/api/subscribe" in js, "one form, the unified signup"
+    assert 'tk:"FOUNDERS"' not in js, "the page no longer posts its own FOUNDERS watch; the confirm click writes it"
     assert "trial" not in js.lower() and "/api/me" not in js and "ME&&ME.pro" not in js, "no session, no trial button"
     w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
     assert 'tk === "FOUNDERS"' in w and "for members" not in w
+    assert "env.RESEND_API_KEY || env.RESEND_KEY" in w, "one key name; the mismatch that silenced every confirmation stays fixed"
+    sub = open(os.path.join(ROOT, "functions", "api", "subscribe.js"), encoding="utf-8").read()
+    assert "'FOUNDERS'" in sub and "confirmed = 1" in sub, "the confirm click enrolls both streams"
+    assert "Monday tape" not in sub, "the reader is never told about 'the tape'"
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
     assert "tk = 'FOUNDERS'" in run and "e.founder" in run and "b.accs" in run, "FOUNDERS matches founder events; one email per event per address"
     assert "PRO_STATUSES" not in run and "proNow" not in run, "no subscription check in the sender"

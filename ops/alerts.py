@@ -302,6 +302,13 @@ def decisions(events_p, since, founders=None, names=None):
             out.append({"tk": tk, "ceo": r.get("ceo") or "", "code": code, "company": name,
                         "value": value, "pct_after": r.get("pct_after") or "", "pct_before": f"{b:.2f}" if b is not None else "",
                         "shares": r.get("shares") or "", "move": r.get("pct_of_holding") or "",
+                        # TWO PROMISES, ONE POST (2026-09-24). A per-company
+                        # watch asked about that person: any trade, or any
+                        # other move of 1%+. The site-wide founder stream
+                        # promises only moves of 1% or more, so each event
+                        # says whether it clears that bar and the run
+                        # endpoint filters the FOUNDERS watches by it.
+                        "move1": 1 if mv >= MIN_MOVE else 0,
                         "traded": r.get("traded") or "", "filed": filed,
                         "accession": r.get("accession") or f"{tk}:{filed}:{code}",
                         "url": r.get("url") or "", "kind": "decision" if decision else "move",

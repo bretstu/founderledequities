@@ -18,7 +18,7 @@
     .lpage{max-width:var(--max);margin:0 auto;padding:clamp(36px,4.5vw,60px) clamp(20px,3.5vw,48px) 80px}
     .lpage h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(36px,5vw,56px);margin:0 0 10px}
     .lpage .lead{font-size:16px;line-height:1.55;color:var(--mut);max-width:60ch;margin:0 0 28px}
-    .lgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:28px}
+    .lgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:28px;max-width:860px}
     @media(max-width:820px){.lgrid{grid-template-columns:1fr}}
     .lcard{border:1px solid var(--line);border-radius:2px;background:var(--panel);padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px;min-height:168px}
     .lcard h2{font-family:var(--disp);font-weight:500;font-size:24px;letter-spacing:-.01em;line-height:1.15;margin:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
@@ -60,15 +60,15 @@
 {{TOPNAV}}
 <main class="lpage">
   <h1>When a founder&#8217;s stake moves.</h1>
-  <p class="lead">One rule for every alert: an open-market purchase or a discretionary sale of any size, or any other filing that moves the holding by 1% or more. Pick how much of it you want.</p>
-  <div id="lbody"><div class="lgrid"><div class="lcard"><h2>The letter</h2><div class="d">Everything founders did this week, in one email. Sundays.</div></div><div class="lcard"><h2>Live founder alerts</h2><div class="d">Every founder&#8217;s move, within about ten minutes of the SEC filing.</div></div><div class="lcard"><h2>Watches</h2><div class="d">Pick any company and get an email when its chief executive&#8217;s stake moves.</div></div></div></div>
+  <p class="lead">One signup, two emails: an alert the day any founder&#8217;s move changes their stake by 1% or more, and everything founders did that week, every Monday. Free. No account. Every email carries its own one-click stop.</p>
+  <div id="lbody"><div class="lgrid"><div class="lcard"><h2>Watch the founders</h2><div class="d">The alert the day a founder&#8217;s stake moves 1% or more, and the week in one email every Monday.</div></div><div class="lcard"><h2>Watch one company</h2><div class="d">The field is on every company page: an email when that chief executive&#8217;s stake moves. The links in each email manage it.</div></div></div></div>
   <div class="lk">What one looks like</div>
   <div class="sample">
     <div class="from">Founder Led Equities</div>
     <div class="h">Paul Gu bought $1.3M of Upstart on the open market.</div>
     <table class="facts"><tr><td>Bought</td><td>61,700 shares &middot; $1.3M &middot; open market</td></tr><tr><td>Transaction date</td><td>09/10/2026</td></tr><tr><td>Filing date</td><td>09/14/2026</td></tr><tr><td>Stake</td><td>1.33% &rarr; 1.38% &nbsp;(+3.9% of the holding)</td></tr></table>
     <div class="p" style="margin-top:10px"><b>Upstart on Founder Led Equities &rarr;</b></div>
-    <div class="foot">Live founder alerts: every founder&#8217;s move, as it is filed.<br>Stop these &middot; Stop everything &middot; Nothing here is investment advice.</div>
+    <div class="foot">Watch the founders: any move that changes a founder&#8217;s stake by 1% or more.<br>Stop these &middot; Stop everything &middot; Nothing here is investment advice.</div>
   </div>
 </main>
 <script src="/alerts.js"></script>

@@ -16,11 +16,17 @@ async function ensure(env) {
 }
 
 async function send(env, to, subject, text, html) {
-  if (!env.RESEND_KEY) return;
+  // ONE KEY NAME (2026-09-24): this function alone read RESEND_KEY while
+  // subscribe.js and watch/run.js read RESEND_API_KEY. With only the
+  // latter configured, every confirmation email silently never sent, no
+  // watch could ever confirm, and the whole alert product was dead with
+  // no error anywhere. Both names work now.
+  const key = env.RESEND_API_KEY || env.RESEND_KEY;
+  if (!key) return;
   await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: { "Authorization": `Bearer ${env.RESEND_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: env.MAIL_FROM || "Founder Led Equities <hello@founderledequities.com>", to, subject, text, html }),
+    headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: env.MAIL_FROM || "Founder Led Equities <tape@founderledequities.com>", to, subject, text, html }),
   });
 }
 
@@ -52,7 +58,7 @@ export async function onRequestPost({ request, env }) {
   // every watch confirms by one click, like the letter
   const link = `${site(env)}/api/watch?confirm=${t}`;
   const what = tk === "FOUNDERS"
-    ? "every founder's open-market buy and discretionary sale, within minutes of the SEC filing"
+    ? "an email the day any founder's move changes their stake by 1% or more"
     : `an email when they buy on the open market or make a discretionary sale`;
   await send(env, email, `Confirm: watch ${ceo || tk}`,
     `One click and you're watching ${ceo || tk}${tk === "FOUNDERS" ? "" : ` (${tk})`}: ${what}.\n\n${link}\n\nIf you didn't ask for this, ignore it and nothing happens.`,

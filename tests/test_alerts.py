@@ -65,7 +65,14 @@ def test_a_watch_mails_any_move_of_the_stake(tmp_path):
     assert got["SECZ"]["kind"] == "move" and got["SECZ"]["sentence"] == "Carlos Domingo\u2019s SECZ stake rose 5.0%: award granted."
     assert "BOX" not in got and "PCVX" not in got, "under 1%: not a move"
     assert got["UPST"]["founder"] and got["SECZ"]["founder"] is False, "the founder flag is the live alert's scope"
+    # TWO PROMISES, ONE POST (2026-09-24): every posted event says whether it
+    # cleared the 1% bar. A per-company watch takes everything of its ticker;
+    # the site-wide FOUNDERS stream takes only move1 events, so CMPR's -0.3%
+    # discretionary sale reaches CMPR watchers and never the founder stream.
+    assert got["UPST"]["move1"] == 1 and got["DBX"]["move1"] == 1 and got["SECZ"]["move1"] == 1
+    assert got["CMPR"]["move1"] == 0, "a sub-1% decision is posted for its own watchers, not the founder stream"
     run = open(os.path.join(str(ROOT), "functions", "api", "watch", "run.js"), encoding="utf-8").read()
+    assert "clears1" in run and "e.founder && clears1(e)" in run, "the FOUNDERS stream filters by the 1% promise"
     assert "e.sentence" in run and '(e.sentence || e.code === "P" || e.code === "S")' in run, "the mail says what the tape says"
     # THE MAIL (2026-09-17): the day and the size, the stake after and before, one link, a footer naming the alert
     assert "e.body" in run and "on Founder Led Equities" in run and "Stop everything" in run
