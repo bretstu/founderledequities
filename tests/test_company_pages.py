@@ -546,7 +546,7 @@ def test_the_alerts_page_is_built_with_three_free_cards(tmp_path):
     bcp.main(panel, founders, prices, sp, out)
     page = open(os.path.join(out, "alerts", "index.html"), encoding="utf-8").read()
     assert "When a founder" in page and "1% or more" in page
-    assert "within about ten minutes" not in page, "the sender runs with the nightly; the page does not overclaim"
+    assert "within about ten minutes" in page, "the live chain (live.py -> now.sh -> deploy -> alerts.py) makes the claim true"
     assert page.count('class="lcard') == 2 and "Watch the founders" in page and "Watch one company" in page
     assert "every Monday" in page and "one-click stop" in page
     assert 'class="pro">Members' not in page and "trial" not in page.lower(), "no members mark: everything on the page is free"

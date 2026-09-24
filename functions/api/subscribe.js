@@ -17,7 +17,7 @@ const confirmHtml = (link) => `<!doctype html><html><body style="margin:0;paddin
 <tr><td style="padding:28px;">
 <div style="font-family:Menlo,Consolas,monospace;font-size:10px;letter-spacing:.14em;color:#8C8880;">FOUNDER LED EQUITIES</div>
 <h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-size:30px;line-height:1.1;margin:18px 0 6px;">One click and you're on the list.</h1>
-<p style="font-size:14px;line-height:1.5;color:#5F5B55;margin:0 0 18px;">Two emails, one list: an alert the day any founder&rsquo;s move changes their stake by 1% or more, and everything founders did that week, every Monday. Every alert carries a one-click stop; the Monday email has its own unsubscribe link.</p>
+<p style="font-size:14px;line-height:1.5;color:#5F5B55;margin:0 0 18px;">Two emails, one list: an alert when any founder&rsquo;s stake moves 1% or more, usually within minutes of the SEC filing, and everything founders did that week, every Monday. Every alert carries a one-click stop; the Monday email has its own unsubscribe link.</p>
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 22px;"><tr><td style="background:#1A1A1A;"><a href="${link}" style="display:inline-block;padding:11px 22px;color:#F7F4EE;font-size:14px;font-weight:bold;text-decoration:none;">Confirm &rarr;</a></td></tr></table>
 <p style="font-size:11px;line-height:1.5;color:#8C8880;margin:0;">The link works once and expires in a day. If you didn't ask for this, ignore it and nothing happens.</p>
 </td></tr></table></td></tr></table></body></html>`;
@@ -45,7 +45,7 @@ export async function onRequestPost({ request, env }) {
       from: "Founder Led Equities <tape@founderledequities.com>",
       to: [email],
       subject: `Confirm: founder moves, as they file (${new Date().toISOString().slice(0, 10)})`,
-      text: `One click and you're on the list: an alert the day any founder's move changes their stake by 1% or more, and everything founders did that week, every Monday. Every alert carries a one-click stop; the Monday email has its own unsubscribe link.\n\n${link}\n\nThe link works once and expires in a day. If you didn't ask for this, ignore it and nothing happens.`,
+      text: `One click and you're on the list: an alert when any founder's stake moves 1% or more, usually within minutes of the SEC filing, and everything founders did that week, every Monday. Every alert carries a one-click stop; the Monday email has its own unsubscribe link.\n\n${link}\n\nThe link works once and expires in a day. If you didn't ask for this, ignore it and nothing happens.`,
       html: confirmHtml(link),
     }),
   });

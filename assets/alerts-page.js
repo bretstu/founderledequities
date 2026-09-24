@@ -11,9 +11,9 @@ function boot(){
   const q=new URLSearchParams(location.search);
   /* the two landings: a FOUNDERS watch confirmed from an old email, or a
      confirm link that expired */
-  const said={on:"Confirmed. The next founder move of 1% or more lands in your inbox.",expired:"That link expired; enter your address again here."}[q.get("watch")]||"";
+  const said={on:"Confirmed. The next founder move of 1% or more lands in your inbox, minutes after the filing.",expired:"That link expired; enter your address again here."}[q.get("watch")]||"";
   $("#lbody").innerHTML=`<div class="lgrid">
-    <div class="lcard"><h2>Watch the founders</h2><div class="d">The alert the day a founder&#8217;s stake moves 1% or more, and the week in one email every Monday. One signup covers both.</div>
+    <div class="lcard"><h2>Watch the founders</h2><div class="d">The alert when a founder&#8217;s stake moves 1% or more, within about ten minutes of the SEC filing, and the week in one email every Monday. One signup covers both.</div>
       <div class="ctl"><form class="lform" onsubmit="return joinAll(event)"><input type="email" id="semail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email"><button class="lbtn" type="submit">Watch the founders &rarr;</button></form></div>
       <div class="fine" id="sfine">${esc(said)||"One click from your inbox confirms it."}</div></div>
     <div class="lcard"><h2>Watch one company</h2><div class="d">An email when that chief executive&#8217;s stake moves: any trade, or any other filing that moves it by 1% or more.</div>

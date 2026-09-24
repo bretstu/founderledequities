@@ -58,7 +58,7 @@ export async function onRequestPost({ request, env }) {
   // every watch confirms by one click, like the letter
   const link = `${site(env)}/api/watch?confirm=${t}`;
   const what = tk === "FOUNDERS"
-    ? "an email the day any founder's move changes their stake by 1% or more"
+    ? "an email when any founder's stake moves 1% or more, usually within minutes of the SEC filing"
     : `an email when they buy on the open market or make a discretionary sale`;
   await send(env, email, `Confirm: watch ${ceo || tk}`,
     `One click and you're watching ${ceo || tk}${tk === "FOUNDERS" ? "" : ` (${tk})`}: ${what}.\n\n${link}\n\nIf you didn't ask for this, ignore it and nothing happens.`,
