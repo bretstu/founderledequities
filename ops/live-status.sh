@@ -38,5 +38,7 @@ echo "== EDGAR's front page, checked independently (every FOUNDER line should sa
 python3 ops/live.py --show 2>/dev/null | grep -E "FOUNDER|Form 4 filings" || echo "  (could not read the feed)"
 
 echo "== the mail rule =="
-echo "  a founder's open-market buy or discretionary sale, any size;"
-echo "  any other filing by a founder that moves the holding >= ${LIVE_MIN_MOVE:-1}% (the tape's chip; the per-company watch uses the same rule)"
+echo "  this watcher (mail to LIVE_TO): a founder's open-market buy or discretionary sale, any size;"
+echo "  any other filing by a founder that moves the holding >= ${LIVE_MIN_MOVE:-1}%"
+echo "  subscribers get less: the founder stream mails only moves of 1% or more;"
+echo "  a per-company watch mails that person's trades of any size, or any other move of 1%+"
