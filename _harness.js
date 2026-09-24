@@ -122,27 +122,41 @@ const P=runPage();
     assert(rows.length>50,"the window holds the year's filings: "+rows.length);
     assert(rows.some(e=>e.c==="A")&&rows.some(e=>e.c==="G")&&rows.some(e=>e.c==="F"),"awards, gifts and withholding are rows of the tape, not filtered before the kind is decided");
     assert(!rows.some(e=>e.pre),"a pre-IPO catch-up row stays on the company page");
-    // kind groups in order: bought, discretionary, sold (not stated), plan, compensation, transfer
+    // THE LEDGER'S ORDER (2026-09-24): the filed day newest first; within a
+    // day the move ranks the rows, unstated figures last; the kinds are the
+    // filter chips now, not the sort
     const order={bought:0,disc:1,sold:2,plan:3,comp:4,xfer:5};
     const ks=rows.map(e=>order[tapeKind(e)]);
-    assert(ks.every((k,i)=>i===0||k>=ks[i-1]),"kind groups in the tape's order");
+    const fds=rows.map(e=>(e.fd||"").slice(0,10));
+    assert(fds.every((d,i)=>i===0||d<=fds[i-1]),"the filed day descends the tape");
     assert(ks.includes(0)&&ks.includes(1)&&ks.includes(3)&&ks.includes(4)&&ks.includes(5),"bought, discretionary, planned, compensation and transfer all present in a year");
     assert(!ks.includes(2),"no 'not stated' sale in the last year: every Form 4 since April 2023 carries the box");
-    // ranked by the stake's move within a group, whatever the direction
     const mv=e=>{const p=P.evMove(e);return p?Math.abs(p.v):null;};
-    for(const k of [0,1,3,4,5]){const g=rows.filter(e=>order[tapeKind(e)]===k).map(mv).filter(x=>x!==null);assert(g.every((x,i)=>i===0||x<=g[i-1]),"ranked by the stake's move within kind "+k);}
+    for(const d of [...new Set(fds)]){const g=rows.filter(e=>(e.fd||"").slice(0,10)===d);
+      const gm=g.map(mv);const ranked=gm.filter(x=>x!==null);
+      assert(ranked.every((x,i)=>i===0||x<=ranked[i-1]),"ranked by the stake's move within the day "+d);
+      const firstNull=gm.indexOf(null);if(firstNull>=0)assert(gm.slice(firstNull).every(x=>x===null),"unstated figures close their day "+d);}
     const html=els["#actwrap"]._html;
     renderActivity();
     assert(els["#actwrap"]._html.includes('class="tape"')&&(els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===rows.length,"one table row per filing, once the excerpt's limit is lifted");
-    assert(/data-key="kind">Kind<span class="arr">.*data-key="co">Company.*data-key="ceo">CEO.*data-key="v">Amount.*data-key="sh">Shares.*data-key="ch">Of holding.*data-key="st">Stake.*data-key="td"[^>]*>Date/.test(html),"eight sortable columns (2026-09-20): kind, company, CEO, amount, shares, of holding, stake after, date");
-    assert(/<td class="td"><span class="dt" title="[^"]*; filed /.test(html),"every row's date carries the filed day on hover (2026-09-18: one date column)");
+    assert(/data-key="kind">Kind<span class="arr">.*data-key="co">Company.*data-key="ceo">CEO.*data-key="v">Amount.*data-key="sh">Shares.*data-key="ch">Of holding.*data-key="st">Stake/.test(html)&&!html.includes('data-key="td"'),"seven sortable columns (2026-09-24): the date left for the day headers");
+    assert(/class="detail tdt" title="[^"]*; filed /.test(html),"a trade from another day carries the manner, the lag and the filed day on its note's hover (2026-09-24)");
     // THE HEADERS SORT, LIKE THE SCOREBOARD'S; Kind restores the tape's own order
     P.setTapeSort("v"); {const r=actSorted(actRows()); const vs=r.map(e=>((e.c==="P"||e.c==="S")&&e.v&&!e.fl)?e.v:null).filter(x=>x!==null); assert(vs.every((x,i)=>i===0||x<=vs[i-1]),"Amount sorts descending on the first click"); assert(els["#actwrap"]._html.includes('data-key="v">Amount<span class="arr"> ↓'),"and the header shows the arrow");}
     P.setTapeSort("v"); {const r=actSorted(actRows()); const vs=r.map(e=>((e.c==="P"||e.c==="S")&&e.v&&!e.fl)?e.v:null).filter(x=>x!==null); assert(vs.every((x,i)=>i===0||x>=vs[i-1]),"a second click reverses");}
     P.setTapeSort("fd"); {const r=actSorted(actRows()); const ds=r.map(e=>e.fd); assert(ds.every((x,i)=>i===0||x<=ds[i-1]),"Filed sorts newest first");}
     P.setTapeSort("ceo"); {const r=actSorted(actRows()); const cs=r.map(e=>e.ceo||""); assert(cs.every((x,i)=>i===0||x.localeCompare(cs[i-1])>=0),"a name column sorts A to Z on the first click");}
     P.setTapeSort("kind"); assert(state.ev.sort.key===null,"Kind is the tape's own order again");
-    assert(idxsrc.includes("; filed ${shortDay(e.fd)}"),"the filed day rides the date's hover");
+    // THE DAYS ARE THE STRUCTURE (2026-09-24): in the tape's own order the
+    // rows sit under day headers, newest filed day first, each an anchor;
+    // a column sort flattens the table and Kind brings the days back
+    {const full=els["#actwrap"]._html;const days=[...new Set(actSorted(actRows()).map(e=>(e.fd||"").slice(0,10)))];
+     assert((full.match(/class="dgrp"/g)||[]).length===days.length,"one day header per filed day");
+     assert(full.includes(`id="d${days[0]}"`)&&full.indexOf('class="dgrp"')<full.indexOf('class="dayrow'),"the newest day heads the tape, before its rows");
+     assert(full.includes(`href="#d${days[0]}"`),"the day header is an anchor");}
+    P.setTapeSort("v"); assert(!els["#actwrap"]._html.includes('class="dgrp"'),"a column sort flattens the days away");
+    P.setTapeSort("kind");
+    assert(idxsrc.includes("; filed ${shortDay(e.fd)}"),"the filed day rides the trade note's hover");
     // THE SCOREBOARD IS AN OWNERSHIP TABLE (2026-09-17): the 12-month change in the stake and the as-of date, not the last trade
     assert(!idxsrc.includes('data-key="asof"')&&!idxsrc.includes('data-key="ltf"')&&!idxsrc.includes('data-key="c12"'),"the scoreboard is stake, worth, market cap, and no date or trade columns");
     assert(html.includes("openCompany(")&&html.includes("sec.gov"),"rows are doors and the amount links to the filing");

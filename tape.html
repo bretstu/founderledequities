@@ -27,22 +27,19 @@
        from seven columns and clipped the names. One row under the table's
        count line, the same band the home page has; the table takes the
        whole measure. */
-    /* under the filters, before the rows: the ask is seen before the scroll */
-    .subscribe{margin:14px 0 22px;padding:16px 22px;border:1px solid var(--ink)}
-    .subscribe .homesub{justify-content:space-between}
-    .subscribe .hs-k{margin-right:auto}
-    body.pro .subscribe{display:none}
-    .subscribe .homesub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-    .subscribe .hs-k{font-family:var(--disp);font-size:20px;font-weight:500;margin-right:6px}
-    .subscribe input{font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;width:240px}
-    .subscribe button{font:inherit;font-size:14px;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:0;padding:9px 16px;cursor:pointer}
-    .subscribe button:hover{background:#000}
-    .subscribe button:disabled,.subscribe input:disabled{opacity:.55;cursor:default}
-    .subscribe .msg{font-size:13.5px;color:var(--mut);flex-basis:100%;min-height:0}
-    .subscribe .msg:empty{display:none}
-    .subscribe .done{border:1px solid var(--ink);padding:18px 20px;margin-top:6px}
-    .subscribe .done h3{font-family:var(--disp);font-weight:500;font-size:24px;margin:0 0 6px}
-    .subscribe .done p{font-size:14px;color:var(--mut);margin:0}
+    /* the weather in the header: the same stat blocks, compact, right-aligned */
+    .tapehead{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+    .tapehead .actstats{margin:0 0 4px;gap:clamp(16px,2.2vw,34px)}
+    .tapehead .hstat .n{font-size:clamp(22px,2vw,27px)}
+    .tapehead .hstat .k{font-size:9.5px}
+    /* the dark band at the foot: the home page's clothes (site.css), fitted */
+    .tapepage .homecap{margin-top:46px}
+    .homecap .capin{padding:44px clamp(20px,4vw,48px) 40px}
+    .homecap .hs-msg:empty{display:none}
+    .homecap .done{border:1px solid var(--bg);padding:18px 22px;max-width:560px}
+    .homecap .done h3{font-family:var(--disp);font-weight:500;font-size:24px;margin:0 0 6px}
+    .homecap .done p{font-size:14px;color:#c9c4b8;margin:0}
+    body.pro .homecap{display:none}
     .tapefoot{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--mut)}
     .tapefoot a{color:var(--mut)}
     .tapefoot .site{font-family:var(--mono);font-size:11px;color:var(--faint)}
@@ -52,14 +49,16 @@
 {{TOPNAV}}
 <div class="tapepage">
 <section class="activitysec" id="activity">
+  <!-- THE WEATHER RIDES THE HEADER (2026-09-24): the five counts sit beside
+       the title, compact, so the ledger starts one scroll-line sooner. -->
   <div class="shead tapehead">
     <div>
       <h1 style="font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">Activity</h1>
-      <div class="tapesub" id="tapesub">Founders only · last 7 days · moves first.</div>
+      <div class="tapesub" id="tapesub">Founders only · last 7 days · newest day first.</div>
     </div>
+    <div class="actstats" id="actstats"></div>
   </div>
   <div class="sbody">
-    <div class="actstats" id="actstats"></div>
     <!-- THE TAPE'S CONTROLS: a window (7 days free; the longer ones open the
          Pro box for a free reader and are drawn dimmed so they never look
          free), and founders only. The Pro note sits under them, never in
@@ -81,17 +80,22 @@
       <span class="chips tchips" id="actkinds" role="group" aria-label="kind"></span>
     </div>
     <div class="pronote" id="pronote"></div>
-    <div class="subscribe" id="subscribe">
-      <form class="homesub" id="subform" onsubmit="return subscribe(event)">
-        <span class="hs-k">Weekly letter: what moved, once a week.</span>
-        <input type="email" id="subemail" placeholder="you@example.com" required autocomplete="email">
-        <button type="submit">Send it</button>
-        <div class="msg" id="submsg"></div>
-      </form>
-    </div>
     <div class="tapewrap" id="actwrap"></div>
     <div class="actnote" id="actnote"></div>
   </div>
+  <!-- THE SITE'S ONE ASK (2026-09-24): every page ends in the same dark
+       band with the same promise; the company pages, which ask up top in
+       the white box, are the sole exception. Here the promise is this very
+       page as a subscription. -->
+  <section class="homecap" id="subscribe"><div class="capin">
+    <div class="caph">An email the day any founder&rsquo;s stake moves more than 1%.</div>
+    <form class="homesub" id="subform" onsubmit="return subscribe(event)">
+      <input type="email" id="subemail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email">
+      <button type="submit">Watch the founders &rarr;</button>
+    </form>
+    <span class="hs-msg" id="submsg"></span>
+    <div class="capfine">This page, delivered: the moves as they file, the tape every Monday. Free. No account.</div>
+  </div></section>
   <div class="tapefoot">
     <span><a href="/about.html">About</a> · <a href="mailto:corrections@founderledequities.com">Corrections</a> · <a href="mailto:hello@founderledequities.com">Ideas</a> · Nothing here is investment advice · Every figure links to the filing</span>
     <span class="site">founderledequities.com</span>

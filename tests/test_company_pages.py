@@ -103,7 +103,8 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
         "the quote row and every proxy line left the page: the badge asserts, the record earns"
     assert 'class="kbadge"' not in sealed, "a non-founder page carries no badge"
     assert 'id="cwatch"' in tsla and "Free. No account." in tsla, "the watch card is baked, field first (design v4)"
-    assert 'class="ccap"' in tsla and "One email when Elon Musk" in tsla, "the bottom capture band is on the page (design v4)"
+    assert 'class="ccap"' not in tsla and "One email when Elon Musk" not in tsla, \
+        "ONE ASK PER PAGE (2026-09-24): the white watch box under the header is the company page's whole ask; no second band at the foot"
     assert 'class="answer">1,120,000,000 shares as of the' in tsla, "the first sentence carries the shares and the date in the HTML itself"
     # every page is indexable and answers its own question (the seal is off)
     assert '<meta name="robots"' not in sealed and "41.20%" in sealed

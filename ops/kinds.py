@@ -44,12 +44,10 @@ KIND_DETAIL = {"exercise and sell": "options cashed", "exercise, part sold": "op
                "forfeited": "forfeited", "converted": "converted", "gift": "gift",
                "shares withheld for tax": "withheld for tax", "other transaction": "other transaction"}
 TAPE_HEAD = ('<table class="tape"><colgroup><col class="tw-kind"><col class="tw-co"><col class="tw-ceo"><col class="tw-v">'
-             '<col class="tw-ch"><col class="tw-st"><col class="tw-fd"><col class="tw-td"></colgroup>'
+             '<col class="tw-ch"><col class="tw-st"></colgroup>'
              '<thead><tr><th class="sortable" data-key="kind">Kind<span class="arr"></span></th><th class="sortable" data-key="co">Company<span class="arr"></span></th>'
              '<th class="sortable" data-key="ceo">CEO<span class="arr"></span></th><th class="sortable n" data-key="v">Amount<span class="arr"></span></th>'
-             '<th class="sortable n" data-key="ch">Change<span class="arr"></span></th><th class="sortable n" data-key="st">New stake<span class="arr"></span></th>'
-             '<th class="sortable" data-key="fd" title="the day EDGAR accepted the form">Filed<span class="arr"></span></th>'
-             '<th class="sortable" data-key="td" title="the day of the transaction; a span when the form covers several">Traded<span class="arr"></span></th></tr></thead>')
+             '<th class="sortable n" data-key="ch">Change<span class="arr"></span></th><th class="sortable n" data-key="st">New stake<span class="arr"></span></th></tr></thead>')
 
 
 def _pre(e):
@@ -200,15 +198,15 @@ def window_rows(root, until, days=7, founders_only=True):
 
 
 def sorted_rows(rows):
-    """The page's actSorted: kind groups in order, |move| descending within
-    each; a row with no figure follows the ranked rows of its group, newest
-    first. Stable passes, least significant key first."""
+    """The page's actSorted (2026-09-24): the FILED day newest first -- the
+    ledger's axis is the day a filing became knowable -- and within a day
+    the move ranks the rows, unstated figures last. Stable passes, least
+    significant key first; the kinds live on as the page's filter chips."""
     out = list(rows)
     out.sort(key=lambda e: e.get("tk") or "")
-    out.sort(key=lambda e: e.get("filed") or "", reverse=True)
     out.sort(key=lambda e: -abs(move_of(e)[0]) if move_of(e) is not None else 0)
     out.sort(key=lambda e: 0 if move_of(e) is not None else 1)
-    out.sort(key=lambda e: KIND_ORDER[kind_of(e)])
+    out.sort(key=lambda e: e.get("filed") or "", reverse=True)
     return out
 
 
@@ -254,19 +252,48 @@ def row_html(e, co_of):
     after = _num(e.get("pct_after"))
     stake = pct(after) if after is not None else ""
     tk = e.get("tk") or (e.get("ticker") or "").upper()
+    # the day header names the filed day; a trade from another day says so
+    traded, filed = (e.get("traded") or ""), (e.get("filed") or "")
+    tnote = (f'<span class="detail tdt">trade {html.escape(_short(traded))}</span>'
+             if traded and filed and traded != filed else "")
     return (f'<tr class="dayrow{" dim" if dim(e) else ""}"><td class="kd"><span class="kind {k}">{KIND_WORD[k]}</span>'
-            f'{"<span class=\"detail\">" + html.escape(detail) + "</span>" if detail else ""}</td>'
+            f'{"<span class=\"detail\">" + html.escape(detail) + "</span>" if detail else ""}{tnote}</td>'
             f'<td class="co"><a class="pglink" href="/company/{html.escape(tk)}/">{html.escape(tk)}</a>'
             f'<span class="nm">{html.escape(co_of.get(tk, ""))}</span></td>'
             f'<td class="ceo"><span class="cn">{html.escape(e.get("ceo") or "")}</span></td>'
-            f'<td class="n v">{amt}</td><td class="n ch">{change}</td><td class="n st">{stake}</td>'
-            f'<td class="fd"><span class="dt">{html.escape(e.get("filed") or "")}</span></td>'
-            f'<td class="td"><span class="dt">{html.escape(e.get("traded") or e.get("filed") or "")}</span></td></tr>')
+            f'<td class="n v">{amt}</td><td class="n ch">{change}</td><td class="n st">{stake}</td></tr>')
+
+
+def _short(d):
+    """2026-09-13 -> 9/13, the page's own date shorthand."""
+    return d[5:].lstrip("0").replace("-0", "/").replace("-", "/") if len(d) >= 10 else d
+
+
+def _day_label(d):
+    """the day's name, absolute: the stamp cannot say Today and stay true"""
+    return dt.date.fromisoformat(d).strftime("%A, %b %d").replace(" 0", " ")
 
 
 def table_html(rows, co_of, limit=None):
+    """THE DAYS ARE THE STRUCTURE (2026-09-24): the stamped rows sit under
+    day headers, newest filed day first, each header an anchor
+    (#dYYYY-MM-DD) -- the same shape the script draws, so nothing jumps
+    when the feed arrives."""
     shown = rows if limit is None else rows[:limit]
-    return TAPE_HEAD + "<tbody>" + "".join(row_html(e, co_of) for e in shown) + "</tbody></table>"
+    day_n = {}
+    for e in shown:
+        d = (e.get("filed") or "")[:10]
+        day_n[d] = day_n.get(d, 0) + 1
+    body, cur = [], None
+    for e in shown:
+        d = (e.get("filed") or "")[:10]
+        if d != cur:
+            cur = d
+            n = day_n[d]
+            body.append(f'<tr class="dgrp" id="d{d}"><td colspan="6"><a href="#d{d}">{_day_label(d)}</a>'
+                        f'<span class="dn">{n} filing{"" if n == 1 else "s"}</span></td></tr>')
+        body.append(row_html(e, co_of))
+    return TAPE_HEAD + "<tbody>" + "".join(body) + "</tbody></table>"
 
 
 def company_names(panel_p):

@@ -31,7 +31,7 @@ async function boot(){
      until then. */
   if(new URLSearchParams(location.search).get("subscribed")==="1"){
     const box=$("#subscribe");
-    if(box)box.innerHTML=`<div class="done"><h3>You're on the list.</h3><p>The letter goes out once a week: who bought, who cut a stake, who sold on a plan, founders first. Until then, this page is the tape. Every letter carries an unsubscribe link.</p></div>`;
+    if(box)box.innerHTML=`<div class="capin"><div class="done"><h3>You're on the list.</h3><p>An email the day any founder's stake moves more than 1%, and the tape every Monday. Until then, this page is the tape. Every email carries an unsubscribe link.</p></div></div>`;
     history.replaceState(null,"",location.pathname);
   }
   if(new URLSearchParams(location.search).get("subscribed")==="check"){const m=$("#submsg");if(m)m.textContent="Check your inbox: one click confirms it.";}
@@ -43,14 +43,14 @@ async function subscribe(ev){
   const email=($("#subemail").value||"").trim(),m=$("#submsg"),btn=$("#subform button");
   if(!email||btn.disabled)return false;
   /* one submission per address: the button and the field lock once sent */
-  btn.disabled=true;btn.textContent="Sending…";
+  btn.disabled=true;btn.textContent="Sending…";const lbl="Watch the founders →";
   try{
     const q=await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
     const j=await q.json();
     m.textContent=j.message||"Check your inbox: one click confirms it.";
-    if(j.ok){$("#subemail").disabled=true;btn.textContent="Sent";}
-    else{btn.disabled=false;btn.textContent="Send it";}
-  }catch(e){m.textContent="Something went wrong; write to hello@founderledequities.com.";btn.disabled=false;btn.textContent="Send it";}
+    if(j.ok){$("#subemail").disabled=true;btn.textContent="Sent ✓";}
+    else{btn.disabled=false;btn.textContent=lbl;}
+  }catch(e){m.textContent="Something went wrong; write to hello@founderledequities.com.";btn.disabled=false;btn.textContent=lbl;}
   return false;
 }
 function openCompany(tk){location.href="/company/"+tk+"/";}

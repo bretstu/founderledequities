@@ -145,13 +145,13 @@ def test_the_window_is_every_filing_founders_only_pre_ipo_out(tmp_path):
     assert ("HIRE", "A") not in tks, "founders only"
     assert ("OPEN", "P") in tks and ("OPEN", "A") in tks and ("SEAL", "G") in tks and ("OPEN", "D") in tks, "every code is a row"
     assert not any(r["filed"] == "2026-09-08" for r in rows), "a pre-IPO catch-up stays off the tape"
-    # the order (one tree, 2026-09-23; every row ranks by its own move):
-    # bought, then plan (the sale group), then compensation by |move|
-    # (exercise 166, award 40.3, withholding 0.4, then the guarded
-    # forfeiture, unranked), then the transfer
-    assert tks == [("OPEN", "P"), ("SEAL", "S"), ("SEAL", "S"), ("OPEN", "A"), ("OPEN", "F"), ("OPEN", "D"), ("SEAL", "G")], tks
+    # the order (one tree, 2026-09-24): the FILED day newest first, the
+    # move within the day, unstated figures (the guarded forfeiture) last
+    # in their day: 09-13 exercise 166 / scheduled 23 / forfeiture,
+    # 09-12 gift 58.5 / withholding 0.4, 09-11 award, 09-10 purchase
+    assert tks == [("SEAL", "S"), ("SEAL", "S"), ("OPEN", "D"), ("SEAL", "G"), ("OPEN", "F"), ("OPEN", "A"), ("OPEN", "P")], tks
     kinds_ = [kinds.kind_of(r) for r in kinds.sorted_rows(rows)]
-    assert kinds_ == ["bought", "plan", "comp", "comp", "comp", "comp", "xfer"]
+    assert kinds_ == ["comp", "plan", "comp", "xfer", "comp", "comp", "bought"]
 
 
 def test_the_weather_line_and_the_stamped_table(tmp_path):
@@ -164,8 +164,12 @@ def test_the_weather_line_and_the_stamped_table(tmp_path):
                  "<b>1</b> gave shares away"), w
     assert "did not move a stake" not in w and "moved nothing" not in w
     t = kinds.table_html(kinds.sorted_rows(rows), {"OPEN": "Open Co", "SEAL": "Sealed Co"})
-    assert t.startswith(kinds.TAPE_HEAD) and 'data-key="ch">Change' in t and 'data-key="fd"' in t and t.count("<tr ") == 7
-    assert '<td class="fd"><span class="dt">2026-09-10</span></td>' in t, "the filed day is a column of the stamp too"
+    # four filed days in the fixture: a header row per day plus the seven rows
+    assert t.startswith(kinds.TAPE_HEAD) and 'data-key="ch">Change' in t and 'data-key="fd"' not in t and t.count("<tr ") == 11
+    assert '<tr class="dgrp" id="d2026-09-13"><td colspan="6"><a href="#d2026-09-13">Sunday, Sep 13</a><span class="dn">3 filings</span></td></tr>' in t, \
+        "the day is a header and an anchor, not a column"
+    assert t.index('id="d2026-09-13"') < t.index('id="d2026-09-10"'), "newest day first"
+    assert '<span class="detail tdt">trade 9/9</span>' in t, "a trade from another day says so on its row"
     assert '<span class="kind comp">Compensation</span><span class="detail">award granted</span>' in t
     assert '<span class="kind xfer">Transfer</span><span class="detail">gift</span>' in t
     assert '<td class="n v">$61.5M</td>' in t, "the sale inside an exercise shows the Form 4's number"

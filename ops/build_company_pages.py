@@ -985,16 +985,12 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                         + '<input type="email" id="wemail" placeholder="you@email.com" required autocomplete="email" aria-label="Email address">'
                         + '<button class="wbtn" type="submit">Watch &rarr;</button></form>'
                         + '<div class="wfine" id="wfine">Free. No account.</div></div>')
-        capture = (('<div class="ccap">'
-                    + f'<div class="ct">One email when {html.escape(poss(payload["ceo"])).replace("&#x27;", "&rsquo;")} stake moves.</div>'
-                    + f'<form onsubmit="return watchThis(&quot;{tk}&quot;,event)">'
-                    + '<input type="email" placeholder="you@email.com" required autocomplete="email" aria-label="Email address">'
-                    + '<button class="wbtn2" type="submit">Watch &rarr;</button></form>'
-                    + '<div class="wfine"></div></div>') if payload["ceo"] else "")
+        # ONE ASK PER PAGE (2026-09-24): the white box under the header is the
+        # company page's whole ask; the dark band at the foot belongs to every
+        # other page. Two asks read as pressure.
         page = (template
                 .replace('<div id="cbody"></div>', '<div id="cbody">' + body + '</div>')
                 .replace('<div id="cmore"></div>', '<div id="cmore">' + neighbours_html(tk, ranked, sp) + '</div>')
-                .replace('<div id="ccap"></div>', '<div id="ccap">' + capture + '</div>')
                 .replace('<div class="cwatchslot" id="cwatchslot"></div>', '<div class="cwatchslot" id="cwatchslot">' + watch_static + '</div>')
                 .replace('</head>', f'<script type="application/ld+json">{crumbs}</script>\n</head>')
                 .replace("{{TITLE}}", html.escape(title))
