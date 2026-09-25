@@ -309,6 +309,67 @@ def founder_row(founder) -> str:
     return ' &middot; <span class="kbadge">Founder-led</span>'
 
 
+def _hdate(d):
+    """'2026-07-31' -> 'Jul 31, 2026'; '' stays ''."""
+    try:
+        import datetime as _dt
+        t = _dt.date.fromisoformat(d[:10])
+        return t.strftime("%b %-d, %Y") if os.name != "nt" else t.strftime("%b %d, %Y")
+    except Exception:
+        return d
+
+
+def held_section(tk, rows, shares):
+    """HOW THE STAKE IS HELD (2026-09-25): one fixed fixture for every
+    company -- a 356px box, six vehicle rows visible, the rest folded behind
+    the record's own "N more" pattern, class as a column so several classes
+    cost no height. Renders ONLY when the rows sum to the published stake
+    (the ledger's warranty, enforced here): excluded, not guessed. Stale
+    rows grey inline and wear their date."""
+    try:
+        want = float(str(shares).replace(",", ""))
+    except Exception:
+        return ""
+    if not rows or not want:
+        return ""
+    try:
+        tot = sum(float(x.get("shares") or 0) for x in rows)
+    except Exception:
+        return ""
+    if abs(tot - want) > max(1.0, want * 0.001):
+        return ""
+    srt = sorted(rows, key=lambda x: -float(x.get("shares") or 0))
+    newest = max((x.get("as_of") or "")[:10] for x in srt)
+    lines = []
+    for x in srt[:6]:
+        stale = str(x.get("stale") or "") == "1"
+        veh = html.escape(x.get("vehicle") or "")
+        if stale and (x.get("as_of") or "")[:7]:
+            veh += f" &middot; last stated {html.escape(_hdate(x['as_of'])[:3])} {x['as_of'][:4]}"
+        lines.append(
+            '<div class="hrow' + (' hstale' if stale else '') + '">'
+            + f'<div class="hveh">{veh}</div>'
+            + f'<div class="hcls">{html.escape(x.get("klass") or "")}</div>'
+            + f'<div class="hsh">{int(float(x.get("shares") or 0)):,}</div>'
+            + f'<div class="hpc">{x.get("pct_of_stake") or ""}%</div></div>')
+    fold = ""
+    if len(srt) > 6:
+        rest = srt[6:]
+        rest_sum = int(sum(float(x.get("shares") or 0) for x in rest))
+        fold = (f'<button class="chip hmore" onclick="HELD_ALL=true;renderOpen(PANEL[0])">'
+                f'{len(rest)} more line{"" if len(rest)==1 else "s"} &middot; {rest_sum:,} shares &darr;</button>')
+    return (
+        '<section class="csec chold" id="chold">'
+        + '<div class="cshead"><h2>How the stake is held</h2>'
+        + f'<div class="hasof">as of the {html.escape(_hdate(newest))} filing</div></div>'
+        + '<div class="hbox"><div class="hhead">'
+        + '<div class="hveh">HOW IT IS HELD</div><div class="hcls">CLASS</div>'
+        + '<div class="hsh">SHARES</div><div class="hpc">OF THE STAKE</div></div>'
+        + "".join(lines) + fold + '</div>'
+        + f'<div class="hsum">Sums to <span class="mono">{int(tot):,}</span> shares &mdash; the stake above, to the share.</div>'
+        + '</section>')
+
+
 def static_body(payload, r, price, price_date, ev, hist, founder, n_filings=0, ret_1y=None,
                 last_filed="", scale=None):
     """THE PAGE SAYS ITS NUMBERS IN HTML. A fetch without scripts (a
@@ -716,6 +777,13 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
          og_dir=None, prices_dir=None):
     here = os.path.dirname(os.path.abspath(__file__))
     root = os.path.dirname(here)
+    # HOW THE STAKE IS HELD (2026-09-25): the walk's decomposition, keyed by
+    # ticker. Absent file = no sections anywhere; the pages build as before.
+    held_by_tk = {}
+    hp = os.path.join(os.path.dirname(panel_p) or ".", "holdings.csv")
+    if os.path.exists(hp):
+        for hr in csv.DictReader(open(hp, encoding="utf-8-sig")):
+            held_by_tk.setdefault(hr.get("ticker", "").upper(), []).append(hr)
     index_html = open(os.path.join(root, "index.html"), encoding="utf-8").read()
     template = open(os.path.join(root, "company.html"), encoding="utf-8").read()
     page_js = open(os.path.join(root, "assets", "company-page.js"), encoding="utf-8").read()
@@ -963,6 +1031,15 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         index_rows.append({"tk": tk, "co": payload["co"], "ceo": payload["ceo"]})
         body = static_body(payload, r, price, price_date, ev, hist, founders.get(tk), filings.get(tk, 0), ret_1y,
                            last_filed=last_filed.get(tk, ""), scale=scale)
+        held = held_by_tk.get(tk, [])
+        hs = held_section(tk, held, r.get("shares"))
+        if hs:
+            body += hs
+            payload["held"] = [{"vehicle": x.get("vehicle") or "", "klass": x.get("klass") or "",
+                                "shares": int(float(x.get("shares") or 0)),
+                                "pct": x.get("pct_of_stake") or "", "as_of": (x.get("as_of") or "")[:10],
+                                "accession": x.get("accession") or "", "stale": int(x.get("stale") or 0)}
+                               for x in held]
         lastmods[tk] = (r.get("shares_as_of") or "")[:10]
         # WHEN THE PAGE WAS LAST TRUE: dateModified is the newest filing the
         # figure rests on (a crawler reads it; a reader sees the same date on

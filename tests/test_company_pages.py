@@ -31,6 +31,32 @@ def _fixture(tmp_path):
     prices.write_text("ticker,close,as_of\nTSLA,330.00,2026-09-02\nSEALD,10.00,2026-09-02\n")
     founders = tmp_path / "founders.csv"
     founders.write_text('ticker,founder,evidence,source\nTSLA,yes,"co-founded the Company",DEF 14A\n')
+    # HOW THE STAKE IS HELD (2026-09-25): TSLA's rows sum to the panel's
+    # share count exactly (the gate's happy path); SEALD's do not (the gate
+    # withholds the section rather than guess).
+    hold = tmp_path / "holdings.csv"
+    with open(hold, "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["ticker", "ceo", "vehicle", "klass", "di", "shares",
+                    "pct_of_stake", "as_of", "accession", "stale"])
+        w.writerow(["TSLA", "Elon Musk", "Held directly", "Common stock", "D",
+                    "710000000", "63.4", "2026-06-16", "ACC-1", "0"])
+        w.writerow(["TSLA", "Elon Musk", "By Trust", "Common stock", "I",
+                    "300000000", "26.8", "2026-06-16", "ACC-1", "0"])
+        w.writerow(["TSLA", "Elon Musk", "By the Musk Foundation", "Common stock", "I",
+                    "60000000", "5.4", "2022-01-05", "ACC-0", "1"])
+        w.writerow(["TSLA", "Elon Musk", "By 2020 GRAT A", "Common stock", "I",
+                    "20000000", "1.8", "2026-06-16", "ACC-1", "0"])
+        w.writerow(["TSLA", "Elon Musk", "By 2020 GRAT B", "Common stock", "I",
+                    "15000000", "1.3", "2026-06-16", "ACC-1", "0"])
+        w.writerow(["TSLA", "Elon Musk", "By 2021 GRAT A", "Common stock", "I",
+                    "8000000", "0.7", "2026-06-16", "ACC-1", "0"])
+        w.writerow(["TSLA", "Elon Musk", "By spouse", "Common stock", "I",
+                    "4000000", "0.4", "2026-06-16", "ACC-1", "0"])
+        w.writerow(["TSLA", "Elon Musk", "By child", "Common stock", "I",
+                    "3000000", "0.3", "2026-06-16", "ACC-1", "0"])
+        w.writerow(["SEALD", "Jane Doe", "Held directly", "Common stock", "D",
+                    "960000", "96.0", "2026-06-01", "ACC-9", "0"])
     out = tmp_path / "public"
     return str(panel), str(founders), str(prices), str(sp), str(out)
 
@@ -466,7 +492,8 @@ def test_the_watches_have_a_box_and_two_ways_to_stop(tmp_path):
     page_js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
     # THE WATCH IS THE FOURTH CARD (2026-09-17): the person's name, an email
     # field, one line of fine print; the definition lives on the About page
-    assert "function watchCard(" in page_js and "function watchBlock(" not in page_js and "band(r)+recordBlock(r)" in page_js
+    assert "function watchCard(" in page_js and "function watchBlock(" not in page_js and "band(r)+heldBlock(" in page_js, \
+        "the body order: cards, then how the stake is held, then the record"
     assert "An email when the stake moves." in page_js and "Never for a plan" not in page_js
     assert 'id="wemail"' in page_js and "watchThis(" in page_js, "an email field, on every page"
     assert "toggleWatch(" not in page_js and 'id="wsw"' not in page_js, "the signed-in switch left with the tier"
@@ -588,3 +615,27 @@ def test_the_screens_are_pages_when_the_site_data_is_there(tmp_path):
     assert 'href="/company/SEALD/"' in hired and 'href="/company/TSLA/"' not in hired
     sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
     assert sm.count("/screens/") == 5
+
+
+def test_how_the_stake_is_held_is_baked_with_its_gate(tmp_path):
+    """HOW THE STAKE IS HELD (2026-09-25): one fixed fixture. TSLA's eight
+    rows sum to the panel's count, so the page gets the section: six rows
+    visible, two folded behind the record's own "N more" pattern with their
+    combined shares, the stale spouse line greyed with its date, the sums
+    line stating the warranty. SEALD's single row misses the count by 4%
+    (past the walk's own 0.1% agreement rule): no section -- excluded, not
+    guessed. The payload carries the rows
+    so the live render draws the same section the bake did."""
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    pg = open(os.path.join(out, "company", "TSLA", "index.html"), encoding="utf-8").read()
+    assert "How the stake is held" in pg and 'id="chold"' in pg
+    assert pg.count('class="hrow') == 6, "six rows visible, the rest fold"
+    assert "2 more lines &middot; 7,000,000 shares" in pg, "the fold names its count and its shares"
+    assert "hrow hstale" in pg and "last stated Jan 2022" in pg, "the stale line greys and wears its date"
+    assert "Sums to <span class=\"mono\">1,120,000,000</span> shares" in pg, "the warranty, stated"
+    assert '"held":' in pg and '"By Trust"' in pg, "the payload carries the rows for the live render"
+    assert "as of the Jun 16, 2026 filing" in pg
+    sealed = open(os.path.join(out, "company", "SEALD", "index.html"), encoding="utf-8").read()
+    assert 'id="chold"' not in sealed and '"held":' not in sealed, \
+        "rows that do not sum to the published stake show nothing: excluded, not guessed"

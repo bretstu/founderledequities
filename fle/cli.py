@@ -709,6 +709,23 @@ def cmd_history(args) -> int:
     w = csv.DictWriter(fh, fieldnames=cols)
     w.writeheader()
 
+    # HOW THE STAKE IS HELD (2026-09-25): the ledger's decomposition rides
+    # beside the history, one file, written as companies complete.
+    hold_cols = ["ticker", "ceo", "vehicle", "klass", "di", "shares",
+                 "pct_of_stake", "as_of", "accession", "stale"]
+    _d, _b = os.path.split(args.out)
+    hold_path = os.path.join(_d, _b.replace("history", "holdings")
+                             if "history" in _b else _b + ".holdings.csv")
+    hfh = open(hold_path, "w", newline="", encoding="utf-8-sig")
+    hw = csv.DictWriter(hfh, fieldnames=hold_cols)
+    hw.writeheader()
+
+    def emit_held(tk: str, ceo: str, held: list) -> None:
+        for r in held:
+            hw.writerow({"ticker": tk, "ceo": ceo,
+                         **{k: r.get(k, "") for k in hold_cols[2:]}})
+        hfh.flush()
+
     def emit(rows: list) -> None:
         nonlocal n_rows
         if not rows:
@@ -768,6 +785,8 @@ def cmd_history(args) -> int:
                                  .ljust(44)[:44])
                 sys.stdout.flush()
                 emit(res["rows"])
+                if res.get("holdings"):
+                    emit_held(res["ticker"], res.get("ceo", ""), res["holdings"])
                 walked += 1
                 agree, disagree = ((agree + 1, disagree) if res.get("ok")
                                    else (agree, disagree + 1))
@@ -782,6 +801,7 @@ def cmd_history(args) -> int:
                 if res.get("error"):
                     failed += 1
     fh.close()
+    hfh.close()
     _clear()
     if args.reuse:
         print(f"  {reused} unchanged (rows carried over), "

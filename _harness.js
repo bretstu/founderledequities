@@ -444,6 +444,24 @@ const P=runPage();
     "the plan page, the account and the payment functions are gone from the code base");
   assert(idx.includes('id="navq"')&&idx.includes('src="/search.js"'),
     "the header carries the search box on every page (the topnav is shared)");
+  { // HOW THE STAKE IS HELD (2026-09-25): the page script draws the same
+    // fixed fixture the bake does (the bake is executed in pytest; this
+    // pins the live render to the same shape).
+    const cp=require("fs").readFileSync("assets/company-page.js","utf8");
+    assert(cp.includes("function heldBlock(")&&cp.includes("band(r)+heldBlock("),
+      "the section sits between the cards and the record");
+    assert(cp.includes("rows.slice(0,6)")&&cp.includes("more line")&&cp.includes("HELD_ALL=true"),
+      "six rows visible, the rest behind the record's own fold");
+    assert(cp.includes('hstale')&&cp.includes("last stated"),
+      "a stale line greys and wears its date");
+    assert(cp.includes("Sums to <span class=\"mono\">")&&cp.includes("the stake above, to the share"),
+      "the warranty, stated in the render");
+    assert(cp.includes("window.__notCounted"),
+      "the Not counted expander moves into the section's footer when the section exists");
+    const ch=require("fs").readFileSync("company.html","utf8");
+    assert(ch.includes(".chold .hbox")&&ch.includes("height:356px"),
+      "one fixed fixture: the box never changes height page to page");
+  }
   assert(idx.includes('og:title')&&idx.includes('twitter:card')&&idx.includes('rel="canonical"'),
     "a pasted link unfurls as a card");
   {const head=idx.slice(0,idx.indexOf("</head>"));

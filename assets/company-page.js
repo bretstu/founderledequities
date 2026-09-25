@@ -8,7 +8,7 @@ const withV=p=>p+(p.includes("?")?"&":"?")+"v="+DATA_V;
 const C=window.COMPANY||{};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
-let VIEW="all",BIG=false,TRADES_ALL=false;   /* BIG: only rows that moved the stake by 1% or more; TRADES_ALL: the record past its first 25 rows */
+let VIEW="all",BIG=false,TRADES_ALL=false,HELD_ALL=false;   /* BIG: only rows that moved the stake by 1% or more; TRADES_ALL: the record past its first 25 rows */
 
 
 function setRow(row){
@@ -82,7 +82,9 @@ function band(r){
   const items=excl?excl.split(" | ").filter(Boolean):[];
   const exclSh=num(C.row&&C.row.excluded_shares)||0;
   const notCounted=items.length?`<details class="cnot"><summary><span class="k">Not counted</span>${exclSh?fmt(exclSh)+" shares in ":""}${items.length} holding${items.length===1?"":"s"} the filings' own footnotes leave out</summary><div class="cnx">${items.map(x=>esc(x)).join("<br>")}</div></details>`:"";
-  return cards+flagLine+notCounted;
+  const heldHere=(C.held||[]).length>0;   /* the expander's home follows the section (2026-09-25) */
+  if(heldHere)window.__notCounted=notCounted;
+  return cards+flagLine+(heldHere?"":notCounted);
 }
 
 /* ---- the record: the price and the stake, with the trades on the line ----
@@ -519,12 +521,40 @@ function reportBlock(r){
     If a number looks wrong, <a href="mailto:hello@founderledequities.com?subject=${subj}&body=${body}">say so</a>; every figure links to the filing it came from.`;
 }
 
+/* HOW THE STAKE IS HELD (2026-09-25): the same fixed fixture on every
+   page. C.held arrives display-ready from the bake (verbatim vehicle text,
+   class labels, stale flags); the bake put it there only when the rows
+   summed to the published stake, so rendering it is the warranty restated.
+   The Not counted expander moves into this section's footer when the
+   section exists, so the number's assembly and its exclusions share one
+   home; without the section it stays under the cards as before. */
+function heldBlock(notCounted){
+  const held=C.held||[];
+  if(!held.length)return "";
+  const rows=held.slice().sort((a,b)=>b.shares-a.shares);
+  const tot=rows.reduce((t,x)=>t+(x.shares||0),0);
+  const newest=rows.map(x=>x.as_of||"").sort().pop()||"";
+  const shown=HELD_ALL?rows:rows.slice(0,6);
+  const mon=d=>{try{const t=new Date(d+"T12:00:00");return t.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}catch(e){return d;}};
+  const line=x=>{
+    let veh=esc(x.vehicle||"");
+    if(x.stale&&x.as_of)veh+=` &middot; last stated ${esc(mon(x.as_of).replace(/ \d+,/,""))}`;
+    return `<div class="hrow${x.stale?" hstale":""}"><div class="hveh">${veh}</div><div class="hcls">${esc(x.klass||"")}</div><div class="hsh">${fmt(x.shares)}</div><div class="hpc">${x.pct||""}%</div></div>`;
+  };
+  const rest=rows.slice(6);
+  const fold=(!HELD_ALL&&rest.length)?`<button class="chip hmore" onclick="HELD_ALL=true;renderOpen(PANEL[0])">${rest.length} more line${rest.length===1?"":"s"} &middot; ${fmt(rest.reduce((t,x)=>t+(x.shares||0),0))} shares &darr;</button>`:"";
+  return `<section class="csec chold" id="chold">
+    <div class="cshead"><h2>How the stake is held</h2><div class="hasof">as of the ${esc(mon(newest))} filing</div></div>
+    <div class="hbox${HELD_ALL?" open":""}"><div class="hhead"><div class="hveh">HOW IT IS HELD</div><div class="hcls">CLASS</div><div class="hsh">SHARES</div><div class="hpc">OF THE STAKE</div></div>${shown.map(line).join("")}${fold}</div>
+    <div class="hsum"><div>Sums to <span class="mono">${fmt(tot)}</span> shares &mdash; the stake above, to the share.</div>${notCounted||""}</div>
+  </section>`;
+}
 function renderOpen(r,{animate=true}={}){
   window._lastRow=r;
   /* THE WATCH IS BESIDE THE ANSWER (2026-09-23): the head's right column,
      level with the H1 -- the page's one ask, where a searcher lands */
   const slot=$("#cwatchslot");if(slot)slot.innerHTML=watchCard(r);
-  $("#cbody").innerHTML=band(r)+recordBlock(r)+tradesBlock(r);
+  $("#cbody").innerHTML=band(r)+heldBlock(window.__notCounted||"")+recordBlock(r)+tradesBlock(r);
   const cr=$("#creport");if(cr)cr.innerHTML="";   /* the footer says where the numbers come from; the sentence that stood here was the same sentence */
   const svg=document.querySelector(".cchart svg.fchart");
   if(svg){attachHover(svg);if(animate)drawIn(svg);}

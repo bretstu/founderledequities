@@ -115,6 +115,14 @@ def walk_company(job: dict) -> dict:
         last = filed[-1].shares if filed else None
         ok = (last is not None
               and abs(last - led.total) <= max(1.0, led.total * 0.001))
+        # HOW THE STAKE IS HELD (2026-09-25): the ledger's final state,
+        # exported beside the history. A failure here costs the section,
+        # never the walk.
+        try:
+            from .holdings import holdings_rows
+            held = holdings_rows(led, client, walk_cik)
+        except Exception:
+            held = []
         rows = []
         for s_ in hist.snapshots:
             rows.append({
@@ -136,7 +144,8 @@ def walk_company(job: dict) -> dict:
                 "restated": "TRUE" if s_.restated else "",
                 "matches_panel": "TRUE" if ok else "",
             })
-        return {"ticker": tk, "rows": rows, "ok": ok}
+        return {"ticker": tk, "rows": rows, "ok": ok,
+                "ceo": cert.name, "holdings": held}
     except Exception as exc:  # noqa: BLE001 -- one company never stops the walk
         return {"ticker": tk, "rows": [], "error": f"{type(exc).__name__}: {exc}"[:200]}
 

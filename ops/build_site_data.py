@@ -448,6 +448,29 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
         w.writeheader()
         w.writerows(feed_rows)
 
+    # ---- HOW THE STAKE IS HELD (2026-09-25) ----
+    # The walk writes u-holdings.csv beside u-history.csv; here it passes
+    # through, filtered to the panel's tickers. No file, or an unreadable
+    # one, means no sections anywhere and nothing else changes.
+    _hd, _hb = os.path.split(hist_p)
+    hold_p = os.path.join(_hd, _hb.replace("history", "holdings")) if "history" in _hb else ""
+    held_rows = []
+    if hold_p and os.path.exists(hold_p):
+        try:
+            tks = {r["ticker"] for r in panel}
+            held_rows = [r for r in csv.DictReader(open(hold_p, encoding="utf-8-sig"))
+                         if r.get("ticker") in tks]
+        except Exception:
+            held_rows = []
+    if held_rows:
+        hcols = ["ticker", "ceo", "vehicle", "klass", "di", "shares",
+                 "pct_of_stake", "as_of", "accession", "stale"]
+        with open(os.path.join(out_dir, "holdings.csv"), "w", newline="",
+                  encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=hcols, extrasaction="ignore")
+            w.writeheader()
+            w.writerows(held_rows)
+
     # ---- THE SCREENER'S COUNTS (PLAN.md section 3, reason three) ----
     # A free reader's filter cannot be applied to a sealed row (its share is
     # not in the file), so the free screener shows the S&P's matches and a
