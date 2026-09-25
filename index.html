@@ -1392,7 +1392,7 @@ function lastTrades(){
   const last={};
   if(EVENTS.length){
     for(const e of EVENTS){
-      if(unchangedKind(e)!==null||(e.c!=="P"&&e.c!=="S"))continue;
+      if(unchangedKind(e)!==null||(e.c!=="P"&&e.c!=="S")||e.lb==="sold to cover tax")continue;
       if(!last[e.tk]||e.fd>last[e.tk].fd)last[e.tk]=e;
     }
     return {last,sold:soldTickers()};
@@ -1714,7 +1714,7 @@ function soldTickers(){
      exercise-and-sell doesn't count against anyone, because the stake did
      not move; that is the whole point of telling the two apart */
   const out=new Set();
-  for(const e of EVENTS)if(e.c==="S"&&unchangedKind(e)===null)out.add(e.tk);
+  for(const e of EVENTS)if(e.c==="S"&&unchangedKind(e)===null&&e.lb!=="sold to cover tax")out.add(e.tk);
   return out;
 }
 /*@shared*/
@@ -1750,6 +1750,8 @@ function evBadge(e){
     n:"options exercised and the shares sold in the same filing: compensation cashed, the stake unchanged"};
   if(e.lb==="exercise, part sold")return{t:"EX, PART SOLD",k:"neu",
     n:"options exercised and only some of the shares sold in the same filing: the rest was kept, and the number says how much"};
+  if(e.lb==="sold to cover tax")return{t:"TAX SALE",k:"neu",
+    n:"shares sold to cover tax withholding on vesting equity, mandated by the issuer\u2019s plan per the filing\u2019s own footnote: compensation mechanics, not a discretionary trade"};
   if(e.lb==="vested and sold")return{t:"VESTED &amp; SOLD",k:"neu",
     n:"shares vested and part sold in the same filing, usually to cover tax: compensation, not a reduction. The number says how much was kept"};
   if(e.lb==="convert and sell")return{t:"CONVERTED",k:"neu",
@@ -1909,7 +1911,7 @@ function tapeKind(e){
   if(e.pre)return "xfer";
   const uk=unchangedKind(e);
   if(e.c==="P"&&uk===null)return "bought";
-  if(e.c==="S"&&uk===null)return e.pl==="plan"?"plan":e.pl==="discretionary"?"disc":"sold";
+  if(e.c==="S"&&uk===null)return e.lb==="sold to cover tax"?"comp":e.pl==="plan"?"plan":e.pl==="discretionary"?"disc":"sold";
   if(e.c==="P"||e.c==="S"||COMP_CODES[e.c])return "comp";
   return "xfer";
 }
@@ -1932,7 +1934,7 @@ const KIND_DETAIL={"exercise and sell":"options cashed","exercise, part sold":"o
   "options exercised":"options exercised, held","options exercised, tax withheld":"options exercised, tax withheld",
   "shares vested":"vested","shares vested, tax withheld":"vested, tax withheld",
   "award granted":"award granted","award granted, tax withheld":"award granted, tax withheld","forfeited":"forfeited",
-  "converted":"converted","gift":"gift","shares withheld for tax":"withheld for tax","other transaction":"other transaction"};
+  "converted":"converted","gift":"gift","shares withheld for tax":"withheld for tax","other transaction":"other transaction","sold to cover tax":"sold to cover tax"};
 /*@shared*/
 function withAlso(e,d){return (e.als&&Math.abs(e.als)>=1&&e.ald)?`${d} + ${Math.round(Math.abs(e.als)).toLocaleString("en-US")} ${e.ald}`:d;}
 function tapeDetail(e){

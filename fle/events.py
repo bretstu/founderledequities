@@ -135,6 +135,7 @@ def plan_state(root) -> str:
 class Event:
     """One chief executive, one code, one day."""
     ticker: str = ""
+    stc: bool = False                  # the footnote said sell-to-cover
     issuer_cik: int = 0
     ceo: str = ""
     owner_cik: str = ""
@@ -267,6 +268,9 @@ class Event:
             if "C" in self.other_codes:
                 return "convert and sell"
             return "sale, position unchanged"
+        if self.stc:
+            # the filing's own words: mandated tax withholding, not a trade
+            return "sold to cover tax"
         return {"plan": "scheduled sale",
                 "discretionary": "discretionary sale"}.get(self.plan, "sale")
 
@@ -561,6 +565,11 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
         # the tape read Vaxcyte's vesting days as "withheld for tax" while
         # the holding rose
         lines = lines + settlements_only_in_table_ii(root, lines, when, acc, form)
+        # THE NATURE OF A SALE (2026-09-25): the footnote can overrule the
+        # box -- a mandated sell-to-cover is compensation mechanics, not a
+        # discretionary trade. Anchors and the register only; never the model.
+        from .sale_natures import decide as _stc_decide
+        stc_label = _stc_decide(root, acc, ticker, str(owner_cik))
         plan = plan_state(root)
         others = sorted({r.code for r in lines if r.code in COMPANY_CODES})
         vested = any((_t(n, "transactionCoding/transactionCode") or "").strip().upper()[:1] == "M"
@@ -660,6 +669,7 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
             # filed figure is kept beside it, untouched.
             factor = _split_factor(hist_rows, day) if price else None
             out.append(Event(
+                stc=(stc_label is not None),
                 ticker=ticker, issuer_cik=issuer_cik, ceo=ceo,
                 owner_cik=str(owner_cik), accession=acc, form=form,
                 filed=(f.get("filingDate") or "")[:10], traded=day,

@@ -240,6 +240,10 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
             t = r.get("ticker")
             day = r.get("traded") or r.get("filed") or ""
             if r["code"] == "S":
+                # a mandated sell-to-cover is compensation mechanics: it is
+                # not "ever sold" and not a discretionary sale (2026-09-25)
+                if (r.get("label") or "") == "sold to cover tax":
+                    continue
                 ever_sold.add(t)
                 if (r.get("plan") or "") != "plan" and day > last_disc.get(t, ""):
                     last_disc[t] = day

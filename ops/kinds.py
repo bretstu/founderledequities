@@ -29,7 +29,7 @@ import html
 import os
 
 COMP_LABELS = {"exercise and sell", "exercise, part sold", "vested and sold", "convert and sell",
-               "sale, position unchanged", "purchase, position unchanged"}
+               "sale, position unchanged", "purchase, position unchanged", "sold to cover tax"}
 COMP_CODES = {"A", "M", "F", "D", "X"}
 KIND_ORDER = {"bought": 0, "disc": 1, "sold": 2, "plan": 3, "comp": 4, "xfer": 5}
 KIND_WORD = {"bought": "Bought", "disc": "Discretionary", "sold": "Sold", "plan": "Planned",
@@ -42,7 +42,8 @@ KIND_DETAIL = {"exercise and sell": "options cashed", "exercise, part sold": "op
                "shares vested": "vested", "shares vested, tax withheld": "vested, tax withheld",
                "award granted": "award granted", "award granted, tax withheld": "award granted, tax withheld",
                "forfeited": "forfeited", "converted": "converted", "gift": "gift",
-               "shares withheld for tax": "withheld for tax", "other transaction": "other transaction"}
+               "shares withheld for tax": "withheld for tax", "other transaction": "other transaction",
+               "sold to cover tax": "sold to cover tax"}
 TAPE_HEAD = ('<table class="tape"><colgroup><col class="tw-kind"><col class="tw-co"><col class="tw-ceo"><col class="tw-v">'
              '<col class="tw-ch"><col class="tw-st"></colgroup>'
              '<thead><tr><th class="sortable" data-key="kind">Kind<span class="arr"></span></th><th class="sortable" data-key="co">Company<span class="arr"></span></th>'
