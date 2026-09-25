@@ -551,9 +551,9 @@ function heldBlock(r,notCounted){
     const grp=byK[k].slice().sort((a,b)=>b.shares-a.shares);
     const gsum=grp.reduce((t,x)=>t+x.shares,0);
     const newest=grp.reduce((m,x)=>((x.as_of||"")>(m.as_of||"")?x:m),grp[0]);
-    let right=`stated ${esc(mon(newest.as_of||""))}`+flink(newest.accession);
-    if(order.length>1)right=`${fmt(gsum)} shares &middot; <span class="hkpc">${(gsum/want*100).toFixed(1)}% of the stake</span> &middot; `+right;
-    parts+=`<div class="hcband"><div class="hcl">${esc(k).toUpperCase()}</div><div class="hcr">${right}</div></div>`;
+    const lab=`${esc(k).toUpperCase()} <span class="hcd">&middot; stated ${esc(mon(newest.as_of||""))}${flink(newest.accession)}</span>`;
+    const nums=order.length>1?`<div class="hsh">${fmt(gsum)}</div><div class="hpc">${(gsum/want*100).toFixed(1)}%</div>`:`<div class="hsh"></div><div class="hpc"></div>`;
+    parts+=`<div class="hcband"><div class="hcl">${lab}</div>${nums}</div>`;
     /* two manners, one grammar (2026-09-25c): direct and indirect are
        sibling bands; plain rows only for actual vehicles, when 2+ */
     const direct=grp.filter(x=>(x.di||"").toUpperCase()!=="I"&&(x.vehicle||"").toLowerCase().startsWith("held directly"));
@@ -563,7 +563,7 @@ function heldBlock(r,notCounted){
       const stale=xs.every(x=>x.stale);
       let lab=label;
       if(name!=null){lab+=` &middot; <span class="hvn">${esc(name)}</span>`;const x=xs[0];if(x.stale&&x.as_of)lab+=` &middot; last stated ${esc(mon(x.as_of).replace(/ \d+,/,""))}`;}
-      return `<div class="hsub${stale?" hstale":""}"><div>${lab}</div><div class="hnum">${fmt(bsum)} &middot; ${(bsum/want*100).toFixed(1)}%</div></div>`;
+      return `<div class="hsub${stale?" hstale":""}"><div class="hveh">${lab}</div><div class="hsh">${fmt(bsum)}</div><div class="hpc">${(bsum/want*100).toFixed(1)}%</div></div>`;
     };
     if(direct.length)parts+=bandRow("HELD DIRECTLY",direct);
     if(indirect.length>=2){
@@ -580,7 +580,7 @@ function heldBlock(r,notCounted){
   const hasof=order.length>1?"each class as its filings last stated it":`as of the ${esc(mon(held.map(x=>x.as_of||"").sort().pop()||""))} filing`;
   return `<section class="csec chold" id="chold">
     <div class="cshead"><h2>How the stake is held</h2><div class="hasof">${hasof}</div></div>
-    <div class="hbox"><div class="hhead"><div class="hveh">HOW IT IS HELD</div><div class="hsh">SHARES</div><div class="hpc">OF THE STAKE</div></div>${parts}<div class="htot"><div class="htl">THE STAKE</div><div class="hsh">${fmt(want)}</div><div class="hpc">${pct}</div></div><div class="htcap">of ${esc(C.co||C.tk)} &middot; ties the number above, to the share</div></div>
+    <div class="hbox"><div class="hhead"><div class="hveh">HOW IT IS HELD</div><div class="hsh">SHARES</div><div class="hpc">OF THE STAKE</div></div>${parts}<div class="htot"><div class="htl">THE STAKE</div><div class="hsh">${fmt(want)}</div><div class="hpc">${pct}</div></div></div>
     ${notCounted?`<div class="hsum">${notCounted}</div>`:""}
   </section>`;
 }

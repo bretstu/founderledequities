@@ -460,13 +460,13 @@ const P=runPage();
       "folds live inside their group: six vehicles, then the tail");
     assert(cp.includes('hstale')&&cp.includes("last stated"),
       "a stale line greys and wears its date");
-    assert(cp.includes("THE STAKE")&&cp.includes("ties the number above, to the share"),
-      "the double rule closes the account and states the warranty");
+    assert(cp.includes("THE STAKE")&&!cp.includes("ties the number above"),
+      "the total closes the account alone: no caption");
     assert(cp.includes("window.__notCounted"),
       "the Not counted expander moves into the section's footer when the section exists");
     const ch=require("fs").readFileSync("company.html","utf8");
-    assert(ch.includes(".chold .hcband")&&ch.includes("3px double var(--ink)")&&!ch.includes("height:356px"),
-      "the position statement: bands, the double rule, height that follows the truth");
+    assert(ch.includes(".chold .hcband")&&ch.includes("2px solid var(--ink)")&&!ch.includes("3px double")&&!ch.includes("height:356px"),
+      "the position statement: bands on one grid, one heavier rule for the total, height that follows the truth");
   }
   assert(idx.includes('og:title')&&idx.includes('twitter:card')&&idx.includes('rel="canonical"'),
     "a pasted link unfurls as a card");

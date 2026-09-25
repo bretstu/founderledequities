@@ -382,12 +382,12 @@ def held_section(tk, rows, shares, co="", pct=None, cik=""):
         grp = sorted(by_k[k], key=lambda x: -f(x))
         gsum = sum(f(x) for x in grp)
         newest = max(grp, key=lambda x: (x.get("as_of") or ""))
-        right = f"stated {html.escape(_hdate((newest.get('as_of') or '')[:10]))}" + flink(newest.get("accession"))
-        if len(order) > 1:
-            right = (f'{int(gsum):,} shares &middot; <span class="hkpc">'
-                     f'{gsum / want * 100:.1f}% of the stake</span> &middot; ' + right)
-        parts.append('<div class="hcband"><div class="hcl">'
-                     + html.escape(k).upper() + '</div><div class="hcr">' + right + "</div></div>")
+        lab = (html.escape(k).upper() + ' <span class="hcd">&middot; stated '
+               + html.escape(_hdate((newest.get('as_of') or '')[:10]))
+               + flink(newest.get("accession")) + '</span>')
+        nums = (f'<div class="hsh">{int(gsum):,}</div>'
+                f'<div class="hpc">{gsum / want * 100:.1f}%</div>') if len(order) > 1 else                '<div class="hsh"></div><div class="hpc"></div>'
+        parts.append('<div class="hcband"><div class="hcl">' + lab + '</div>' + nums + '</div>')
         # TWO MANNERS, ONE GRAMMAR (2026-09-25c): direct and indirect are
         # sibling bands; plain rows are reserved for actual vehicles, listed
         # only when there are two or more to enumerate. Direct ownership has
@@ -403,8 +403,8 @@ def held_section(tk, rows, shares, co="", pct=None, cik=""):
             lab = label + ('' if name is None else ' &middot; <span class="hvn">'
                            + html.escape(name) + '</span>' + stale_suffix(xs[0]))
             return ('<div class="hsub' + (' hstale' if stale else '') + '">'
-                    + f'<div>{lab}</div><div class="hnum">{int(bsum):,} &middot; '
-                    + f'{bsum / want * 100:.1f}%</div></div>')
+                    + f'<div class="hveh">{lab}</div><div class="hsh">{int(bsum):,}</div>'
+                    + f'<div class="hpc">{bsum / want * 100:.1f}%</div></div>')
 
         if direct:
             parts.append(band("HELD DIRECTLY", direct))
@@ -428,9 +428,7 @@ def held_section(tk, rows, shares, co="", pct=None, cik=""):
     except (TypeError, ValueError):
         pct_s = ""
     total = ('<div class="htot"><div class="htl">THE STAKE</div>'
-             + f'<div class="hsh">{int(tot):,}</div><div class="hpc">{pct_s}</div></div>'
-             + '<div class="htcap">of ' + (html.escape(co) if co else tk)
-             + ' &middot; ties the number above, to the share</div>')
+             + f'<div class="hsh">{int(tot):,}</div><div class="hpc">{pct_s}</div></div>')
     hasof = ("each class as its filings last stated it" if len(order) > 1 else
              f"as of the {html.escape(_hdate(max((x.get('as_of') or '')[:10] for x in rows)))} filing")
     return (

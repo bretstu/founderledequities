@@ -637,16 +637,16 @@ def test_how_the_stake_is_held_is_baked_with_its_gate(tmp_path):
     assert pg.count('class="hcband"') == 1 and "COMMON STOCK" in pg
     assert "stated Jun 16, 2026" in pg and "Archives/edgar/data/1318605/ACC1/" in pg, \
         "the class band wears its own date and its filing"
-    assert "HELD DIRECTLY" in pg and "710,000,000 &middot; 63.4%" in pg, \
-        "direct is a manner band, its band is its number: no vehicle is invented"
-    assert "HELD INDIRECTLY &middot; 7 VEHICLES" in pg and "410,000,000 &middot; 36.6%" in pg, \
-        "the sub-band counts its vehicles and states their subtotal"
+    assert "HELD DIRECTLY" in pg and '>710,000,000</div><div class="hpc">63.4%<' in pg, \
+        "direct is a manner band on the grid: its numbers land in the columns"
+    assert "HELD INDIRECTLY &middot; 7 VEHICLES" in pg and '>410,000,000</div><div class="hpc">36.6%<' in pg, \
+        "the sub-band counts its vehicles; its subtotal sits in the same columns"
     assert pg.count('hveh hind') == 6, "six vehicles visible inside the group"
     assert "1 more vehicle &middot; 3,000,000 shares" in pg, "the fold names its count and shares"
     assert "hrow hstale" in pg and "last stated Jan 2022" in pg, "the stale line greys and wears its date"
     assert "THE STAKE" in pg and ">1,120,000,000<" in pg and ">28.44%<" in pg, \
         "the double rule closes the account: the total, the stake in clay"
-    assert "ties the number above, to the share" in pg, "the warranty, stated"
+    assert "ties the number above" not in pg, "the caption is gone: the rule and the clay carry the total"
     assert '"held":' in pg and '"By Trust"' in pg, "the payload carries the rows for the live render"
     assert "as of the Jun 16, 2026 filing" in pg, "one class: the section says its date"
     sealed = open(os.path.join(out, "company", "SEALD", "index.html"), encoding="utf-8").read()
