@@ -319,13 +319,17 @@ def _hdate(d):
         return d
 
 
-def held_section(tk, rows, shares):
-    """HOW THE STAKE IS HELD (2026-09-25): one fixed fixture for every
-    company -- a 356px box, six vehicle rows visible, the rest folded behind
-    the record's own "N more" pattern, class as a column so several classes
-    cost no height. Renders ONLY when the rows sum to the published stake
-    (the ledger's warranty, enforced here): excluded, not guessed. Stale
-    rows grey inline and wear their date."""
+def held_section(tk, rows, shares, co="", pct=None, cik=""):
+    """HOW THE STAKE IS HELD (2026-09-25, regrouped 2026-09-25b): the
+    position statement. Classes first, each band with its own subtotal,
+    share of the stake, and the filing that last stated it (one section
+    date could not speak for DELL's two classes, a year apart). Inside a
+    class the direct line, then the indirect vehicles -- behind an
+    'HELD INDIRECTLY' sub-band with subtotal when there are two or more.
+    Past six vehicles in one group, the tail folds. The double rule closes
+    the account: THE STAKE, bold shares, the percent in clay. Renders ONLY
+    when the rows sum to the published stake (the ledger's warranty,
+    enforced here): excluded, not guessed."""
     try:
         want = float(str(shares).replace(",", ""))
     except Exception:
@@ -338,35 +342,95 @@ def held_section(tk, rows, shares):
         return ""
     if abs(tot - want) > max(1.0, want * 0.001):
         return ""
-    srt = sorted(rows, key=lambda x: -float(x.get("shares") or 0))
-    newest = max((x.get("as_of") or "")[:10] for x in srt)
-    lines = []
-    for x in srt[:6]:
-        stale = str(x.get("stale") or "") == "1"
-        veh = html.escape(x.get("vehicle") or "")
-        if stale and (x.get("as_of") or "")[:7]:
-            veh += f" &middot; last stated {html.escape(_hdate(x['as_of'])[:3])} {x['as_of'][:4]}"
-        lines.append(
-            '<div class="hrow' + (' hstale' if stale else '') + '">'
-            + f'<div class="hveh">{veh}</div>'
-            + f'<div class="hcls">{html.escape(x.get("klass") or "")}</div>'
-            + f'<div class="hsh">{int(float(x.get("shares") or 0)):,}</div>'
-            + f'<div class="hpc">{x.get("pct_of_stake") or ""}%</div></div>')
-    fold = ""
-    if len(srt) > 6:
-        rest = srt[6:]
-        rest_sum = int(sum(float(x.get("shares") or 0) for x in rest))
-        fold = (f'<button class="chip hmore" onclick="HELD_ALL=true;renderOpen(PANEL[0])">'
-                f'{len(rest)} more line{"" if len(rest)==1 else "s"} &middot; {rest_sum:,} shares &darr;</button>')
+
+    def f(x):
+        return float(x.get("shares") or 0)
+
+    def stale_suffix(x):
+        if str(x.get("stale") or "") == "1" and (x.get("as_of") or "")[:7]:
+            return f" &middot; last stated {html.escape(_hdate(x['as_of'])[:3])} {x['as_of'][:4]}"
+        return ""
+
+    def row_html(x, text, indent):
+        cls = "hrow" + (" hstale" if str(x.get("stale") or "") == "1" else "")
+        veh = ('<div class="hveh hind">' if indent else '<div class="hveh">') \
+            + text + stale_suffix(x) + "</div>"
+        return (f'<div class="{cls}">' + veh
+                + f'<div class="hsh">{int(f(x)):,}</div>'
+                + f'<div class="hpc">{x.get("pct_of_stake") or ""}%</div></div>')
+
+    # the classes, largest first, each as its filings last stated it
+    by_k, order = {}, []
+    for x in rows:
+        k = x.get("klass") or "Common stock"
+        if k not in by_k:
+            by_k[k] = []
+            order.append(k)
+    for x in rows:
+        by_k[x.get("klass") or "Common stock"].append(x)
+    order.sort(key=lambda k: -sum(f(x) for x in by_k[k]))
+
+    def flink(acc):
+        a = (acc or "").replace("-", "")
+        if a and cik:
+            return (f' &middot; <a href="https://www.sec.gov/Archives/edgar/data/'
+                    f'{int(cik)}/{a}/" target="_blank" rel="noopener">Form 4 &nearr;</a>')
+        return ""
+
+    parts = []
+    for k in order:
+        grp = sorted(by_k[k], key=lambda x: -f(x))
+        gsum = sum(f(x) for x in grp)
+        newest = max(grp, key=lambda x: (x.get("as_of") or ""))
+        right = f"stated {html.escape(_hdate((newest.get('as_of') or '')[:10]))}" + flink(newest.get("accession"))
+        if len(order) > 1:
+            right = (f'{int(gsum):,} shares &middot; <span class="hkpc">'
+                     f'{gsum / want * 100:.1f}% of the stake</span> &middot; ' + right)
+        parts.append('<div class="hcband"><div class="hcl">'
+                     + html.escape(k).upper() + '</div><div class="hcr">' + right + "</div></div>")
+        direct = [x for x in grp if (x.get("di") or "").upper() != "I"
+                  and (x.get("vehicle") or "").lower().startswith("held directly")]
+        indirect = [x for x in grp if x not in direct]
+        for x in direct:
+            parts.append(row_html(x, html.escape(x.get("vehicle") or "Held directly"), False))
+        if len(indirect) >= 2:
+            isum = sum(f(x) for x in indirect)
+            parts.append('<div class="hsub"><div>HELD INDIRECTLY &middot; '
+                         + f'{len(indirect)} VEHICLES</div><div>{int(isum):,} &middot; '
+                         + f'{isum / want * 100:.1f}%</div></div>')
+            for x in indirect[:6]:
+                parts.append(row_html(x, html.escape(x.get("vehicle") or ""), True))
+            rest = indirect[6:]
+            if rest:
+                rest_sum = int(sum(f(x) for x in rest))
+                parts.append(
+                    f'<button class="chip hmore" onclick="HELD_ALL=true;renderOpen(PANEL[0])">'
+                    f'{len(rest)} more vehicle{"" if len(rest) == 1 else "s"} &middot; '
+                    f'{rest_sum:,} shares &darr;</button>')
+        elif indirect:
+            x = indirect[0]
+            veh = x.get("vehicle") or ""
+            label = veh if veh.lower().startswith("indirect") else "Indirect &middot; " + html.escape(veh)
+            parts.append(row_html(x, label if veh.lower().startswith("indirect") else label, True))
+
+    try:
+        pct_s = f"{float(pct):.2f}%"
+    except (TypeError, ValueError):
+        pct_s = ""
+    total = ('<div class="htot"><div class="htl">THE STAKE</div>'
+             + f'<div class="hsh">{int(tot):,}</div><div class="hpc">{pct_s}</div></div>'
+             + '<div class="htcap">of ' + (html.escape(co) if co else tk)
+             + ' &middot; ties the number above, to the share</div>')
+    hasof = ("each class as its filings last stated it" if len(order) > 1 else
+             f"as of the {html.escape(_hdate(max((x.get('as_of') or '')[:10] for x in rows)))} filing")
     return (
         '<section class="csec chold" id="chold">'
         + '<div class="cshead"><h2>How the stake is held</h2>'
-        + f'<div class="hasof">as of the {html.escape(_hdate(newest))} filing</div></div>'
+        + f'<div class="hasof">{hasof}</div></div>'
         + '<div class="hbox"><div class="hhead">'
-        + '<div class="hveh">HOW IT IS HELD</div><div class="hcls">CLASS</div>'
+        + '<div class="hveh">HOW IT IS HELD</div>'
         + '<div class="hsh">SHARES</div><div class="hpc">OF THE STAKE</div></div>'
-        + "".join(lines) + fold + '</div>'
-        + f'<div class="hsum">Sums to <span class="mono">{int(tot):,}</span> shares &mdash; the stake above, to the share.</div>'
+        + "".join(parts) + total + '</div>'
         + '</section>')
 
 
@@ -1032,7 +1096,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         body = static_body(payload, r, price, price_date, ev, hist, founders.get(tk), filings.get(tk, 0), ret_1y,
                            last_filed=last_filed.get(tk, ""), scale=scale)
         held = held_by_tk.get(tk, [])
-        hs = held_section(tk, held, r.get("shares"))
+        hs = held_section(tk, held, r.get("shares"), co=r.get("company") or "",
+                          pct=r.get("pct"), cik=r.get("cik") or "")
         if hs:
             body += hs
             payload["held"] = [{"vehicle": x.get("vehicle") or "", "klass": x.get("klass") or "",

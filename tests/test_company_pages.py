@@ -630,12 +630,23 @@ def test_how_the_stake_is_held_is_baked_with_its_gate(tmp_path):
     bcp.main(panel, founders, prices, sp, out)
     pg = open(os.path.join(out, "company", "TSLA", "index.html"), encoding="utf-8").read()
     assert "How the stake is held" in pg and 'id="chold"' in pg
-    assert pg.count('class="hrow') == 6, "six rows visible, the rest fold"
-    assert "2 more lines &middot; 7,000,000 shares" in pg, "the fold names its count and its shares"
+    # the position statement (2026-09-25b): one class band, its own as-of and
+    # filing link; the direct line plain, the vehicles behind the indirect
+    # sub-band with their subtotal; six vehicles visible, the tail folded
+    # inside the group; the double rule closes the account
+    assert pg.count('class="hcband"') == 1 and "COMMON STOCK" in pg
+    assert "stated Jun 16, 2026" in pg and "Archives/edgar/data/1318605/ACC1/" in pg, \
+        "the class band wears its own date and its filing"
+    assert "HELD INDIRECTLY &middot; 7 VEHICLES" in pg and "410,000,000 &middot; 36.6%" in pg, \
+        "the sub-band counts its vehicles and states their subtotal"
+    assert pg.count('hveh hind') == 6, "six vehicles visible inside the group"
+    assert "1 more vehicle &middot; 3,000,000 shares" in pg, "the fold names its count and shares"
     assert "hrow hstale" in pg and "last stated Jan 2022" in pg, "the stale line greys and wears its date"
-    assert "Sums to <span class=\"mono\">1,120,000,000</span> shares" in pg, "the warranty, stated"
+    assert "THE STAKE" in pg and ">1,120,000,000<" in pg and ">28.44%<" in pg, \
+        "the double rule closes the account: the total, the stake in clay"
+    assert "ties the number above, to the share" in pg, "the warranty, stated"
     assert '"held":' in pg and '"By Trust"' in pg, "the payload carries the rows for the live render"
-    assert "as of the Jun 16, 2026 filing" in pg
+    assert "as of the Jun 16, 2026 filing" in pg, "one class: the section says its date"
     sealed = open(os.path.join(out, "company", "SEALD", "index.html"), encoding="utf-8").read()
     assert 'id="chold"' not in sealed and '"held":' not in sealed, \
         "rows that do not sum to the published stake show nothing: excluded, not guessed"

@@ -528,25 +528,53 @@ function reportBlock(r){
    The Not counted expander moves into this section's footer when the
    section exists, so the number's assembly and its exclusions share one
    home; without the section it stays under the cards as before. */
-function heldBlock(notCounted){
+function heldBlock(r,notCounted){
+  /* the position statement: class bands (each with its own subtotal and
+     last-stated filing), the direct line, then the vehicles -- an HELD
+     INDIRECTLY sub-band with subtotal when there are 2+; folds live inside
+     their group; the double rule closes the account (2026-09-25b) */
   const held=C.held||[];
   if(!held.length)return "";
-  const rows=held.slice().sort((a,b)=>b.shares-a.shares);
-  const tot=rows.reduce((t,x)=>t+(x.shares||0),0);
-  const newest=rows.map(x=>x.as_of||"").sort().pop()||"";
-  const shown=HELD_ALL?rows:rows.slice(0,6);
+  const want=held.reduce((t,x)=>t+(x.shares||0),0);
   const mon=d=>{try{const t=new Date(d+"T12:00:00");return t.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}catch(e){return d;}};
-  const line=x=>{
-    let veh=esc(x.vehicle||"");
+  const line=(x,text,ind)=>{
+    let veh=text;
     if(x.stale&&x.as_of)veh+=` &middot; last stated ${esc(mon(x.as_of).replace(/ \d+,/,""))}`;
-    return `<div class="hrow${x.stale?" hstale":""}"><div class="hveh">${veh}</div><div class="hcls">${esc(x.klass||"")}</div><div class="hsh">${fmt(x.shares)}</div><div class="hpc">${x.pct||""}%</div></div>`;
+    return `<div class="hrow${x.stale?" hstale":""}"><div class="hveh${ind?" hind":""}">${veh}</div><div class="hsh">${fmt(x.shares)}</div><div class="hpc">${x.pct||""}%</div></div>`;
   };
-  const rest=rows.slice(6);
-  const fold=(!HELD_ALL&&rest.length)?`<button class="chip hmore" onclick="HELD_ALL=true;renderOpen(PANEL[0])">${rest.length} more line${rest.length===1?"":"s"} &middot; ${fmt(rest.reduce((t,x)=>t+(x.shares||0),0))} shares &darr;</button>`:"";
+  const byK={},order=[];
+  for(const x of held){const k=x.klass||"Common stock";if(!byK[k]){byK[k]=[];order.push(k);}byK[k].push(x);}
+  order.sort((a,b)=>byK[b].reduce((t,x)=>t+x.shares,0)-byK[a].reduce((t,x)=>t+x.shares,0));
+  const flink=a=>{a=(a||"").replace(/-/g,"");return(a&&r&&r.cik)?` &middot; <a href="https://www.sec.gov/Archives/edgar/data/${r.cik}/${a}/" target="_blank" rel="noopener">Form 4 &nearr;</a>`:"";};
+  let parts="";
+  for(const k of order){
+    const grp=byK[k].slice().sort((a,b)=>b.shares-a.shares);
+    const gsum=grp.reduce((t,x)=>t+x.shares,0);
+    const newest=grp.reduce((m,x)=>((x.as_of||"")>(m.as_of||"")?x:m),grp[0]);
+    let right=`stated ${esc(mon(newest.as_of||""))}`+flink(newest.accession);
+    if(order.length>1)right=`${fmt(gsum)} shares &middot; <span class="hkpc">${(gsum/want*100).toFixed(1)}% of the stake</span> &middot; `+right;
+    parts+=`<div class="hcband"><div class="hcl">${esc(k).toUpperCase()}</div><div class="hcr">${right}</div></div>`;
+    const direct=grp.filter(x=>(x.di||"").toUpperCase()!=="I"&&(x.vehicle||"").toLowerCase().startsWith("held directly"));
+    const indirect=grp.filter(x=>!direct.includes(x));
+    for(const x of direct)parts+=line(x,esc(x.vehicle||"Held directly"),false);
+    if(indirect.length>=2){
+      const isum=indirect.reduce((t,x)=>t+x.shares,0);
+      parts+=`<div class="hsub"><div>HELD INDIRECTLY &middot; ${indirect.length} VEHICLES</div><div>${fmt(isum)} &middot; ${(isum/want*100).toFixed(1)}%</div></div>`;
+      const shown=HELD_ALL?indirect:indirect.slice(0,6);
+      for(const x of shown)parts+=line(x,esc(x.vehicle||""),true);
+      const rest=indirect.slice(6);
+      if(!HELD_ALL&&rest.length)parts+=`<button class="chip hmore" onclick="HELD_ALL=true;renderOpen(PANEL[0])">${rest.length} more vehicle${rest.length===1?"":"s"} &middot; ${fmt(rest.reduce((t,x)=>t+(x.shares||0),0))} shares &darr;</button>`;
+    }else if(indirect.length===1){
+      const x=indirect[0],veh=x.vehicle||"";
+      parts+=line(x,veh.toLowerCase().startsWith("indirect")?esc(veh):"Indirect &middot; "+esc(veh),true);
+    }
+  }
+  const pct=(r&&r.pct!=null)?r.pct.toFixed(2)+"%":"";
+  const hasof=order.length>1?"each class as its filings last stated it":`as of the ${esc(mon(held.map(x=>x.as_of||"").sort().pop()||""))} filing`;
   return `<section class="csec chold" id="chold">
-    <div class="cshead"><h2>How the stake is held</h2><div class="hasof">as of the ${esc(mon(newest))} filing</div></div>
-    <div class="hbox${HELD_ALL?" open":""}"><div class="hhead"><div class="hveh">HOW IT IS HELD</div><div class="hcls">CLASS</div><div class="hsh">SHARES</div><div class="hpc">OF THE STAKE</div></div>${shown.map(line).join("")}${fold}</div>
-    <div class="hsum"><div>Sums to <span class="mono">${fmt(tot)}</span> shares &mdash; the stake above, to the share.</div>${notCounted||""}</div>
+    <div class="cshead"><h2>How the stake is held</h2><div class="hasof">${hasof}</div></div>
+    <div class="hbox"><div class="hhead"><div class="hveh">HOW IT IS HELD</div><div class="hsh">SHARES</div><div class="hpc">OF THE STAKE</div></div>${parts}<div class="htot"><div class="htl">THE STAKE</div><div class="hsh">${fmt(want)}</div><div class="hpc">${pct}</div></div><div class="htcap">of ${esc(C.co||C.tk)} &middot; ties the number above, to the share</div></div>
+    ${notCounted?`<div class="hsum">${notCounted}</div>`:""}
   </section>`;
 }
 function renderOpen(r,{animate=true}={}){
@@ -554,7 +582,7 @@ function renderOpen(r,{animate=true}={}){
   /* THE WATCH IS BESIDE THE ANSWER (2026-09-23): the head's right column,
      level with the H1 -- the page's one ask, where a searcher lands */
   const slot=$("#cwatchslot");if(slot)slot.innerHTML=watchCard(r);
-  $("#cbody").innerHTML=band(r)+heldBlock(window.__notCounted||"")+recordBlock(r)+tradesBlock(r);
+  $("#cbody").innerHTML=band(r)+heldBlock(r,window.__notCounted||"")+recordBlock(r)+tradesBlock(r);
   const cr=$("#creport");if(cr)cr.innerHTML="";   /* the footer says where the numbers come from; the sentence that stood here was the same sentence */
   const svg=document.querySelector(".cchart svg.fchart");
   if(svg){attachHover(svg);if(animate)drawIn(svg);}

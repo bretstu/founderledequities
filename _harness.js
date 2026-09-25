@@ -450,17 +450,21 @@ const P=runPage();
     const cp=require("fs").readFileSync("assets/company-page.js","utf8");
     assert(cp.includes("function heldBlock(")&&cp.includes("band(r)+heldBlock("),
       "the section sits between the cards and the record");
-    assert(cp.includes("rows.slice(0,6)")&&cp.includes("more line")&&cp.includes("HELD_ALL=true"),
-      "six rows visible, the rest behind the record's own fold");
+    assert(cp.includes("hcband")&&cp.includes("toUpperCase()")&&cp.includes("stated ")&&cp.includes("Archives/edgar/data"),
+      "class bands carry their own subtotal, as-of and filing link");
+    assert(cp.includes("HELD INDIRECTLY")&&cp.includes("indirect.length>=2")&&cp.includes("hind"),
+      "the indirect sub-band appears only past one vehicle; its rows indent");
+    assert(cp.includes("indirect.slice(0,6)")&&cp.includes("more vehicle")&&cp.includes("HELD_ALL=true"),
+      "folds live inside their group: six vehicles, then the tail");
     assert(cp.includes('hstale')&&cp.includes("last stated"),
       "a stale line greys and wears its date");
-    assert(cp.includes("Sums to <span class=\"mono\">")&&cp.includes("the stake above, to the share"),
-      "the warranty, stated in the render");
+    assert(cp.includes("THE STAKE")&&cp.includes("ties the number above, to the share"),
+      "the double rule closes the account and states the warranty");
     assert(cp.includes("window.__notCounted"),
       "the Not counted expander moves into the section's footer when the section exists");
     const ch=require("fs").readFileSync("company.html","utf8");
-    assert(ch.includes(".chold .hbox")&&ch.includes("height:356px"),
-      "one fixed fixture: the box never changes height page to page");
+    assert(ch.includes(".chold .hcband")&&ch.includes("3px double var(--ink)")&&!ch.includes("height:356px"),
+      "the position statement: bands, the double rule, height that follows the truth");
   }
   assert(idx.includes('og:title')&&idx.includes('twitter:card')&&idx.includes('rel="canonical"'),
     "a pasted link unfurls as a card");
