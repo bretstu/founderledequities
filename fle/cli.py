@@ -684,6 +684,19 @@ def cmd_history(args) -> int:
             pass
         if prior_rows:
             print(f"  reuse: {len(prior_rows)} companies in {args.reuse}")
+    # HOW THE STAKE IS HELD (2026-09-25): the holdings carry with the rows.
+    # The prior file sits beside the reuse file, basename history->holdings.
+    prior_held: dict = {}
+    if args.reuse:
+        _rd, _rb = os.path.split(args.reuse)
+        if "history" in _rb:
+            try:
+                with open(os.path.join(_rd, _rb.replace("history", "holdings")),
+                          encoding="utf-8-sig") as fh:
+                    for row in csv.DictReader(fh):
+                        prior_held.setdefault(row["ticker"], []).append(row)
+            except FileNotFoundError:
+                pass
 
     new_state: dict = {}
     reused = 0
@@ -753,8 +766,14 @@ def cmd_history(args) -> int:
                         when = f.get("filingDate") or ""
                         if (when, acc) > (latest[:10], latest[11:]):
                             latest = f"{when} {acc}"
-                if latest and prior_state.get(m.ticker) == latest:
+                if latest and prior_state.get(m.ticker) == latest and m.ticker in prior_held:
+                    # a company with no prior holdings is rewalked even when
+                    # unchanged, ONCE: the walk writes its holdings, and from
+                    # then on it carries -- the file backfills itself
                     emit(prior_rows[m.ticker])
+                    for hr in prior_held.get(m.ticker, []):
+                        hw.writerow({k: hr.get(k, "") for k in hold_cols})
+                    hfh.flush()
                     new_state[m.ticker] = latest
                     reused += 1
                     if prior_rows[m.ticker][-1].get("matches_panel") == "TRUE":

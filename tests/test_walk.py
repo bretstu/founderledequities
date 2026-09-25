@@ -21,12 +21,26 @@ def test_history_streams_carried_and_walked_rows_into_one_file(tmp_path, monkeyp
     universe = tmp_path / "u.csv"
     universe.write_text("cik,ticker,company,added\n1,AAA,Alpha,\n2,BBB,Beta,\n3,CCC,Gamma,\n")
     # a prior file: AAA unchanged (carried), BBB changed (rewalked), CCC new
-    prior = tmp_path / "prior.csv"
+    prior = tmp_path / "prior-history.csv"
     with open(prior, "w", newline="", encoding="utf-8-sig") as fh:
         w = csv.DictWriter(fh, fieldnames=list(_rows("AAA", 1)[0].keys()))
         w.writeheader()
         for r in _rows("AAA", 1) + _rows("BBB", 2):
             w.writerow(r)
+    # HOW THE STAKE IS HELD (2026-09-25): the carry rides on the holdings
+    # too -- a company qualifies for reuse only when its holdings are on
+    # file to carry; AAA has them, so it carries. Without this file AAA
+    # would be rewalked once (the backfill rule).
+    ph = tmp_path / "prior-holdings.csv"
+    hcols = ["ticker", "ceo", "vehicle", "klass", "di", "shares",
+             "pct_of_stake", "as_of", "accession", "stale"]
+    with open(ph, "w", newline="", encoding="utf-8-sig") as fh:
+        w = csv.DictWriter(fh, fieldnames=hcols)
+        w.writeheader()
+        w.writerow({"ticker": "AAA", "ceo": "A. Aa", "vehicle": "Held directly",
+                    "klass": "Common stock", "di": "D", "shares": "100",
+                    "pct_of_stake": "100.0", "as_of": "2024-03-01",
+                    "accession": "a2", "stale": "0"})
     state = tmp_path / "state.json"
     state.write_text(json.dumps({"AAA": "2024-03-01 a2", "BBB": "old"}))
 
@@ -43,7 +57,11 @@ def test_history_streams_carried_and_walked_rows_into_one_file(tmp_path, monkeyp
             if j["ticker"] == "CCC":
                 yield {"ticker": "CCC", "rows": [], "error": "ValueError: boom"}
             else:
-                yield {"ticker": j["ticker"], "rows": _rows(j["ticker"], j["cik"], 2), "ok": False}
+                yield {"ticker": j["ticker"], "rows": _rows(j["ticker"], j["cik"], 2), "ok": False,
+                       "ceo": "B. Bb",
+                       "holdings": [{"vehicle": "By Trust", "klass": "Common stock", "di": "I",
+                                     "shares": 50, "pct_of_stake": 100.0, "as_of": "2024-03-01",
+                                     "accession": "b1", "stale": 0}]}
     monkeypatch.setattr(walk, "run_pool", fake_pool)
 
     out = tmp_path / "history.csv"
@@ -62,6 +80,10 @@ def test_history_streams_carried_and_walked_rows_into_one_file(tmp_path, monkeyp
     assert set(got[0].keys()) == set(_rows("AAA", 1)[0].keys())
     new_state = json.loads(state.read_text())
     assert new_state["AAA"] == "2024-03-01 a2" and new_state["BBB"] == "2024-03-01 a2"
+    held = list(csv.DictReader(open(tmp_path / "holdings.csv", encoding="utf-8-sig")))
+    hby = {r["ticker"]: r for r in held}
+    assert set(hby) == {"AAA", "BBB"}, "carried holdings ride with carried rows; walked ones are written fresh"
+    assert hby["AAA"]["vehicle"] == "Held directly" and hby["BBB"]["vehicle"] == "By Trust"
 
 
 def test_worker_rate_is_the_pipelines_share():
