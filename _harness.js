@@ -75,7 +75,17 @@ const P=runPage();
   const idxsrc=require("fs").readFileSync("index.html","utf8");
 
   assert(state.live.panel && state.live.events, "panel + events loaded live (history.csv not in zip: hist="+state.live.hist+")");
-  assert(EVENTS.length>12000, "events loaded: "+EVENTS.length);
+  // THE FEED IS A WINDOW, NOT THE ARCHIVE (2026-09-25). events.csv became
+  // a recent-filings feed when the per-company shards took full history
+  // (the deploy log's "events shards 2040" beside "events.csv (feed)
+  // 10852 rows"), and the old floor of 12,000 rows has failed on every
+  // production run since -- silently, because "| tail -1" ate the exit
+  // code. The gate now asserts what matters: the feed loaded in quantity
+  // and its newest filing is recent enough to be alive.
+  assert(EVENTS.length>1000, "events feed loaded: "+EVENTS.length+" rows");
+  const newest=EVENTS.reduce((m,e)=>e.fd>m?e.fd:m,"");
+  const staleDays=Math.round((Date.now()-Date.parse(newest))/86400e3);
+  assert(staleDays<=10, "events feed fresh: newest filed "+newest+" ("+staleDays+" days ago)");
 
   // ---- the seal is the only gate ----
   renderActivity();
