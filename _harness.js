@@ -422,8 +422,18 @@ const P=runPage();
       "the table names the structure instead of printing 0.000%");
   }
 
-  // never-sold consults the filed trades, not the history codes
-  assert(P.soldTickers().has("TSLA"),"Musk has stake-reducing sales on record");
+  // never-sold consults the filed trades, not the history codes.
+  // The seller is FOUND, not named (2026-09-25): "TSLA" here assumed the
+  // archive-shaped events.csv; the feed's window need not reach 2022, so
+  // the check takes any stake-reducing sale the file actually holds. A
+  // mandated sell-to-cover is not a seller's mark and never qualifies.
+  {const seller=EVENTS.find(e=>e.c==="S"&&P.unchangedKind(e)===null&&e.lb!=="sold to cover tax");
+   assert(seller&&P.soldTickers().has(seller.tk),
+     "a stake-reducing seller in the feed is in soldTickers: "+(seller?seller.tk:"none found"));
+   const stc=EVENTS.find(e=>e.lb==="sold to cover tax");
+   if(stc&&!EVENTS.some(e=>e.tk===stc.tk&&e.c==="S"&&P.unchangedKind(e)===null&&e.lb!=="sold to cover tax"))
+     assert(!P.soldTickers().has(stc.tk),
+       "a company whose only sale was a mandated sell-to-cover is not a seller: "+stc.tk);}
   {const s=P.soldTickers();const ex=EVENTS.find(e=>P.unchangedKind(e)!==null);
    if(ex&&!EVENTS.some(e=>e.tk===ex.tk&&e.c==="S"&&P.unchangedKind(e)===null))
      assert(!s.has(ex.tk),"a company whose only sales left the stake unchanged is not a seller: "+ex.tk);}
