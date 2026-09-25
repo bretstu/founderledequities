@@ -388,16 +388,28 @@ def held_section(tk, rows, shares, co="", pct=None, cik=""):
                      f'{gsum / want * 100:.1f}% of the stake</span> &middot; ' + right)
         parts.append('<div class="hcband"><div class="hcl">'
                      + html.escape(k).upper() + '</div><div class="hcr">' + right + "</div></div>")
+        # TWO MANNERS, ONE GRAMMAR (2026-09-25c): direct and indirect are
+        # sibling bands; plain rows are reserved for actual vehicles, listed
+        # only when there are two or more to enumerate. Direct ownership has
+        # no vehicle -- it is shares in the person's own name -- so its band
+        # is its number, and nothing is invented to fill a column.
         direct = [x for x in grp if (x.get("di") or "").upper() != "I"
                   and (x.get("vehicle") or "").lower().startswith("held directly")]
         indirect = [x for x in grp if x not in direct]
-        for x in direct:
-            parts.append(row_html(x, html.escape(x.get("vehicle") or "Held directly"), False))
+
+        def band(label, xs, name=None):
+            bsum = sum(f(x) for x in xs)
+            stale = all(str(x.get("stale") or "") == "1" for x in xs)
+            lab = label + ('' if name is None else ' &middot; <span class="hvn">'
+                           + html.escape(name) + '</span>' + stale_suffix(xs[0]))
+            return ('<div class="hsub' + (' hstale' if stale else '') + '">'
+                    + f'<div>{lab}</div><div class="hnum">{int(bsum):,} &middot; '
+                    + f'{bsum / want * 100:.1f}%</div></div>')
+
+        if direct:
+            parts.append(band("HELD DIRECTLY", direct))
         if len(indirect) >= 2:
-            isum = sum(f(x) for x in indirect)
-            parts.append('<div class="hsub"><div>HELD INDIRECTLY &middot; '
-                         + f'{len(indirect)} VEHICLES</div><div>{int(isum):,} &middot; '
-                         + f'{isum / want * 100:.1f}%</div></div>')
+            parts.append(band(f"HELD INDIRECTLY &middot; {len(indirect)} VEHICLES", indirect))
             for x in indirect[:6]:
                 parts.append(row_html(x, html.escape(x.get("vehicle") or ""), True))
             rest = indirect[6:]
@@ -408,10 +420,8 @@ def held_section(tk, rows, shares, co="", pct=None, cik=""):
                     f'{len(rest)} more vehicle{"" if len(rest) == 1 else "s"} &middot; '
                     f'{rest_sum:,} shares &darr;</button>')
         elif indirect:
-            x = indirect[0]
-            veh = x.get("vehicle") or ""
-            label = veh if veh.lower().startswith("indirect") else "Indirect &middot; " + html.escape(veh)
-            parts.append(row_html(x, label if veh.lower().startswith("indirect") else label, True))
+            parts.append(band("HELD INDIRECTLY", indirect,
+                              name=indirect[0].get("vehicle") or "per the filing"))
 
     try:
         pct_s = f"{float(pct):.2f}%"

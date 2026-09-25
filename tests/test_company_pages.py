@@ -637,6 +637,8 @@ def test_how_the_stake_is_held_is_baked_with_its_gate(tmp_path):
     assert pg.count('class="hcband"') == 1 and "COMMON STOCK" in pg
     assert "stated Jun 16, 2026" in pg and "Archives/edgar/data/1318605/ACC1/" in pg, \
         "the class band wears its own date and its filing"
+    assert "HELD DIRECTLY" in pg and "710,000,000 &middot; 63.4%" in pg, \
+        "direct is a manner band, its band is its number: no vehicle is invented"
     assert "HELD INDIRECTLY &middot; 7 VEHICLES" in pg and "410,000,000 &middot; 36.6%" in pg, \
         "the sub-band counts its vehicles and states their subtotal"
     assert pg.count('hveh hind') == 6, "six vehicles visible inside the group"

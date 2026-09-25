@@ -452,8 +452,10 @@ const P=runPage();
       "the section sits between the cards and the record");
     assert(cp.includes("hcband")&&cp.includes("toUpperCase()")&&cp.includes("stated ")&&cp.includes("Archives/edgar/data"),
       "class bands carry their own subtotal, as-of and filing link");
-    assert(cp.includes("HELD INDIRECTLY")&&cp.includes("indirect.length>=2")&&cp.includes("hind"),
-      "the indirect sub-band appears only past one vehicle; its rows indent");
+    assert(cp.includes("HELD DIRECTLY")&&cp.includes("HELD INDIRECTLY")&&cp.includes("indirect.length>=2")&&cp.includes("hind"),
+      "direct and indirect are sibling manner bands; vehicle rows indent and appear only past one vehicle");
+    assert(cp.includes('bandRow("HELD INDIRECTLY",indirect,indirect[0].vehicle')&&cp.includes("hvn"),
+      "one vehicle collapses into its band: the name rides inline, no ceremony over one row");
     assert(cp.includes("indirect.slice(0,6)")&&cp.includes("more vehicle")&&cp.includes("HELD_ALL=true"),
       "folds live inside their group: six vehicles, then the tail");
     assert(cp.includes('hstale')&&cp.includes("last stated"),

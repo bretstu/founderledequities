@@ -554,19 +554,26 @@ function heldBlock(r,notCounted){
     let right=`stated ${esc(mon(newest.as_of||""))}`+flink(newest.accession);
     if(order.length>1)right=`${fmt(gsum)} shares &middot; <span class="hkpc">${(gsum/want*100).toFixed(1)}% of the stake</span> &middot; `+right;
     parts+=`<div class="hcband"><div class="hcl">${esc(k).toUpperCase()}</div><div class="hcr">${right}</div></div>`;
+    /* two manners, one grammar (2026-09-25c): direct and indirect are
+       sibling bands; plain rows only for actual vehicles, when 2+ */
     const direct=grp.filter(x=>(x.di||"").toUpperCase()!=="I"&&(x.vehicle||"").toLowerCase().startsWith("held directly"));
     const indirect=grp.filter(x=>!direct.includes(x));
-    for(const x of direct)parts+=line(x,esc(x.vehicle||"Held directly"),false);
+    const bandRow=(label,xs,name)=>{
+      const bsum=xs.reduce((t,x)=>t+(x.shares||0),0);
+      const stale=xs.every(x=>x.stale);
+      let lab=label;
+      if(name!=null){lab+=` &middot; <span class="hvn">${esc(name)}</span>`;const x=xs[0];if(x.stale&&x.as_of)lab+=` &middot; last stated ${esc(mon(x.as_of).replace(/ \d+,/,""))}`;}
+      return `<div class="hsub${stale?" hstale":""}"><div>${lab}</div><div class="hnum">${fmt(bsum)} &middot; ${(bsum/want*100).toFixed(1)}%</div></div>`;
+    };
+    if(direct.length)parts+=bandRow("HELD DIRECTLY",direct);
     if(indirect.length>=2){
-      const isum=indirect.reduce((t,x)=>t+x.shares,0);
-      parts+=`<div class="hsub"><div>HELD INDIRECTLY &middot; ${indirect.length} VEHICLES</div><div>${fmt(isum)} &middot; ${(isum/want*100).toFixed(1)}%</div></div>`;
+      parts+=bandRow(`HELD INDIRECTLY &middot; ${indirect.length} VEHICLES`,indirect);
       const shown=HELD_ALL?indirect:indirect.slice(0,6);
       for(const x of shown)parts+=line(x,esc(x.vehicle||""),true);
       const rest=indirect.slice(6);
       if(!HELD_ALL&&rest.length)parts+=`<button class="chip hmore" onclick="HELD_ALL=true;renderOpen(PANEL[0])">${rest.length} more vehicle${rest.length===1?"":"s"} &middot; ${fmt(rest.reduce((t,x)=>t+(x.shares||0),0))} shares &darr;</button>`;
     }else if(indirect.length===1){
-      const x=indirect[0],veh=x.vehicle||"";
-      parts+=line(x,veh.toLowerCase().startsWith("indirect")?esc(veh):"Indirect &middot; "+esc(veh),true);
+      parts+=bandRow("HELD INDIRECTLY",indirect,indirect[0].vehicle||"per the filing");
     }
   }
   const pct=(r&&r.pct!=null)?r.pct.toFixed(2)+"%":"";
