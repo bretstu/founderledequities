@@ -436,7 +436,7 @@ def held_section(tk, rows, shares, co="", pct=None, cik=""):
         + '<div class="cshead"><h2>How the stake is held</h2>'
         + f'<div class="hasof">{hasof}</div></div>'
         + '<div class="hbox"><div class="hhead">'
-        + '<div class="hveh">HOW IT IS HELD</div>'
+        + '<div class="hveh"></div>'
         + '<div class="hsh">SHARES</div><div class="hpc">OF THE STAKE</div></div>'
         + "".join(parts) + total + '</div>'
         + '</section>')
