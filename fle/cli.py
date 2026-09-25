@@ -1762,8 +1762,8 @@ def _refresh(args, log) -> int:
     # 7 -- publish, atomically. panel.csv is one row per company in the
     # universe.
     published = []
-    for name in ("panel.csv", "history.csv", "prices.csv", "founders.csv",
-                 "events.csv", "universe.html"):
+    for name in ("panel.csv", "history.csv", "holdings.csv", "prices.csv",
+                 "founders.csv", "events.csv", "universe.html"):
         src = path(name)
         if os.path.exists(src) and os.path.getsize(src) > 0:
             os.replace(src, os.path.join(live, name))
