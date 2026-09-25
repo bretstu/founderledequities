@@ -72,7 +72,7 @@ def draw(out):
     g.text((W - 72, 56), f"{letter.nice_day(since)} to {letter.nice_day(date)}", font=mono(16), fill=FAINT, anchor="ra")
     g.text((72, 100), "This week's tape.", font=serif(64), fill=INK)
     line1 = f"{b} founder{'s' if b != 1 else ''} bought. {d} sold without a plan."
-    line2 = f"{p} sale{' was' if p == 1 else 's were'} already scheduled."
+    line2 = f"{p} planned sale{'' if p == 1 else 's'}."
     g.text((72, 196), line1, font=ui(30, 500), fill=INK)
     g.text((72, 236), line2, font=ui(30, 500), fill=MUT)
     g.line((72, 296, W - 72, 296), fill=INK, width=2)

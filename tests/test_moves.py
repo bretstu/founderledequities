@@ -54,7 +54,7 @@ def test_the_week_is_every_founder_filing_ranked_by_the_move(tmp_path):
     assert moves.week_bounds("2026-09-12") == ("2026-09-07", "2026-09-11")
     md = moves.week_md(d, "2026-09-12")
     assert md.startswith("# The week of Sep 7 to Sep 11, founders only")
-    assert "This week: 1 founder bought (1 for the first time ever). 0 sold without a plan. 1 sale was already scheduled. 1 was paid in shares. 1 gave shares away." in md
+    assert "This week: 1 founder bought (1 for the first time ever). 0 sold without a plan. 1 planned sale. 1 was paid in shares. 1 gave shares away." in md
     lines = [l for l in md.split("\n") if l.startswith("- ")]
     assert lines[0].startswith("- OPEN · Ann Founder was granted shares · Sep 9 · added 40% to the stake · now owns 9.06%"), "the largest move of the week is an award: " + lines[0]
     assert "crossed 5% upward" not in lines[0] and "now owns 9.06%" in lines[0]

@@ -266,7 +266,7 @@ def spoken(rows):
     s = f"{c['bought']} founder{'' if c['bought'] == 1 else 's'} bought"
     if c["first"]:
         s += f" ({c['first']} for the first time ever)"
-    s += f". {c['disc']} sold without a plan. {c['plan']} sale{' was' if c['plan'] == 1 else 's were'} already scheduled."
+    s += f". {c['disc']} sold without a plan. {c['plan']} planned sale{'' if c['plan'] == 1 else 's'}."
     if c["paid"]:
         s += f" {c['paid']} {'was' if c['paid'] == 1 else 'were'} paid in shares."
     if c["gave"]:
