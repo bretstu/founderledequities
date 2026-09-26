@@ -89,7 +89,8 @@ def test_the_draft_is_the_issues_skeleton_in_the_settled_template(tmp_path):
     assert "NEEDS A LOOK BEFORE THE SEND (not in the tables): René Lacerte, BILL: forfeited took the position on record to zero." in md
     h, t, meta = letter.render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal="PO Box 1, Portland, ME")
     assert meta["title"] and "Georgia" in h and "Every filing of the week" in h
-    assert "{{{RESEND_UNSUBSCRIBE_URL}}}" in h and "PO Box 1" in h
+    assert "{{{RESEND_UNSUBSCRIBE_URL}}}" in h
+    assert "PO Box 1" not in h, "the footer names no postal address (owner's call, 2026-09-26)"
     assert "28.44%" in t and "Unsubscribe" in t, "a plain-text alternative too"
     page = letter.archive_page(md, '<div class="top">nav</div>', "/site.css?v=abc")
     assert 'class="ltable"' in page and 'href="/site.css?v=abc"' in page and 'rel="canonical" href="https://founderledequities.com/letter/' in page

@@ -474,10 +474,10 @@ def render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal=None):
     H.append(f'<div style="border-top:1px solid {LINE};margin:8px 0 14px;"></div>'
              f'<p style="font-size:11px;line-height:1.5;color:{MUT};margin:0 0 10px;">{html.escape(COPY_RULE)} Nothing here is investment advice.</p>'
              f'<p style="font-size:11px;line-height:1.5;color:{MUT};margin:0 0 28px;">You asked for this on founderledequities.com &middot; '
-             f'<a href="{unsub}" style="color:{MUT};">Unsubscribe</a> &middot; Founder Led Equities, {html.escape(postal)}</p>'
+             f'<a href="{unsub}" style="color:{MUT};">Unsubscribe</a> &middot; Founder Led Equities</p>'
              f'</td></tr></table></td></tr></table></body></html>')
     T.append(f"\n{COPY_RULE} Nothing here is investment advice.\n"
-             f"You asked for this on founderledequities.com. Unsubscribe: {unsubscribe_url}\nFounder Led Equities, {postal}\n")
+             f"You asked for this on founderledequities.com. Unsubscribe: {unsubscribe_url}\nFounder Led Equities\n")
     return "\n".join(H), "\n".join(T), meta
 
 
