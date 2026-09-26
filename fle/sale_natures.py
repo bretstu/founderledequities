@@ -25,6 +25,7 @@ the model. Rows the reader could not settle are flagged for
 ops/footnote_review.py like every other unclear read."""
 import argparse
 import csv
+import json
 import os
 import re
 import sys
@@ -123,6 +124,14 @@ def decide(root, accession: str, ticker: str = "", owner_cik: str = "") -> str |
     global _REG
     if _REG is None:
         _REG = load_register(REGISTER)
+        # a footnote already queued must not queue again on the next walk:
+        # the pending file is append-once per accession, across runs
+        try:
+            with open(PENDING, encoding="utf-8-sig") as fh:
+                for r in csv.DictReader(fh):
+                    _REG.setdefault(r["accession"], {"nature": "pending"})
+        except FileNotFoundError:
+            pass
     hit = _REG.get(accession)
     if hit is not None:
         return "sold to cover tax" if hit.get("nature") == "sell_to_cover" else None
@@ -189,19 +198,25 @@ def read_pending(api_key: str, model: str = ANTHROPIC_MODEL, limit: int = 0) -> 
             rows.append(r)
     if limit:
         rows = rows[:limit]
+    print(f"  {len(rows)} unique accession(s) to read")
     import datetime as dt
-    flagged = 0
+    flagged, done, failed = 0, 0, 0
     for i, r in enumerate(rows, 1):
         body = {"model": model, "max_tokens": 500, "temperature": 0,
                 "system": SYSTEM, "tools": [TOOL],
                 "tool_choice": {"type": "tool", "name": "sale_nature"},
                 "messages": [{"role": "user", "content": r["footnote"]}]}
         try:
-            data = _post(body, api_key)
+            data = _post(json.dumps(body).encode(), api_key)  # _post takes bytes
             reply = next(b["input"] for b in data.get("content", [])
                          if b.get("type") == "tool_use")
         except Exception as e:
-            print(f"  {r['accession']}: api {e.__class__.__name__}; left pending")
+            failed += 1
+            if failed <= 5 or failed % 100 == 0:
+                print(f"  {r['accession']}: api {e.__class__.__name__}; left pending")
+            if failed == 20 and done == 0:
+                print("  20 straight failures and no reads: stopping -- fix the error, nothing is lost")
+                break
             continue
         v = parse_reply(reply, r["footnote"])
         if v["confidence"] == "low" or not v["verified"]:
@@ -212,10 +227,11 @@ def read_pending(api_key: str, model: str = ANTHROPIC_MODEL, limit: int = 0) -> 
                            "confidence": v["confidence"], "model": model,
                            "read_on": dt.date.today().isoformat(),
                            "footnote": r["footnote"][:400]})
-        if i % 20 == 0:
-            print(f"  {i}/{len(rows)} read")
-    print(f"  sale natures: {len(rows)} read, {flagged} flagged for review "
-          f"(ops/footnote_review.py); register: {REGISTER}")
+        done += 1
+        if done % 20 == 0:
+            print(f"  {done}/{len(rows)} read")
+    print(f"  sale natures: {done} read, {failed} failed (left pending), {flagged} "
+          f"flagged for review (ops/footnote_review.py); register: {REGISTER}")
 
 
 def main():

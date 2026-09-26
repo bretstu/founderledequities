@@ -68,3 +68,16 @@ def test_decide_registers_the_anchor_and_queues_the_suggestive(tmp_path, monkeyp
     # the register answers without re-reading
     monkeypatch.setattr(sn, "_REG", None)
     assert sn.decide(_root("unrelated"), "ACC-1", "TWST", "1") == "sold to cover tax"
+
+
+def test_a_queued_footnote_does_not_queue_again_next_walk(tmp_path, monkeypatch):
+    monkeypatch.setattr(sn, "REGISTER", str(tmp_path / "reg.csv"))
+    monkeypatch.setattr(sn, "PENDING", str(tmp_path / "pend.csv"))
+    monkeypatch.setattr(sn, "_REG", None)
+    soft = "Shares sold in connection with the vesting of restricted stock units."
+    assert sn.decide(_root(soft), "ACC-9", "TWST", "1") is None
+    monkeypatch.setattr(sn, "_REG", None)  # a fresh process: the next night's walk
+    assert sn.decide(_root(soft), "ACC-9", "TWST", "1") is None
+    with open(sn.PENDING) as fh:
+        assert sum(1 for line in fh if line.startswith("ACC-9")) == 1, \
+            "append-once per accession, across runs"
