@@ -241,8 +241,14 @@ def main():
     args = ap.parse_args()
     if args.pending:
         key = os.environ.get("ANTHROPIC_API_KEY") or ""
+        if not key:  # the founder stage's convention: the key lives in .env
+            env = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+            if os.path.exists(env):
+                for line in open(env, encoding="utf-8"):
+                    if line.startswith("ANTHROPIC_API_KEY="):
+                        key = line.split("=", 1)[1].strip().strip('"').strip("'")
         if not key:
-            sys.exit("ANTHROPIC_API_KEY is not set")
+            sys.exit("no key: export ANTHROPIC_API_KEY or put ANTHROPIC_API_KEY=... in .env at the repo root")
         read_pending(key, limit=args.limit)
 
 
