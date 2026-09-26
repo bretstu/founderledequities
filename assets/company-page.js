@@ -408,7 +408,8 @@ function tradesBlock(r){
        the stake and the day's denominator stay in the tooltips and the
        export; the Stake column carries the level. */
     const what=e.c==="P"?"Open-market purchase"
-      :e.c==="S"?(kd.k==="plan"?"Planned sale":kd.k==="disc"?"Discretionary sale":"Sale")
+      :e.c==="S"?(kd.k==="comp"?(kd.word?kd.word.charAt(0).toUpperCase()+kd.word.slice(1):"Compensation")
+        :kd.k==="plan"?"Planned sale":kd.k==="disc"?"Discretionary sale":"Sale")
       :(kd.word?kd.word.charAt(0).toUpperCase()+kd.word.slice(1):kd.t);
     const wordTail=e.c==="S"&&kd.k==="sold"&&kd.word?`<span class="detail">${kd.word}</span>`:"";
     const valTail=(e.c==="P"||e.c==="S")&&!e.fl&&e.v?`<span class="detail">· ${money(e.v)}</span>`:"";
