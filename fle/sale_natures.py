@@ -182,7 +182,11 @@ def parse_reply(reply: dict, footnote: str) -> dict:
             "verified": nature != "unclear"}
 
 
-def read_pending(api_key: str, model: str = ANTHROPIC_MODEL, limit: int = 0) -> None:
+TAX = re.compile(r"tax|withhold", re.I)
+
+
+def read_pending(api_key: str, model: str = ANTHROPIC_MODEL, limit: int = 0,
+                 tax_only: bool = False) -> None:
     reads = load_register(REGISTER)
     try:
         with open(PENDING, encoding="utf-8-sig") as fh:
@@ -193,6 +197,8 @@ def read_pending(api_key: str, model: str = ANTHROPIC_MODEL, limit: int = 0) -> 
         return
     seen, rows = set(), []
     for r in todo:
+        if tax_only and not TAX.search(r["footnote"]):
+            continue  # cannot state a tax mandate: stays pending, unread
         if r["accession"] not in seen:
             seen.add(r["accession"])
             rows.append(r)
@@ -238,6 +244,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pending", action="store_true")
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--tax-only", action="store_true",
+                    help="read only footnotes mentioning tax or withholding")
     args = ap.parse_args()
     if args.pending:
         key = os.environ.get("ANTHROPIC_API_KEY") or ""
@@ -247,9 +255,10 @@ def main():
                 for line in open(env, encoding="utf-8"):
                     if line.startswith("ANTHROPIC_API_KEY="):
                         key = line.split("=", 1)[1].strip().strip('"').strip("'")
+                        break  # first match wins, as ops/footnote_reads.env_key does
         if not key:
             sys.exit("no key: export ANTHROPIC_API_KEY or put ANTHROPIC_API_KEY=... in .env at the repo root")
-        read_pending(key, limit=args.limit)
+        read_pending(key, limit=args.limit, tax_only=args.tax_only)
 
 
 if __name__ == "__main__":
