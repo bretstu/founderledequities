@@ -78,15 +78,21 @@ def sale_footnote_texts(root) -> list:
     notes = footnotes_of(root)
     if not notes:
         return []
-    ids = set()
+    ids, has_s = set(), False
     for tr in root.iter("nonDerivativeTransaction"):
         code = "".join(e.text or "" for e in tr.iter("transactionCode")).strip()
         if code != "S":
             continue
+        has_s = True
         for fid in tr.iter("footnoteId"):
             ids.add(fid.get("id"))
-    texts = [notes[i] for i in ids if i in notes]
-    return texts if texts else list(notes.values())
+    if not has_s:
+        return []  # an F-only filing has no sale to explain (2026-09-25)
+    # ONLY the S lines' own notes. The old fallback took every footnote when
+    # the S lines tied none -- which attributed a neighboring F-withholding's
+    # note to an unrelated sale on mixed filings. An unfootnoted sale now
+    # stays what the box says: the text must speak FOR THE SALE or not at all.
+    return [notes[i] for i in ids if i in notes]
 
 
 def anchor_hit(text: str):

@@ -81,3 +81,30 @@ def test_a_queued_footnote_does_not_queue_again_next_walk(tmp_path, monkeypatch)
     with open(sn.PENDING) as fh:
         assert sum(1 for line in fh if line.startswith("ACC-9")) == 1, \
             "append-once per accession, across runs"
+
+
+def test_an_f_only_filing_and_an_untied_sale_say_nothing(tmp_path, monkeypatch):
+    monkeypatch.setattr(sn, "REGISTER", str(tmp_path / "reg.csv"))
+    monkeypatch.setattr(sn, "PENDING", str(tmp_path / "pend.csv"))
+    monkeypatch.setattr(sn, "_REG", None)
+    f_only = ET.fromstring('''<ownershipDocument><nonDerivativeTable>
+<nonDerivativeTransaction><transactionCoding><transactionCode>F</transactionCode></transactionCoding>
+<transactionAmounts><transactionShares><value>1229</value><footnoteId id="F1"/></transactionShares></transactionAmounts>
+</nonDerivativeTransaction></nonDerivativeTable>
+<footnotes><footnote id="F1">shares withheld for taxes upon vesting of restricted stock units</footnote></footnotes>
+</ownershipDocument>''')
+    assert sn.sale_footnote_texts(f_only) == [], "no sale, no question"
+    assert sn.decide(f_only, "ACC-F", "CVNA", "1") is None
+    assert not os.path.exists(sn.PENDING), "an F-only filing must not queue"
+    mixed = ET.fromstring('''<ownershipDocument><nonDerivativeTable>
+<nonDerivativeTransaction><transactionCoding><transactionCode>F</transactionCode></transactionCoding>
+<transactionAmounts><transactionShares><value>100</value><footnoteId id="F1"/></transactionShares></transactionAmounts>
+</nonDerivativeTransaction>
+<nonDerivativeTransaction><transactionCoding><transactionCode>S</transactionCode></transactionCoding>
+<transactionAmounts><transactionShares><value>50000</value></transactionShares></transactionAmounts>
+</nonDerivativeTransaction></nonDerivativeTable>
+<footnotes><footnote id="F1">required to be sold to cover tax withholding upon vesting</footnote></footnotes>
+</ownershipDocument>''')
+    assert sn.sale_footnote_texts(mixed) == [], \
+        "the withholding's note must not speak for the untied sale"
+    assert sn.decide(mixed, "ACC-M", "X", "1") is None
