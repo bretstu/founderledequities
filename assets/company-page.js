@@ -396,6 +396,7 @@ function tradesBlock(r){
   const shownEvs=(TRADES_ALL||evs.length<=25)?evs:evs.slice(0,25);
   const rows=shownEvs.map(e=>{
     if(e.cover)return `<tr class="cov"><td class="d" title="the company's cover page, dated ${e.fd}">${e.fd}</td>
+      <td class="kk"><span class="kind neu">RECORD</span></td>
       <td class="ty" title="the company restated its shares outstanding to ${fmt(e.os)} on this cover page; nothing of the chief executive's moved">Shares outstanding restated (${esc(e.form)})</td>
       <td class="n sh lv">&mdash;</td>
       <td class="n lv">${e.ha?fmt(e.ha):"&mdash;"}</td>
@@ -407,14 +408,23 @@ function tradesBlock(r){
        with the trade's value folded in after a dot. What each filing did to
        the stake and the day's denominator stay in the tooltips and the
        export; the Stake column carries the level. */
-    const what=e.c==="P"?"Open-market purchase"
-      :e.c==="S"?(kd.k==="comp"?(kd.word?`Compensation <span class="detail">· ${kd.word}</span>`:"Compensation")
-        :kd.k==="plan"?"Planned sale":kd.k==="disc"?"Discretionary sale":"Sale")
-      :(kd.word?`${kd.t} <span class="detail">· ${kd.word}</span>`:kd.t);
-    const wordTail=e.c==="S"&&kd.k==="sold"&&kd.word?`<span class="detail">${kd.word}</span>`:"";
-    const valTail=(e.c==="P"||e.c==="S")&&!e.fl&&e.v?`<span class="detail">· ${money(e.v)}</span>`:"";
+    /* THE TAPE'S TWO WORDS, IN TWO COLUMNS (2026-09-27): the chip a reader
+       clicked on the tape is the KIND cell, same word, same colour; the ty
+       cell keeps only the detail and the dollars, clipped when long. */
+    const preipo=kd.t&&kd.t.startsWith("Pre-IPO");
+    const ck=preipo?["neu","PRE-IPO"]
+      :e.c==="P"?["bought","BOUGHT"]
+      :e.c==="S"?(kd.k==="comp"?["comp","COMPENSATION"]:kd.k==="plan"?["plan","PLANNED"]
+        :kd.k==="disc"?["disc","DISCRETIONARY"]:["sold","SALE"])
+      :[kd.k||"neu",(kd.t||"").toUpperCase()||"OTHER"];
+    const deet=[];
+    if(!preipo&&kd.word)deet.push(kd.word);
+    if((e.c==="P"||e.c==="S")&&!e.fl&&e.v)deet.push(money(e.v));
+    const what=preipo?kd.t:(deet.length?`<span class="detail">${deet.join(" · ")}</span>`:"&mdash;");
+    const wordTail="",valTail="";
     return `<tr><td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
-      <td class="ty" title="${esc(kd.n)}${!p?`; ${esc(moveWhy(e))}`:""}">${kd.t&&kd.t.startsWith("Pre-IPO")?kd.t:what}${wordTail}${valTail}</td>
+      <td class="kk" title="${esc(kd.n)}"><span class="kind ${ck[0]}">${ck[1]}</span></td>
+      <td class="ty" title="${esc(kd.n)}${!p?`; ${esc(moveWhy(e))}`:""}">${what}</td>
       <td class="n sh ${e.c==="P"?"up":e.c==="S"?"down":(e.nc>=0?"up":"down")}">${e.c==="P"||(e.c!=="S"&&e.nc>=0)?"+":"−"}${fmt(e.sh)}</td>
       <td class="n lv" title="shares held at the end of this filing's day, per the record; filings on one day share it">${e.ha?fmt(e.ha):"&mdash;"}</td>
       <td class="n lv po" title="the stake at the end of the day: held over outstanding">${e.po!==null&&e.po!==undefined?e.po.toFixed(e.po<1?3:2)+"%":"&mdash;"}</td>
@@ -434,7 +444,7 @@ function tradesBlock(r){
   const bigChip=`<button class="chip big${BIG?" on":""}" onclick="BIG=!BIG;renderOpen(PANEL[0])" title="only the rows that moved the stake by at least 1% of what it was">Big moves only &ge; 1%</button>`;
   return `<div class="csec ctrades"><div class="thead"><h2>The record, filing by filing</h2><button class="export" onclick="exportTrades()" title="the rows below, as a CSV; it carries the value, the stake change and the denominator every row">Export CSV</button></div>
     <div class="tchips">${chip("all","All",count("all"))}${chip("buys","Bought",count("buys"))}${chip("sells","Sold",count("sells"))}${chip("comp","Compensation",count("comp"))}${chip("transfers","Transfers",count("transfers"))}${chip("covers","Share count",count("covers"))}<span class="tsep"></span>${bigChip}</div>
-    ${rows?`<table><thead><tr><th>Date</th><th>What happened</th><th class="n">Shares</th><th class="n lv">Held after</th><th class="n">Stake</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
+    ${rows?`<table><thead><tr><th>Date</th><th class="kk">Kind</th><th>What happened</th><th class="n">Shares</th><th class="n lv">Held after</th><th class="n">Stake</th><th class="f">Filing</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="sub">Nothing in this view.</div>`}
     ${evs.length>shownEvs.length?`<button class="chip tmore" onclick="TRADES_ALL=true;renderOpen(PANEL[0])">Show all ${evs.length} filings &darr;</button>`:""}
     ${VIEW==="comp"?`<div class="sub" style="margin-top:10px">Compensation: what the company gave and what was sold of it. Awards granted, options exercised and held or cashed, vests, tax withholding, forfeitures. None of it is counted as buying or selling in the site's summaries; what each did to the stake is in the row's tooltip and the export.</div>`:""}
     ${VIEW==="transfers"?`<div class="sub" style="margin-top:10px">Transfers: gifts, conversions between classes, pre-IPO catch-ups and other non-market transactions the filing reports.</div>`:""}
