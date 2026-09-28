@@ -423,7 +423,8 @@ table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
 .controls .grp .gc{display:flex;gap:6px}
 .controls .grp .chip{margin:0}
 .tablesec.home .controls .g-trade{display:none}
-.tw-kind{width:17%}.tw-co{width:26%}.tw-ceo{width:19%}.tw-v{width:10%}.tw-sh{width:10%}.tw-ch{width:9%}.tw-st{width:9%}
+.tw-kind{width:9%}.tw-dt{width:12%}.tw-td2{width:7%}.tw-co{width:16%}.tw-ceo{width:12%}.tw-v{width:8%}.tw-sh{width:8%}.tw-ch{width:7%}.tw-ha{width:8%}.tw-st{width:7%}.tw-fg{width:6%}
+td.ha{color:var(--mut)}td.fg{font-family:var(--mono);font-size:11px;white-space:nowrap}td.fg a{color:var(--faint);text-decoration:none}td.fg a:hover{color:var(--ink)}
 table.tape th.sortable{cursor:pointer;user-select:none}table.tape th.sortable:hover{color:var(--ink)}table.tape td.fd{white-space:nowrap}
 table.tape th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
 table.tape th.n,table.tape td.n{text-align:right;padding-right:28px}
@@ -2054,6 +2055,7 @@ function actSorted(rows){
       if(sk==="sh"){return !e.sh?null:signedShares(e);}
       if(sk==="ch"){const p=evMove(e);return p?p.v:null;}
       if(sk==="st")return (e.po===null||e.po===undefined?null:e.po);
+      if(sk==="ha")return (e.ha||e.ha===0)?e.ha:null;if(sk==="fg")return e.fd;
       if(sk==="td")return e.td||e.fd;if(sk==="fd")return e.fd;return null;};
     return [...rows].sort((a,b)=>{
       const va=val(a),vb=val(b),na=va===null||va===undefined||va==="",nb=vb===null||vb===undefined||vb==="";
@@ -2171,7 +2173,9 @@ function actRow(e){
     <td class="n v">${trade?link(amt,"the filing, on EDGAR"):amt}</td>
     <td class="n sh" title="the shares this filing moved">${shs}</td>
     <td class="n ch" title="what this filing did to the stake, as a share of the stake before it">${change}</td>
+    <td class="n ha" title="the shares held after this filing">${e.ha||e.ha===0?Math.round(e.ha).toLocaleString("en-US"):"&mdash;"}</td>
     <td class="n st" title="the stake after this filing">${stake}</td>
+    <td class="fg"><a href="${e.u}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">Form 4 &#8599;</a></td>
   </tr>`;
 }
 /*@shared*/
@@ -2180,7 +2184,7 @@ function actRow(e){
    the tape's own order (kind groups, the move within). Filed is the day
    EDGAR accepted the form; Traded the day of the transaction. */
 /*@shared*/
-const TAPE_COLS=[["kind","Kind",""],["dt","Detail",""],["td2","Traded",""],["co","Company",""],["ceo","CEO",""],["v","Amount","n"],["sh","Shares","n"],["ch","Of holding","n"],["st","Stake","n"]];
+const TAPE_COLS=[["kind","Kind",""],["dt","Detail",""],["td2","Traded",""],["co","Company",""],["ceo","CEO",""],["v","Amount","n"],["sh","Shares","n"],["ch","Of holding","n"],["ha","Held after","n"],["st","Stake","n"],["fg","Filing",""]];
 /*@shared*/
 function dayLabel(d){
   /* Today and Yesterday by the reader's clock; any other day by its name */

@@ -45,11 +45,12 @@ KIND_DETAIL = {"exercise and sell": "options cashed", "exercise, part sold": "op
                "shares withheld for tax": "withheld for tax", "other transaction": "other transaction",
                "sold to cover tax": "sold to cover tax"}
 TAPE_HEAD = ('<table class="tape"><colgroup><col class="tw-kind"><col class="tw-dt"><col class="tw-td2"><col class="tw-co"><col class="tw-ceo"><col class="tw-v">'
-             '<col class="tw-ch"><col class="tw-st"></colgroup>'
+             '<col class="tw-ch"><col class="tw-ha"><col class="tw-st"><col class="tw-fg"></colgroup>'
              '<thead><tr><th class="sortable" data-key="kind">Kind<span class="arr"></span></th><th class="sortable" data-key="dt">Detail<span class="arr"></span></th>'
              '<th class="sortable" data-key="td2">Traded<span class="arr"></span></th><th class="sortable" data-key="co">Company<span class="arr"></span></th>'
              '<th class="sortable" data-key="ceo">CEO<span class="arr"></span></th><th class="sortable n" data-key="v">Amount<span class="arr"></span></th>'
-             '<th class="sortable n" data-key="ch">Change<span class="arr"></span></th><th class="sortable n" data-key="st">New stake<span class="arr"></span></th></tr></thead>')
+             '<th class="sortable n" data-key="ch">Change<span class="arr"></span></th><th class="sortable n" data-key="ha">Held after<span class="arr"></span></th>'
+             '<th class="sortable n" data-key="st">New stake<span class="arr"></span></th><th data-key="fg">Filing</th></tr></thead>')
 
 
 def _pre(e):
@@ -245,7 +246,7 @@ def row_html(e, co_of):
     redraws it identically when the feed arrives."""
     k = kind_of(e)
     trade = (e.get("code") or "") in ("P", "S")
-    detail = detail_of(e) if k in ("comp", "xfer", "sold") else ""
+    detail = detail_of(e)   # ONE RENDERER (2026-09-28): the detail for every kind, riders and all
     val = _num(e.get("value"))
     amt = "" if not trade or not val or (e.get("price_flag") or "") else money(val)
     m = move_of(e)
@@ -254,6 +255,8 @@ def row_html(e, co_of):
     after = _num(e.get("pct_after"))
     stake = pct(after) if after is not None else ""
     tk = e.get("tk") or (e.get("ticker") or "").upper()
+    ha = e.get("holding_after") or ""
+    u = e.get("url") or ""
     # the day header names the filed day; a trade from another day says so
     traded, filed = (e.get("traded") or ""), (e.get("filed") or "")
     kcls = "sold" if k in ("plan", "disc") else k
@@ -263,7 +266,10 @@ def row_html(e, co_of):
             f'<td class="co"><a class="pglink" href="/company/{html.escape(tk)}/">{html.escape(tk)}</a>'
             f'<span class="nm">{html.escape(co_of.get(tk, ""))}</span></td>'
             f'<td class="ceo"><span class="cn">{html.escape(e.get("ceo") or "")}</span></td>'
-            f'<td class="n v">{amt}</td><td class="n ch">{change}</td><td class="n st">{stake}</td></tr>')
+            f'<td class="n v">{amt}</td><td class="n ch">{change}</td>'
+            f'<td class="n ha">{("{:,}".format(int(float(ha)))) if ha else "&mdash;"}</td>'
+            f'<td class="n st">{stake}</td>'
+            f'<td class="fg">{f"<a href=\"{html.escape(u)}\" target=\"_blank\" rel=\"noopener\">Form 4 &#8599;</a>" if u else ""}</td></tr>')
 
 
 def _short(d):
