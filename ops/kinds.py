@@ -44,9 +44,10 @@ KIND_DETAIL = {"exercise and sell": "options cashed", "exercise, part sold": "op
                "forfeited": "forfeited", "converted": "converted", "gift": "gift",
                "shares withheld for tax": "withheld for tax", "other transaction": "other transaction",
                "sold to cover tax": "sold to cover tax"}
-TAPE_HEAD = ('<table class="tape"><colgroup><col class="tw-kind"><col class="tw-co"><col class="tw-ceo"><col class="tw-v">'
+TAPE_HEAD = ('<table class="tape"><colgroup><col class="tw-kind"><col class="tw-dt"><col class="tw-td2"><col class="tw-co"><col class="tw-ceo"><col class="tw-v">'
              '<col class="tw-ch"><col class="tw-st"></colgroup>'
-             '<thead><tr><th class="sortable" data-key="kind">Kind<span class="arr"></span></th><th class="sortable" data-key="co">Company<span class="arr"></span></th>'
+             '<thead><tr><th class="sortable" data-key="kind">Kind<span class="arr"></span></th><th class="sortable" data-key="dt">Detail<span class="arr"></span></th>'
+             '<th class="sortable" data-key="td2">Traded<span class="arr"></span></th><th class="sortable" data-key="co">Company<span class="arr"></span></th>'
              '<th class="sortable" data-key="ceo">CEO<span class="arr"></span></th><th class="sortable n" data-key="v">Amount<span class="arr"></span></th>'
              '<th class="sortable n" data-key="ch">Change<span class="arr"></span></th><th class="sortable n" data-key="st">New stake<span class="arr"></span></th></tr></thead>')
 
@@ -255,10 +256,10 @@ def row_html(e, co_of):
     tk = e.get("tk") or (e.get("ticker") or "").upper()
     # the day header names the filed day; a trade from another day says so
     traded, filed = (e.get("traded") or ""), (e.get("filed") or "")
-    tnote = (f'<span class="detail tdt">trade {html.escape(_short(traded))}</span>'
-             if traded and filed and traded != filed else "")
-    return (f'<tr class="dayrow{" dim" if dim(e) else ""}"><td class="kd"><span class="kind {k}">{KIND_WORD[k]}</span>'
-            f'{"<span class=\"detail\">" + html.escape(detail) + "</span>" if detail else ""}{tnote}</td>'
+    kcls = "sold" if k in ("plan", "disc") else k
+    return (f'<tr class="dayrow{" dim" if dim(e) else ""}"><td class="kd"><span class="kind {kcls}">{KIND_WORD[k]}</span></td>'
+            f'<td class="dt{" disc" if detail == "discretionary" else ""}">{html.escape(detail) if detail else "&mdash;"}</td>'
+            f'<td class="td2">{html.escape(_short(traded)) if traded else html.escape(_short(filed))}</td>'
             f'<td class="co"><a class="pglink" href="/company/{html.escape(tk)}/">{html.escape(tk)}</a>'
             f'<span class="nm">{html.escape(co_of.get(tk, ""))}</span></td>'
             f'<td class="ceo"><span class="cn">{html.escape(e.get("ceo") or "")}</span></td>'

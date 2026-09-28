@@ -169,9 +169,9 @@ def test_the_weather_line_and_the_stamped_table(tmp_path):
     assert '<tr class="dgrp" id="d2026-09-13"><td colspan="6"><a href="#d2026-09-13">Sunday, Sep 13</a><span class="dn">3 filings</span></td></tr>' in t, \
         "the day is a header and an anchor, not a column"
     assert t.index('id="d2026-09-13"') < t.index('id="d2026-09-10"'), "newest day first"
-    assert '<span class="detail tdt">trade 9/9</span>' in t, "a trade from another day says so on its row"
-    assert '<span class="kind comp">Compensation</span><span class="detail">award granted</span>' in t
-    assert '<span class="kind xfer">Transfer</span><span class="detail">gift</span>' in t
+    assert '<td class="td2">9/9</td>' in t, "the traded column carries the trade's own day (2026-09-27)"
+    assert '<span class="kind comp">Compensation</span></td><td class="dt">award granted</td>' in t
+    assert '<span class="kind xfer">Transfer</span></td><td class="dt">gift</td>' in t
     assert '<td class="n v">$61.5M</td>' in t, "the sale inside an exercise shows the Form 4's number"
     assert '<span class="plus">+40%</span>' in t and '<span class="minus">−0.40%</span>' in t and 'class="dayrow dim"' in t, "the change, in the page's format; the withholding dimmed"
     assert "−23%" in t, "every company's change is printed (one tree, 2026-09-23)"
