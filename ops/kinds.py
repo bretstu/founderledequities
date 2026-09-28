@@ -32,7 +32,7 @@ COMP_LABELS = {"exercise and sell", "exercise, part sold", "vested and sold", "c
                "sale, position unchanged", "purchase, position unchanged", "sold to cover tax"}
 COMP_CODES = {"A", "M", "F", "D", "X"}
 KIND_ORDER = {"bought": 0, "disc": 1, "sold": 2, "plan": 3, "comp": 4, "xfer": 5}
-KIND_WORD = {"bought": "Bought", "disc": "Discretionary", "sold": "Sold", "plan": "Planned",
+KIND_WORD = {"bought": "Purchase", "disc": "Sale", "sold": "Sale", "plan": "Sale",
              "comp": "Compensation", "xfer": "Transfer"}
 GROUP_WORD = {"bought": "Bought", "sold": "Sold", "comp": "Compensation", "xfer": "Transfers"}
 KIND_DETAIL = {"exercise and sell": "options cashed", "exercise, part sold": "options cashed, part kept",
@@ -103,9 +103,9 @@ def detail_of(e):
     if k == "bought":
         return "pre-set plan" if (e.get("plan") or "") == "plan" else "open market"
     if k == "disc":
-        return _with_also(e, "open market")
+        return _with_also(e, "discretionary")
     if k == "plan":
-        return _with_also(e, "pre-set plan")
+        return _with_also(e, "planned")
     if k == "sold":
         return "not stated"
     return KIND_DETAIL.get(e.get("label") or "", "compensation" if k == "comp" else "other transaction")

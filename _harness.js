@@ -150,7 +150,7 @@ const P=runPage();
     renderActivity();
     assert(els["#actwrap"]._html.includes('class="tape"')&&(els["#actwrap"]._html.match(/class="dayrow/g)||[]).length===rows.length,"one table row per filing, once the excerpt's limit is lifted");
     assert(/data-key="kind">Kind<span class="arr">.*data-key="co">Company.*data-key="ceo">CEO.*data-key="v">Amount.*data-key="sh">Shares.*data-key="ch">Of holding.*data-key="st">Stake/.test(html)&&!html.includes('data-key="td"'),"seven sortable columns (2026-09-24): the date left for the day headers");
-    assert(/class="detail tdt" title="[^"]*; filed /.test(html),"a trade from another day carries the manner, the lag and the filed day on its note's hover (2026-09-24)");
+    assert(/class="td2" title="[^"]*; filed /.test(html),"the traded column carries the manner, the lag and the filed day on its hover (2026-09-27)");
     // THE HEADERS SORT, LIKE THE SCOREBOARD'S; Kind restores the tape's own order
     P.setTapeSort("v"); {const r=actSorted(actRows()); const vs=r.map(e=>((e.c==="P"||e.c==="S")&&e.v&&!e.fl)?e.v:null).filter(x=>x!==null); assert(vs.every((x,i)=>i===0||x<=vs[i-1]),"Amount sorts descending on the first click"); assert(els["#actwrap"]._html.includes('data-key="v">Amount<span class="arr"> ↓'),"and the header shows the arrow");}
     P.setTapeSort("v"); {const r=actSorted(actRows()); const vs=r.map(e=>((e.c==="P"||e.c==="S")&&e.v&&!e.fl)?e.v:null).filter(x=>x!==null); assert(vs.every((x,i)=>i===0||x>=vs[i-1]),"a second click reverses");}
@@ -171,7 +171,7 @@ const P=runPage();
     assert(!idxsrc.includes('data-key="asof"')&&!idxsrc.includes('data-key="ltf"')&&!idxsrc.includes('data-key="c12"'),"the scoreboard is stake, worth, market cap, and no date or trade columns");
     assert(html.includes("openCompany(")&&html.includes("sec.gov"),"rows are doors and the amount links to the filing");
     assert(!html.includes("DISCRET."),"kinds are spelled out");
-    {const full=els["#actwrap"]._html;assert(full.includes('class="kind comp"')&&/class="detail">(<a [^>]+>)?award granted/.test(full)&&full.includes('class="kind xfer"')&&/class="detail">(<a [^>]+>)?gift</.test(full),"a grant and a gift carry the badge and the filing's label in grey, the label linking to the filing");}
+    {const full=els["#actwrap"]._html;assert(full.includes('class="kind comp"')&&/class="dt"[^>]*>(<a [^>]+>)?award granted/.test(full)&&full.includes('class="kind xfer"')&&/class="dt"[^>]*>(<a [^>]+>)?gift</.test(full),"a grant and a gift carry the badge, the label in the detail column linking to the filing (2026-09-27)");}
     // the amount is the Form 4's own number: on every purchase and sale, including the sale inside an exercise; a dash on a grant
     const exRow=rows.find(e=>e.lb==="exercise, part sold"&&e.v&&!e.mk&&e.u);
     if(exRow){const one=P.actRow(exRow);assert(one.includes(P.money(exRow.v))&&one.includes('class="kind comp"')&&one.includes("options cashed, part kept"),"the sale inside an exercise shows its value under the Compensation badge");}
@@ -222,7 +222,7 @@ const P=runPage();
     assert(k("P","open-market purchase","discretionary",true)==="xfer","a pre-IPO catch-up is a transfer on the company page and not on the tape");
     assert(P.tapeGroup({c:"S",lb:"sale",pl:"unknown"})==="sold"&&P.tapeGroup({c:"A",lb:"award granted"})==="comp","the group is the chip");
     assert(P.tapeDetail({c:"S",lb:"sale",pl:"unknown"})==="not stated"&&P.tapeDetail({c:"S",lb:"exercise, part sold",pl:"plan"})==="options cashed, part kept"&&P.tapeDetail({c:"F",lb:"shares withheld for tax"})==="withheld for tax","the detail is the filing's label in the site's words");
-    assert(P.tapeManner({c:"S",lb:"sale",pl:"unknown"})==="Plan not stated"&&P.tapeManner({c:"S",lb:"scheduled sale",pl:"plan"})==="Pre-set plan","the manner on the hover");
+    assert(P.tapeManner({c:"S",lb:"sale",pl:"unknown"})==="Plan not stated"&&P.tapeManner({c:"S",lb:"scheduled sale",pl:"plan"})==="Planned","the manner on the hover");
     // THE GUARD: a filing with no purchase or sale that takes the position to zero is not ranked
     const zero={tk:"ZERO",ceo:"Gone Person",c:"D",lb:"forfeited",pl:"unknown",sh:1402911,v:null,fd:"2026-09-01",td:"2026-09-01",pc:-100,po:0,ha:0,nc:-1402911,rs:null,u:"https://www.sec.gov/z"};
     assert(P.evMove(zero)===null&&P.moveWhy(zero).includes("takes the position on record to zero"),"a forfeiture of the whole holding is not ranked, and the cell says why");
@@ -234,7 +234,7 @@ const P=runPage();
     const z=h.slice(h.indexOf("openCompany('ZERO')"),h.indexOf("openCompany('ZERO')")+1400);
     assert(z.includes('class="kind comp"')&&z.includes("forfeited")&&z.includes("takes the position on record to zero")&&!z.includes("sold out"),"the guarded row is on the tape, badged, its change unranked and explained");
     const o=h.slice(h.indexOf("openCompany('OLDS')"),h.indexOf("openCompany('OLDS')")+1400);
-    assert(o.includes('class="kind sold"')&&o.includes('class="detail">not stated')&&o.includes("$2M"),"a pre-2023 sale reads Sold, not stated (the detail unlinked: the amount carries the link), with its amount");
+    assert(o.includes('class="kind sold"')&&/class="dt"[^>]*>not stated/.test(o)&&o.includes("$2M"),"a pre-2023 sale reads SALE, not stated in the detail column (unlinked: the amount carries the link), with its amount (2026-09-27)");
     P.EVENTS=savedE; setWin(365); renderActivity();
   }
 

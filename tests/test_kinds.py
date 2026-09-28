@@ -93,7 +93,7 @@ def test_the_kinds_by_name():
     assert k("P", "open-market purchase", "discretionary", "1") == "xfer", "a pre-IPO catch-up"
     assert kinds.group_of({"code": "S", "label": "sale", "plan": ""}) == "sold"
     d = lambda code, label, plan="unknown": kinds.detail_of({"code": code, "label": label, "plan": plan})  # noqa: E731
-    assert d("S", "sale") == "not stated" and d("S", "scheduled sale", "plan") == "pre-set plan" and d("P", "open-market purchase", "discretionary") == "open market"
+    assert d("S", "sale") == "not stated" and d("S", "scheduled sale", "plan") == "planned" and d("P", "open-market purchase", "discretionary") == "open market"
     assert d("S", "exercise, part sold", "plan") == "options cashed, part kept" and d("F", "shares withheld for tax") == "withheld for tax"
     assert d("A", "award granted") == "award granted" and d("G", "gift") == "gift"
 

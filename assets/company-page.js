@@ -396,8 +396,8 @@ function tradesBlock(r){
   const shownEvs=(TRADES_ALL||evs.length<=25)?evs:evs.slice(0,25);
   const rows=shownEvs.map(e=>{
     if(e.cover)return `<tr class="cov"><td class="d" title="the company's cover page, dated ${e.fd}">${e.fd}</td>
-      <td class="kk"><span class="kind neu">RECORD</span></td>
-      <td class="dt" title="the company restated its shares outstanding to ${fmt(e.os)} on this cover page; nothing of the chief executive's moved">shares outstanding restated (${esc(e.form)})</td>
+      <td class="kk"><span class="kind neu">SHARE COUNT</span></td>
+      <td class="dt" title="the company restated its shares outstanding to ${fmt(e.os)} on this cover page; nothing of the chief executive's moved">restated by the company (${esc(e.form)}) · no trade</td>
       <td class="n lv">&mdash;</td>
       <td class="n sh lv">&mdash;</td>
       <td class="n lv">${e.ha?fmt(e.ha):"&mdash;"}</td>
@@ -414,15 +414,14 @@ function tradesBlock(r){
        cell keeps only the detail and the dollars, clipped when long. */
     const preipo=kd.t&&kd.t.startsWith("Pre-IPO");
     const ck=preipo?["neu","PRE-IPO"]
-      :e.c==="P"?["bought","BOUGHT"]
-      :e.c==="S"?(kd.k==="comp"?["comp","COMPENSATION"]:kd.k==="plan"?["plan","PLANNED"]
-        :kd.k==="disc"?["disc","DISCRETIONARY"]:["sold","SALE"])
+      :e.c==="P"?["bought","PURCHASE"]
+      :e.c==="S"?(kd.k==="comp"?["comp","COMPENSATION"]:["sold","SALE"])
       :[kd.k||"neu",(kd.t||"").toUpperCase()||"OTHER"];
-    const words=preipo?kd.t:(kd.word||"");
+    const words=preipo?kd.t:(kd.word||(e.c==="P"?"open market":""));
     const amt=(e.c==="P"||e.c==="S")&&!e.fl&&e.v?money(e.v):"&mdash;";
     return `<tr><td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
       <td class="kk" title="${esc(kd.n)}"><span class="kind ${ck[0]}">${ck[1]}</span></td>
-      <td class="dt" title="${esc(kd.n)}${!p?`; ${esc(moveWhy(e))}`:""}">${words?esc(words):"&mdash;"}</td>
+      <td class="dt${words==="discretionary"?" disc":""}" title="${esc(kd.n)}${!p?`; ${esc(moveWhy(e))}`:""}">${words?esc(words):"&mdash;"}</td>
       <td class="n lv">${amt}</td>
       <td class="n sh ${e.c==="P"?"up":e.c==="S"?"down":(e.nc>=0?"up":"down")}">${e.c==="P"||(e.c!=="S"&&e.nc>=0)?"+":"−"}${fmt(e.sh)}</td>
       <td class="n lv" title="shares held at the end of this filing's day, per the record; filings on one day share it">${e.ha?fmt(e.ha):"&mdash;"}</td>

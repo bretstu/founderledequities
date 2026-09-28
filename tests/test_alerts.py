@@ -141,12 +141,12 @@ def test_the_alert_facts_are_three_lines_and_a_note_when_the_holding_was_restate
          "pct_of_holding": "-7.1", "pct_after": "7.67", "holding_after": "1960000", "net_change": "-150000", "outstanding": "25550000",
          "traded": "2026-09-15", "filed": "2026-09-17"}
     f = dict(alerts.facts(r, 1.2e6, True))
-    assert f["Sold"] == "150,000 shares \u00b7 $1.2M \u00b7 pre-set plan" and f["Transaction date"] == "09/15/2026" and f["Filing date"] == "09/17/2026"
+    assert f["Sold"] == "150,000 shares \u00b7 $1.2M \u00b7 planned" and f["Transaction date"] == "09/15/2026" and f["Filing date"] == "09/17/2026"
     assert f["Stake"].startswith("8.26% \u2192 7.67%") and "-7.1%" in f["Stake"]
     g = dict(alerts.facts(dict(r, code="A", label="award granted", plan="", value=""), None, True))
     assert g["Granted"] == "150,000 shares", "no value invented for a grant"
     e = dict(alerts.facts(dict(r, code="S", plan="", shares="600", value="6330", pct_of_holding="-0.01", pct_after="2.83", residue="-2400000"), 6330, True))
-    assert e["Sold"].endswith("own discretion") and e["Stake"] == "now reads 2.83%" and "restated the holding" in e["Note"]
+    assert e["Sold"].endswith("discretionary") and e["Stake"] == "now reads 2.83%" and "restated the holding" in e["Note"]
     run = open(os.path.join(str(ROOT), "functions", "api", "watch", "run.js"), encoding="utf-8").read()
     assert "e.facts" in run and "${first.tk} \\u00b7" in run, "the mail lays the facts out and the subject leads with the ticker"
     page = open(os.path.join(str(ROOT), "alerts.html"), encoding="utf-8").read()
@@ -167,7 +167,7 @@ def test_the_days_other_disposition_is_named_and_the_percentage_is_the_transacti
          "also_shares": "-750000", "also_detail": "delivered on a forward sale contract", "traded": "2026-09-15", "filed": "2026-09-17"}
     f = dict(alerts.facts(r, 1.2e6, True))
     assert f["Also filed"] == "750,000 shares delivered on a forward sale contract" and f["Stake"].endswith("(-7.1% of the holding in all)")
-    assert kinds.detail_of(r) == "pre-set plan + 750,000 delivered on a forward sale contract"
+    assert kinds.detail_of(r) == "planned + 750,000 delivered on a forward sale contract"
     plain = dict(r, also_shares="", also_detail="", net_change="-150000", holding_after="12612202", pct_of_holding="-1.1753")
     g = dict(alerts.facts(plain, 1.2e6, True))
     assert "Also filed" not in g and g["Stake"].endswith("(-1.2% of the holding)")

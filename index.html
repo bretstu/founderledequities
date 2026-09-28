@@ -437,6 +437,9 @@ table.tape tr.dayrow:hover td{background:var(--line2)}
    note's count, and only the kind cell reads from it. */
 table.tape tr.dim td.kd .kind{color:var(--faint)}
 table.tape td.kd{}
+td.dt{font-family:var(--mono);font-size:11.5px;color:var(--mut);white-space:nowrap;overflow:hidden;max-width:170px;padding-right:10px}
+td.dt.disc{color:#B23428}
+td.td2{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap;padding-right:10px}
 table.tape .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
 table.tape .kind.bought{color:var(--buy)}table.tape .kind.disc{color:#B23428}table.tape .kind.sold{color:#8C4A44}table.tape .kind.plan{color:var(--mut)}table.tape .kind.comp{color:var(--faint)}table.tape .kind.xfer{color:var(--mut)}
 /* THE DETAIL IS THE FILING'S LABEL IN GREY, the same cell the company page
@@ -1923,7 +1926,7 @@ function tapeGroup(e){
 /*@shared*/
 const KIND_ORDER={bought:0,disc:1,sold:2,plan:3,comp:4,xfer:5};
 /*@shared*/
-const KIND_WORD={bought:"Bought",disc:"Discretionary",sold:"Sold",plan:"Planned",comp:"Compensation",xfer:"Transfer"};
+const KIND_WORD={bought:"Purchase",disc:"Sale",sold:"Sale",plan:"Sale",comp:"Compensation",xfer:"Transfer"};
 /*@shared*/
 const GROUP_WORD={bought:"Bought",sold:"Sold",comp:"Compensation",xfer:"Transfers"};
 /* THE DETAIL IS THE FILING'S LABEL IN THE SITE'S WORDS, the grey word
@@ -1941,8 +1944,8 @@ function tapeDetail(e){
   if(e.pre)return "pre-IPO";
   const k=tapeKind(e);
   if(k==="bought")return withAlso(e,e.pl==="plan"?"pre-set plan":"open market");
-  if(k==="disc")return withAlso(e,"open market");
-  if(k==="plan")return withAlso(e,"pre-set plan");
+  if(k==="disc")return withAlso(e,"discretionary");
+  if(k==="plan")return withAlso(e,"planned");
   if(k==="sold")return "not stated";
   return KIND_DETAIL[e.lb]||(k==="comp"?"compensation":"other transaction");
 }
@@ -2140,7 +2143,8 @@ function signedShares(e){const sh=Math.abs(e.sh||0);if(!sh)return 0;if(e.c==="P"
 /*@shared*/
 function actRow(e){
   const k=tapeKind(e),dim=evDim(e),trade=e.c==="P"||e.c==="S";
-  const detail=(k==="comp"||k==="xfer"||k==="sold")?tapeDetail(e):"";
+  const kcls=(k==="plan"||k==="disc")?"sold":k;
+  const detail=tapeDetail(e);
   const link=(inner,title)=>e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${title}">${inner}</a>`:inner;
   const pr=PANEL.find(p=>p.tk===e.tk)||{};
   /* THE "?" SAYS WHY (2026-09-17): the company's own first problem or caution, the sentence the page shows, not a guess */
@@ -2158,9 +2162,10 @@ function actRow(e){
      day says so here, carrying the old date column's whole tooltip */
   const dfmt=d=>d.slice(5).replace(/^0/,"").replace("-0","-").replace("-","/");
   const tspan=spanDay(e,dfmt);
-  const tnote=(e.td&&tspan!==dfmt(e.fd))?`<span class="detail tdt" title="${tapeManner(e)}; the transaction date${e.tf&&e.tf!==e.td?"s":""}${lagNote(e)}; filed ${shortDay(e.fd)}">trade ${tspan}</span>`:"";
   return `<tr class="dayrow${dim?" dim":""}" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
-    <td class="kd"><span class="kind ${k}" title="${kindNote(e)}">${KIND_WORD[k]}</span>${detail?`<span class="detail">${trade?detail:link(detail,"the filing, on EDGAR")}</span>`:""}${tnote}</td>
+    <td class="kd"><span class="kind ${kcls}" title="${kindNote(e)}">${KIND_WORD[k]}</span></td>
+    <td class="dt${k==="disc"?" disc":""}" title="${kindNote(e)}">${detail?(trade?detail:link(detail,"the filing, on EDGAR")):"&mdash;"}</td>
+    <td class="td2" title="${tapeManner(e)}; the transaction date${e.tf&&e.tf!==e.td?"s":""}${lagNote(e)}; filed ${shortDay(e.fd)}">${tspan}</td>
     <td class="co"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a><span class="nm">${coOf(e.tk)}</span></td>
     <td class="ceo"><span class="cn" title="${(e.ceo||coOf(e.tk)).replace(/"/g,"&quot;")}">${e.ceo||coOf(e.tk)}</span>${fMark(e.tk)}${e.fb?`<span class="firstb" title="this person's first open-market purchase on record">first buy</span>`:""}</td>
     <td class="n v">${trade?link(amt,"the filing, on EDGAR"):amt}</td>
@@ -2175,7 +2180,7 @@ function actRow(e){
    the tape's own order (kind groups, the move within). Filed is the day
    EDGAR accepted the form; Traded the day of the transaction. */
 /*@shared*/
-const TAPE_COLS=[["kind","Kind",""],["co","Company",""],["ceo","CEO",""],["v","Amount","n"],["sh","Shares","n"],["ch","Of holding","n"],["st","Stake","n"]];
+const TAPE_COLS=[["kind","Kind",""],["dt","Detail",""],["td2","Traded",""],["co","Company",""],["ceo","CEO",""],["v","Amount","n"],["sh","Shares","n"],["ch","Of holding","n"],["st","Stake","n"]];
 /*@shared*/
 function dayLabel(d){
   /* Today and Yesterday by the reader's clock; any other day by its name */

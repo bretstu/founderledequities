@@ -135,7 +135,7 @@ def facts(r, value, founder: bool) -> list:
     if code == "P":
         verb, how = "Bought", "open market"
     elif code == "S":
-        verb, how = "Sold", "pre-set plan" if plan else "own discretion"
+        verb, how = "Sold", "planned" if plan else "discretionary"
     elif "award" in what or "granted" in what:
         verb, how = "Granted", ""
     elif "withheld" in what:
