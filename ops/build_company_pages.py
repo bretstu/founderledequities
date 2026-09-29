@@ -687,8 +687,16 @@ def screen_pages(universe_p, founders, prices, out_dir, topnav, css_v, index_row
                         f'<p class="others" style="margin:28px 0 0;font-size:14px;color:var(--mut)">Other screens: {others}</p></div></div>')
         if _PAGE_FN is not None:
             # ONE SCREEN, ONE ADDRESS (2026-09-18): the Companies page itself, preset to the question, with the
-            # rows in the HTML beneath so a crawler reads them and the reader gets the sortable table above
-            page = _PAGE_FN(title, definition, PRESET[slug], static_table, title, desc, f"{SITE}/screens/{slug}/")
+            # rows in the HTML beneath so a crawler reads them and the reader gets the sortable table above.
+            # THE CHROME STAYS (2026-09-28): the sibling screens' chips and the A-to-Z index ride along,
+            # so a screen is the Companies page asking one question, not a smaller page.
+            below = static_table + (_INDEX_BLOCK or "")
+            page = _PAGE_FN(title, definition, PRESET[slug], below, title, desc, f"{SITE}/screens/{slug}/")
+            if _CHIPS:
+                mk = f'<div class="screenline" id="screenline">{html.escape(definition)}</div>'
+                on = _CHIPS.replace(f'<a href="/screens/{slug}/"', f'<a class="on" href="/screens/{slug}/"')
+                if mk in page:
+                    page = page.replace(mk, mk + on, 1)
         else:
             page = (f'<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
                     f'<title>{html.escape(title)} · Founder Led Equities</title>'
@@ -721,6 +729,8 @@ def _money(v):
 
 
 _PAGE_FN = None   # the Companies page as a function, set by companies_index, used by screen_pages
+_CHIPS = None     # the five screens' chip row, shared so a screen keeps its siblings
+_INDEX_BLOCK = None   # the A-to-Z index, shared so every screen carries it beneath its rows
 
 
 def companies_index(rows, founders, sp, out_dir, topnav, css_v):
@@ -820,8 +830,10 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
         marker = f'<div class="screenline" id="screenline">{line}</div>'
         assert marker in page, "the companies screenline moved"
         page = page.replace(marker, marker + chips, 1)
-        global _PAGE_FN
+        global _PAGE_FN, _CHIPS, _INDEX_BLOCK
         _PAGE_FN = companies_page
+        _CHIPS = chips
+        _INDEX_BLOCK = index_html_block
     os.makedirs(os.path.join(out_dir, "companies"), exist_ok=True)
     with open(os.path.join(out_dir, "companies", "index.html"), "w", encoding="utf-8") as fh:
         fh.write(page)
