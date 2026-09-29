@@ -17,11 +17,11 @@
   <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/site.css">
   <style>
-  .tw-kind{width:9%}.tw-dt{width:15%}.tw-td2{width:7%}.tw-tk{width:6%}.tw-co{width:15%}.tw-ceo{width:13%}.tw-v{width:9%}.tw-sh{width:10%}.tw-ch{width:8%}.tw-st{width:8%}
+  .tw-kind{width:11%}.tw-dt{width:14%}.tw-td2{width:7%}.tw-tk{width:6%}.tw-co{width:14%}.tw-ceo{width:13%}.tw-v{width:9%}.tw-sh{width:10%}.tw-ch{width:8%}.tw-st{width:8%}   /* the same widths as index.html's tape CSS; keep both in sync */
   td.tk{font-weight:600;white-space:nowrap}
-  td.dt{font-family:var(--mono);font-size:11.5px;color:var(--mut);white-space:nowrap;overflow:hidden}
-  td.td2{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden}
-  td.td2{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap}
+  td.dt{font-family:var(--mono);font-size:var(--fs-xs);color:var(--mut);white-space:nowrap;overflow:hidden}
+  td.td2{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);white-space:nowrap;overflow:hidden}
+  td.td2{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);white-space:nowrap}
     /* THE TAPE AS A PAGE (PLAN.md section 5): the same block the home page
        carries, with the Monday-tape signup beside it. */
     .tapepage{max-width:var(--max);margin:0 auto;padding:0 clamp(20px,3.5vw,48px)}   /* the workbench measure, as /companies/ */
@@ -34,19 +34,19 @@
     .tapehead{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
     .tapehead .actstats{margin:0 0 4px;gap:clamp(16px,2.2vw,34px)}
     .tapehead .hstat .n{font-size:clamp(22px,2vw,27px)}
-    .tapehead .hstat .k{font-size:9.5px}
+    .tapehead .hstat .k{font-size:var(--fs-2xs)}
     /* the dark band at the foot: the home page's clothes (site.css), fitted */
     .homecap{margin-top:46px}
     .homecap .capin{padding:44px 0 40px}
-    .tapepage .tapewrap{margin-top:16px}
+    .tapepage .tapewrap{margin-top:12px}
     .homecap .hs-msg:empty{display:none}
-    .homecap .done{border:1px solid var(--bg);padding:18px 22px;max-width:560px}
-    .homecap .done h3{font-family:var(--ui);font-weight:700;font-size:24px;margin:0 0 6px}
-    .homecap .done p{font-size:14px;color:var(--faint);margin:0}
+    .homecap .done{background:var(--white);border:1px solid var(--pline);border-radius:var(--r-s);padding:18px 22px;max-width:560px}
+    .homecap .done h3{font-family:var(--ui);font-weight:700;font-size:var(--fs-xl);margin:0 0 6px}
+    .homecap .done p{font-size:var(--fs-m);color:var(--mut);margin:0}
     body.pro .homecap{display:none}
-    .tapefoot{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--mut)}
+    .tapefoot{border-top:1px solid var(--line);margin-top:48px;padding:16px 0 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:var(--fs-s);color:var(--mut)}
     .tapefoot a{color:var(--mut)}
-    .tapefoot .site{font-family:var(--mono);font-size:11px;color:var(--faint)}
+    .tapefoot .site{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint)}
   </style>
 </head>
 <body>

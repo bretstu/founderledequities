@@ -48,4 +48,4 @@ universe/footnote-done.json
 universe/footnote-reads.prev.csv
 history-state.json.before-full
 weekly-walk.log
-holdings.csv
+ops/.assemble-preview.sh

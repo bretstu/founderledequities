@@ -78,3 +78,14 @@ def test_the_kind_chip_has_one_rule():
     site.css; company.html carried a second copy once."""
     assert ".kind.bought{" in _styles(_read("index.html"))
     assert ".kind.bought" not in _styles(_read("company.html"))
+
+
+def test_type_sizes_come_from_the_scale():
+    """seven named sizes below a headline (slice 2, 2026-09-29); a headline is a
+    clamp of its own, and the few fixed display sizes above 27px stay literal."""
+    for name in TEMPLATES:
+        css = _styles(_read(name))
+        loose = [m for m in re.findall(r"font-size:(\d+(?:\.\d+)?)px", css) if float(m) < 27]
+        # the one literal: the kind chip is 10px so COMPENSATION fits the tape's fixed column
+        assert loose in ([], ["10"]), (name, loose)
+    assert "--fs-m:" in _styles(_read("index.html"))

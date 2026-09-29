@@ -544,8 +544,8 @@ INDEX_CSS = ("""
 .sstatic .fb{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;background:var(--ink);color:var(--bg);padding:1px 5px;border-radius:2px;vertical-align:middle;margin-left:8px}
 
 .cidx{padding:32px 0 60px}.cidx h1{font-family:var(--ui);font-size:clamp(28px,4vw,44px);font-weight:650;letter-spacing:-.02em;margin:0 0 8px}
-.cidx .sub{color:var(--mut);margin-bottom:18px}.cidx .letters{font-family:var(--mono);font-size:13px;display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}.cidx .letters a{color:var(--blue);text-decoration:none}
-.cidx section{margin-top:22px}.cidx h2{font-family:var(--mono);font-size:13px;color:var(--faint);letter-spacing:.14em;margin:0 0 8px}
+.cidx .sub{color:var(--mut);margin-bottom:18px}.cidx .letters{font-family:var(--mono);font-size:var(--fs-s);display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}.cidx .letters a{color:var(--blue);text-decoration:none}
+.cidx section{margin-top:22px}.cidx h2{font-family:var(--mono);font-size:var(--fs-s);color:var(--faint);letter-spacing:.14em;margin:0 0 8px}
 .cidx ul{list-style:none;margin:0;padding:0;columns:3;column-gap:32px}.cidx li{break-inside:avoid;padding:4px 0;font-size:13.5px}
 .cidx li a{font-family:var(--mono);font-weight:600;color:var(--blue);text-decoration:none}.cidx .co{color:var(--ink)}.cidx .ceo{color:var(--mut)}
 .cidx .seal{font-family:var(--mono);font-size:10px;color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:1px 5px;margin-left:4px}
@@ -627,7 +627,7 @@ SCREEN_CSS = """
 .spage{max-width:var(--max);margin:0 auto;padding:clamp(28px,4vw,52px) clamp(20px,3.5vw,48px) 72px}
 .spage h1{font-family:var(--ui);font-weight:700;letter-spacing:-.02em;line-height:1.05;font-size:clamp(32px,4.4vw,56px);margin:0 0 10px}
 .spage .def{font-size:15.5px;line-height:1.55;color:var(--mut);max-width:72ch;margin:0 0 6px}
-.spage .meta{font-family:var(--mono);font-size:12px;color:var(--faint);margin:0 0 22px}
+.spage .meta{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);margin:0 0 22px}
 .spage .meta a{color:var(--mut)}
 .spage table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
 .spage th{text-align:left;font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
@@ -681,7 +681,7 @@ def screen_pages(universe_p, founders, prices, out_dir, topnav, css_v, index_row
                        f'<td class="n">{"" if w is None else _money(w)}</td></tr>')
         others = " ".join(f'<a href="/screens/{o_slug}/">{html.escape(o_title)}</a>' for o_slug, o_title, _d, _t in SCREENS if o_slug != slug)
         desc = f"{len(picked):,} {definition}. Computed from SEC filings, updated nightly."
-        static_table = (f'<div class="sstatic" id="sstatic"><div class="wrap"><p class="meta" style="font-family:var(--mono);font-size:12px;color:var(--faint);margin:28px 0 10px">The list, as of {today}, sorted by the value of the stake</p>'
+        static_table = (f'<div class="sstatic" id="sstatic"><div class="wrap"><p class="meta" style="font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);margin:28px 0 10px">The list, as of {today}, sorted by the value of the stake</p>'
                         f'<table class="stable"><thead><tr><th>Company</th><th>CEO</th><th class="n">Stake</th><th class="n c12">A year ago</th><th class="n">Worth</th></tr></thead>'
                         f'<tbody>{"".join(trs)}</tbody></table>'
                         f'<p class="others" style="margin:28px 0 0;font-size:14px;color:var(--mut)">Other screens: {others}</p></div></div>')
@@ -753,7 +753,7 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
         parts.append(f'<section><h2 id="{letter}">{letter}</h2><ul>{"".join(items)}</ul></section>')
     nav = " ".join(f'<a href="#{l}">{l}</a>' for l in sorted(by))
     n = f"{len(rows):,}"
-    index_html_block = (f"<div class=\"cidx\"><div class=\"wrap\"><h2 style=\"font-family:var(--ui);font-weight:700;font-size:22px;letter-spacing:-.01em;color:var(--ink);margin:28px 0 4px\">The index, A to Z</h2>"
+    index_html_block = (f"<div class=\"cidx\"><div class=\"wrap\"><h2 style=\"font-family:var(--ui);font-weight:700;font-size:var(--fs-xl);letter-spacing:-.01em;color:var(--ink);margin:28px 0 4px\">The index, A to Z</h2>"
                         f"<div class=\"sub\">{n} US public companies worth $1B or more, each with a page for what its chief executive owns.</div>"
                         f"<div class=\"letters\">{nav}</div>{''.join(parts)}</div></div>")
     # THE SCREENER IN FULL (PLAN.md section 5): the page is the template
