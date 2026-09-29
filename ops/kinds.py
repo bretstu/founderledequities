@@ -44,13 +44,13 @@ KIND_DETAIL = {"exercise and sell": "options cashed", "exercise, part sold": "op
                "forfeited": "forfeited", "converted": "converted", "gift": "gift",
                "shares withheld for tax": "withheld for tax", "other transaction": "other transaction",
                "sold to cover tax": "sold to cover tax"}
-TAPE_HEAD = ('<table class="tape"><colgroup><col class="tw-kind"><col class="tw-dt"><col class="tw-td2"><col class="tw-co"><col class="tw-ceo"><col class="tw-v">'
-             '<col class="tw-ch"><col class="tw-ha"><col class="tw-st"><col class="tw-fg"></colgroup>'
+TAPE_HEAD = ('<table class="tape"><colgroup><col class="tw-kind"><col class="tw-dt"><col class="tw-td2"><col class="tw-tk"><col class="tw-co"><col class="tw-ceo"><col class="tw-v">'
+             '<col class="tw-sh"><col class="tw-ch"><col class="tw-st"></colgroup>'
              '<thead><tr><th class="sortable" data-key="kind">Kind<span class="arr"></span></th><th class="sortable" data-key="dt">Detail<span class="arr"></span></th>'
-             '<th class="sortable" data-key="td2">Traded<span class="arr"></span></th><th class="sortable" data-key="co">Company<span class="arr"></span></th>'
+             '<th class="sortable" data-key="td2">Traded<span class="arr"></span></th><th class="sortable" data-key="tk">Ticker<span class="arr"></span></th><th class="sortable" data-key="co">Company<span class="arr"></span></th>'
              '<th class="sortable" data-key="ceo">CEO<span class="arr"></span></th><th class="sortable n" data-key="v">Amount<span class="arr"></span></th>'
-             '<th class="sortable n" data-key="ch">Change<span class="arr"></span></th><th class="sortable n" data-key="ha">Held after<span class="arr"></span></th>'
-             '<th class="sortable n" data-key="st">New stake<span class="arr"></span></th><th data-key="fg">Filing</th></tr></thead>')
+             '<th class="sortable n" data-key="sh">Shares<span class="arr"></span></th><th class="sortable n" data-key="ch">Of holding<span class="arr"></span></th>'
+             '<th class="sortable n" data-key="st">Stake<span class="arr"></span></th></tr></thead>')
 
 
 def _pre(e):
@@ -85,7 +85,7 @@ def group_of(e):
     return "sold" if k in ("disc", "plan", "sold") else k
 
 
-def _with_also(e, detail):
+def _with_also(e, detail, short=False):
     """RED CAT (2026-09-18): the day's other disposition rides on the trade's
     detail, so "pre-set plan" reads "pre-set plan + 750,000 delivered on a
     forward sale contract" and the change column's -7.1% has its reason."""
@@ -94,20 +94,20 @@ def _with_also(e, detail):
     except (TypeError, ValueError):
         n = 0.0
     d = (e.get("also_detail") or "").strip()
-    return f"{detail} + {n:,.0f} {d}" if n >= 1 and d else detail
+    return (f"{detail} + more" if short else f"{detail} + {n:,.0f} {d}") if n >= 1 and d else detail
 
 
-def detail_of(e):
+def detail_of(e, short=False):
     """The grey word after the badge, the filing's label in the site's words."""
     if _pre(e):
         return "pre-IPO"
     k = kind_of(e)
     if k == "bought":
-        return "pre-set plan" if (e.get("plan") or "") == "plan" else "open market"
+        return _with_also(e, "pre-set plan" if (e.get("plan") or "") == "plan" else "open market", short)
     if k == "disc":
-        return _with_also(e, "discretionary")
+        return _with_also(e, "discretionary", short)
     if k == "plan":
-        return _with_also(e, "planned")
+        return _with_also(e, "planned", short)
     if k == "sold":
         return "not stated"
     return KIND_DETAIL.get(e.get("label") or "", "compensation" if k == "comp" else "other transaction")
@@ -246,7 +246,7 @@ def row_html(e, co_of):
     redraws it identically when the feed arrives."""
     k = kind_of(e)
     trade = (e.get("code") or "") in ("P", "S")
-    detail = detail_of(e)   # ONE RENDERER (2026-09-28): the detail for every kind, riders and all
+    detail = detail_of(e, short=True)   # the scanner says the base word; the record finishes the sentence
     val = _num(e.get("value"))
     amt = "" if not trade or not val or (e.get("price_flag") or "") else money(val)
     m = move_of(e)
@@ -255,21 +255,21 @@ def row_html(e, co_of):
     after = _num(e.get("pct_after"))
     stake = pct(after) if after is not None else ""
     tk = e.get("tk") or (e.get("ticker") or "").upper()
-    ha = e.get("holding_after") or ""
-    u = e.get("url") or ""
+    _sh = _num(e.get("shares"))
+    _sgn = "+" if ((e.get("code") or "") == "P" or ((e.get("code") or "") != "S" and (_num(e.get("net_change")) or 0) >= 0)) else "&#8722;"
+    shs = f"{_sgn}{int(round(abs(_sh))):,}" if _sh else "&mdash;"
     # the day header names the filed day; a trade from another day says so
     traded, filed = (e.get("traded") or ""), (e.get("filed") or "")
     kcls = "sold" if k in ("plan", "disc") else k
     return (f'<tr class="dayrow{" dim" if dim(e) else ""}"><td class="kd"><span class="kind {kcls}">{KIND_WORD[k]}</span></td>'
             f'<td class="dt{" disc" if detail == "discretionary" else ""}">{html.escape(detail) if detail else "&mdash;"}</td>'
             f'<td class="td2">{html.escape(_short(traded)) if traded else html.escape(_short(filed))}</td>'
-            f'<td class="co"><a class="pglink" href="/company/{html.escape(tk)}/">{html.escape(tk)}</a>'
-            f'<span class="nm">{html.escape(co_of.get(tk, ""))}</span></td>'
+            f'<td class="tk"><a class="pglink" href="/company/{html.escape(tk)}/">{html.escape(tk)}</a></td>'
+            f'<td class="co"><span class="nm">{html.escape(co_of.get(tk, ""))}</span></td>'
             f'<td class="ceo"><span class="cn">{html.escape(e.get("ceo") or "")}</span></td>'
-            f'<td class="n v">{amt}</td><td class="n ch">{change}</td>'
-            f'<td class="n ha">{("{:,}".format(int(float(ha)))) if ha else "&mdash;"}</td>'
-            f'<td class="n st">{stake}</td>'
-            f'<td class="fg">{f"<a href=\"{html.escape(u)}\" target=\"_blank\" rel=\"noopener\">Form 4 &#8599;</a>" if u else ""}</td></tr>')
+            f'<td class="n v">{amt}</td>'
+            f'<td class="n sh">{shs}</td>'
+            f'<td class="n ch">{change}</td><td class="n st">{stake}</td></tr>')
 
 
 def _short(d):

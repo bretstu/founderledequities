@@ -165,7 +165,7 @@ def test_the_weather_line_and_the_stamped_table(tmp_path):
     assert "did not move a stake" not in w and "moved nothing" not in w
     t = kinds.table_html(kinds.sorted_rows(rows), {"OPEN": "Open Co", "SEAL": "Sealed Co"})
     # four filed days in the fixture: a header row per day plus the seven rows
-    assert t.startswith(kinds.TAPE_HEAD) and 'data-key="ch">Change' in t and 'data-key="fd"' not in t and t.count("<tr ") == 11
+    assert t.startswith(kinds.TAPE_HEAD) and 'data-key="ch">Of holding' in t and 'data-key="fd"' not in t and t.count("<tr ") == 11
     assert '<tr class="dgrp" id="d2026-09-13"><td colspan="6"><a href="#d2026-09-13">Sunday, Sep 13</a><span class="dn">3 filings</span></td></tr>' in t, \
         "the day is a header and an anchor, not a column"
     assert t.index('id="d2026-09-13"') < t.index('id="d2026-09-10"'), "newest day first"

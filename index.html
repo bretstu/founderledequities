@@ -423,8 +423,8 @@ table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
 .controls .grp .gc{display:flex;gap:6px}
 .controls .grp .chip{margin:0}
 .tablesec.home .controls .g-trade{display:none}
-.tw-kind{width:9%}.tw-dt{width:12%}.tw-td2{width:7%}.tw-co{width:16%}.tw-ceo{width:12%}.tw-v{width:8%}.tw-sh{width:8%}.tw-ch{width:7%}.tw-ha{width:8%}.tw-st{width:7%}.tw-fg{width:6%}
-td.ha{color:var(--mut)}td.fg{font-family:var(--mono);font-size:11px;white-space:nowrap}td.fg a{color:var(--faint);text-decoration:none}td.fg a:hover{color:var(--ink)}
+.tw-kind{width:9%}.tw-dt{width:15%}.tw-td2{width:7%}.tw-tk{width:6%}.tw-co{width:15%}.tw-ceo{width:13%}.tw-v{width:9%}.tw-sh{width:10%}.tw-ch{width:8%}.tw-st{width:8%}
+td.tk{font-weight:600;white-space:nowrap}
 table.tape th.sortable{cursor:pointer;user-select:none}table.tape th.sortable:hover{color:var(--ink)}table.tape td.fd{white-space:nowrap}
 table.tape th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
 table.tape th.n,table.tape td.n{text-align:right;padding-right:28px}
@@ -439,7 +439,6 @@ table.tape tr.dayrow:hover td{background:var(--line2)}
 table.tape tr.dim td.kd .kind{color:var(--faint)}
 table.tape td.kd{}
 td.dt{font-family:var(--mono);font-size:11.5px;color:var(--mut);white-space:nowrap;overflow:hidden;max-width:170px;padding-right:10px}
-td.dt.disc{color:#B23428}
 td.td2{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap;padding-right:10px}
 table.tape .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
 table.tape .kind.bought{color:var(--buy)}table.tape .kind.disc{color:#B23428}table.tape .kind.sold{color:#8C4A44}table.tape .kind.plan{color:var(--mut)}table.tape .kind.comp{color:var(--faint)}table.tape .kind.xfer{color:var(--mut)}
@@ -1940,13 +1939,13 @@ const KIND_DETAIL={"exercise and sell":"options cashed","exercise, part sold":"o
   "award granted":"award granted","award granted, tax withheld":"award granted, tax withheld","forfeited":"forfeited",
   "converted":"converted","gift":"gift","shares withheld for tax":"withheld for tax","other transaction":"other transaction","sold to cover tax":"sold to cover tax"};
 /*@shared*/
-function withAlso(e,d){return (e.als&&Math.abs(e.als)>=1&&e.ald)?`${d} + ${Math.round(Math.abs(e.als)).toLocaleString("en-US")} ${e.ald}`:d;}
-function tapeDetail(e){
+function withAlso(e,d,short){return (e.als&&Math.abs(e.als)>=1&&e.ald)?`${d} + ${short?"more":`${Math.round(Math.abs(e.als)).toLocaleString("en-US")} ${e.ald}`}`:d;}
+function tapeDetail(e,short){
   if(e.pre)return "pre-IPO";
   const k=tapeKind(e);
-  if(k==="bought")return withAlso(e,e.pl==="plan"?"pre-set plan":"open market");
-  if(k==="disc")return withAlso(e,"discretionary");
-  if(k==="plan")return withAlso(e,"planned");
+  if(k==="bought")return withAlso(e,e.pl==="plan"?"pre-set plan":"open market",short);
+  if(k==="disc")return withAlso(e,"discretionary",short);
+  if(k==="plan")return withAlso(e,"planned",short);
   if(k==="sold")return "not stated";
   return KIND_DETAIL[e.lb]||(k==="comp"?"compensation":"other transaction");
 }
@@ -2055,7 +2054,7 @@ function actSorted(rows){
       if(sk==="sh"){return !e.sh?null:signedShares(e);}
       if(sk==="ch"){const p=evMove(e);return p?p.v:null;}
       if(sk==="st")return (e.po===null||e.po===undefined?null:e.po);
-      if(sk==="ha")return (e.ha||e.ha===0)?e.ha:null;if(sk==="fg")return e.fd;
+      if(sk==="tk")return e.tk;
       if(sk==="td")return e.td||e.fd;if(sk==="fd")return e.fd;return null;};
     return [...rows].sort((a,b)=>{
       const va=val(a),vb=val(b),na=va===null||va===undefined||va==="",nb=vb===null||vb===undefined||vb==="";
@@ -2146,7 +2145,7 @@ function signedShares(e){const sh=Math.abs(e.sh||0);if(!sh)return 0;if(e.c==="P"
 function actRow(e){
   const k=tapeKind(e),dim=evDim(e),trade=e.c==="P"||e.c==="S";
   const kcls=(k==="plan"||k==="disc")?"sold":k;
-  const detail=tapeDetail(e);
+  const detail=tapeDetail(e,true);   /* the scanner says the base word; the record finishes the sentence */
   const link=(inner,title)=>e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${title}">${inner}</a>`:inner;
   const pr=PANEL.find(p=>p.tk===e.tk)||{};
   /* THE "?" SAYS WHY (2026-09-17): the company's own first problem or caution, the sentence the page shows, not a guess */
@@ -2166,16 +2165,15 @@ function actRow(e){
   const tspan=spanDay(e,dfmt);
   return `<tr class="dayrow${dim?" dim":""}" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
     <td class="kd"><span class="kind ${kcls}" title="${kindNote(e)}">${KIND_WORD[k]}</span></td>
-    <td class="dt${k==="disc"?" disc":""}" title="${kindNote(e)}">${detail?(trade?detail:link(detail,"the filing, on EDGAR")):"&mdash;"}</td>
+    <td class="dt" title="${tapeManner(e)}">${detail?(trade?detail:link(detail,"the filing, on EDGAR")):"&mdash;"}</td>
     <td class="td2" title="${tapeManner(e)}; the transaction date${e.tf&&e.tf!==e.td?"s":""}${lagNote(e)}; filed ${shortDay(e.fd)}">${tspan}</td>
-    <td class="co"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a><span class="nm">${coOf(e.tk)}</span></td>
+    <td class="tk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></td>
+    <td class="co"><span class="nm">${coOf(e.tk)}</span></td>
     <td class="ceo"><span class="cn" title="${(e.ceo||coOf(e.tk)).replace(/"/g,"&quot;")}">${e.ceo||coOf(e.tk)}</span>${fMark(e.tk)}${e.fb?`<span class="firstb" title="this person's first open-market purchase on record">first buy</span>`:""}</td>
     <td class="n v">${trade?link(amt,"the filing, on EDGAR"):amt}</td>
     <td class="n sh" title="the shares this filing moved">${shs}</td>
     <td class="n ch" title="what this filing did to the stake, as a share of the stake before it">${change}</td>
-    <td class="n ha" title="the shares held after this filing">${e.ha||e.ha===0?Math.round(e.ha).toLocaleString("en-US"):"&mdash;"}</td>
     <td class="n st" title="the stake after this filing">${stake}</td>
-    <td class="fg"><a href="${e.u}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR">Form 4 &#8599;</a></td>
   </tr>`;
 }
 /*@shared*/
@@ -2184,7 +2182,7 @@ function actRow(e){
    the tape's own order (kind groups, the move within). Filed is the day
    EDGAR accepted the form; Traded the day of the transaction. */
 /*@shared*/
-const TAPE_COLS=[["kind","Kind",""],["dt","Detail",""],["td2","Traded",""],["co","Company",""],["ceo","CEO",""],["v","Amount","n"],["sh","Shares","n"],["ch","Of holding","n"],["ha","Held after","n"],["st","Stake","n"],["fg","Filing",""]];
+const TAPE_COLS=[["kind","Kind",""],["dt","Detail",""],["td2","Traded",""],["tk","Ticker",""],["co","Company",""],["ceo","CEO",""],["v","Amount","n"],["sh","Shares","n"],["ch","Of holding","n"],["st","Stake","n"]];
 /*@shared*/
 function dayLabel(d){
   /* Today and Yesterday by the reader's clock; any other day by its name */

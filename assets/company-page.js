@@ -422,7 +422,7 @@ function tradesBlock(r){
     const amt=(e.c==="P"||e.c==="S")&&!e.fl&&e.v?money(e.v):"&mdash;";
     const ofh=p?`<span title="what this filing did to the stake, as a share of the stake before it${p.approx?"; approximate":""}">${stakeChange(p.v,p.approx).replace(/^≈ /,"≈").replace(/stake /,"")}</span>`:`<span class="nopr" title="${esc(moveWhy(e))}">${uk!==null&&uk!=="pre"?"unchanged":"&mdash;"}</span>`;
     return `<tr><td class="kk" title="${esc(kd.n)}"><span class="kind ${ck[0]}">${ck[1]}</span></td>
-      <td class="dt${words.indexOf("discretionary")===0?" disc":""}" title="${esc(kd.n)}${!p?`; ${esc(moveWhy(e))}`:""}">${words?esc(words):"&mdash;"}</td>
+      <td class="dt" title="${esc(kd.n)}${!p?`; ${esc(moveWhy(e))}`:""}">${words?esc(words):"&mdash;"}</td>
       <td class="d" title="traded ${spanDay(e,d=>d)}; filed ${e.fd}${lagNote(e)}">${span}</td>
       <td class="n lv">${amt}</td>
       <td class="n sh ${e.c==="P"?"up":e.c==="S"?"down":(e.nc>=0?"up":"down")}">${e.c==="P"||(e.c!=="S"&&e.nc>=0)?"+":"−"}${fmt(e.sh)}</td>
