@@ -239,6 +239,20 @@ def weather(rows):
     return " · ".join(parts)
 
 
+
+def _span2(tf, traded, filed):
+    """The traded column's compact span: 9/24 for one day, 9/24&ndash;25 inside
+    a month, 9/28&ndash;10/2 across one."""
+    import html as _h
+    a, b = (tf or "").strip(), (traded or "").strip() or (filed or "").strip()
+    if not b:
+        return "&mdash;"
+    if not a or a == b:
+        return _h.escape(_short(b))
+    sa, sb = _short(a), _short(b)
+    ma, mb = sa.split("/")[0], sb.split("/")[0]
+    return _h.escape(f"{sa}\u2013{sb.split('/')[1]}" if ma == mb else f"{sa}\u2013{sb}")
+
 def row_html(e, co_of):
     """One stamped row, the page's actRow without the hovers and the doors:
     the badge and its detail, the company link, the CEO, the amount on a
@@ -255,6 +269,7 @@ def row_html(e, co_of):
     after = _num(e.get("pct_after"))
     stake = pct(after) if after is not None else ""
     tk = e.get("tk") or (e.get("ticker") or "").upper()
+    tf = (e.get("traded_from") or "").strip()
     _sh = _num(e.get("shares"))
     _sgn = "+" if ((e.get("code") or "") == "P" or ((e.get("code") or "") != "S" and (_num(e.get("net_change")) or 0) >= 0)) else "&#8722;"
     shs = f"{_sgn}{int(round(abs(_sh))):,}" if _sh else "&mdash;"
@@ -263,7 +278,7 @@ def row_html(e, co_of):
     kcls = "sold" if k in ("plan", "disc") else k
     return (f'<tr class="dayrow{" dim" if dim(e) else ""}"><td class="kd"><span class="kind {kcls}">{KIND_WORD[k]}</span></td>'
             f'<td class="dt{" disc" if detail == "discretionary" else ""}">{html.escape(detail) if detail else "&mdash;"}</td>'
-            f'<td class="td2">{html.escape(_short(traded)) if traded else html.escape(_short(filed))}</td>'
+            f'<td class="td2">{_span2(tf, traded, filed)}</td>'
             f'<td class="tk"><a class="pglink" href="/company/{html.escape(tk)}/">{html.escape(tk)}</a></td>'
             f'<td class="co"><span class="nm">{html.escape(co_of.get(tk, ""))}</span></td>'
             f'<td class="ceo"><span class="cn">{html.escape(e.get("ceo") or "")}</span></td>'

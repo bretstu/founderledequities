@@ -439,7 +439,7 @@ table.tape tr.dayrow:hover td{background:var(--line2)}
 table.tape tr.dim td.kd .kind{color:var(--faint)}
 table.tape td.kd{}
 td.dt{font-family:var(--mono);font-size:11.5px;color:var(--mut);white-space:nowrap;overflow:hidden;max-width:170px;padding-right:10px}
-td.td2{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap;padding-right:10px}
+td.td2{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden;padding-right:10px}
 table.tape .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
 table.tape .kind.bought{color:var(--buy)}table.tape .kind.disc{color:#B23428}table.tape .kind.sold{color:#8C4A44}table.tape .kind.plan{color:var(--mut)}table.tape .kind.comp{color:var(--faint)}table.tape .kind.xfer{color:var(--mut)}
 /* THE DETAIL IS THE FILING'S LABEL IN GREY, the same cell the company page
@@ -2162,7 +2162,7 @@ function actRow(e){
   /* the day header names the filed day; a trade that happened on another
      day says so here, carrying the old date column's whole tooltip */
   const dfmt=d=>d.slice(5).replace(/^0/,"").replace("-0","-").replace("-","/");
-  const tspan=spanDay(e,dfmt);
+  const tspan=spanDay(e,dfmt).replace(/^(\d+)\/(\d+) to \1\//,"$1/$2\u2013").replace(" to ","\u2013");
   return `<tr class="dayrow${dim?" dim":""}" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
     <td class="kd"><span class="kind ${kcls}" title="${kindNote(e)}">${KIND_WORD[k]}</span></td>
     <td class="dt" title="${tapeManner(e)}">${detail?(trade?detail:link(detail,"the filing, on EDGAR")):"&mdash;"}</td>
