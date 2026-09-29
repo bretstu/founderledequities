@@ -609,6 +609,7 @@ def test_the_screens_are_pages_when_the_site_data_is_there(tmp_path):
         page = open(os.path.join(out, "screens", slug, "index.html"), encoding="utf-8").read()
         assert "<title>" in page and 'rel="canonical"' in page and "Other screens" in page
     ns = open(os.path.join(out, "screens", "never-sold", "index.html"), encoding="utf-8").read()
+    assert 'class="screenchips"' in ns and 'class="on" href="/screens/never-sold/"' in ns, "a screen keeps its sibling chips, its own marked (2026-09-28)"
     ns_rows = ns.split('class="cidx"')[0]   # the screen's own rows; the A-to-Z index beneath rightly holds everyone (2026-09-28)
     assert 'href="/company/TSLA/"' in ns_rows and "28.44%" in ns_rows and 'href="/company/SEALD/"' not in ns_rows
     assert "15.80%" in ns, "the stake a year ago is on the row"

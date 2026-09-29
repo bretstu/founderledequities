@@ -693,10 +693,10 @@ def screen_pages(universe_p, founders, prices, out_dir, topnav, css_v, index_row
             below = static_table + (_INDEX_BLOCK or "")
             page = _PAGE_FN(title, definition, PRESET[slug], below, title, desc, f"{SITE}/screens/{slug}/")
             if _CHIPS:
-                mk = f'<div class="screenline" id="screenline">{html.escape(definition)}</div>'
                 on = _CHIPS.replace(f'<a href="/screens/{slug}/"', f'<a class="on" href="/screens/{slug}/"')
-                if mk in page:
-                    page = page.replace(mk, mk + on, 1)
+                m = re.search(r'<div class="screenline" id="screenline">.*?</div>', page, re.S)
+                assert m, f"the screenline anchor moved ({slug})"
+                page = page.replace(m.group(0), m.group(0) + on, 1)
         else:
             page = (f'<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
                     f'<title>{html.escape(title)} · Founder Led Equities</title>'
