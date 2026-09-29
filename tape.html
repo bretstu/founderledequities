@@ -14,8 +14,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://founderledequities.com/og/tape.png">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="preload" href="/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="/fonts/hanken.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/site.css">
   <style>
   .tw-kind{width:9%}.tw-dt{width:15%}.tw-td2{width:7%}.tw-tk{width:6%}.tw-co{width:15%}.tw-ceo{width:13%}.tw-v{width:9%}.tw-sh{width:10%}.tw-ch{width:8%}.tw-st{width:8%}
@@ -23,7 +22,6 @@
   td.dt{font-family:var(--mono);font-size:11.5px;color:var(--mut);white-space:nowrap;overflow:hidden}
   td.td2{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden}
   td.td2{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap}
-    :root{--max:1280px}   /* the measure every page shares (index.html sets the same) */
     /* THE TAPE AS A PAGE (PLAN.md section 5): the same block the home page
        carries, with the Monday-tape signup beside it. */
     .tapepage{max-width:var(--max);margin:0 auto;padding:0 clamp(20px,3.5vw,48px)}   /* the workbench measure, as /companies/ */
@@ -43,8 +41,8 @@
     .tapepage .tapewrap{margin-top:16px}
     .homecap .hs-msg:empty{display:none}
     .homecap .done{border:1px solid var(--bg);padding:18px 22px;max-width:560px}
-    .homecap .done h3{font-family:var(--disp);font-weight:500;font-size:24px;margin:0 0 6px}
-    .homecap .done p{font-size:14px;color:#c9c4b8;margin:0}
+    .homecap .done h3{font-family:var(--ui);font-weight:700;font-size:24px;margin:0 0 6px}
+    .homecap .done p{font-size:14px;color:var(--faint);margin:0}
     body.pro .homecap{display:none}
     .tapefoot{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--mut)}
     .tapefoot a{color:var(--mut)}
@@ -59,7 +57,7 @@
        the title, compact, so the ledger starts one scroll-line sooner. -->
   <div class="shead tapehead">
     <div>
-      <h1 style="font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">Activity</h1>
+      <h1 style="font-family:var(--ui);font-weight:700;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">Activity</h1>
       <div class="tapesub" id="tapesub">Founders only · last 7 days · newest day first.</div>
     </div>
     <div class="actstats" id="actstats"></div>

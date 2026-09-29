@@ -485,7 +485,8 @@ const P=runPage();
     assert(cp.includes("window.__notCounted"),
       "the Not counted expander moves into the section's footer when the section exists");
     const ch=require("fs").readFileSync("company.html","utf8");
-    assert(ch.includes(".chold .hcband")&&ch.includes("2px solid var(--ink)")&&!ch.includes("3px double")&&!ch.includes("height:356px"),
+    // the total's rule is 1.5px ink since design b (2026-09-29): heavier than the hairlines, lighter than the paper's 2px
+    assert(ch.includes(".chold .hcband")&&ch.includes("1.5px solid var(--ink)")&&!ch.includes("3px double")&&!ch.includes("height:356px"),
       "the position statement: bands on one grid, one heavier rule for the total, height that follows the truth");
   }
   assert(idx.includes('og:title')&&idx.includes('twitter:card')&&idx.includes('rel="canonical"'),

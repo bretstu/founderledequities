@@ -95,7 +95,7 @@ $OGPY ops/og_image.py panel.csv "$SP_LIST" prices.csv founders.csv og.png \
 
 rm -rf public && mkdir -p public
 cp index.html about.html public/   # the about template is replaced by its built page (build_company_pages) further down
-# THE FONTS ARE OURS. Four woff2 files, Latin-subset, served from the site:
+# THE FONTS ARE OURS. Inter and Plex Mono (design b, 2026-09-29), Latin-subset, served from the site:
 # no third-party round trips before the type renders, and no invisible
 # text while a font is on its way (font-display: swap).
 mkdir -p public/fonts && cp fonts/*.woff2 public/fonts/

@@ -53,10 +53,10 @@ import kinds  # noqa: E402
 COMPENSATION = kinds.COMP_LABELS
 KIND_WORD = kinds.KIND_WORD
 KIND_ORDER = kinds.KIND_ORDER
-KIND_COLOR = {"bought": "#1F6B3A", "disc": "#B23428", "sold": "#8C4A44", "plan": "#6E6A64", "comp": "#8C8880", "xfer": "#6E6A64"}
+KIND_COLOR = {"bought": "var(--buy)", "disc": "var(--sell)", "sold": "var(--sell)", "plan": "#6E6A64", "comp": "#8C8880", "xfer": "#6E6A64"}
 
 # the site's tokens
-PAPER, INK, MUT, FAINT, LINE, LINE2 = "#F7F4EE", "#1A1A1A", "#5F5B55", "#8C8880", "#D6D1C7", "#E8E4DC"
+PAPER, INK, MUT, FAINT, LINE, LINE2 = "var(--bg)", "var(--ink)", "#5F5B55", "#8C8880", "var(--line)", "#E8E4DC"
 
 
 # ---------------------------------------------------------------- helpers
@@ -432,7 +432,7 @@ def render(md, unsubscribe_url="{{{RESEND_UNSUBSCRIBE_URL}}}", postal=None):
                 H.append(f'<p style="font-size:14px;color:{MUT};margin:0 0 18px;">{inline(val)}</p>'
                          f'<div style="border-top:1px solid {INK};margin:0 0 16px;"></div>')
                 first_p = False
-            elif val.startswith("**"):
+            elif re.match(r"\*\*\d", val):   # the counts line: bold numbers, muted ink
                 H.append(f'<p style="font-size:14px;color:{MUT};margin:0 0 18px;">{inline(val)}</p>')
             elif val.startswith("[See all activity]"):
                 m = re.search(r"\((.+?)\)", val)
@@ -553,8 +553,8 @@ LETTER_CSS = """
 .letter .lcol{max-width:720px}   /* ONE READING COLUMN (2026-09-20): text, image and tables the same width; the site's column holds the nav, the issue sits in its left 720px */
 .letter .lkick{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
 .letter .lkick a{color:var(--mut);text-decoration:none}
-.letter h1.lt{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.08;font-size:clamp(30px,3.6vw,44px);margin:0 0 14px}
-.letter h2.lh2{font-family:var(--disp);font-weight:500;letter-spacing:-.01em;font-size:clamp(21px,2.2vw,26px);margin:32px 0 10px}
+.letter h1.lt{font-family:var(--ui);font-weight:700;letter-spacing:-.02em;line-height:1.08;font-size:clamp(30px,3.6vw,44px);margin:0 0 14px}
+.letter h2.lh2{font-family:var(--ui);font-weight:700;letter-spacing:-.01em;font-size:clamp(21px,2.2vw,26px);margin:32px 0 10px}
 .letter p.lp{font-size:16px;line-height:1.6;color:var(--ink);margin:0 0 14px}
 .letter ul.lul{margin:0 0 16px 20px;padding:0}.letter ul.lul li{font-size:16px;line-height:1.6;margin:0 0 8px}
 .letter figure.lfig{margin:16px 0 22px}.letter figure.lfig img{display:block;width:100%;height:auto;border:1px solid var(--line)}
@@ -567,7 +567,7 @@ LETTER_CSS = """
 .letter .lfoot{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 0;font-size:12.5px;color:var(--mut)}
 .lindex{max-width:var(--max);margin:0 auto;padding:clamp(28px,4vw,52px) clamp(20px,3.5vw,48px) 72px}
 .lindex .lcol{max-width:720px}
-.lindex h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(34px,4.6vw,56px);margin:0 0 8px}
+.lindex h1{font-family:var(--ui);font-weight:700;letter-spacing:-.02em;line-height:1.05;font-size:clamp(34px,4.6vw,56px);margin:0 0 8px}
 .lindex .sub{font-size:15.5px;color:var(--mut);margin:0 0 22px;max-width:72ch}
 .lindex .lsub{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 34px;font-size:14px}
 .lindex .lsub label{color:var(--mut)}
@@ -577,7 +577,7 @@ LETTER_CSS = """
 .lindex .issues{border-top:1px solid var(--ink)}
 .lindex .issue{display:grid;grid-template-columns:120px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--line);align-items:baseline}
 .lindex .issue .d{font-family:var(--mono);font-size:12px;color:var(--faint)}
-.lindex .issue a{font-family:var(--disp);font-size:22px;color:var(--ink);text-decoration:none}
+.lindex .issue a{font-family:var(--ui);font-size:22px;color:var(--ink);text-decoration:none}
 .lindex .issue a:hover{text-decoration:underline}
 .lindex .issue .w{font-size:13px;color:var(--mut);margin-top:2px}
 """

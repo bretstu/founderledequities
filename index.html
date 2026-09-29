@@ -24,61 +24,75 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-96.png" type="image/png" sizes="96x96">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="preload" href="/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/hanken.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-/* self-hosted, Latin subset, swapped in when they arrive */
-@font-face{font-family:"Bricolage Grotesque";src:url("/fonts/bricolage.woff2") format("woff2");font-weight:200 800;font-stretch:75% 100%;font-display:swap}
-@font-face{font-family:"Fraunces";src:url("/fonts/fraunces.woff2") format("woff2");font-weight:100 900;font-display:swap}
-@font-face{font-family:"Hanken Grotesk";src:url("/fonts/hanken.woff2") format("woff2");font-weight:100 900;font-display:swap}
+/* TWO FACES, BOTH OURS (design b, 2026-09-29). inter is the whole site: text,
+   headings and figures (tabular numerals on). plex mono is the detail cell and
+   the filing id, nothing else. the serif and the two other sans faces left
+   with the paper design. latin subsets, self-hosted, swapped in on arrival. */
+@font-face{font-family:"Inter";src:url("/fonts/inter.woff2") format("woff2");font-weight:100 900;font-display:swap}
 @font-face{font-family:"IBM Plex Mono";src:url("/fonts/plexmono.woff2") format("woff2");font-weight:400;font-display:swap}
 @font-face{font-family:"IBM Plex Mono";src:url("/fonts/plexmono-medium.woff2") format("woff2");font-weight:500 600;font-display:swap}
 </style>
 <style>
+/* THE TOKENS (design b, 2026-09-29). ONE BLOCK, ONE SOURCE: ops/build_company_pages.py
+   lifts this stylesheet into site.css, and every other page links that file. no
+   page carries its own :root and no rule below spells a colour in hex; a colour
+   with no name here does not exist on the site. the paper tokens were retired
+   the same day (an off-white page, a serif, ink buttons, no shadows). the old
+   names stay as aliases at the end of the block so nothing breaks while the
+   pages are recarded slice by slice; a rule written today uses the new names. */
 :root{
-  /* PAPER, NOT WHITE. The page is a warm off-white; a card is a shade
-     lighter, so white is what lifts a card off the page rather than the
-     page itself. Hairlines warm to match. */
-  /* THE DESIGN SYSTEM OF 2026-09-13 (PLAN.md section 4): paper, ink, hairline
-     warm grey; a serif for headlines and the big figures; rectangular
-     buttons; no shadows. A research publication that happens to be a
-     website. */
-  --bg:#F7F4EE;
-  --panel:#F7F4EE;
-  --line:#D6D1C7;
-  --rule:#1A1A1A;      /* the section divider is an ink rule, as in a footnote */
-  --line2:#E8E4DC;
-  --ink:#1A1A1A;
-  --mut:#5D6167;
-  /* THE GREYS HAD DRIFTED TOO PALE.
-     --faint was #A0A4A9, which is 2.6:1 on white -- fine for a hairline,
-     not for the dates, unit prices, column heads and the whole methodology
-     note that were being set in it. It is now the darkest grey that still
-     reads as secondary, and clears 4.5:1. */
-  --faint:#6F7379;
-  /* BLUE IS RETIRED. The site's own colour is ink: buttons, active chips,
-     links, the founders line. Green means one thing, bought; red means
-     one thing, sold; stone is a bar that only measures. --blue is kept as
-     a name so nothing breaks, and it now means ink. */
-  --blue:#0C0D0E;
-  --buy:#1F6B3A;       /* bought: badge, bars, dots, the up figures */
-  --buy-l:#DCEBE1;     /* a planned purchase: the light of the same green */
-  --stone:#D9D2C0;     /* the leaderboard's bars */
-  --stone-d:#CDC5B0;
-  --bar:#C9C9BF;       /* the leaderboard's bars: a warm grey a full step below the panel, so it is neither the card nor the planned-trade blue */
-  --blue-d:#000000;
-  --wash:#DCEBE1;
-  --amber:#B06A00;
-  --amber-w:#FBF3E2;
-  --disp:"Fraunces",Georgia,"Times New Roman",serif;
-  --ui:"Hanken Grotesk",-apple-system,sans-serif;
-  --mono:"IBM Plex Mono","SF Mono",monospace;
-  --max:1280px;   /* ONE MEASURE FOR EVERY PAGE (2026-09-18): the workbench's, so the nav and the column never move between the home, the Companies, the Tape and a company page */
+  /* SURFACES. a near-white canvas; the panels carry the tone; white is what
+     sits ON a panel (an input, a chip, a hovered row, a pill). */
+  --bg:#FCFCFD;
+  --panel:#E9EDF3;
+  --pline:#D9DFE8;      /* a panel's own border */
+  --line:#DDE2EA;       /* hairlines everywhere else */
+  --white:#FFFFFF;
+  --radius:12px;        /* a panel */
+  --r-s:8px;            /* a button, an input */
+  --r-pill:999px;       /* a chip, a badge */
+  --shadow:0 1px 2px rgba(15,23,42,.04);
+  /* INK. three greys: the text, the secondary text, the labels. */
+  --ink:#0F172A;
+  --mut:#64748B;
+  --faint:#94A3B8;
+  /* MEANING. indigo is the one action and the one highlight; green means
+     bought and red means sold, each with the tint that carries its chip. */
+  --accent:#4F46E5;
+  --accent-l:#EEF2FF;
+  --buy:#059669;
+  --buy-l:#ECFDF5;
+  --sell:#DC2626;
+  --sell-l:#FEF2F2;
+  --amber:#B45309;
+  --amber-w:#FFFBEB;
+  --slate-l:#F1F5F9;    /* a chip that carries neither verdict (compensation, a transfer) */
+  /* THE DARK BAND (the home page's capture strip, still ink): its field and its hairline */
+  --ink-2:#1E293B;
+  --ink-line:#334155;
+  /* TYPE. one sans, tabular figures; mono for the detail cell and the filing id. */
+  --ui:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono","SF Mono",Menlo,monospace;
+  --max:1280px;         /* ONE MEASURE FOR EVERY PAGE (2026-09-18): the nav and the column never move between pages */
+  /* ALIASES FROM THE PAPER DESIGN. each points at a token above; they leave
+     as the pages are recarded and the last use goes (grep before deleting). */
+  --rule:var(--line);   /* was a 2px ink section rule; a hairline now */
+  --line2:var(--line);
+  --blue:var(--accent);
+  --blue-d:#4338CA;
+  --wash:var(--accent-l);
+  --stone:#CBD5E1;      /* the leaderboard's bars: a bar that only measures */
+  --stone-d:#94A3B8;
+  --bar:#CBD5E1;
+  --clay:var(--accent); /* the founder mark and the screen counts wore clay; they wear the accent */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
-body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--ui);font-weight:700;letter-spacing:-.02em;color:var(--ink)}
 a{color:var(--ink);text-decoration:none}
 a:hover{text-decoration:underline;text-underline-offset:2px}
 a:hover{text-decoration:underline}
@@ -98,11 +112,11 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 /* THE MASTHEAD IS INK. An edge-to-edge band in the site's own colour
    separates navigation from the page without a rule, and states the
    scheme in the first row of pixels. */
-.top{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--ink)}
+.top{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--line)}
 /* the sticky bar would otherwise sit on top of whatever we jump to */
 [id]{scroll-margin-top:80px}
 .topin{display:flex;align-items:center;justify-content:space-between;gap:18px;padding-top:16px;padding-bottom:16px;flex-wrap:wrap}
-.logo{font-family:var(--disp);font-weight:600;font-size:22px;letter-spacing:-.01em;color:var(--ink)}
+.logo{font-family:var(--ui);font-weight:700;font-size:20px;letter-spacing:-.02em;color:var(--ink)}
 .logo i{font-style:normal;color:var(--ink)}   /* one colour: the type is the mark, not a split */
 .topnav{display:flex;align-items:center;gap:22px;font-size:13.5px;font-weight:600;flex-wrap:wrap}
 .topnav a{color:var(--mut)}
@@ -121,8 +135,8 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .hero{padding:clamp(36px,4.5vw,60px) 0 clamp(28px,3vw,40px)}
 
 /* ---------- hero ---------- */
-.hero h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.08;font-size:clamp(30px,3.7vw,54px)}   /* one line at the shared measure (2026-09-18) */   /* the same edges as the tables */
-.hero h1 b{font-weight:500}
+.hero h1{font-family:var(--ui);font-weight:700;letter-spacing:-.02em;line-height:1.08;font-size:clamp(30px,3.7vw,54px)}   /* one line at the shared measure (2026-09-18) */   /* the same edges as the tables */
+.hero h1 b{font-weight:700}
 .herosub{margin:18px 0 0;font-size:clamp(15px,1.25vw,18px);line-height:1.5;color:var(--mut)}
 @media(max-width:900px){.herosub{white-space:normal;max-width:52ch}}
 /* THE HEADLINE MAKES THE CLAIM; THE STRIP CARRIES THE EVIDENCE.
@@ -145,29 +159,30 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    and Send on the right, inside the same column as the tables, with its
    own air above the footer. No weekday (a send is a week, not a
    calendar), no price. */
-.hometape{margin-top:28px;padding:14px 18px;border:1px solid var(--ink);display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap}
+.hometape{margin-top:28px;padding:14px 18px;background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap}
 .hometape .homesub{display:contents}
-.hometape .hs-k{font-family:var(--disp);font-size:18px;font-weight:500;margin-right:auto;line-height:1.25}
+.hometape .hs-k{font-family:var(--ui);font-size:18px;font-weight:500;margin-right:auto;line-height:1.25}
 .hometape .hs-msg{flex-basis:100%;font-size:13.5px;color:var(--mut)}
 .hometape .hs-msg:empty{display:none}
 .hometape .hs-free{color:var(--mut);font-weight:400}
 .homesub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .homesub .hs-k{font-size:14px;font-weight:600;margin-right:4px}
-.homesub input{font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);background:#FCFBF8;border-radius:2px;width:220px}
-.homesub button{font:inherit;font-size:14px;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:0;padding:9px 16px;cursor:pointer}
+.homesub input{font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--pline);background:var(--white);border-radius:var(--r-s);width:220px}
+.homesub button{font:inherit;font-size:14px;font-weight:600;color:var(--white);background:var(--accent);border:0;border-radius:var(--r-s);padding:9px 16px;cursor:pointer}
+.homesub button:hover{background:var(--blue-d)}
 .homesub button:disabled,.homesub input:disabled{opacity:.55;cursor:default}
 .homesub .hs-msg{font-size:12.5px;color:var(--mut);flex-basis:100%}
-.hstat .n{font-family:var(--disp);font-size:clamp(28px,2.8vw,38px);font-weight:500;
+.hstat .n{font-family:var(--ui);font-size:clamp(28px,2.8vw,38px);font-weight:500;
   letter-spacing:-.022em;line-height:1;white-space:nowrap}
 .hstat .n.hl{color:var(--ink)}
-.hstat .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+.hstat .k{font-family:var(--ui);font-weight:600;font-size:10.5px;letter-spacing:.06em;
   text-transform:uppercase;color:var(--faint);margin-top:9px}
 .valstat{margin-top:14px;font-size:16px;color:var(--mut)}
 .valstat b{font-family:var(--mono);font-weight:600;color:var(--ink)}
 
 /* ---------- leaderboard ---------- */
 .shead{display:flex;justify-content:space-between;align-items:baseline;gap:18px;margin-bottom:20px;flex-wrap:wrap}
-.shead h2{font-family:var(--disp);font-weight:500;letter-spacing:-.015em;font-size:clamp(28px,3vw,44px);line-height:1.08}
+.shead h2{font-family:var(--ui);font-weight:700;letter-spacing:-.02em;font-size:clamp(28px,3vw,44px);line-height:1.08}
 .shead .r{font-size:13px;color:var(--mut)}
 .screenline{min-height:22px;font-size:15px;line-height:22px;color:var(--mut);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .shead .shr{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:flex-end}
@@ -199,12 +214,12 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 
 /* ---------- table ---------- */
 .controls{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-.search{flex:1;min-width:240px;display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:2px;padding:9px 13px;background:#fff}
+.search{flex:1;min-width:240px;display:flex;align-items:center;gap:9px;border:1px solid var(--pline);border-radius:var(--r-s);padding:9px 13px;background:var(--white)}
 .search svg{flex:none;opacity:.35}
 .search input{border:none;outline:none;width:100%;font:inherit;background:none}
-.chip{font-size:12.5px;font-weight:600;padding:7px 12px;border:1px solid var(--line);border-radius:2px;color:var(--ink);background:transparent}
-.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
-select{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:2px;padding:9px 11px;background:#fff}
+.chip{font-size:12.5px;font-weight:600;padding:7px 12px;border:1px solid var(--pline);border-radius:var(--r-pill);color:var(--ink);background:var(--white)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--white)}
+select{font:inherit;font-size:13px;border:1px solid var(--pline);border-radius:var(--r-s);padding:9px 11px;background:var(--white)}
 select:disabled{opacity:.45;cursor:not-allowed}
 /* A WINDOW, NOT A WALL.
    Five hundred rows pushed everything below the table off the page, and the
@@ -216,9 +231,9 @@ select:disabled{opacity:.45;cursor:not-allowed}
          border-bottom:1px solid var(--line)}
 .tscroll thead th{position:sticky;top:0;z-index:2;background:var(--bg);
   /* a sticky cell cannot carry a collapsed border, so it is drawn inset */
-  border-bottom:none;box-shadow:inset 0 -1px 0 var(--ink)}
+  border-bottom:none;box-shadow:inset 0 -1px 0 var(--line)}
 table{width:100%;border-collapse:collapse}
-.sbody .tscroll{background:var(--bg);border:1px solid var(--line);border-radius:2px}   /* the scroll box keeps its own overflow */
+.sbody .tscroll{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius)}   /* the scroll box keeps its own overflow */
 /* THE SCREENER IS THE WIDTH OF THE PAGE. Fixed layout, every column with a
    width, the two text columns truncating; nothing scrolls sideways. */
 table.screen{table-layout:fixed;width:100%}
@@ -227,11 +242,11 @@ table.screen td{overflow:hidden}   /* the two text columns truncate; a header ne
 /* /companies/: eleven columns, widths that sum to 100 */
 .w-rk{width:4%}.w-co{width:31%}.w-ceo{width:27%}.w-own{width:10%}.w-val{width:10%}.w-mc{width:10%}.w-r1{width:8%}
 .c-ltd .ltd,.c-ltf .ltd{font-family:var(--mono);font-size:11px;color:var(--faint);white-space:nowrap}   /* as the tape's Traded and Filed columns */
-table.screen thead th{letter-spacing:.06em}
+table.screen thead th{letter-spacing:.05em}
 table.screen thead th .arr{width:auto}
 table.screen .c-lt .lt{gap:6px}
 thead th.c,td.c{text-align:center}
-.c-ns .nsy{display:inline-block;font-weight:700;color:#0b7a4b;font-size:14px}
+.c-ns .nsy{display:inline-block;font-weight:700;color:var(--buy);font-size:14px}
 .c-lt .ltv{font-family:var(--mono);font-weight:600;font-size:12.5px;color:var(--ink)}
 table.screen thead th .arr{width:.7em}
 /* the screener's cells: no left inset, a gutter on every numeric column so
@@ -244,7 +259,7 @@ td.ceo .fb{vertical-align:2px}
 @media(max-width:980px){.h-mc,.c-mc,.w-mc{display:none}.w-co{width:24%}}
 @media(max-width:760px){.h-conf,.c-conf,.w-conf,.h-lt,.c-lt,.w-lt,.h-ltd,.c-ltd,.w-ltd,.h-ltf,.c-ltf,.w-ltf,.h-d3,.c-d3,.w-d3,.h-mc,.c-mc,.w-mc{display:none}.w-co{width:34%}.w-ceo{width:26%}.w-own{width:20%}.w-val{width:14%}
   table.screen .tbar{display:none}table.screen .tpct{min-width:0}table.screen thead th,table.screen tbody td{padding-left:8px;padding-right:8px}}
-thead th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink);white-space:nowrap;position:sticky;top:0;background:var(--bg);z-index:1}
+thead th{font-family:var(--ui);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--bg);z-index:1}
 /* A NUMBER SITS AWAY FROM THE NEXT COLUMN'S WORDS. Right-aligned figures
    end at their column's edge, where a left-aligned label begins; without
    an inset the two touch (Value against Last move, New stake against
@@ -256,7 +271,7 @@ thead th .arr{display:inline-block;width:1em;color:var(--blue)}
 thead th.n,td.n{text-align:right}
 tbody td{padding:9px 10px 9px 0;border-top:1px solid var(--line2);font-size:14px;vertical-align:middle}
 tbody tr{cursor:pointer}
-tbody tr:hover{background:var(--wash)}
+tbody tr:hover{background:var(--slate-l)}
 td.rk{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:right;width:44px}
 td .tk{font-family:var(--ui);font-weight:700;font-size:14px}   /* one face, one size (2026-09-18): the ticker in bold, the name beside it in the muted ink */
 td .nm{font-size:14px;color:var(--mut)}
@@ -268,7 +283,7 @@ td.ceo .fb{flex:none;margin-left:0}
 .tbar{flex:1;height:4px;background:var(--line2);border-radius:2px;overflow:hidden;min-width:40px}
 .tbar i{display:block;height:100%;background:var(--stone-d)}
 .tpct{font-family:var(--mono);font-weight:600;font-size:13.5px;min-width:64px;text-align:right}
-.tarr{font-size:10px;margin-left:6px;vertical-align:1px}.tarr.up{color:#0B8A3E}.tarr.down{color:#C23B3B}.tarr.flat{color:var(--faint)}
+.tarr{font-size:10px;margin-left:6px;vertical-align:1px}.tarr.up{color:var(--buy)}.tarr.down{color:var(--sell)}.tarr.flat{color:var(--faint)}
 /* A FIGURE IS THE SAME FIGURE IN EVERY TABLE (2026-09-14: the home table's
    cell rule at 14px outranked this at 13px; now one rule names both tables
    at a specificity nothing else reaches) */
@@ -281,7 +296,7 @@ td.asof{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:
 .dot.low{background:#fff;border:2px solid var(--amber)}
 td.src a{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 td.src a:hover{color:var(--blue)}
-.c-lt .up{color:var(--buy);font-weight:600}.c-lt .down{color:#c22a2a;font-weight:600}
+.c-lt .up{color:var(--buy);font-weight:600}.c-lt .down{color:var(--sell);font-weight:600}
 /* THE 12-MONTH CHANGE (2026-09-17): points, coloured by direction like the tape's change; a dash for a record younger than a year */
 /* no colour in the figures (2026-09-18): a stake a year ago is a figure, not a verdict */
 td.c-fd,td.c-man{font-size:12.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -295,8 +310,8 @@ table.screen th.h-lt,table.screen td.c-lt{padding-left:0}
 .tablesec.home .tfoot a{color:var(--faint)}
 .tablesec.home .controls{display:none}
 /* the exit from a preview: title left, its full page right, the same on every block */
-.shead .exit{font-family:var(--ui);font-size:13.5px;font-weight:600;color:var(--ink);border:1px solid var(--ink);padding:8px 14px;text-decoration:none;white-space:nowrap;align-self:center}
-.shead .exit:hover{background:var(--ink);color:var(--bg)}
+.shead .exit{font-family:var(--ui);font-size:13.5px;font-weight:600;color:var(--ink);background:var(--white);border:1px solid var(--pline);border-radius:var(--r-s);padding:8px 14px;text-decoration:none;white-space:nowrap;align-self:center}
+.shead .exit:hover{background:var(--ink);border-color:var(--ink);color:var(--white);text-decoration:none}
 .tablesec:not(.home) .shead .exit{display:none}
 .tablesec:not(.home) .home-sub{display:none}   /* /companies/ has its chips and switches instead */
 /* the home tape is founders only by its own subhead; a mark on every name says nothing */
@@ -324,26 +339,24 @@ td.c-lt .dt{display:none;font-family:var(--mono);font-size:11px;color:var(--fain
    the last move and its date. Market cap, the year's return and the
    amount are the screener's, on /companies/. */
 
-td.c-lt .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
-td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .kind.sold{color:#8C4A44}td.c-lt .kind.plan{color:var(--mut)}
-.more{font-weight:700;font-size:13px;border:1px solid var(--ink);border-radius:0;padding:8px 16px}
-.more:hover{background:var(--ink);color:#fff}
+.more{font-weight:600;font-size:13px;background:var(--white);border:1px solid var(--pline);border-radius:var(--r-s);padding:8px 16px}
+.more:hover{background:var(--ink);border-color:var(--ink);color:var(--white)}
 
 /* the screener's two new cells */
 .c-d3 .d3{display:inline-flex;align-items:baseline;gap:3px;white-space:nowrap;font-family:var(--mono);font-size:12.5px}
 .c-d3 .d3 b{font-weight:600}
 .c-d3 .d3 small{font-size:10px;color:var(--faint);margin-left:-4px}
-.c-d3 .d3.up b,.c-d3 .d3.up .spark{color:#0b7a4b}
-.c-d3 .d3.down b,.c-d3 .d3.down .spark{color:#c22a2a}
+.c-d3 .d3.up b,.c-d3 .d3.up .spark{color:var(--buy)}
+.c-d3 .d3.down b,.c-d3 .d3.down .spark{color:var(--sell)}
 .c-d3 .d3.flat b,.c-d3 .d3.flat .spark{color:var(--mut)}
 .c-d3 .spark{display:block;flex:none}
-.c-lt .ns{display:inline-block;font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);background:var(--wash);border-radius:4px;padding:2px 6px;margin-top:4px}
+.c-lt .ns{display:inline-block;font-family:var(--ui);font-size:9.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--accent-l);border-radius:var(--r-pill);padding:2px 6px;margin-top:4px}
 .c-lt .lt{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .chip.export{margin-left:auto}
 .c-lt .ltd{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 
 /* ---------- trends ---------- */
-.protag{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.1em;color:#fff;background:var(--ink);border-radius:5px;padding:4px 8px;vertical-align:middle}
+.protag{font-family:var(--ui);font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--white);background:var(--ink);border-radius:var(--r-pill);padding:4px 8px;vertical-align:middle}
 .protag.ghost{color:var(--ink);background:none;border:1px solid var(--ink)}
 .chartbox{position:relative}
 .chartbox svg{display:block;width:100%;height:auto}
@@ -355,7 +368,7 @@ td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .
    the page colour over it so the text underneath cannot be read, and one
    card on top. What is locked is the shape you can still see; what unlocks
    it is the same button every time. */
-.locked{position:relative;overflow:hidden;border-radius:2px}
+.locked{position:relative;overflow:hidden;border-radius:var(--radius)}
 /* A LOCKED TABLE IS THE SAME SIZE AS AN OPEN ONE.
    Blurring nine rows produced a 500px field of haze taller than the table
    it was teasing. The locked block is capped to the height of the tables
@@ -371,12 +384,12 @@ td.c-lt .kind.bought{color:var(--buy)}td.c-lt .kind.disc{color:#B23428}td.c-lt .
 .lock .seal{width:40px;height:40px;border-radius:50%;background:var(--ink);color:#fff;
   display:grid;place-items:center;font-size:15px}
 .lock p{font-size:13.5px;color:var(--mut);max-width:34ch;line-height:1.5}
-.lockbtn{font-size:13px;font-weight:700;color:#fff;background:var(--blue);border-radius:8px;padding:9px 18px}
+.lockbtn{font-size:13px;font-weight:600;color:var(--white);background:var(--accent);border-radius:var(--r-s);padding:9px 18px}
 .lockbtn:hover{background:var(--blue-d)}
 /* a locked block never collapses to nothing: the blur needs room to read as
    content rather than as a smudge */
 .locked.tall{min-height:260px}
-.freetag{position:absolute;top:6px;right:6px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--blue);background:var(--wash);border-radius:4px;padding:3px 8px}
+.freetag{position:absolute;top:6px;right:6px;font-family:var(--ui);font-size:10px;font-weight:600;letter-spacing:.04em;color:var(--accent);background:var(--accent-l);border-radius:var(--r-pill);padding:3px 8px}
 .tnote{font-size:11.5px;color:var(--faint);margin-top:8px}
 
 
@@ -419,29 +432,36 @@ table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
 .controls .grp .chip{padding:6px 9px;font-size:12.5px}
 .tablesec .shead{margin-bottom:6px}
 .tfoot .export{margin-left:auto}
-.controls .grp .gl{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
+.controls .grp .gl{font-family:var(--ui);font-weight:600;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
 .controls .grp .gc{display:flex;gap:6px}
 .controls .grp .chip{margin:0}
 .tablesec.home .controls .g-trade{display:none}
 .tw-kind{width:9%}.tw-dt{width:15%}.tw-td2{width:7%}.tw-tk{width:6%}.tw-co{width:15%}.tw-ceo{width:13%}.tw-v{width:9%}.tw-sh{width:10%}.tw-ch{width:8%}.tw-st{width:8%}
 td.tk{font-weight:600;white-space:nowrap}
 table.tape th.sortable{cursor:pointer;user-select:none}table.tape th.sortable:hover{color:var(--ink)}table.tape td.fd{white-space:nowrap}
-table.tape th{font-family:var(--ui);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--ink)}
+table.tape th{font-family:var(--ui);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--line)}
 table.tape th.n,table.tape td.n{text-align:right;padding-right:28px}
 table.tape td{padding:9px 10px 9px 0;border-top:1px solid var(--line2);font-size:14px;vertical-align:middle;white-space:nowrap}
 table.tape tr.dayrow{cursor:pointer}
-table.tape tr.dayrow:hover td{background:var(--line2)}
+table.tape tr.dayrow:hover td{background:var(--slate-l)}
 /* A ROW THAT MOVED NOTHING IS NOT GREYED OUT (2026-09-16): the kind's own
    colour (Compensation faint, Planned muted) says how much it matters; every
    other column reads like every other row, so the table stays one table.
    The dim class remains on the row for the "Moved the stake" chip and the
    note's count, and only the kind cell reads from it. */
-table.tape tr.dim td.kd .kind{color:var(--faint)}
-table.tape td.kd{}
 td.dt{font-family:var(--mono);font-size:11.5px;color:var(--mut);white-space:nowrap;overflow:hidden;max-width:170px;padding-right:10px}
 td.td2{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden;padding-right:10px}
-table.tape .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
-table.tape .kind.bought{color:var(--buy)}table.tape .kind.disc{color:#B23428}table.tape .kind.sold{color:#8C4A44}table.tape .kind.plan{color:var(--mut)}table.tape .kind.comp{color:var(--faint)}table.tape .kind.xfer{color:var(--mut)}
+/* THE KIND CHIP (design b, 2026-09-29): one rule for the tape, the home strip and
+   the company record. a tinted pill: red for a sale (planned or not), green for
+   a purchase, slate for compensation and a transfer, the faintest for a share
+   count. company.html carried its own copy; it does not now. */
+.kind{display:inline-block;font-family:var(--ui);font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;line-height:1;padding:4px 8px;border-radius:var(--r-pill);background:var(--slate-l);color:var(--mut);white-space:nowrap;vertical-align:middle}
+.kind.bought{background:var(--buy-l);color:var(--buy)}
+.kind.sold,.kind.disc,.kind.plan{background:var(--sell-l);color:var(--sell)}
+.kind.comp{background:var(--slate-l);color:var(--mut)}
+.kind.xfer{background:var(--slate-l);color:var(--ink)}
+.kind.neu{background:transparent;border:1px solid var(--line);color:var(--faint);padding:3px 7px}
+table.tape tr.dim td.kd .kind{color:var(--faint)}
 /* THE DETAIL IS THE FILING'S LABEL IN GREY, the same cell the company page
    draws: "COMPENSATION award granted", "SOLD not stated" */
 table.tape td.kd{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -475,11 +495,11 @@ table.tape td.td .dt,table.tape td.fd .dt{color:var(--ink);font-family:var(--ui)
 .actnote{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:14px}
 .actnote a{color:var(--faint);text-decoration:underline;text-underline-offset:2px}
 .daytab{width:100%;border-collapse:collapse;margin-top:6px}
-.daytab th{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:500;text-align:left;padding:6px 8px 8px;border-bottom:1px solid var(--line)}
+.daytab th{font-family:var(--ui);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:600;text-align:left;padding:6px 8px 8px;border-bottom:1px solid var(--line)}
 .daytab th.n,.daytab td.n{text-align:right}
 .daytab td{padding:9px 8px;border-top:1px solid var(--line2);font-size:13px;vertical-align:middle;white-space:nowrap}
 .daytab tr.dayrow{display:table-row;cursor:pointer}
-.daytab tr.dayrow:hover td{background:var(--wash)}
+.daytab tr.dayrow:hover td{background:var(--slate-l)}
 .daytab td.co{min-width:0;max-width:280px;overflow:hidden;text-overflow:ellipsis}
 .daytab td.co .atk{margin-right:8px}
 .daytab td.n{font-family:var(--mono);font-size:12.5px}
@@ -509,7 +529,7 @@ table.tape td.td .dt,table.tape td.fd .dt{color:var(--ink);font-family:var(--ui)
    every name starts at the same edge. The proxy sentence is on hover, and
    an ambiguous proxy gets nothing. In a bar the name is the flexible part
    and the pill is not, so a long name shortens before the pill can go. */
-.fm{display:inline-block;flex:none;box-sizing:border-box;width:15px;height:15px;line-height:15px;text-align:center;font-family:var(--ui);font-size:10px;font-weight:700;letter-spacing:0;border-radius:4px;padding:0;margin-left:7px;vertical-align:1px;background:var(--ink);color:#fff;cursor:help}
+.fm{display:inline-block;flex:none;box-sizing:border-box;width:16px;height:16px;line-height:16px;text-align:center;font-family:var(--ui);font-size:10px;font-weight:700;letter-spacing:0;border-radius:var(--r-pill);padding:0;margin-left:7px;vertical-align:1px;background:var(--accent-l);color:var(--accent);cursor:help}
 /* the day chips: the last five filing days, newest on the right */
 /* THE STRIP IS A FIXED FRAME. A day of three trades and a day of thirty
    take the same space; the rows scroll inside it, and the page below never
@@ -539,7 +559,7 @@ table.tape td.td .dt,table.tape td.fd .dt{color:var(--ink);font-family:var(--ui)
 .dph b{color:var(--ink);font-family:var(--mono)}
 .dpx{border:0;background:transparent;font-size:18px;line-height:1;color:var(--faint);cursor:pointer;padding:0 2px}
 .dtiles{display:flex;flex-wrap:wrap;gap:6px}
-.dtile{display:inline-flex;align-items:baseline;gap:6px;padding:5px 9px;border-radius:5px;text-decoration:none;color:var(--ink);font-family:var(--mono);font-size:11.5px;line-height:1;border:1px solid rgba(0,0,0,.08);background-image:linear-gradient(rgba(255,255,255,.42),rgba(255,255,255,.42))}
+.dtile{display:inline-flex;align-items:baseline;gap:6px;padding:5px 9px;border-radius:var(--r-s);text-decoration:none;color:var(--ink);font-family:var(--mono);font-size:11.5px;line-height:1;border:1px solid rgba(0,0,0,.08);background-image:linear-gradient(rgba(255,255,255,.42),rgba(255,255,255,.42))}
 .dtile b{font-weight:600}.dtile span{opacity:.8;font-size:10.5px}
 .dtile small{font-size:9.5px;opacity:.7;font-family:var(--ui)}
 .dtile.joined{}
@@ -575,24 +595,24 @@ td.asrc a:hover{color:var(--blue)}
 /* ONE BOX FOR EVERY BADGE. BOUGHT is two letters wider than SOLD and a
    column of them raggedly staggered the figures beside them; every badge
    is now the same width, its word centred, wherever it appears. */
-.abadge{display:inline-block;box-sizing:border-box;min-width:62px;text-align:center;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.07em;padding:4px 8px;border-radius:5px}
-.abadge.up{background:var(--buy);color:#fff}
+.abadge{display:inline-block;box-sizing:border-box;min-width:62px;text-align:center;font-family:var(--ui);font-size:10px;font-weight:600;letter-spacing:.04em;padding:4px 8px;border-radius:var(--r-pill)}
+.abadge.up{background:var(--buy);color:var(--white)}
 .abadge.soft{background:var(--buy-l);color:var(--buy)}
-.abadge.down{background:#C13A2E;color:#fff}
-.abadge.dsoft{background:#F7E9E6;color:#C13A2E}
+.abadge.down{background:var(--sell);color:var(--white)}
+.abadge.dsoft{background:var(--sell-l);color:var(--sell)}
 .abadge.neu{border:1px solid var(--line);color:var(--mut)}
 .adlt{font-family:var(--mono);font-weight:600;font-size:13px}
 .adlt.up{color:var(--buy)}
-.adlt.down{color:#C13A2E}
+.adlt.down{color:var(--sell)}
 .asub{font-family:var(--mono);font-size:12px;color:var(--mut)}
 .aval{font-family:var(--mono);font-weight:600;font-size:13px}
 .aval.up{color:var(--buy)}
-.aval.down{color:#C13A2E}
+.aval.down{color:var(--sell)}
 .nopr{color:var(--faint);font-weight:400}
 .actlock{margin-top:16px}
 
-.fb{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;border-radius:4px;padding:2px 6px;margin-left:8px;vertical-align:1px}
-.fb.yes{background:#8A4B1E;color:var(--bg)}
+.fb{display:inline-block;font-family:var(--ui);font-size:9px;font-weight:600;letter-spacing:.06em;border-radius:var(--r-pill);padding:2px 7px;margin-left:8px;vertical-align:1px}
+.fb.yes{background:var(--accent-l);color:var(--accent)}
 .fb.unc{border:1px solid var(--faint);color:var(--mut)}
 /* ---------- links that open a company's page ---------- */
 a.pglink{color:inherit;text-decoration:none}
@@ -603,38 +623,38 @@ td.c-co .tk a:hover{text-decoration:underline}
 /* ---------- modal ---------- */
 .modal{position:fixed;inset:0;display:none;place-items:center;z-index:60;padding:20px;background:rgba(12,13,14,.4)}
 .modal.on{display:grid}
-.mcard{position:relative;background:#fff;border:1px solid var(--ink);border-radius:2px;max-width:440px;width:100%;padding:34px}
+.mcard{position:relative;background:var(--white);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.12);max-width:440px;width:100%;padding:34px}
 .mcard .seal{width:48px;height:48px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:18px;margin-bottom:16px}
-.mcard h3{font-family:var(--disp);font-weight:500;font-size:26px;letter-spacing:-.02em;margin-bottom:6px}
+.mcard h3{font-family:var(--ui);font-weight:700;font-size:26px;letter-spacing:-.02em;margin-bottom:6px}
 .mcard>p{font-size:14px;color:var(--mut);margin-bottom:16px}
 .mcard ul{list-style:none;margin-bottom:22px}
 .mcard li{font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--line2);display:flex;gap:10px}
 .mcard li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue);flex:none;margin-top:6px}
-.mwide{width:100%;text-align:center;font-weight:700;color:#fff;background:var(--ink);border-radius:0;padding:12px}
-.mwide:hover{background:#000}
+.mwide{width:100%;text-align:center;font-weight:600;color:var(--white);background:var(--accent);border-radius:var(--r-s);padding:12px}
+.mwide:hover{background:var(--blue-d)}
 .mlater{display:block;text-align:center;margin-top:10px;font-size:12.5px;color:var(--faint)}
 .mclose{position:absolute;top:14px;right:14px;width:30px;height:30px;color:var(--faint)}
 
-footer{padding:22px 0 44px;font-family:var(--ui);font-size:12.5px;color:var(--faint);border-top:2px solid var(--rule)}
+footer{padding:22px 0 44px;font-family:var(--ui);font-size:12.5px;color:var(--faint);border-top:1px solid var(--line)}
 footer .row{display:flex;justify-content:center;text-align:center;align-items:baseline;gap:4px 20px;flex-wrap:wrap}
-footer .fname{font-family:var(--disp);font-weight:500;color:var(--ink)}
+footer .fname{font-family:var(--ui);font-weight:700;color:var(--ink)}
 footer a{color:var(--mut)}
 footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the footer's own face */
 /* THE SEARCH IS THE NAV (2026-09-23): a ticker box in the header, on every
    page. It matches tickers, companies AND chief executives, because the
    queries that reach the site are people's names. /search.js fills it. */
 .navsearch{position:relative;margin-left:6px}
-.navsearch input{font-family:var(--mono);font-size:12.5px;width:210px;max-width:38vw;padding:8px 10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:0}
-.navsearch input:focus{outline:none;border-color:var(--ink)}
-.navqd{position:absolute;right:0;top:calc(100% + 6px);width:min(430px,92vw);background:var(--bg);border:1px solid var(--ink);box-shadow:0 6px 18px rgba(0,0,0,.10);z-index:60;max-height:60vh;overflow:auto}
+.navsearch input{font-family:var(--ui);font-size:13px;width:210px;max-width:38vw;padding:8px 10px;border:1px solid var(--pline);background:var(--white);color:var(--ink);border-radius:var(--r-s)}
+.navsearch input:focus{outline:none;border-color:var(--accent)}
+.navqd{position:absolute;right:0;top:calc(100% + 6px);width:min(430px,92vw);background:var(--white);border:1px solid var(--pline);border-radius:var(--r-s);box-shadow:0 8px 24px rgba(15,23,42,.10);z-index:60;max-height:60vh;overflow:auto}
 .navqd .qrow{display:flex;gap:10px;align-items:baseline;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
 .navqd .qrow:last-child{border-bottom:0}
-.navqd .qrow.on,.navqd .qrow:hover{background:var(--panel)}
+.navqd .qrow.on,.navqd .qrow:hover{background:var(--slate-l)}
 .navqd .qtk{font-family:var(--mono);font-size:12px;font-weight:600;min-width:52px}
 .navqd .qco{font-size:13.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .navqd .qceo{font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:34%}
 .navqd .qpct{font-family:var(--mono);font-size:12px;font-weight:600;white-space:nowrap}
-.navqd .qf{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:#8A4B1E;font-weight:700}
+.navqd .qf{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--accent);font-weight:700}
 .navqd .qnone{padding:10px 12px;font-size:13px;color:var(--mut)}
 @media(max-width:700px){.navsearch input{width:120px}}
 
@@ -642,11 +662,11 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
 .hero .wrap.heroin{display:flex;flex-direction:column;align-items:center;text-align:center;padding:4px 0 40px}
 .hero h1{max-width:21ch}
 .herosub{max-width:62ch}
-.herosearch{position:relative;display:flex;align-items:center;gap:12px;width:min(640px,100%);height:58px;background:#fff;border:1.5px solid var(--ink);padding:0 12px 0 18px;margin:26px 0 8px}
+.herosearch{position:relative;display:flex;align-items:center;gap:12px;width:min(640px,100%);height:58px;background:var(--white);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:0 12px 0 18px;margin:26px 0 8px}
 .herosearch .hsico{color:var(--mut);flex:none}
 .herosearch input{flex:1 1 auto;border:0;outline:none;background:transparent;font:inherit;font-size:16.5px;color:var(--ink);min-width:0}
-.herosearch .hskey{font-family:var(--mono);font-size:12px;color:var(--faint);border:1px solid var(--line);padding:2px 8px;flex:none}
-.herosearch .navqd{top:calc(100% + 6px);left:-1.5px;right:-1.5px;text-align:left}
+.herosearch .hskey{font-family:var(--ui);font-weight:600;font-size:12px;color:var(--faint);border:1px solid var(--line);border-radius:6px;padding:2px 8px;flex:none}
+.herosearch .navqd{top:calc(100% + 6px);left:0;right:0;text-align:left}
 .herostats{display:flex;gap:38px;flex-wrap:wrap;justify-content:center;margin-top:20px}
 .fweek .fwrows{border-bottom:1px solid var(--line)}
 .stakes{padding-top:52px}   /* air after the fweek rows' bottom rule (2026-09-24) */
@@ -654,33 +674,34 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
 .fwdate{font-family:var(--mono);font-size:13px;color:var(--faint);width:72px;flex:none}
 .fwtk{font-family:var(--mono);font-size:14px;font-weight:500;width:60px;flex:none}
 .fwtxt{flex:1 1 auto;font-size:16px;min-width:0}
-.fwbadge{font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:3px 10px;border:1px solid var(--line);color:var(--mut);flex:none;white-space:nowrap}
-.fwbadge.sell{color:#a33b2e;border-color:#a33b2e}
-.fwbadge.buy{color:var(--buy,#1f6f43);border-color:var(--buy,#1f6f43)}
+.fwbadge{font-family:var(--ui);font-weight:600;font-size:11px;letter-spacing:.04em;padding:3px 10px;border-radius:var(--r-pill);background:var(--slate-l);color:var(--mut);flex:none;white-space:nowrap}
+.fwbadge.sell{color:var(--sell);background:var(--sell-l)}
+.fwbadge.buy{color:var(--buy);background:var(--buy-l)}
 .fwempty{padding:18px 0;color:var(--mut);border-top:1px solid var(--line)}
 .stakecards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:20px}
-.scard{display:flex;flex-direction:column;gap:5px;background:#fff;border:1px solid var(--line);padding:22px 24px;text-decoration:none}
-.scard:hover{border-color:var(--ink)}
-.sck{font-family:var(--mono);font-size:12px;color:var(--faint);letter-spacing:.04em}
-.scn{font-family:"Bricolage Grotesque",serif;font-size:40px;font-weight:800;color:var(--clay,#8a4b1e);line-height:1}
+.scard{display:flex;flex-direction:column;gap:5px;background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 24px;text-decoration:none}
+.scard:hover{border-color:var(--accent);text-decoration:none}
+.sck{font-family:var(--ui);font-weight:600;font-size:11px;color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+.scn{font-family:var(--ui);font-size:40px;font-weight:700;letter-spacing:-.02em;color:var(--accent);line-height:1;font-variant-numeric:tabular-nums}
 .sct{font-size:15px;color:var(--mut);line-height:1.45}
 .homechips{display:flex;gap:12px;flex-wrap:wrap}
-.chipl{font-family:var(--mono);font-size:13.5px;border:1px solid var(--line);padding:9px 16px;text-decoration:none;color:var(--ink)}
-.chipl:hover{border-color:var(--clay,#8a4b1e);color:var(--clay,#8a4b1e)}
+.chipl{font-family:var(--ui);font-weight:600;font-size:13px;background:var(--white);border:1px solid var(--pline);border-radius:var(--r-pill);padding:9px 16px;text-decoration:none;color:var(--ink)}
+.chipl:hover{border-color:var(--accent);color:var(--accent)}
 .method{border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:44px}
 .mrow{display:flex;gap:48px;padding-top:38px;padding-bottom:38px}   /* longhand: the shorthand was erasing .wrap's side padding and the section ran wider than the page (2026-09-24) */
 .mcol{flex:1 1 0}
-.mk{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--clay,#8a4b1e);margin-bottom:8px}
+.mk{font-family:var(--ui);font-weight:600;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
 .mt{font-size:15.5px;color:var(--mut);line-height:1.55}
 .homecap{background:var(--ink);color:var(--bg);margin-top:0}
 .homecap .capin{display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px;padding:60px 0}
-.caph{font-family:"Bricolage Grotesque",serif;font-size:32px;font-weight:700;max-width:26ch;line-height:1.2}
+.caph{font-family:var(--ui);font-size:32px;font-weight:700;letter-spacing:-.02em;max-width:26ch;line-height:1.2}
 .homecap .homesub{display:flex;gap:10px}
-.homecap input{width:min(320px,70vw);height:48px;border:1px solid #55514a;background:#1e1d1b;color:var(--bg);padding:0 16px;font:inherit;font-size:15px;outline:none}
-.homecap button{height:48px;padding:0 24px;background:var(--bg);color:var(--ink);border:0;font-family:var(--mono);font-size:13.5px;letter-spacing:.06em;cursor:pointer}
-.homecap .hs-msg{font-size:14px;color:#c9c4b8}
-.capfine{font-family:var(--mono);font-size:12px;color:var(--faint)}
-.capfine a{color:var(--bg)}
+.homecap input{width:min(320px,70vw);height:48px;border:1px solid var(--ink-line);background:var(--ink-2);color:var(--white);border-radius:var(--r-s);padding:0 16px;font:inherit;font-size:15px;outline:none}
+.homecap button{height:48px;padding:0 24px;background:var(--accent);color:var(--white);border:0;border-radius:var(--r-s);font-family:var(--ui);font-weight:600;font-size:14px;cursor:pointer}
+.homecap button:hover{background:var(--blue-d)}
+.homecap .hs-msg{font-size:14px;color:var(--faint)}
+.capfine{font-size:12px;color:var(--faint)}
+.capfine a{color:var(--white)}
 @media(max-width:900px){.stakecards{grid-template-columns:1fr}.mrow{flex-direction:column;gap:26px}}
 @media(max-width:640px){.fwbadge{display:none}.hero h1{font-size:34px}}
 .home .topnav .navsearch{display:none}
@@ -688,29 +709,29 @@ footer .mono{font-family:var(--ui);font-size:12.5px}   /* the dates in the foote
 /* ---- COMPANIES REDESIGN (2026-09-24): the screener is the page ---- */
 .tablesec:not(.home) .controls{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0;margin:22px 0 0}
 .screenchips{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 2px}
-.screenchips a{font-family:var(--mono);font-size:13px;border:1px solid var(--line);padding:8px 15px;text-decoration:none;color:var(--ink)}
-.screenchips a:hover{border-color:#8a4b1e;color:#8a4b1e}
-.screenchips a.on{background:var(--ink);border-color:var(--ink);color:#fff}.screenchips a.on b{color:#E8C9A8}
-.screenchips b{color:#8a4b1e;font-weight:600;margin-left:4px}
+.screenchips a{font-family:var(--ui);font-weight:600;font-size:13px;background:var(--white);border:1px solid var(--pline);border-radius:var(--r-pill);padding:8px 15px;text-decoration:none;color:var(--ink)}
+.screenchips a:hover{border-color:var(--accent);color:var(--accent)}
+.screenchips a.on{background:var(--ink);border-color:var(--ink);color:var(--white)}.screenchips a.on b{color:var(--accent-l)}
+.screenchips b{color:var(--accent);font-weight:600;margin-left:4px;font-variant-numeric:tabular-nums}
 .cidx{margin-top:56px;border-top:1px solid var(--line)}
 .cidx>.wrap>h2:first-of-type{margin-top:28px}
-.cidx .letters{font-family:var(--mono);font-size:12px;letter-spacing:.2em;margin:10px 0 4px}
+.cidx .letters{font-family:var(--ui);font-weight:600;font-size:12px;letter-spacing:.16em;margin:10px 0 4px}
 .cidx .letters a{color:var(--mut);text-decoration:none;margin-right:2px}
-.cidx section h2{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--faint);margin:20px 0 4px}
+.cidx section h2{font-family:var(--ui);font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin:20px 0 4px}
 .cidx ul{columns:4;column-gap:44px;list-style:none;margin:0;padding:0}
 .cidx li{font-size:12.5px;line-height:1.9;break-inside:avoid;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cidx li a{color:var(--ink);text-decoration:none}
-.cidx li a:hover{color:#8a4b1e}
+.cidx li a:hover{color:var(--accent)}
 .cidx li .co{color:var(--mut)}
 .cidx li .ceo{color:var(--faint)}
 .cidx li .fb{font-size:8px;padding:1px 5px;margin-left:5px}
 @media(max-width:1000px){.cidx ul{columns:2}}
 
 /* ---- THE DAY-GROUPED TAPE (2026-09-24) ---- */
-table.tape tr.dgrp td{border-top:0;padding:26px 0 9px;font-family:var(--disp);font-weight:500;font-size:19px;letter-spacing:-.01em}
+table.tape tr.dgrp td{border-top:0;padding:26px 0 9px;font-family:var(--ui);font-weight:700;font-size:17px;letter-spacing:-.02em}
 table.tape tr.dgrp:first-child td{padding-top:10px}
 table.tape tr.dgrp a{color:var(--ink);text-decoration:none}
-table.tape tr.dgrp a:hover{color:#8a4b1e}
+table.tape tr.dgrp a:hover{color:var(--accent)}
 table.tape tr.dgrp .dsub{color:var(--faint);font-weight:500}
 table.tape tr.dgrp .dn{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-left:12px}
 table.tape .kd .detail.tdt{color:var(--faint)}

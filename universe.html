@@ -17,28 +17,15 @@
   <meta property="og:image:alt" content="How many CEOs own more than 5% of the company they run, computed from SEC filings">
   <meta name="twitter:image" content="https://founderledequities.com/og.png">
   <meta name="description" content="How Founder Led Equities calculates what every CEO owns of the company they run: the definition, the sources, the rules, and what the marks mean.">
-<link rel="preload" href="/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/hanken.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/site.css">
 <style>
-/* self-hosted, Latin subset, swapped in when they arrive */
-@font-face{font-family:"Bricolage Grotesque";src:url("/fonts/bricolage.woff2") format("woff2");font-weight:200 800;font-stretch:75% 100%;font-display:swap}
-@font-face{font-family:"Fraunces";src:url("/fonts/fraunces.woff2") format("woff2");font-weight:100 900;font-display:swap}
-@font-face{font-family:"Hanken Grotesk";src:url("/fonts/hanken.woff2") format("woff2");font-weight:100 900;font-display:swap}
-@font-face{font-family:"IBM Plex Mono";src:url("/fonts/plexmono.woff2") format("woff2");font-weight:400;font-display:swap}
-@font-face{font-family:"IBM Plex Mono";src:url("/fonts/plexmono-medium.woff2") format("woff2");font-weight:500 600;font-display:swap}
 .perffig{margin:22px 0 18px;padding:14px 16px 10px;border:1px solid var(--line)}
 .perffig svg{width:100%;height:auto;display:block}
 .perffig figcaption{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:8px}
 </style>
 <style>
-:root{
-  --bg:#F7F4EE; --panel:#F7F4EE; --line:#D6D1C7; --rule:#1A1A1A;
-  --ink:#1A1A1A; --mut:#5D6167; --faint:#6F7379;
-  --blue:#0C0D0E; --blue-d:#000000; --wash:#DCEBE1; --buy:#1F6B3A;
-  --disp:"Fraunces",Georgia,"Times New Roman",serif;
-  --ui:"Hanken Grotesk",-apple-system,sans-serif;
-  --mono:"IBM Plex Mono","SF Mono",monospace;
-}
+/* the tokens and the faces are site.css's (2026-09-29); this sheet is the page's own */
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:16.5px;line-height:1.7;-webkit-font-smoothing:antialiased}
 a{color:var(--ink);text-decoration:none}
@@ -47,21 +34,21 @@ a:hover{text-decoration:underline}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .top{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--ink)}
 .topin{max-width:1120px;margin:0 auto;padding:16px clamp(20px,3.5vw,48px);display:flex;align-items:center;justify-content:space-between;gap:18px}
-.logo{font-family:var(--disp);font-weight:600;font-size:22px;letter-spacing:-.01em;color:var(--ink)}
+.logo{font-family:var(--ui);font-weight:700;font-size:22px;letter-spacing:-.01em;color:var(--ink)}
 .logo i{font-style:normal;color:#93A0FF}
 .back{font-size:13.5px;font-weight:600;color:var(--mut);white-space:nowrap}
 .logo{white-space:nowrap}
 .back:hover{color:#fff;text-decoration:none}
 main{max-width:1120px;margin:0 auto;padding:clamp(44px,6vw,80px) clamp(20px,3.5vw,48px) 24px}
-h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(38px,5vw,64px)}
+h1{font-family:var(--ui);font-weight:700;letter-spacing:-.02em;line-height:1.05;font-size:clamp(38px,5vw,64px)}
 .standfirst{margin-top:18px;color:var(--mut);font-size:17.5px;line-height:1.6;max-width:64ch}
 section{padding:clamp(30px,3.4vw,44px) 0;border-top:2px solid var(--rule)}
 section:first-of-type{border-top:none;padding-top:clamp(34px,4vw,52px)}
-h2{font-family:var(--disp);font-weight:500;letter-spacing:-.022em;font-size:clamp(25px,2.8vw,34px);margin-bottom:16px}
+h2{font-family:var(--ui);font-weight:700;letter-spacing:-.022em;font-size:clamp(25px,2.8vw,34px);margin-bottom:16px}
 p{max-width:78ch;margin-bottom:14px;color:#26282B}
 ul{max-width:78ch;margin:0 0 14px 20px;color:#26282B}
 li{margin-bottom:6px}
-h3{font-family:var(--disp);font-weight:500;font-size:18px;letter-spacing:-.01em;margin:22px 0 8px}
+h3{font-family:var(--ui);font-weight:700;font-size:18px;letter-spacing:-.01em;margin:22px 0 8px}
 p b{font-weight:650}
 .mail{display:inline-block;margin-top:7px;font-family:var(--mono);font-size:14px;font-weight:500}
 .formula{font-family:var(--mono);font-size:clamp(15px,1.8vw,19px);font-weight:600;background:var(--panel);border-radius:10px;padding:18px 22px;margin:6px 0 18px;max-width:78ch;color:var(--ink)}

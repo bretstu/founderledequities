@@ -543,7 +543,7 @@ INDEX_CSS = ("""
 .sstatic table.stable td.tk .co{color:var(--mut);margin-left:8px}
 .sstatic .fb{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;background:var(--ink);color:var(--bg);padding:1px 5px;border-radius:2px;vertical-align:middle;margin-left:8px}
 
-.cidx{padding:32px 0 60px}.cidx h1{font-family:var(--disp);font-size:clamp(28px,4vw,44px);font-weight:650;letter-spacing:-.02em;margin:0 0 8px}
+.cidx{padding:32px 0 60px}.cidx h1{font-family:var(--ui);font-size:clamp(28px,4vw,44px);font-weight:650;letter-spacing:-.02em;margin:0 0 8px}
 .cidx .sub{color:var(--mut);margin-bottom:18px}.cidx .letters{font-family:var(--mono);font-size:13px;display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}.cidx .letters a{color:var(--blue);text-decoration:none}
 .cidx section{margin-top:22px}.cidx h2{font-family:var(--mono);font-size:13px;color:var(--faint);letter-spacing:.14em;margin:0 0 8px}
 .cidx ul{list-style:none;margin:0;padding:0;columns:3;column-gap:32px}.cidx li{break-inside:avoid;padding:4px 0;font-size:13.5px}
@@ -625,7 +625,7 @@ SCREENS = [
 
 SCREEN_CSS = """
 .spage{max-width:var(--max);margin:0 auto;padding:clamp(28px,4vw,52px) clamp(20px,3.5vw,48px) 72px}
-.spage h1{font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-size:clamp(32px,4.4vw,56px);margin:0 0 10px}
+.spage h1{font-family:var(--ui);font-weight:700;letter-spacing:-.02em;line-height:1.05;font-size:clamp(32px,4.4vw,56px);margin:0 0 10px}
 .spage .def{font-size:15.5px;line-height:1.55;color:var(--mut);max-width:72ch;margin:0 0 6px}
 .spage .meta{font-family:var(--mono);font-size:12px;color:var(--faint);margin:0 0 22px}
 .spage .meta a{color:var(--mut)}
@@ -753,7 +753,7 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
         parts.append(f'<section><h2 id="{letter}">{letter}</h2><ul>{"".join(items)}</ul></section>')
     nav = " ".join(f'<a href="#{l}">{l}</a>' for l in sorted(by))
     n = f"{len(rows):,}"
-    index_html_block = (f"<div class=\"cidx\"><div class=\"wrap\"><h2 style=\"font-family:var(--disp);font-weight:500;font-size:22px;letter-spacing:-.01em;color:var(--ink);margin:28px 0 4px\">The index, A to Z</h2>"
+    index_html_block = (f"<div class=\"cidx\"><div class=\"wrap\"><h2 style=\"font-family:var(--ui);font-weight:700;font-size:22px;letter-spacing:-.01em;color:var(--ink);margin:28px 0 4px\">The index, A to Z</h2>"
                         f"<div class=\"sub\">{n} US public companies worth $1B or more, each with a page for what its chief executive owns.</div>"
                         f"<div class=\"letters\">{nav}</div>{''.join(parts)}</div></div>")
     # THE SCREENER IN FULL (PLAN.md section 5): the page is the template
@@ -775,7 +775,7 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
         table = (idx[a:b]
                  .replace('<section class="tablesec home" id="table">', '<section class="tablesec" id="table">')
                  .replace("<h2>Founder stakes</h2>",
-                          '<h1 style="font-family:var(--disp);font-weight:500;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">{{HEADING}}</h1>{{DEF}}')
+                          '<h1 style="font-family:var(--ui);font-weight:700;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">{{HEADING}}</h1>{{DEF}}')
                  .replace('<div class="shead">', '<div class="shead" style="align-items:flex-start">')
                  # THE CONTROLS ARE THE SCREENS (2026-09-21): no named chips; the five groups in the lifted markup are the whole question
                  )
@@ -972,6 +972,15 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                       .replace('href="/site.css"', f'href="/site.css?v={css_v}"'))
         with open(os.path.join(out_dir, "about.html"), "w", encoding="utf-8") as fh:
             fh.write(about_html)
+    # THE UNIVERSE AND TERMS PAGES (2026-09-29): static, but they link site.css
+    # like every other page now (their own token copies and font faces left
+    # with the paper design), so the link is versioned here the same way.
+    for name in ("universe.html", "terms.html"):
+        p = os.path.join(root, name)
+        if os.path.exists(p):
+            page = open(p, encoding="utf-8").read().replace('href="/site.css"', f'href="/site.css?v={css_v}"')
+            with open(os.path.join(out_dir, name), "w", encoding="utf-8") as fh:
+                fh.write(page)
 
     # A REAL 404 (2026-09-14): without one the host answers an unknown path
     # with the home page and a 200, which a script fetching a file that does

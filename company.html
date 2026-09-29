@@ -23,21 +23,12 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-96.png" type="image/png" sizes="96x96">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="preload" href="/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/hanken.woff2" as="font" type="font/woff2" crossorigin>
-<style>
-/* self-hosted, Latin subset, swapped in when they arrive */
-@font-face{font-family:"Bricolage Grotesque";src:url("/fonts/bricolage.woff2") format("woff2");font-weight:200 800;font-stretch:75% 100%;font-display:swap}
-@font-face{font-family:"Hanken Grotesk";src:url("/fonts/hanken.woff2") format("woff2");font-weight:100 900;font-display:swap}
-@font-face{font-family:"IBM Plex Mono";src:url("/fonts/plexmono.woff2") format("woff2");font-weight:400;font-display:swap}
-@font-face{font-family:"IBM Plex Mono";src:url("/fonts/plexmono-medium.woff2") format("woff2");font-weight:500 600;font-display:swap}
-</style>
+<link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/site.css">
   <style>
     /* THE COMPANY PAGE. The answer, four figures, the chart, the trades,
        one receipt. Prose stays off the page: a figure that needs a
        sentence beside it is a figure with the wrong label. */
-    :root{--max:1280px}   /* a company page is a work page: the workbench measure, as /companies/ and /tape/, header included */
     .cpage{padding:clamp(24px,3.5vw,44px) 0 60px}
     /* THE WAY BACK IS A BUTTON. A small blue link read as a footnote; a
        pill in the header's own weight reads as the way home. */
@@ -48,15 +39,15 @@
        under the sentence rather than above the heading. A crawler still
        never reads the ticker as part of the company's name. */
     .chead .answer{font-size:17px;line-height:1.55;color:var(--ink);margin:10px 0 0;max-width:72ch}
-    .chead .tk{font-family:var(--mono);font-size:13px;letter-spacing:.06em;color:var(--mut);text-transform:uppercase;font-weight:500;display:block;margin-top:12px}
+    .chead .tk{font-family:var(--ui);font-size:12px;letter-spacing:.05em;color:var(--mut);text-transform:uppercase;font-weight:600;display:block;margin-top:12px}
     /* FOUNDER-LED, SAID THREE WAYS (design v4): the clay rule across the
        page top and the clay tag on the kicker line (2026-09-24: the quote left)
        to the filing -- the receipt instead of a badge. Non-founder pages
        carry none of the three. */
-    .kbadge{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;background:#8A4B1E;color:var(--bg);padding:3px 8px;border-radius:3px;vertical-align:1px}
+    .kbadge{font-family:var(--ui);font-weight:600;font-size:10px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-l);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);vertical-align:1px}
     /* the chart is drawn, not read: its toggle and axis labels are not a
        description of the page ("Price Stake $500 $700 2022" was one) */
-    .chead h1{font-family:var(--disp);font-weight:500;letter-spacing:-.015em;line-height:1.05;font-size:clamp(30px,3.8vw,48px);margin:0}
+    .chead h1{font-family:var(--ui);font-weight:700;letter-spacing:-.02em;line-height:1.05;font-size:clamp(30px,3.8vw,48px);margin:0}
     /* THE ANSWER BAND: five cards in a row. The answer in the tinted one,
        then the four figures that give it meaning, each in its own card,
        in the words the home table uses. The cards hold the figures
@@ -72,38 +63,43 @@
        company. The box never changes height page to page: six rows and a
        fold, sparse companies carry air, the chart starts at the same
        scroll depth everywhere. */
-    .chold .hbox{margin-top:6px;background:transparent;border:0;border-top:1px solid var(--ink);padding:0 0 8px;box-sizing:border-box}
-    .chold .hlbls{display:flex;gap:16px;align-items:baseline;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--faint);cursor:default}
+    /* THE HOLDINGS ARE A PANEL (design b, 2026-09-29): the section carries the panel;
+       the box inside it is transparent (a second box inside a card was the trap).
+       the class band keeps a straight rule: radius 0, because a radius curls a
+       border-bottom at its ends. */
+    .chold{background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px}
+    .chold .hbox{margin-top:0;background:transparent;border:0;padding:0 0 8px;box-sizing:border-box}
+    .chold .hlbls{display:flex;gap:16px;align-items:baseline;font-family:var(--ui);font-weight:600;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);cursor:default}
     .chold .hlbls .hsh,.chold .hlbls .hpc{font-size:10.5px}
-    .chold .hcband{display:flex;align-items:baseline;gap:16px;padding:12px 0 9px;border-bottom:1px solid var(--ink);margin-top:6px}
-    .chold .hcband .hcl{flex:1 1 auto;min-width:0;font-family:var(--mono);font-size:11.5px;letter-spacing:.11em}
+    .chold .hcband{display:flex;align-items:baseline;gap:16px;padding:12px 0 9px;border-bottom:1px solid var(--stone-d);border-radius:0;margin-top:6px}
+    .chold .hcband .hcl{flex:1 1 auto;min-width:0;font-family:var(--ui);font-weight:700;font-size:13px;letter-spacing:0;color:var(--ink)}
     .chold .hcl .hcd{letter-spacing:0;font-size:11px;color:var(--faint)}
     .chold .hcl .hcd a{color:var(--faint)}
     .chold .hcband .hsh,.chold .hcband .hpc{font-size:12px}
-    .chold .hsub{display:flex;align-items:baseline;gap:16px;padding:10px 0 8px;border-bottom:1px solid #EDE9E0;font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;color:var(--ink);font-weight:600}
+    .chold .hsub{display:flex;align-items:baseline;gap:16px;padding:10px 0 8px;border-bottom:1px solid var(--line);font-family:var(--ui);font-size:12.5px;letter-spacing:0;color:var(--ink);font-weight:600}
     .chold .hsub .hvn{letter-spacing:0;font-size:11.5px;font-weight:400}
     .chold .hsub .hsh,.chold .hsub .hpc{font-size:12px;letter-spacing:0;color:var(--ink);font-weight:600}
     .chold .hsub.hstale,.chold .hsub.hstale .hvn,.chold .hsub.hstale .hsh,.chold .hsub.hstale .hpc{color:var(--faint)}
-    .chold .hrow{display:flex;align-items:center;gap:16px;padding:10px 0;border-bottom:1px solid #EDE9E0;font-size:13px;color:var(--mut)}
-    .chold .hrow .hsh,.chold .hrow .hpc{color:var(--mut)}
+    .chold .hrow{display:flex;align-items:center;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--mut)}
+    .chold .hrow .hsh{color:var(--mut)}
     .chold .hveh{flex:1 1 auto;min-width:0}
     .chold .hveh.hind{padding-left:22px}
-    .chold .hsh{width:130px;text-align:right;font-family:var(--mono);font-size:12.5px}
-    .chold .hpc{width:92px;text-align:right;font-family:var(--mono);font-size:12.5px}
+    .chold .hsh{width:130px;text-align:right;font-family:var(--ui);font-size:12.5px;font-variant-numeric:tabular-nums}
+    .chold .hpc{width:92px;text-align:right;font-family:var(--ui);font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600}
     .chold .hrow.hstale{color:var(--faint)}
     .chold .hrow.hstale .hpc{color:var(--faint)}
-    .chold .htot{display:flex;align-items:center;gap:16px;padding:13px 0 2px;margin-top:10px;border-top:2px solid var(--ink)}
-    .chold .htl{flex:1 1 auto;font-family:var(--mono);font-size:11.5px;letter-spacing:.11em}
+    .chold .htot{display:flex;align-items:center;gap:16px;padding:13px 0 2px;margin-top:10px;border-top:1.5px solid var(--ink)}
+    .chold .htl{flex:1 1 auto;font-family:var(--ui);font-weight:700;font-size:13px;letter-spacing:0;color:var(--ink)}
     .chold .htot .hsh{font-weight:600}
-    .chold .htot .hpc{color:var(--clay,#8A4B1E);font-weight:600}
+    .chold .htot .hpc{color:var(--accent);font-weight:600}
     .chold .hmore{margin:10px 0 2px 22px}
-    .chold .hasof{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
-    .chold .hsum{margin-top:10px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+    .chold .hasof{font-size:11.5px;color:var(--faint)}
+    .chold .hsum{margin-top:10px;font-size:11.5px;color:var(--faint)}
     @media(max-width:820px){.chold .hcl .hcd{display:block;margin-top:2px}}
-    .cnot .k{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);display:inline;margin-right:8px}
+    .cnot .k{font-family:var(--ui);font-weight:600;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);display:inline;margin-right:8px}
     details.cnot summary{cursor:pointer;list-style:none;display:inline}
     details.cnot summary::-webkit-details-marker{display:none}
-    details.cnot summary::after{content:" \2193";font-family:var(--mono);font-size:11px;color:var(--faint)}
+    details.cnot summary::after{content:" \2193";font-size:11px;color:var(--faint)}
     details.cnot[open] summary::after{content:" \2191"}
     details.cnot .cnx{margin-top:6px;padding-left:2px}
     .cband{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
@@ -115,28 +111,28 @@
        they are over, and what they are worth. Every figure at one size,
        chosen so a thirteen-digit share count sits inside its card with room,
        so no card reads fuller than another. */
-    .cq2{font-family:var(--disp);font-size:clamp(22px,2.2vw,30px);font-weight:600;letter-spacing:-.015em;margin:26px 0 8px}
+    .cq2{font-family:var(--ui);font-size:clamp(22px,2.2vw,30px);font-weight:700;letter-spacing:-.02em;margin:26px 0 8px}
     .pricesvg{display:block;width:100%;height:220px}
-    .cband>div{border:1px solid var(--line);border-radius:2px;padding:18px 20px;background:var(--panel);min-height:112px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-    .cband .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
-    .cband .lowc{font-family:var(--mono);font-size:12px;color:var(--faint);margin-left:6px;cursor:help;vertical-align:super}
+    .cband>div{border:1px solid var(--pline);border-radius:var(--radius);padding:18px 20px;background:var(--panel);min-height:112px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow)}
+    .cband .k{font-family:var(--ui);font-weight:600;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+    .cband .lowc{font-size:12px;color:var(--faint);margin-left:6px;cursor:help;vertical-align:super}
     .cband h2 .k{display:block;font-weight:500;margin-bottom:0}
     /* one size for every figure; the answer is blue, and that is enough */
-    .cband .p{font-family:var(--disp);font-size:clamp(30px,2.6vw,40px);font-weight:500;color:var(--blue);letter-spacing:-.02em;line-height:1;margin:14px 0 0}
-    .cband .p.s{font-size:22px;color:var(--ink);font-weight:650;letter-spacing:-.01em;line-height:1.2}
+    .cband .p{font-family:var(--ui);font-size:clamp(30px,2.6vw,40px);font-weight:700;color:var(--accent);letter-spacing:-.02em;line-height:1;margin:14px 0 0}
+    .cband .p.s{font-size:22px;color:var(--ink);font-weight:700;letter-spacing:-.01em;line-height:1.2}
     .cband .pl{color:var(--mut);font-size:12.5px;margin-top:6px;line-height:1.45}
     .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
     .cq{display:block;margin-top:8px;color:var(--ink)}
-    .cstat .v{font-family:var(--disp);font-size:clamp(30px,2.6vw,40px);font-weight:500;letter-spacing:-.02em;margin-top:14px;line-height:1}
-    .cstat .v.up{color:#0b7a4b}.cstat .v.down{color:#c22a2a}.cstat .v.none{color:var(--faint)}
-    .cstat .v.clay{color:var(--clay,#8A4B1E)}   /* the stake wears the home page's colour (2026-09-24); --clay has no :root definition, so the fallback is the colour */
-    .cstat .s{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px}
+    .cstat .v{font-family:var(--ui);font-size:clamp(30px,2.6vw,40px);font-weight:700;letter-spacing:-.02em;margin-top:14px;line-height:1}
+    .cstat .v.up{color:var(--buy)}.cstat .v.down{color:var(--sell)}.cstat .v.none{color:var(--faint)}
+    .cstat .v.clay{color:var(--accent)}
+    .cstat .s{font-size:12px;color:var(--mut);margin-top:6px}
     .sealed{filter:blur(4px);opacity:.55;user-select:none;cursor:pointer;color:var(--mut)}
     .sealed::before{content:attr(data-shape)}
     .sealed:hover{opacity:.8}
     @media(max-width:520px){.cband{grid-template-columns:1fr}}
-    .cmeta{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:12px;display:flex;gap:18px;flex-wrap:wrap;align-items:baseline}
-    .cmeta a{color:var(--blue);text-decoration:none}
+    .cmeta{font-size:12px;color:var(--faint);margin-top:12px;display:flex;gap:18px;flex-wrap:wrap;align-items:baseline}
+    .cmeta a{color:var(--accent);text-decoration:none;font-weight:600}
     .cmeta details{display:inline}
     .cmeta summary{cursor:pointer;color:var(--mut);list-style:none}
     .cmeta summary::-webkit-details-marker{display:none}
@@ -146,17 +142,18 @@
     /* KEEP READING (design v4): a labeled row of bordered chips -- the tape,
        a neighbour's own sentence, the founder-led screen, the letter. */
     .cmore{margin-top:34px;padding-top:24px;border-top:1px solid var(--line)}
-    .cmore .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:14px}
+    .cmore .k{font-family:var(--ui);font-weight:600;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);margin-bottom:14px}
     .cmore .chiprow{display:flex;flex-wrap:wrap;gap:12px}
-    .cmore .chiprow a{display:inline-block;border:1px solid var(--line);background:#fff;padding:10px 16px;font-size:15px;color:var(--ink);text-decoration:none}
-    .cmore .chiprow a:hover{border-color:var(--ink)}
+    .cmore .chiprow a{display:inline-block;border:1px solid var(--pline);background:var(--white);border-radius:var(--r-pill);padding:9px 16px;font-size:14px;font-weight:600;color:var(--ink);text-decoration:none}
+    .cmore .chiprow a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
     /* THE CHART: no title, no caption. The toggle says which line it is. */
     .csec{margin-top:40px}
-    .csec h2{font-family:var(--disp);font-size:24px;font-weight:500;letter-spacing:-.01em;margin:0 0 6px}
+    .csec h2{font-family:var(--ui);font-size:18px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
     .csec .sub{font-size:13px;color:var(--mut);margin-bottom:14px}
     .crec{margin-top:34px}
     .crec .cshead{margin-bottom:8px}
-    .cchart{border:1px solid var(--line);padding:18px 20px 10px;margin-top:6px}
+    .cchart{background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px 10px;margin-top:6px}
+    .cchart svg,.cchart canvas{background:transparent}
     .cchart svg{width:100%;height:auto;display:block;overflow:visible}
     /* the dots arrive after the line has drawn; the reduced-motion rule in
        site.css switches every animation off */
@@ -165,16 +162,16 @@
     .cchart svg.drawn .dot{opacity:0;animation:dotin .35s ease-out forwards;animation-delay:calc(var(--i,0) * 14ms)}
     @keyframes dotin{to{opacity:1}}
     .cchart svg .xh{pointer-events:none}
-    .ckey{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:8px;line-height:1.5}
+    .ckey{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;font-size:12px;color:var(--mut);margin-top:8px;line-height:1.5}
     .ckey i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px}
-    .ckey .b i{background:var(--buy)}.ckey .s i{background:#c22a2a}
+    .ckey .b i{background:var(--buy)}.ckey .s i{background:var(--sell)}
     /* the trades */
     .tchips{display:flex;gap:8px;margin:0 0 12px;flex-wrap:wrap;align-items:center}
     .tchips .tsep{flex:1}
     .structure-note{margin-top:14px;max-width:640px}   /* a kept partnership company's note (fle/partnerships.py) */
     .tchips .chip.big{border-style:dashed}
     .tchips .chip.big.on{border-style:solid}
-    .cband .cconf{margin-top:8px;font-family:var(--mono);font-size:10.5px;color:var(--mut)}
+    .cband .cconf{margin-top:8px;font-size:11.5px;color:var(--mut)}
     .cband .cconf summary{cursor:pointer;list-style:none}
     .cband .cconf summary::-webkit-details-marker{display:none}
     .cband .cconf .why{display:block;margin-top:6px;font-family:var(--ui);font-size:12px;line-height:1.4}
@@ -182,36 +179,40 @@
        aligned in the mono face; the rows are the data a CSV export
        carries, in the same order. */
     .ctrades .thead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    .ctrades .export{font-family:var(--ui);font-size:12.5px;font-weight:600;color:var(--blue);text-decoration:none;cursor:pointer;background:none;border:0;padding:0}
-    .ctrades table{width:100%;border-collapse:collapse;margin-top:6px;font-family:var(--mono);font-size:11.5px}
-    .ctrades th{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);font-weight:500;text-align:left;padding:6px 8px 8px 0;border-bottom:1px solid var(--ink);white-space:nowrap}
+    .ctrades .export{font-family:var(--ui);font-size:12.5px;font-weight:600;color:var(--accent);text-decoration:none;cursor:pointer;background:none;border:0;padding:0}
+    .ctrades{background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px}
+    .ctrades table{width:100%;border-collapse:collapse;margin-top:6px;font-family:var(--ui);font-size:13px;font-variant-numeric:tabular-nums}
+    .ctrades th{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:600;text-align:left;padding:6px 8px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap;background:transparent}
     .ctrades td{padding:9px 8px 9px 0;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+    .ctrades tr:hover td{background:var(--white)}
     .ctrades th.n,.ctrades td.n{text-align:right;padding-right:0;padding-left:8px}
-    .ctrades td.d{color:var(--faint)}
+    .ctrades td.d{color:var(--mut)}
     .ctrades td.v{font-weight:600}
-    .ctrades td.sh.up,.ctrades td.v.up{color:var(--buy)}.ctrades td.sh.down,.ctrades td.v.down{color:#c22a2a}
-    .ctrades td.stk{color:var(--mut)}.ctrades td.stk.plus{color:var(--buy)}.ctrades td.stk.minus{color:#c22a2a}
+    .ctrades td.sh.up,.ctrades td.v.up{color:var(--buy)}.ctrades td.sh.down,.ctrades td.v.down{color:var(--sell)}
+    .ctrades td.stk{color:var(--mut)}.ctrades td.stk.plus{color:var(--buy)}.ctrades td.stk.minus{color:var(--sell)}
     /* THE LEVELS BESIDE THE DELTAS. Held, outstanding and owned are the
        record's own figures for the day, so the table reads as the stake's
        path, not only its moves. Full numbers, never abbreviated: the file
        is the screen. On a narrow screen the three hide rather than scroll;
        the export always carries them. */
-    .ctrades tr.cov td{background:var(--panel)}
+    .ctrades tr.cov td{background:transparent;color:var(--faint)}
     .ctrades td.lv{color:var(--mut)}
     .ctrades td.lv.po{color:var(--ink);font-weight:600}
     @media(max-width:860px){.ctrades th.lv,.ctrades td.lv{display:none}}
     /* the Trade column in the tape's vocabulary and style: a tracked label
        in the kind's colour, the pipeline's specific word in grey after it */
     .ctrades td.kk{padding-left:8px;white-space:nowrap;overflow:hidden;max-width:140px}
-    .ctrades td.dt,.ctrades th.dt{padding-left:8px;white-space:nowrap;overflow:hidden;max-width:240px;text-align:left}
-    .ctrades td.dt{font-family:var(--mono);font-size:11.5px;color:var(--mut)}
+    /* the detail finishes the sentence ("restated by the company (10-Q) · no trade"), so it
+       gets the room the workbench measure has; past that it ellipses instead of running
+       into the traded date (a v392 clip, fixed 2026-09-29; the title carries the whole line) */
+    .ctrades td.dt,.ctrades th.dt{padding-left:8px;padding-right:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px;text-align:left}
+    @media(max-width:1100px){.ctrades td.dt,.ctrades th.dt{max-width:200px}}
+    .ctrades td.dt{font-family:var(--mono);font-size:11.5px;color:var(--mut)}   /* the detail cell is the one mono cell */
     .ctrades th.kk{white-space:nowrap}
     .ctrades td.ty{padding-left:8px;white-space:nowrap;overflow:hidden;max-width:340px}
-    .ctrades td.ty .kind,.ctrades td.kk .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
-    .ctrades td.ty .kind.bought,.ctrades td.kk .kind.bought{color:var(--buy)}.ctrades td.ty .kind.disc,.ctrades td.kk .kind.disc{color:#B23428}.ctrades td.ty .kind.sold,.ctrades td.kk .kind.sold{color:#8C4A44}
-    .ctrades td.ty .kind.plan,.ctrades td.kk .kind.plan{color:var(--mut)}.ctrades td.ty .kind.comp,.ctrades td.kk .kind.comp{color:var(--faint)}.ctrades td.ty .kind.xfer,.ctrades td.kk .kind.xfer{color:var(--mut)}.ctrades td.ty .kind.neu,.ctrades td.kk .kind.neu{color:var(--mut)}
-    .ctrades td.ty .detail{font-size:12.5px;color:var(--mut);margin-left:8px}
-    .ctrades td.f a{color:var(--blue);text-decoration:none;font-size:11px}
+    /* the kind chip is site.css's (.kind): one rule for the tape and the record (2026-09-29) */
+    .ctrades td.ty .detail{font-family:var(--mono);font-size:11.5px;color:var(--mut);margin-left:8px}
+    .ctrades td.f a{color:var(--accent);text-decoration:none;font-size:12px;font-weight:600}
     .ctrades th.f,.ctrades td.f{text-align:right;padding-right:0}
     /* the receipt */
     /* the watch box */
@@ -220,29 +221,34 @@
     /* THE WATCH CARD (design v4): the ask as the headline, the field and a
        full-width WATCH button stacked beneath it, "Free. No account." as
        the fine print. No toggle: the field is for everyone. */
-    .wcard .wq{font-family:var(--disp);font-size:17.5px;font-weight:500;line-height:1.3;letter-spacing:-.005em}
+    .wcard .wq{font-family:var(--ui);font-size:17px;font-weight:600;line-height:1.3;letter-spacing:-.01em}
     .wcard .wfine{font-size:12px;color:var(--mut);line-height:1.5}
     .wcard .wfine a{color:var(--mut)}
     .wcard .wform{display:flex;flex-direction:column;gap:10px}
-    .wcard input[type=email]{font:inherit;font-size:14.5px;height:40px;padding:0 14px;border:1px solid #b8b2a4;background:var(--bg);border-radius:0;width:100%;box-sizing:border-box}
-    .wcard .wbtn{height:40px;width:100%;font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--bg);background:var(--ink);border:0;border-radius:0;cursor:pointer}
+    .wcard input[type=email]{font:inherit;font-size:14.5px;height:40px;padding:0 14px;border:1px solid var(--pline);background:var(--white);border-radius:var(--r-s);width:100%;box-sizing:border-box}
+    .wcard input[type=email]:focus{outline:none;border-color:var(--accent)}
+    .wcard .wbtn{height:40px;width:100%;font-family:var(--ui);font-size:14px;font-weight:600;letter-spacing:0;color:var(--white);background:var(--accent);border:0;border-radius:var(--r-s);cursor:pointer}
+    .wcard .wbtn:hover{background:var(--blue-d)}
     .wcard .wbtn:disabled{opacity:.55;cursor:default}
     .factmsg{color:var(--mut);margin-left:6px}
     .cprose{font-size:15px;line-height:1.6;color:var(--mut);max-width:78ch;margin:18px 0 0}
     .cshead{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
     .cshead h2{margin:0}
     .cshead .chips{display:flex;gap:6px}
-    .cshead .chip{font-family:var(--ui);font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:2px;border:1px solid var(--line);background:#fff;color:var(--mut);cursor:pointer}
-    .cshead .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .cshead .chip{font-family:var(--ui);font-size:12px;font-weight:600;padding:6px 12px;border-radius:var(--r-pill);border:1px solid var(--pline);background:var(--white);color:var(--ink);cursor:pointer}
+    .cshead .chip.on{background:var(--ink);color:var(--white);border-color:var(--ink)}
     /* THE BOTTOM CAPTURE (design v4): a reader who scrolled the whole record
        is the reader most worth asking. One dark band, one sentence, the
        field and the button; the same watch flow as the top card. */
     .creport{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--mut);line-height:1.6}
-    .creport a{color:var(--blue)}
+    .creport a{color:var(--accent)}
     /* THE HEAD IS A ROW (2026-09-23): the answer on the left, the watch box
        on the right, the H1 level with the box's top; on a phone the box
        follows the answer at full width. */
-    .cwatchslot{margin-top:24px;border:0;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);background:transparent;padding:14px 0}
+    /* THE WATCH STRIP IS A PANEL (design b, 2026-09-29): .cwatchslot is the shell and
+       carries the card; .wcard inside it is bare (two boxes was the trap). */
+    .cwatchslot{margin-top:24px;background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px}
+    .cwatchslot .wcard{border:0;background:transparent;box-shadow:none;padding:0}
     .cwatchslot .wcard{display:flex;align-items:center;flex-wrap:wrap;gap:12px 26px}
     .cwatchslot .wq{flex:1 1 auto;min-width:260px}
     .cwatchslot .wform{flex-direction:row;flex:none}
@@ -256,7 +262,7 @@
     /* FOUNDER-LED IS A COLOUR (2026-09-23): the clay rule across the page's
        very top and the clay pill in the hero; a page whose chief executive
        is not a founder carries neither. */
-    body.fdl::before{content:"";display:block;height:4px;background:#8A4B1E}
+    body.fdl::before{content:"";display:block;height:4px;background:var(--accent)}
     /* THE STATS ARE A STRIP, NOT CARDS (design v4, 2026-09-23): one band
        ruled top and bottom by the page's hairline, three columns split by
        left hairlines -- no borders, no fills, no shadows. The label names
@@ -269,14 +275,11 @@
     @media(max-width:1080px) and (min-width:821px){.cband.kpi{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:820px){.cband.kpi{grid-template-columns:1fr}
       .cband.kpi>div{padding:16px 18px 14px}}
-    .cband.kpi>div{align-items:center;text-align:center;justify-content:flex-start;min-height:0;padding:18px 20px 14px;gap:2px;border:0;border-left:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
-    .cband.kpi>div+div{border-left:1px solid var(--line)}
-    .cband.kpi>div:first-child{padding-left:20px;background:transparent;border-left:0}
-    .cband.kpi{gap:0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);margin-top:20px}
-    .cband.kpi>div:last-child{padding-right:20px}
-    .cband.kpi .v{font-family:var(--disp);font-size:clamp(23px,2.1vw,28px);font-weight:700;letter-spacing:-.015em;margin-top:7px;line-height:1.05;color:var(--ink)}
+    .cband.kpi>div{align-items:center;text-align:center;justify-content:flex-start;min-height:0;padding:16px 18px 14px;gap:2px;background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow)}
+            .cband.kpi{gap:12px;border:0;margin-top:20px}
+        .cband.kpi .v{font-family:var(--ui);font-size:clamp(23px,2.1vw,28px);font-weight:700;letter-spacing:-.015em;margin-top:7px;line-height:1.05;color:var(--ink)}
     .cband.kpi .v small{font-size:60%;font-weight:500;letter-spacing:0;color:var(--ink)}
-    .cband.kpi .s{font-family:var(--mono);font-size:12px;font-style:normal;color:var(--mut);margin-top:6px;letter-spacing:0;line-height:1.5}
+    .cband.kpi .s{font-size:12px;font-style:normal;color:var(--mut);margin-top:6px;letter-spacing:0;line-height:1.5}
       .ctrades .tmore{margin-top:14px}
 </style>
 </head>

@@ -132,7 +132,7 @@ function dayLabel(d){return monthLabel(d.slice(0,7)).replace(" ",` ${+d.slice(8,
 const dollars=v=>Math.abs(v-Math.round(v))<1e-9&&v>=1?"$"+Math.round(v).toLocaleString("en-US"):v>=1000?"$"+Math.round(v).toLocaleString("en-US"):v>=100?"$"+v.toFixed(0):v>=10?"$"+v.toFixed(1):"$"+v.toFixed(2);
 /* the frame: narrow screens get a taller box so the line has room */
 function frame(){const narrow=(window.innerWidth||1000)<600;return narrow?{w:520,h:340,pad:{l:54,r:16,t:26,b:30}}:{w:940,h:320,pad:{l:64,r:22,t:26,b:30}};}
-const SELL="#c22a2a";
+const SELL="var(--sell)";
 /* the dots, shared by both charts: sized by value, a white rim so
    neighbours stay distinct. Hover says what the trade was; the list
    below the chart carries the filing link. */
@@ -151,7 +151,7 @@ function yearsAxis(X,t0,t1,fr){
   let out="";const y0=new Date(t0).getUTCFullYear(),y1=new Date(t1).getUTCFullYear();
   const every=(y1-y0)>7&&fr.w<600?2:1;
   for(let yr=y0+1;yr<=y1;yr++){if((yr-y0)%every)continue;const x=X(`${yr}-01-01`);if(x<fr.pad.l||x>fr.w-fr.pad.r)continue;
-    out+=`<text x="${x.toFixed(1)}" y="${fr.h-10}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">${yr}</text>`;}
+    out+=`<text x="${x.toFixed(1)}" y="${fr.h-10}" text-anchor="middle" font-family="var(--ui)" font-size="10.5" font-weight="500" fill="var(--faint)">${yr}</text>`;}
   return out;
 }
 /* the hover's data rides on the svg: one row per x-position the cursor can
@@ -187,11 +187,11 @@ function priceChart(px,evs){
       line2=[b.length?`bought ${money(sum(b))}`:"",sl.length?`sold ${money(sum(sl))}`:""].filter(Boolean).join(", ");}
     hover.push([p[0],dayLabel(p[0])+" · "+dollars(p[1]),line2]);}
   let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="the share price, with the chief executive's trades on it" class="fchart" ${hoverAttrs(hover,fr,t0,t1)}>
-  <defs><linearGradient id="pxg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--blue)" stop-opacity="0.16"/><stop offset="1" stop-color="var(--blue)" stop-opacity="0"/></linearGradient>
+  <defs><linearGradient id="pxg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--ink)" stop-opacity="0.10"/><stop offset="1" stop-color="var(--ink)" stop-opacity="0"/></linearGradient>
   <clipPath id="pxc"><rect class="reveal" x="0" y="0" width="${w}" height="${h}"/></clipPath></defs>`;
   for(const v of ticks){const y=Y(v);
     out+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
-    out+=`<text x="${pad.l-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">${dollars(v)}</text>`;}
+    out+=`<text x="${pad.l-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="var(--ui)" font-size="10.5" font-weight="500" fill="var(--faint)">${dollars(v)}</text>`;}
   out+=yearsAxis(X,t0,t1,fr);
   out+=`<path class="fill" clip-path="url(#pxc)" d="${d} V ${(h-pad.b).toFixed(1)} H ${X(px[0][0]).toFixed(1)} Z" fill="url(#pxg)"/>`;
   out+=`<path class="line" d="${d}" fill="none" stroke="var(--ink)" stroke-opacity="0.8" stroke-width="1.2" stroke-linejoin="round"/>`;
@@ -206,8 +206,8 @@ function priceChart(px,evs){
      top of the range the label would cross the line's peak, so it goes
      below instead (Schmitz's $20.1 on a chart topping at $20) */
   const ly=Y(last[1])-9<pad.t+12?Y(last[1])+16:Y(last[1])-9;
-  out+=`<text class="endlbl" x="${(X(last[0])-6).toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--ink)">${dollars(last[1])}</text>`;
-  out+=`<g class="xh" style="display:none"><line y1="${pad.t}" y2="${h-pad.b}" stroke="var(--ink)" stroke-opacity="0.35" stroke-dasharray="2 3"/><circle r="3.5" fill="var(--ink)"/><rect rx="3" fill="var(--ink)"/><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text></g></svg>`;
+  out+=`<text class="endlbl" x="${(X(last[0])-6).toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="end" font-family="var(--ui)" font-size="11.5" font-weight="700" fill="var(--ink)">${dollars(last[1])}</text>`;
+  out+=`<g class="xh" style="display:none"><line y1="${pad.t}" y2="${h-pad.b}" stroke="var(--ink)" stroke-opacity="0.35" stroke-dasharray="2 3"/><circle r="3.5" fill="var(--ink)"/><rect rx="3" fill="var(--ink)"/><text font-family="var(--ui)" font-size="10.5" font-weight="500" fill="#fff"></text><text font-family="var(--ui)" font-size="10.5" font-weight="500" fill="#fff"></text></g></svg>`;
   return out;
 }
 function stakeChart(pts,evs){
@@ -228,21 +228,21 @@ function stakeChart(pts,evs){
   const hover=ms.map((o,i)=>{const move=i?(Math.abs(o.dP)>1e-6?`${o.dP>0?"+":"−"}${Math.abs(o.dP).toFixed(2)} pts`:"no change"):"start";
     return [o.d,`${monthLabel(o.m)} · ${o.pct.toFixed(2)}% · ${compact(o.sh)} sh`,`${move}${o.why?" · "+o.why:""}`];});
   let out=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="the stake over time" class="fchart" ${hoverAttrs(hover,fr,t0,t1)}>
-  <defs><linearGradient id="stg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--blue)" stop-opacity="0.16"/><stop offset="1" stop-color="var(--blue)" stop-opacity="0"/></linearGradient>
+  <defs><linearGradient id="stg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--ink)" stop-opacity="0.10"/><stop offset="1" stop-color="var(--ink)" stop-opacity="0"/></linearGradient>
   <clipPath id="stc"><rect class="reveal" x="0" y="0" width="${w}" height="${h}"/></clipPath></defs>`;
   for(let k=0;k<=3;k++){const v=lo+(hi-lo)*k/3;const y=Y(v);
     out+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
-    out+=`<text x="${pad.l-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">${fmt(v)}</text>`;}
+    out+=`<text x="${pad.l-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="var(--ui)" font-size="10.5" font-weight="500" fill="var(--faint)">${fmt(v)}</text>`;}
   out+=yearsAxis(X,t0,t1,fr);
   out+=`<path class="fill" clip-path="url(#stc)" d="${d} V ${(h-pad.b).toFixed(1)} H ${X(ms[0].d).toFixed(1)} Z" fill="url(#stg)"/>`;
-  out+=`<path class="line" d="${d}" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linejoin="round"/>`;
+  out+=`<path class="line" d="${d}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round"/>`;
   const at=dt=>{let v=ms[0].pct;for(const o of ms){if(o.d<=dt)v=o.pct;else break;}return v;};
   const drawn=evs.filter(e=>{const dt=e.td||e.fd;return dt>=pts[0][0]&&dt<=ms[ms.length-1].d;});
   out+=dots(drawn,X,Y,e=>[at(e.td||e.fd),""],fr);
   const lastO=ms[ms.length-1];
   const lyO=Y(lastO.pct)-9<pad.t+12?Y(lastO.pct)+16:Y(lastO.pct)-9;
-  out+=`<text class="endlbl" x="${(X(lastO.d)-6).toFixed(1)}" y="${lyO.toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" font-weight="600" fill="var(--blue)">${fmt(lastO.pct)}</text>`;
-  out+=`<g class="xh" style="display:none"><line y1="${pad.t}" y2="${h-pad.b}" stroke="var(--ink)" stroke-opacity="0.35" stroke-dasharray="2 3"/><circle r="3.5" fill="var(--blue)"/><rect rx="3" fill="var(--ink)"/><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text><text font-family="var(--mono)" font-size="10.5" fill="#fff"></text></g></svg>`;
+  out+=`<text class="endlbl" x="${(X(lastO.d)-6).toFixed(1)}" y="${lyO.toFixed(1)}" text-anchor="end" font-family="var(--ui)" font-size="11.5" font-weight="700" fill="var(--accent)">${fmt(lastO.pct)}</text>`;
+  out+=`<g class="xh" style="display:none"><line y1="${pad.t}" y2="${h-pad.b}" stroke="var(--ink)" stroke-opacity="0.35" stroke-dasharray="2 3"/><circle r="3.5" fill="var(--blue)"/><rect rx="3" fill="var(--ink)"/><text font-family="var(--ui)" font-size="10.5" font-weight="500" fill="#fff"></text><text font-family="var(--ui)" font-size="10.5" font-weight="500" fill="#fff"></text></g></svg>`;
   return out;
 }
 /* THE CROSSHAIR. One handler for both charts: the cursor's x becomes a
