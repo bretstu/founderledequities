@@ -96,22 +96,22 @@ export async function onRequestPost({ request, env }) {
     const liveW = ws.find((w) => w.tk === "FOUNDERS");
     const from = liveW && ws.length === 1 ? "Watch the founders: any move that changes a founder\u2019s stake by 1% or more, within minutes of the filing."
       : `Your watch on ${ws.filter((w) => w.tk !== "FOUNDERS").map((w) => esc(w.ceo || w.tk)).join(", ")}${liveW ? ", and the founder stream" : ""}.`;
-    const stopThese = ws.length === 1 ? `<a href="${site(env)}/api/watch?stop=${ws[0].token}" style="color:#8C8880;">Stop these</a>`
-      : ws.map((w) => `<a href="${site(env)}/api/watch?stop=${w.token}" style="color:#8C8880;">stop ${w.tk === "FOUNDERS" ? "the founder stream" : "watching " + esc(w.ceo || w.tk)}</a>`).join(" &middot; ");
+    const stopThese = ws.length === 1 ? `<a href="${site(env)}/api/watch?stop=${ws[0].token}" style="color:#94A3B8;">Stop these</a>`
+      : ws.map((w) => `<a href="${site(env)}/api/watch?stop=${w.token}" style="color:#94A3B8;">stop ${w.tk === "FOUNDERS" ? "the founder stream" : "watching " + esc(w.ceo || w.tk)}</a>`).join(" &middot; ");
     const blocks = b.items.map(({ e }) => `
-<h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-size:26px;line-height:1.2;margin:16px 0 14px;">${esc(short(e))}.</h1>
+<h1 style="font-weight:700;letter-spacing:-.02em;font-size:24px;line-height:1.2;margin:16px 0 14px;">${esc(short(e))}.</h1>
 ${Array.isArray(e.facts) && e.facts.length
-  ? `<table role="presentation" cellpadding="0" cellspacing="0" style="font-size:14px;line-height:1.5;margin:0 0 16px;border-collapse:collapse;">${e.facts.map(([k, v]) => `<tr><td style="padding:2px 18px 2px 0;color:#8C8880;white-space:nowrap;vertical-align:top;">${esc(k)}</td><td style="padding:2px 0;color:#1A1A1A;">${esc(v)}</td></tr>`).join("")}</table>`
+  ? `<table role="presentation" cellpadding="0" cellspacing="0" style="font-size:14px;line-height:1.5;margin:0 0 16px;border-collapse:collapse;">${e.facts.map(([k, v]) => `<tr><td style="padding:2px 18px 2px 0;color:#94A3B8;white-space:nowrap;vertical-align:top;">${esc(k)}</td><td style="padding:2px 0;color:#1A1A1A;">${esc(v)}</td></tr>`).join("")}</table>`
   : `<p style="font-size:15px;line-height:1.6;margin:0 0 16px;">${esc(e.body || `${dayLine(e)} ${stakeLine(e)}`.trim())}</p>`}
 <p style="font-size:15px;line-height:1.5;margin:0 0 22px;"><a href="${site(env)}/company/${esc(e.tk)}/" style="color:#1A1A1A;font-weight:bold;text-decoration:none;">${esc(e.company || e.tk)} on Founder Led Equities &rarr;</a></p>`).join("");
-    const html = `<!doctype html><html><body style="margin:0;padding:0;background:#ECE9E2;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ECE9E2;"><tr><td align="center" style="padding:20px 10px;">
-<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#F7F4EE;font-family:Helvetica,Arial,sans-serif;color:#1A1A1A;">
+    const html = `<!doctype html><html><body style="margin:0;padding:0;background:#FCFCFD;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FCFCFD;"><tr><td align="center" style="padding:20px 10px;">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#E9EDF3;border:1px solid #D9DFE8;border-radius:12px;font-family:Inter,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:#0F172A;">
 <tr><td style="padding:26px 28px 22px;">
-<div style="font-family:Menlo,Consolas,monospace;font-size:10px;letter-spacing:.14em;color:#8C8880;">FOUNDER LED EQUITIES</div>
+<div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:#94A3B8;">FOUNDER LED EQUITIES</div>
 ${blocks}
 <div style="border-top:1px solid #D6D1C7;margin:4px 0 12px;"></div>
-<p style="font-size:11px;line-height:1.6;color:#8C8880;margin:0;">${from}<br>${stopThese} &middot; <a href="${site(env)}/api/watch?stopall=${anyToken}" style="color:#8C8880;">Stop everything</a> &middot; Nothing here is investment advice.</p>
+<p style="font-size:11px;line-height:1.6;color:#94A3B8;margin:0;">${from}<br>${stopThese} &middot; <a href="${site(env)}/api/watch?stopall=${anyToken}" style="color:#94A3B8;">Stop everything</a> &middot; Nothing here is investment advice.</p>
 </td></tr></table></td></tr></table></body></html>`;
     const text = b.items.map(({ e }) => `${short(e)}.\n${Array.isArray(e.facts) && e.facts.length ? e.facts.map(([k, v]) => `${k}: ${v}`).join("\n") : (e.body || `${dayLine(e)} ${stakeLine(e)}`.trim())}\n${site(env)}/company/${e.tk}/`).join("\n\n")
       + `\n\n${from.replace(/<[^>]+>/g, "")}\nStop these: ` + ws.map((w) => `${site(env)}/api/watch?stop=${w.token}`).join(" ")

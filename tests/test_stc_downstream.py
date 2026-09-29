@@ -1,5 +1,5 @@
 """THE TAX COVER STAYS OUT OF THE MEGAPHONES (2026-09-25). The alerts, the
-letter and the X cards all classify through ops/kinds.py; these tests pin
+alerts and the X cards all classify through ops/kinds.py; these tests pin
 that a "sold to cover tax" row is compensation everywhere, so no future
 refactor can quietly grow a second taxonomy and put a mandated tax slice
 back on the SOLD channel."""
@@ -22,14 +22,12 @@ def test_the_shared_taxonomy_calls_it_compensation():
     assert kinds.KIND_DETAIL["sold to cover tax"] == "sold to cover tax"
 
 
-def test_the_alerts_and_the_letter_read_from_that_one_copy():
+def test_the_alerts_read_from_that_one_copy():
+    # the letter's half of this test left with the letter (2026-09-29)
     import importlib
     live = importlib.import_module("live")
-    letter = importlib.import_module("letter")
     assert live.COMPENSATION is kinds.COMP_LABELS, \
         "ops/live.py classifies by the shared set, not a copy"
-    assert letter.COMPENSATION is kinds.COMP_LABELS
-    assert letter.kind_of(STC) == "comp", "the letter's wrapper is kinds.kind_of"
 
 
 def test_an_ordinary_discretionary_sale_still_sells():

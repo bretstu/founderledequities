@@ -1,25 +1,27 @@
 // THE SITE-WIDE SIGNUP (2026-09-24; PLAN.md section 5a): double opt-in,
-// one address, both streams. POST {email} -> a confirmation link is
-// mailed; nothing is added yet. GET ?token=... -> the click adds the
-// address to the Resend audience the Monday letter broadcasts to AND
-// writes a confirmed FOUNDERS watch, so the alert half of the band's
-// promise is real. The response to POST is the same whatever the
-// address, so the endpoint cannot be used to test which addresses are
-// on the list.
+// one address, one promise. POST {email} -> a confirmation link is
+// mailed; nothing is added yet. GET ?token=... -> the click writes a
+// confirmed FOUNDERS watch, which is the alert. The weekly letter left
+// on 2026-09-29: the click no longer adds the address to a Resend
+// segment; the contact is still created at the account level (harmless,
+// and a list should a broadcast ever be wanted), but it is not what
+// confirms. The response to POST is the same whatever the address, so
+// the endpoint cannot be used to test which addresses are on the list.
 import { site, redirect, json } from "../_shared.js";
 
 const RESEND = (env) => env.RESEND_API_BASE || "https://api.resend.com";
 
-// the site's look, in mail: paper, ink, a serif headline, one button
-const confirmHtml = (link) => `<!doctype html><html><body style="margin:0;padding:0;background:#ECE9E2;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ECE9E2;"><tr><td align="center" style="padding:20px 10px;">
-<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#F7F4EE;font-family:Helvetica,Arial,sans-serif;color:#1A1A1A;">
+// the site's look, in mail (design b, 2026-09-29): a grey panel on a near-white
+// ground, a bold sans headline, one indigo button
+const confirmHtml = (link) => `<!doctype html><html><body style="margin:0;padding:0;background:#FCFCFD;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FCFCFD;"><tr><td align="center" style="padding:24px 10px;">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#E9EDF3;border:1px solid #D9DFE8;border-radius:12px;font-family:Inter,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:#0F172A;">
 <tr><td style="padding:28px;">
-<div style="font-family:Menlo,Consolas,monospace;font-size:10px;letter-spacing:.14em;color:#8C8880;">FOUNDER LED EQUITIES</div>
-<h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-size:30px;line-height:1.1;margin:18px 0 6px;">One click and you're on the list.</h1>
-<p style="font-size:14px;line-height:1.5;color:#5F5B55;margin:0 0 18px;">Two emails, one list: an alert when any founder&rsquo;s stake moves 1% or more, usually within minutes of the SEC filing, and everything founders did that week, every Sunday. Every alert carries a one-click stop; the Sunday email has its own unsubscribe link.</p>
-<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 22px;"><tr><td style="background:#1A1A1A;"><a href="${link}" style="display:inline-block;padding:11px 22px;color:#F7F4EE;font-size:14px;font-weight:bold;text-decoration:none;">Confirm &rarr;</a></td></tr></table>
-<p style="font-size:11px;line-height:1.5;color:#8C8880;margin:0;">The link works once and expires in a day. If you didn't ask for this, ignore it and nothing happens.</p>
+<div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:#94A3B8;">FOUNDER LED EQUITIES</div>
+<h1 style="font-weight:700;letter-spacing:-.02em;font-size:26px;line-height:1.15;margin:16px 0 8px;">One click and you're on the list.</h1>
+<p style="font-size:14px;line-height:1.55;color:#64748B;margin:0 0 20px;">One email: an alert when any founder&rsquo;s stake moves 1% or more, usually within minutes of the SEC filing. Every email carries its own one-click stop.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 22px;"><tr><td style="background:#4F46E5;border-radius:8px;"><a href="${link}" style="display:inline-block;padding:11px 22px;color:#FFFFFF;font-size:14px;font-weight:600;text-decoration:none;">Confirm &rarr;</a></td></tr></table>
+<p style="font-size:11px;line-height:1.5;color:#94A3B8;margin:0;">The link works once and expires in a day. If you didn't ask for this, ignore it and nothing happens.</p>
 </td></tr></table></td></tr></table></body></html>`;
 
 export async function onRequestPost({ request, env }) {
@@ -45,7 +47,9 @@ export async function onRequestPost({ request, env }) {
       from: "Founder Led Equities <tape@founderledequities.com>",
       to: [email],
       subject: `Confirm: founder moves, as they file (${new Date().toISOString().slice(0, 10)})`,
-      text: `One click and you're on the list: an alert when any founder's stake moves 1% or more, usually within minutes of the SEC filing, and everything founders did that week, every Sunday. Every alert carries a one-click stop; the Sunday email has its own unsubscribe link.\n\n${link}\n\nThe link works once and expires in a day. If you didn't ask for this, ignore it and nothing happens.`,
+      text: `One click and you're on the list: an alert when any founder's stake moves 1% or more, usually within minutes of the SEC filing. Every email carries its own one-click stop. Confirm: ${link}
+
+The link works once and expires in a day. If you didn't ask for this, ignore it and nothing happens.`,
       html: confirmHtml(link),
     }),
   });
@@ -58,39 +62,35 @@ export async function onRequestGet({ request, env }) {
   const email = await env.SUBS.get(`sub:${token}`);
   if (!email) return redirect(`${site(env)}/tape/?subscribed=expired`);
   await env.SUBS.delete(`sub:${token}`);
-  // TWO CALLS (Resend's contacts model of 2025): the contact is created at
-  // the account level, then added to the segment the letter is sent to
-  // (RESEND_SEGMENT_ID: the weekly letter's segment; segments are static,
-  // so a contact not added to one is not on the list). A refused call is
-  // not a success: the page says so, and the token is kept for a day so
-  // a fixed setting can retry the click.
-  const headers = { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" };
-  const created = await fetch(`${RESEND(env)}/contacts`, {
-    method: "POST", headers, body: JSON.stringify({ email, unsubscribed: false }),
-  });
-  let ok = created.ok || created.status === 409;   // already a contact is fine
-  if (ok && env.RESEND_SEGMENT_ID) {
-    const seg = await fetch(`${RESEND(env)}/contacts/${encodeURIComponent(email)}/segments/${env.RESEND_SEGMENT_ID}`, {
-      method: "POST", headers,
-    });
-    ok = seg.ok;
-  }
-  if (!ok) {
-    await env.SUBS.put(`sub:${token}`, email, { expirationTtl: 86400 });
-    return redirect(`${site(env)}/tape/?subscribed=error`);
-  }
-  // ONE SIGNUP, TWO STREAMS (2026-09-24). The band promises the >=1% alert;
-  // the segment above only feeds the Monday letter. The same confirmed click
-  // also writes a confirmed FOUNDERS watch, so the alert half of the promise
-  // is real. Already-confirmed rows stay confirmed; a failure here never
-  // undoes the letter add (the alert wiring can be retried, the click cannot).
+  // THE WATCH IS THE SUBSCRIPTION (2026-09-29): the confirmed click writes a
+  // confirmed FOUNDERS watch, and that write is what succeeds or fails. A
+  // refused write is not a success: the page says so, and the token is
+  // kept for a day so a fixed setting can retry the click.
+  let ok = false;
   if (env.HITS) {
     try {
       await env.HITS.prepare("CREATE TABLE IF NOT EXISTS watches (id INTEGER PRIMARY KEY, email TEXT NOT NULL, tk TEXT NOT NULL, ceo TEXT, confirmed INTEGER DEFAULT 0, token TEXT, created TEXT, UNIQUE(email, tk))").run();
       const t = [...crypto.getRandomValues(new Uint8Array(24))].map((b) => b.toString(16).padStart(2, "0")).join("");
       await env.HITS.prepare("INSERT INTO watches (email, tk, ceo, confirmed, token, created) VALUES (?1, 'FOUNDERS', 'every founder', 1, ?2, ?3) ON CONFLICT(email, tk) DO UPDATE SET confirmed = 1")
         .bind(email, t, new Date().toISOString()).run();
-    } catch { /* the letter add stands; the next confirm or signup retries this */ }
+      ok = true;
+    } catch { ok = false; }
+  }
+  if (!ok) {
+    await env.SUBS.put(`sub:${token}`, email, { expirationTtl: 86400 });
+    return redirect(`${site(env)}/tape/?subscribed=error`);
+  }
+  // the Resend contact, best effort: a list at the account level, no segment
+  // (the letter's segment add left with the letter). A failure here changes
+  // nothing the reader was promised.
+  if (env.RESEND_API_KEY) {
+    try {
+      await fetch(`${RESEND(env)}/contacts`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ email, unsubscribed: false }),
+      });
+    } catch { /* the watch stands */ }
   }
   return redirect(`${site(env)}/tape/?subscribed=1`);
 }

@@ -142,10 +142,9 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert 'src="/company.js?v=' in tsla and 'href="/site.css?v=' in tsla, "a new script is a new address"
     assert os.path.exists(os.path.join(out, "site.css"))
     sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
-    import glob as _g, re as _re
-    n_letters = len([p for p in _g.glob(os.path.join(ROOT, "weekly", "letter-*.md"))
-                     if _re.search(r"^sent:\s*\S", open(p, encoding="utf-8").read(2000), _re.M)])
-    assert sm.count("<loc>") == 7 + (1 + n_letters if n_letters else 0) and "/company/SEALD/" in sm and "/companies/" in sm and "/tape/" in sm and "/pro/" not in sm and "/alerts/" in sm, \
+    # the letter archive left the site (2026-09-29): no /letter/ addresses in the sitemap
+    assert "/letter/" not in sm
+    assert sm.count("<loc>") == 7 and "/company/SEALD/" in sm and "/companies/" in sm and "/tape/" in sm and "/pro/" not in sm and "/alerts/" in sm, \
         "every company is in the sitemap once, and the pro page is gone (2026-09-23)"
     assert sm.count("/alerts/") == 1 and sm.count("/companies/</loc>") == 1, "no address is listed twice"
     robots = open(os.path.join(out, "robots.txt"), encoding="utf-8").read()
@@ -460,8 +459,9 @@ def test_the_tape_is_a_page(tmp_path):
     sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
     assert "/tape/</loc>" in sm
     fn_src = open(os.path.join(ROOT, "functions", "api", "subscribe.js"), encoding="utf-8").read()
-    assert "/contacts" in fn_src and "/segments/${env.RESEND_SEGMENT_ID}" in fn_src and "sub:${token}" in fn_src and "expirationTtl: 86400" in fn_src, \
-        "double opt-in through a one-day token: the contact is created, then added to the letter's segment"
+    # the letter left on 2026-09-29: the click confirms a FOUNDERS watch; no Resend segment
+    assert "sub:${token}" in fn_src and "expirationTtl: 86400" in fn_src and "'FOUNDERS'" in fn_src and "RESEND_SEGMENT_ID" not in fn_src, \
+        "double opt-in through a one-day token: the click writes the confirmed founders watch, and nothing joins a letter segment"
 
 
 def test_the_pro_page_is_gone(tmp_path):
@@ -563,19 +563,20 @@ console.log("loaded "+process.argv.slice(2).length+" scripts");process.exit(0);
     assert f"loaded {len(scripts)} scripts" in p.stdout, p.stdout
 
 
-def test_the_alerts_page_is_built_with_three_free_cards(tmp_path):
-    """THE ALERTS PAGE, ONE SIGNUP (2026-09-24): two cards -- the site-wide
-    signup (the >=1% founder alert plus the Monday email, one address, both
-    streams) and the pointer to the per-company watches. No fork, no
-    accounts: every email manages itself with its own stop links. The old
-    three-card chooser (letter / live / watches) is gone."""
+def test_the_alerts_page_is_one_promise(tmp_path):
+    """THE ALERTS PAGE, ONE SIGNUP, ONE EMAIL (rebuilt 2026-09-29): the
+    capture band at the top, one row with the search to watch a single
+    company, the sample of what arrives. The weekly letter left the same
+    day, so no Sunday, no second stream. No fork, no accounts: every
+    email manages itself with its own stop links."""
     panel, founders, prices, sp, out = _fixture(tmp_path)
     bcp.main(panel, founders, prices, sp, out)
     page = open(os.path.join(out, "alerts", "index.html"), encoding="utf-8").read()
     assert "When a founder" in page and "1% or more" in page
     assert "within about ten minutes" in page, "the live chain (live.py -> now.sh -> deploy -> alerts.py) makes the claim true"
-    assert page.count('class="lcard') == 2 and "Watch the founders" in page and "Watch one company" in page
-    assert "every Sunday" in page and "one-click stop" in page
+    assert 'class="lcard' not in page and "Watch the founders" in page and "Watch one company" in page
+    assert 'id="hq"' in page and 'class="onecap"' in page, "the search sits in the one-company row"
+    assert "every Sunday" not in page and "/letter/" not in page and "one-click stop" in page
     assert 'class="pro">Members' not in page and "trial" not in page.lower(), "no members mark: everything on the page is free"
     assert "Paul Gu bought $1.3M of Upstart" in page and "1.33% &rarr; 1.38%" in page and "Upstart on Founder Led Equities" in page, "the sample is the email as it arrives"
     assert 'href="/alerts/">Alerts' in page, "the page carries the nav with itself in it"

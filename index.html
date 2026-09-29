@@ -161,7 +161,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .herostats{margin-top:30px;padding:22px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:row;flex-wrap:wrap;gap:20px 44px;align-items:flex-start}
 /* the tape excerpt on the home page: no controls; the full tape a click away */
 .excerpt .tapectl,.excerpt .actstats{display:none}
-/* THE WEEKLY LETTER'S BAND: one line, the promise on the left, the field
+/* THE ASK'S BAND: one line, the promise on the left, the field
    and Send on the right, inside the same column as the tables, with its
    own air above the footer. No weekday (a send is a week, not a
    calendar), no price. */
@@ -706,16 +706,16 @@ footer .mono{font-family:var(--ui);font-size:var(--fs-s)}   /* the dates in the 
 /* THE ASK IS A PANEL (design b slice 2, 2026-09-29): the ink slab left with the paper
    design; the promise sits on the site's own panel with the accent button. */
 .homecap{max-width:var(--max);margin:36px auto 0;padding:0 clamp(20px,3.5vw,48px);color:var(--ink)}
-.homecap .wrap.capin{max-width:none;background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:40px 32px 36px}
+.homecap .wrap.capin{max-width:none;background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:26px 32px}
 .homecap .hs-msg:empty{display:none}
-.homecap .capin{display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px}
-.caph{font-family:var(--ui);font-size:32px;font-weight:700;letter-spacing:-.02em;max-width:26ch;line-height:1.2}
-.homecap .homesub{display:flex;gap:10px}
-.homecap input{width:min(320px,70vw);height:48px;border:1px solid var(--pline);background:var(--white);color:var(--ink);border-radius:var(--r-s);padding:0 16px;font:inherit;font-size:var(--fs-b);outline:none}
-.homecap button{height:48px;padding:0 24px;background:var(--accent);color:var(--white);border:0;border-radius:var(--r-s);font-family:var(--ui);font-weight:600;font-size:var(--fs-m);cursor:pointer}
+.homecap .capin{display:flex;flex-direction:row;align-items:center;justify-content:space-between;text-align:left;gap:14px 28px;flex-wrap:wrap}
+.caph{font-family:var(--ui);font-size:var(--fs-xl);font-weight:700;letter-spacing:-.02em;max-width:30ch;line-height:1.25;flex:1 1 320px}
+.homecap .homesub{display:flex;gap:10px;flex:none}
+.homecap input{width:min(300px,60vw);height:44px;border:1px solid var(--pline);background:var(--white);color:var(--ink);border-radius:var(--r-s);padding:0 16px;font:inherit;font-size:var(--fs-b);outline:none}
+.homecap button{height:44px;padding:0 20px;background:var(--accent);color:var(--white);border:0;border-radius:var(--r-s);font-family:var(--ui);font-weight:600;font-size:var(--fs-m);cursor:pointer}
 .homecap button:hover{background:var(--blue-d)}
-.homecap .hs-msg{font-size:var(--fs-m);color:var(--mut)}
-.capfine{font-size:var(--fs-xs);color:var(--faint)}
+.homecap .hs-msg{font-size:var(--fs-m);color:var(--mut);flex-basis:100%}
+.capfine{font-size:var(--fs-xs);color:var(--faint);flex-basis:100%;margin-top:-4px}
 .capfine a{color:var(--ink)}
 @media(max-width:900px){.stakecards{grid-template-columns:1fr}.mrow{flex-direction:column;gap:26px}}
 @media(max-width:640px){.fwbadge{display:none}.hero h1{font-size:34px}}
@@ -762,7 +762,6 @@ table.tape .kd .detail.tdt{color:var(--faint)}
   <div class="topnav">
     <a href="/tape/">Activity</a>
     <a href="/companies/">Companies</a>
-    <a href="/letter/">Letter</a>
     <a href="/alerts/">Alerts</a>
     <a href="about.html">About</a>
     <div class="navsearch" id="navsearch">
@@ -836,12 +835,13 @@ table.tape .kd .detail.tdt{color:var(--faint)}
   <!-- ONE ASK, AFTER TRUST: the site's core event as a subscription. The
        sender is ops (the nightly pipeline knows every move); this form is
        the same double-opt-in list as ever (/api/subscribe). -->
-  <div class="caph">An email within minutes of any founder&rsquo;s stake moving more than 1%.</div>
+  <div class="caph">Know within minutes when a founder&rsquo;s stake moves.</div>
   <form class="homesub" id="homesub" onsubmit="return subscribeHome(event)">
     <input type="email" id="homeemail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email">
     <button type="submit">Watch the founders &rarr;</button>
   </form>
   <span class="hs-msg" id="homemsg"></span>
+  <div class="capfine">An email within minutes of any founder&rsquo;s stake moving more than 1%. Free. No account.</div>
 </div></section>
 
 

@@ -69,7 +69,7 @@ def test_no_colour_is_written_in_hex_outside_the_tokens():
 def test_the_display_face_is_retired():
     """one sans; a heading is the same face at 700. --disp would silently
     resolve to nothing and fall back to the browser's serif."""
-    for name in TEMPLATES + ["ops/build_company_pages.py", "ops/letter.py", "assets/company-page.js"]:
+    for name in TEMPLATES + ["ops/build_company_pages.py", "assets/company-page.js"]:
         assert "var(--disp)" not in _read(name), f"{name} still asks for the display face"
 
 

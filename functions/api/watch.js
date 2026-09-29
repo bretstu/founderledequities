@@ -55,7 +55,7 @@ export async function onRequestPost({ request, env }) {
     await env.HITS.prepare("INSERT INTO watches (email, tk, ceo, confirmed, token, created) VALUES (?1, ?2, ?3, 0, ?4, ?5)")
       .bind(email, tk, ceo, t, now).run();
   }
-  // every watch confirms by one click, like the letter
+  // every watch confirms by one click
   const link = `${site(env)}/api/watch?confirm=${t}`;
   const what = tk === "FOUNDERS"
     ? "an email when any founder's stake moves 1% or more, usually within minutes of the SEC filing"

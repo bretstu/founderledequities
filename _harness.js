@@ -116,7 +116,7 @@ const P=runPage();
   assert(idxsrc.includes('if($("#tbody")){renderStatus();loadData();}'),
     "the stamped home page loads no CSVs: the machinery boots only where its anchors exist");
   assert(idxsrc.includes('<a href="/tape/">Activity</a>')&&idxsrc.includes('<a href="/companies/">Companies</a>')&&!idxsrc.includes('>Scoreboard<')&&!idxsrc.includes('>Performance<'),
-    "the nav is Activity · Companies · Letter · Alerts · About");
+    "the nav is Activity · Companies · Alerts · About (the letter left 2026-09-29)");
   assert(!/class="blurred"/.test(els["#actwrap"]._html),"no blur class from the old gate anywhere: a sealed figure is a data-shape placeholder");
 
   // ---- THE TAPE: a weather line, the controls, one table grouped by kind ----
@@ -506,7 +506,7 @@ const P=runPage();
    assert(!/chief executive/i.test(labels),"no label on the page says chief executive: "+(labels.match(/.{0,40}chief executive.{0,40}/i)||[""])[0]);
    assert(idx.includes('<h1 id="thesis">What every CEO owns of the company they run.</h1>'),"the hero says what the site is, the same for every reader");
    assert(!idx.includes('See what moved')&&!idx.includes('Go Pro &middot; $15/mo</a>')&&!idx.includes("herobtns"),"no buttons on the fold: the sentence is the door, Pro is the header's");
-   assert(!idx.includes('id="thisweek"'),"the fold is headline, method line, three numbers, the table: the week's sentence lives on /tape/ and in the letter");
+   assert(!idx.includes('id="thisweek"'),"the fold is headline, method line, three numbers, the table: the week's sentence lives on /tape/");
    assert(!idx.includes('<a href="/pro/">Pro</a>')&&!idx.includes("Weekly tape, free")&&!idx.includes("navwatches"),"the header is where you are: Tape · Companies · Method and one button");
    assert(idx.includes("Filings through ")&&!idx.includes("Latest filing read"),"the dates are the footer's, not the hero's");
    assert(!idx.includes("Everything else is Pro."),"no pricing line on the fold: the one Pro hint on / is the scoreboard's count line");

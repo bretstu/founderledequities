@@ -557,7 +557,7 @@ def neighbours_html(tk, ranked, sp, k=2):
     """KEEP READING (design v4): a labeled row of chips, each a sentence a
     reader might follow -- the tape, up to two neighbouring founders' own
     stake sentences (the cross-links the old list carried), the founder-led
-    screen with its count, and the letter. Every page gets the row; only
+    screen with its count, and the alerts. Every page gets the row; only
     the neighbour chips need the ranked list."""
     chips = ['<a href="/tape/">Founders who bought this week &rarr;</a>']
     if ranked:
@@ -575,7 +575,7 @@ def neighbours_html(tk, ranked, sp, k=2):
             else:
                 chips.append(f'<a href="/company/{html.escape(t)}/">{html.escape(co)} &rarr;</a>')
         chips.append(f'<a href="/screens/founder-led/">All {len(ranked):,} founder-led companies &rarr;</a>')
-    chips.append('<a href="/letter/">The weekly letter &rarr;</a>')
+    chips.append('<a href="/alerts/">Get an alert when a founder moves &rarr;</a>')
     return f'<div class="cmore"><div class="k">Keep reading</div><div class="chiprow">{"".join(chips)}</div></div>'
 
 
@@ -1195,13 +1195,6 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     companies_index(index_rows, founders, sp, out_dir, topnav, css_v)
     urls.append("https://founderledequities.com/companies/")
     urls.extend(screen_pages(os.path.join(out_dir, "universe.csv"), founders, prices, out_dir, topnav, css_v, index_rows, sp))
-    # the letter's archive (ops/letter.py publish writes the pages; the sitemap lists them here)
-    import glob as _glob
-    issues = [p for p in sorted(_glob.glob(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "weekly", "letter-*.md")))
-              if re.search(r"^sent:\s*\S", open(p, encoding="utf-8").read(2000), re.M)]   # sent issues only
-    if issues:
-        urls.append("https://founderledequities.com/letter/")
-        urls.extend(f"https://founderledequities.com/letter/{os.path.basename(p)[7:-3]}/" for p in issues)
     if os.path.exists(os.path.join(out_dir, "alerts", "index.html")):
         urls.append(f"{SITE}/alerts/")
     with open(os.path.join(out_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:

@@ -3,7 +3,7 @@
 #
 # ONE TREE, NO GATE (the paid tier left the code base 2026-09-23). public/
 # carries the pages and every data file at the root; functions/api/ holds
-# the watch and letter workers and nothing stands in front of the data.
+# the watch and subscribe workers and nothing stands in front of the data.
 #
 # ONE REFRESH, ONE LIST. The nightly rebuilds the whole universe into the
 # root files (panel.csv holds every member). The S&P list rides along as a
@@ -100,6 +100,8 @@ cp index.html about.html public/   # the about template is replaced by its built
 # text while a font is on its way (font-display: swap).
 mkdir -p public/fonts && cp fonts/*.woff2 public/fonts/
 [ -f terms.html ] && cp terms.html public/
+# /letter/* went to /alerts/ on 2026-09-29 (the letter left the site; its indexed addresses still land somewhere)
+[ -f _redirects ] && cp _redirects public/
 [ -f llms.txt ] && cp llms.txt public/    # what the site is, for the models that cite it
 # the universe page: every member, the snapshot date, the rules. The About
 # page has linked to it since the promotion; it deploys now.
@@ -120,15 +122,11 @@ fi
 cp -r site-data/. public/
 # (2b, the weekly briefing, ops/weekly.py, retired 2026-09-15: its week-over-week
 #  section lives in ops/moves.py stakes, computed from the record, no snapshot)
-# ---- 2c. THE WEEK'S LETTER AND THREAD ARE DRAFTED ON SATURDAY, NEVER SENT,
-# BY THE PIPELINE (2026-09-15; Mondays before). EDGAR accepts no filings at
-# the weekend, so by Saturday morning the week (Monday to Friday) is
-# complete and the letter says everything it can. It is drafted to
-# weekly/letter-<date>.md with a preview beside it; a person edits it and
-# runs ops/send-tape.sh on Monday. An existing draft is never overwritten
-# (an edit must survive a redeploy). The thread (drafts/moves-week.md) and
-# the trajectories (drafts/stakes-month.md) are written beside it, every
-# kind of filing, ranked by the move of the stake (ops/moves.py).
+# ---- 2c. THE WEEK'S DRAFTS, SATURDAY (2026-09-29: the letter left the pipeline;
+# the site's own letter is over and Substack carries any future one). EDGAR
+# accepts no filings at the weekend, so by Saturday the week is complete. The
+# thread (drafts/moves-week.md) and the trajectories (drafts/stakes-month.md)
+# are written for a person to post from (ops/moves.py); nothing is sent.
 if [ "$(date +%u)" = "6" ]; then
   # THE PARTNERSHIP REGISTER, GENERATED FROM THE FILINGS (2026-09-15): the four
   # structured facts per chief executive, keep only what is provable, exclude
@@ -136,7 +134,6 @@ if [ "$(date +%u)" = "6" ]; then
   # effect at the next nightly, whose diff shows the same companies added or
   # dropped. About half an hour; the site is unaffected until then.
   python3 ops/partnerships_stage.py || echo "  partnerships: the stage failed; last week's register stands"
-  python3 ops/letter.py draft || echo "  letter: draft failed; the site is unaffected"
   python3 ops/moves.py week "$(date +%F)" || echo "  drafts: the week's moves failed"
   python3 ops/moves.py stakes "$(date +%F)" || echo "  drafts: the trajectories failed"
 fi
@@ -178,8 +175,6 @@ $OGPY ops/company_cards.py panel.csv "$SP_LIST" prices.csv founders.csv events.c
   || echo "  company cards: not drawn; pages keep og.png"
 if [ -d og ] && [ -n "$(ls og 2>/dev/null)" ]; then mkdir -p public/og && cp og/*.png public/og/; fi
 python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" public/ events.csv history.csv --og og --prices price-history
-# ---- 4b. the letter: every issue in weekly/ is a page at /letter/<date>/, with the index at /letter/ (2026-09-20) ----
-python3 ops/letter.py publish public/ || echo "  letter: publish failed; the site is unaffected"
 # THE DATA HAS A VERSION. The pages fetched every CSV with no-store, so a
 # return visit re-downloaded eleven megabytes. Each fetch now carries
 # ?v=<this deploy>, so the browser and the edge cache a deploy's files

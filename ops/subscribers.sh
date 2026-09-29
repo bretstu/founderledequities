@@ -17,7 +17,7 @@ import sys,json
 d=json.load(sys.stdin); rows=(d[0].get("results") if isinstance(d,list) else d.get("results")) or []
 for r in rows: print("  " + "  ".join(f"{k}={v}" for k,v in r.items()))'; }
 WEEK=$(date -d "7 days ago" +%Y-%m-%dT00:00:00 2>/dev/null || date -v-7d +%Y-%m-%dT00:00:00)
-echo "== the letter (Resend) =="
+echo "== the Resend contacts (no letter since 2026-09-29; the list is kept) =="
 if [ -n "$RESEND_API_KEY" ]; then
   curl -s -H "Authorization: Bearer $RESEND_API_KEY" "https://api.resend.com/contacts" | python3 -c '
 import sys,json
