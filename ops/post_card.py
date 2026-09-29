@@ -16,11 +16,11 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-from company_cards import Fonts, read_series, compact, INK, MUT, FAINT, LINE, PAPER, BUY, SELL  # noqa: E402
+from company_cards import Fonts, read_series, compact, INK, MUT, FAINT, LINE, PAPER, PANEL, BUY, SELL, ACCENT, ACCENT_L  # noqa: E402
 
 W, H = 1200, 630
 KIND_WORD = {"disc": "DISCRETIONARY SALE", "plan": "PLANNED SALE", "bought": "OPEN-MARKET BUY", "sold": "SALE (plan not stated)"}
-KIND_COLOR = {"disc": SELL, "plan": MUT, "bought": BUY, "sold": SELL}
+KIND_COLOR = {"disc": SELL, "plan": SELL, "bought": BUY, "sold": SELL}   # a planned sale is a sale (2026-09-29)
 
 
 def post_kind(e) -> str:
@@ -84,8 +84,8 @@ def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_aft
     if founder:
         x = pad + d.textlength(line, font=fonts.ui(26, 500)) + 16
         bw, bh = 110, 28
-        d.rounded_rectangle((x, y + 2, x + bw, y + 2 + bh), radius=4, fill=INK)
-        d.text((x + bw / 2, y + 2 + bh / 2), "FOUNDER", font=fonts.mono(15), fill=PAPER, anchor="mm")
+        d.rounded_rectangle((x, y + 2, x + bw, y + 2 + bh), radius=bh // 2, fill=ACCENT_L)
+        d.text((x + bw / 2, y + 2 + bh / 2), "FOUNDER", font=fonts.ui(14, 600), fill=ACCENT, anchor="mm")
     # the chart, full width, in the middle band
     top, bottom = y + 56, H - 250
     if series:
@@ -99,13 +99,13 @@ def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_aft
             x = x0 + (x1 - x0) * i / max(len(pts) - 1, 1)
             yy = bottom - (bottom - top) * (c - lo) / span
             poly.append((x, yy))
-        d.polygon(poly + [(x1, bottom + 2), (x0, bottom + 2)], fill="#E9E5DB")
+        d.polygon(poly + [(x1, bottom + 2), (x0, bottom + 2)], fill=PANEL)
         d.line(poly, fill=INK, width=3)
         lx, ly = poly[-1]
         color = KIND_COLOR.get(kind, MUT) if kind else INK
         d.ellipse((lx - 8, ly - 8, lx + 8, ly + 8), fill=color)
-        d.text((x0, bottom + 12), pts[0][0][:4], font=fonts.mono(15), fill=FAINT)
-        d.text((x1, bottom + 12), pts[-1][0][:4], font=fonts.mono(15), fill=FAINT, anchor="ra")
+        d.text((x0, bottom + 12), pts[0][0][:4], font=fonts.ui(15, 500), fill=FAINT)
+        d.text((x1, bottom + 12), pts[-1][0][:4], font=fonts.ui(15, 500), fill=FAINT, anchor="ra")
     # the trade line and the stake, above the title overlay
     f = lambda x: f"{x:.3f}%" if x < 1 else f"{x:.2f}%"  # noqa: E731
     color = KIND_COLOR.get(kind, MUT)
@@ -114,9 +114,9 @@ def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_aft
         # a card with no stake to show carries the trade line larger,
         # where the stake would sit, so the card reads whole
         if pct_after is None:
-            d.text((pad, H - 176), kl, font=fonts.mono(34), fill=color)
+            d.text((pad, H - 176), kl, font=fonts.ui(34, 600), fill=color)
         else:
-            d.text((pad, H - 200), kl, font=fonts.mono(24), fill=color)
+            d.text((pad, H - 200), kl, font=fonts.ui(24, 600), fill=color)
     if pct_after is not None or pct_before is not None:
         if pct_before is not None and pct_after is not None and abs(pct_before - pct_after) > 0.0005 and kind:
             stake = f"{f(pct_before)}  →  {f(pct_after)}"
@@ -124,7 +124,7 @@ def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_aft
             stake = f"Owns {f(pct_after)}"
         else:
             stake = ""
-        d.text((pad, H - 166), stake, font=fonts.disp(72, 500), fill=INK)
+        d.text((pad, H - 166), stake, font=fonts.disp(72, 700), fill=ACCENT)
     im.save(out, "PNG", optimize=True)
     return out
 

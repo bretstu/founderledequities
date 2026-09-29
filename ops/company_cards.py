@@ -38,9 +38,11 @@ from og_image import money  # noqa: E402  (one formatter, shared)
 
 W, H = 1200, 630
 # the site's tokens: paper, ink as the accent, green for bought
-INK, BLUE, MUT, FAINT, LINE, PANEL = "#0C0D0E", "#0C0D0E", "#5D6167", "#8A8E94", "#E0DBCF", "#FBFAF6"
-PAPER, BUY = "#F3F0E8", "#1F6B3A"
-SELL = "#C22A2A"
+# THE CARDS WEAR DESIGN B (2026-09-29): the site's tokens (index.html :root), one
+# palette for the og cards, the post cards, the site og.png and the X banner
+INK, BLUE, MUT, FAINT, LINE, PANEL = "#0F172A", "#4F46E5", "#64748B", "#94A3B8", "#DDE2EA", "#E9EDF3"
+PAPER, BUY = "#FCFCFD", "#059669"
+SELL, ACCENT, ACCENT_L = "#DC2626", "#4F46E5", "#EEF2FF"
 MOVING = {"P", "S"}
 
 
@@ -138,18 +140,19 @@ class Fonts:
             f = self.ImageFont.truetype(os.path.join(self.dir, name), size)
             if weight is not None:
                 try:
-                    f.set_variation_by_axes([weight] if name.startswith("Hanken")
-                                            else [min(96, max(12, size)), weight, 100])
+                    # inter's axes run optical size (14..32), weight
+                    f.set_variation_by_axes([min(32, max(14, size)), weight])
                 except Exception:  # noqa: BLE001
                     pass
             self._cache[key] = f
         return self._cache[key]
 
-    def disp(self, s, w=650):
-        return self._get("BricolageGrotesque[opsz,wdth,wght].ttf", s, w)
+    # one face (2026-09-29): a heading is inter at 700, text is inter at 500
+    def disp(self, s, w=700):
+        return self._get("InterVariable.ttf", s, max(w, 700))
 
     def ui(self, s, w=500):
-        return self._get("HankenGrotesk[wght].ttf", s, w)
+        return self._get("InterVariable.ttf", s, w)
 
     def mono(self, s):
         return self._get("IBMPlexMono-Medium.ttf", s)

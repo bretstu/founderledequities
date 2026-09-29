@@ -101,9 +101,9 @@ export async function onRequestPost({ request, env }) {
     const blocks = b.items.map(({ e }) => `
 <h1 style="font-weight:700;letter-spacing:-.02em;font-size:24px;line-height:1.2;margin:16px 0 14px;">${esc(short(e))}.</h1>
 ${Array.isArray(e.facts) && e.facts.length
-  ? `<table role="presentation" cellpadding="0" cellspacing="0" style="font-size:14px;line-height:1.5;margin:0 0 16px;border-collapse:collapse;">${e.facts.map(([k, v]) => `<tr><td style="padding:2px 18px 2px 0;color:#94A3B8;white-space:nowrap;vertical-align:top;">${esc(k)}</td><td style="padding:2px 0;color:#1A1A1A;">${esc(v)}</td></tr>`).join("")}</table>`
+  ? `<table role="presentation" cellpadding="0" cellspacing="0" style="font-size:14px;line-height:1.5;margin:0 0 16px;border-collapse:collapse;">${e.facts.map(([k, v]) => `<tr><td style="padding:2px 18px 2px 0;color:#94A3B8;white-space:nowrap;vertical-align:top;">${esc(k)}</td><td style="padding:2px 0;color:#0F172A;">${esc(v)}</td></tr>`).join("")}</table>`
   : `<p style="font-size:15px;line-height:1.6;margin:0 0 16px;">${esc(e.body || `${dayLine(e)} ${stakeLine(e)}`.trim())}</p>`}
-<p style="font-size:15px;line-height:1.5;margin:0 0 22px;"><a href="${site(env)}/company/${esc(e.tk)}/" style="color:#1A1A1A;font-weight:bold;text-decoration:none;">${esc(e.company || e.tk)} on Founder Led Equities &rarr;</a></p>`).join("");
+<p style="font-size:15px;line-height:1.5;margin:0 0 22px;"><a href="${site(env)}/company/${esc(e.tk)}/" style="color:#0F172A;font-weight:bold;text-decoration:none;">${esc(e.company || e.tk)} on Founder Led Equities &rarr;</a></p>`).join("");
     const html = `<!doctype html><html><body style="margin:0;padding:0;background:#FCFCFD;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FCFCFD;"><tr><td align="center" style="padding:20px 10px;">
 <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#E9EDF3;border:1px solid #D9DFE8;border-radius:12px;font-family:Inter,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:#0F172A;">

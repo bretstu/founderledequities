@@ -16,6 +16,8 @@ import csv
 import os
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 
 def numbers(panel_p, sp_p, prices_p, founders_p):
     """The hero's numbers over the whole universe (one tree, 2026-09-23);
@@ -84,34 +86,21 @@ def money(v):
 def draw(n, out, fonts_dir):
     from PIL import Image, ImageDraw, ImageFont
     W, H = 1200, 630
-    INK, BLUE, MUT, FAINT, LINE = "#0C0D0E", "#0C0D0E", "#5D6167", "#8A8E94", "#E0DBCF"
+    # design b (2026-09-29): the company cards' palette and faces
+    from company_cards import Fonts, INK, BLUE, MUT, FAINT, LINE, PAPER, PANEL
+    F = Fonts(fonts_dir)
+    disp, ui, mono = F.disp, F.ui, F.mono
 
-    def font(name, size, weight=None):
-        f = ImageFont.truetype(os.path.join(fonts_dir, name), size)
-        if weight is not None:
-            try:
-                # Bricolage's axes run optical size, weight, width -- in that
-                # order; Hanken has weight alone
-                f.set_variation_by_axes([weight] if name.startswith("Hanken")
-                                        else [min(96, max(12, size)), weight, 100])
-            except Exception:  # noqa: BLE001 - a static font has no axes
-                pass
-        return f
-
-    disp = lambda s, w=650: font("BricolageGrotesque[opsz,wdth,wght].ttf", s, w)
-    ui = lambda s, w=500: font("HankenGrotesk[wght].ttf", s, w)
-    mono = lambda s: font("IBMPlexMono-Medium.ttf", s)
-
-    im = Image.new("RGB", (W, H), "#F3F0E8")
+    im = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(im)
     # wordmark
     d.text((72, 60), "Founder Led", font=disp(30, 700), fill=INK)
     wm = d.textlength("Founder Led ", font=disp(30, 700))
     d.text((72 + wm, 60), "Equities", font=disp(30, 700), fill=INK)
-    d.text((W - 72, 68), "founderledequities.com", font=mono(18), fill=FAINT, anchor="ra")
+    d.text((W - 72, 68), "founderledequities.com", font=ui(18, 500), fill=FAINT, anchor="ra")
 
     # the purpose, the hero's own sentence
-    big = disp(74, 650)
+    big = disp(72, 700)
     y = 150
     d.text((72, y), "What every ", font=big, fill=INK)
     x = 72 + d.textlength("What every ", font=big)
@@ -122,19 +111,19 @@ def draw(n, out, fonts_dir):
     d.text((72, y + 190), "Computed from their SEC filings, never estimated.", font=ui(24, 500), fill=MUT)
 
     # the hero's stat strip, the same three numbers in the same order
-    d.line((72, 452, W - 72, 452), fill=LINE, width=2)
+    d.rounded_rectangle((60, 440, W - 60, 552), radius=14, fill=PANEL)
     facts = [(f"{n['above5']}", "CEOs own more than 5%", BLUE),
              (f"{n['led']}", "Founder-led companies", INK),
              (money(n["led_value"]), "Held by those founders", INK),
              (f"{n['share']}%", "Of all CEO wealth", INK)]
-    x = 72
+    x = 84
     for val, lab, col in facts:
-        d.text((x, 474), val, font=disp(34, 700), fill=col)
-        d.text((x, 522), lab.upper(), font=mono(13), fill=MUT)
-        x += max(d.textlength(val, font=disp(34, 700)), d.textlength(lab.upper(), font=mono(13))) + 56
+        d.text((x, 462), val, font=disp(34, 700), fill=col)
+        d.text((x, 510), lab.upper(), font=ui(12, 600), fill=MUT)
+        x += max(d.textlength(val, font=disp(34, 700)), d.textlength(lab.upper(), font=ui(12, 600))) + 56
     # the footer: how much is measured, and where it comes from
     d.text((72, 578), f"{n['total']:,} US public companies · every number computed from SEC EDGAR, never estimated",
-           font=mono(14), fill=FAINT)
+           font=ui(14, 500), fill=FAINT)
     im.save(out, "PNG", optimize=True)
     return out
 

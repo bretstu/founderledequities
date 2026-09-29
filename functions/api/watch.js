@@ -30,11 +30,12 @@ async function send(env, to, subject, text, html) {
   });
 }
 
+// design b (2026-09-29): the confirm and stop pages in the site's look
 function shell(title, body, fine) {
-  return `<div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:24px;color:#141413"><p style="font-size:17px;line-height:1.45;margin:0 0 12px">${title}</p>${body}<p style="font-size:12px;color:#8a8578;margin-top:20px">${fine}</p></div>`;
+  return `<div style="font-family:Inter,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;max-width:520px;margin:32px auto;padding:28px;background:#E9EDF3;border:1px solid #D9DFE8;border-radius:12px;color:#0F172A"><p style="font-size:18px;font-weight:600;letter-spacing:-.01em;line-height:1.4;margin:0 0 12px">${title}</p>${body}<p style="font-size:12px;line-height:1.5;color:#94A3B8;margin:18px 0 0">${fine}</p></div>`;
 }
 function button(link, label) {
-  return `<p style="margin:18px 0"><a href="${link}" style="background:#141413;color:#faf9f5;padding:10px 18px;text-decoration:none;font-size:14px">${label}</a></p>`;
+  return `<p style="margin:18px 0"><a href="${link}" style="display:inline-block;background:#4F46E5;color:#FFFFFF;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600">${label}</a></p>`;
 }
 
 export async function onRequestPost({ request, env }) {
@@ -63,7 +64,7 @@ export async function onRequestPost({ request, env }) {
   await send(env, email, `Confirm: watch ${ceo || tk}`,
     `One click and you're watching ${ceo || tk}${tk === "FOUNDERS" ? "" : ` (${tk})`}: ${what}.\n\n${link}\n\nIf you didn't ask for this, ignore it and nothing happens.`,
     shell(`One click and you're watching ${ceo || tk}.`,
-      `<p style="font-size:14px;line-height:1.5;color:#5F5B55;margin:0;">${what.charAt(0).toUpperCase() + what.slice(1)}.</p>${button(link, "Confirm &rarr;")}`,
+      `<p style="font-size:14px;line-height:1.5;color:#64748B;margin:0;">${what.charAt(0).toUpperCase() + what.slice(1)}.</p>${button(link, "Confirm &rarr;")}`,
       "If you didn't ask for this, ignore it and nothing happens."));
   return json({ ok: true, watching: false, message: "Check your inbox: one click confirms it." });
 }

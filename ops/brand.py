@@ -15,29 +15,20 @@ from og_image import numbers, money  # noqa: E402
 
 
 def fonts(fonts_dir):
-    from PIL import ImageFont
-
-    def font(name, size, weight=None):
-        f = ImageFont.truetype(os.path.join(fonts_dir, name), size)
-        if weight is not None:
-            try:
-                f.set_variation_by_axes([weight] if name.startswith("Hanken")
-                                        else [min(96, max(12, size)), weight, 100])
-            except Exception:  # noqa: BLE001
-                pass
-        return f
-    return (lambda s, w=650: font("BricolageGrotesque[opsz,wdth,wght].ttf", s, w),
-            lambda s: font("IBMPlexMono-Medium.ttf", s))
+    # design b (2026-09-29): the company cards' faces; the mono slot is inter at 500
+    from company_cards import Fonts
+    F = Fonts(fonts_dir)
+    return (F.disp, lambda s: F.ui(s, 500))
 
 
-INK, BLUE, MUT, FAINT, LINE = "#0C0D0E", "#0C0D0E", "#5D6167", "#8A8E94", "#E0DBCF"
+from company_cards import INK, BLUE, MUT, FAINT, LINE, PAPER  # noqa: E402
 
 
 def banner(n, out, fonts_dir):
     from PIL import Image, ImageDraw
     disp, mono = fonts(fonts_dir)
     W, H = 1500, 500
-    im = Image.new("RGB", (W, H), "#F3F0E8")
+    im = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(im)
     # the thesis, top left, clear of the avatar (which sits bottom-left)
     big = disp(64, 650)
