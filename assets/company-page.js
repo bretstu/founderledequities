@@ -591,8 +591,8 @@ function heldBlock(r,notCounted){
   const pct=(r&&r.pct!=null)?r.pct.toFixed(2)+"%":"";
   const hasof=order.length>1?"each class as its filings last stated it":`as of the ${esc(mon(held.map(x=>x.as_of||"").sort().pop()||""))} filing`;
   return `<section class="csec chold" id="chold">
-    <div class="cshead"><h2>How the stake is held</h2><div class="hasof">${hasof}</div></div>
-    <div class="hbox"><div class="hhead"><div class="hveh"></div><div class="hsh">SHARES</div><div class="hpc">OF THE STAKE</div></div>${parts}<div class="htot"><div class="htl">THE STAKE</div><div class="hsh">${fmt(want)}</div><div class="hpc">${pct}</div></div></div>
+    <div class="cshead"><h2>How the stake is held</h2><div class="hlbls" title="${hasof}"><span class="hsh">SHARES</span><span class="hpc">OF THE STAKE</span></div></div>
+    <div class="hbox">${parts}<div class="htot"><div class="htl">THE STAKE</div><div class="hsh">${fmt(want)}</div><div class="hpc">${pct}</div></div></div>
     ${notCounted?`<div class="hsum">${notCounted}</div>`:""}
   </section>`;
 }
