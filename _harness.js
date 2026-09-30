@@ -112,7 +112,7 @@ const P=runPage();
     "both previews exit the same way: heading left, the full page right");
   assert(idxsrc.includes('id="homesub"')&&idxsrc.includes("/api/subscribe")&&idxsrc.includes("within minutes of any founder")&&idxsrc.includes("more than 1%")&&idxsrc.includes("Watch the founders"),
     "one ask: an email within minutes of a founder's stake moving more than 1%");
-  assert(idxsrc.includes('excluded, not guessed'),"the method strip carries the honesty line");
+  assert(idxsrc.includes('nothing is guessed'),"the method strip carries the honesty line (reworded 2026-09-29: the page says so; no company is excluded for a footnote)");
   assert(idxsrc.includes('if($("#tbody")){renderStatus();loadData();}'),
     "the stamped home page loads no CSVs: the machinery boots only where its anchors exist");
   assert(idxsrc.includes('<a href="/tape/">Activity</a>')&&idxsrc.includes('<a href="/companies/">Companies</a>')&&!idxsrc.includes('>Scoreboard<')&&!idxsrc.includes('>Performance<'),

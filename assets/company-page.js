@@ -62,7 +62,7 @@ function band(r){
      scanning eye finds the figure. */
   const wsub=r.pct!=null?(r.price&&r.sh?`worth ${money(r.sh*r.price)} at the latest close`:"of the common shares"):"see the note below";
   const cards=`<div class="cband kpi">
-    ${stat("The stake",r.pct!=null?r.pct.toFixed(2)+"%":"&mdash;","clay",wsub,"shares held over shares outstanding, from the newest filing")}
+    ${stat("The stake",r.pct!=null?r.pct.toFixed(2)+"%":"&mdash;","clay",wsub,"shares reported held over shares outstanding, from the newest filing")}
     ${stat("Stake rank",C.rank?"#"+fmt(C.rank):"&mdash;","","by dollar value of the stake","every company on the site, ordered by what the chief executive's stake is worth at the latest close")}
     ${stat("Last sale",sv,"",ss,"the newest sale that moved the stake; exercises and same-day sell-offs that left it unchanged are not counted")}
     ${stat("Last buy",bv,"",bs,"the newest purchase that moved the stake")}
