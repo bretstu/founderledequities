@@ -460,6 +460,15 @@ def build(client, cik: int, company: str = "", ticker: str = "",
         f"{t} = {v:,.0f}" for t, v in
         sorted(led.unnamed_class.items(), key=lambda kv: -kv[1])[:3])
     rec.converted = "|".join(sorted(set(led.converted)))
+    # UNITS REPORTED AS SHARES (2026-09-29): the filer put restricted stock
+    # units in Table I as common stock, so the stake counts them from the
+    # grant; the page says so. A caution, not a problem: the figure is the
+    # filing's own, and the grade's four checks are unaffected.
+    if led.units_grants:
+        rec.graded.append(("caution",
+            f"includes restricted stock units this filer reports as shares before they vest: "
+            f"{int(led.units_in_table1):,} units granted in Table I across {led.units_grants} filing"
+            f"{'s' if led.units_grants != 1 else ''} since {led.units_first[:4]}"))
     # A SUPPLEMENT THE WALK INJECTED (fle/exclusions.py): the row says so,
     # keeps the tables' own figure beside the total, and carries the receipt.
     if led.supplemented and rec.shares is not None:

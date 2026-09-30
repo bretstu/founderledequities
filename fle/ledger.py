@@ -1068,9 +1068,36 @@ def settlements_only_in_table_ii(root, rows: list, when: str, acc: str, form: st
     return out
 
 
+# UNITS REPORTED AS COMMON STOCK (2026-09-29). Two filers of the same RSU
+# grant write it two ways: most as a derivative in Table II, titled as
+# units, where the title keeps it out of the stake until it vests; some as
+# "Common Stock" in Table I on the grant date, with only the footnote saying
+# the shares are units. The structured fields cannot tell that grant from a
+# restricted stock award (both code A, both unpriced, both common by title),
+# so the footnote is read, by pattern: unit language, and neither the words
+# of a stock award nor of a settlement (shares received when units vested
+# are shares). The count is recorded and said on the page; it changes no
+# figure, because a vest from Table I files no row, and estimating the
+# unvested remainder would be the one thing the site never does.
+UNIT_WORDS = re.compile(r"restricted\s+stock\s+units?|\bRSUs?\b|performance\s+(?:stock|share)\s+units?|\bPSUs?\b|deferred\s+stock\s+units?|\bDSUs?\b", re.I)
+AWARD_WORDS = re.compile(r"shares?\s+of\s+restricted\s+stock|restricted\s+shares?|restricted\s+stock\s+award", re.I)
+SETTLE_WORDS = re.compile(r"upon\s+(?:the\s+)?(?:vesting|settlement)|received\s+upon|issued\s+upon|settle(?:d|ment)\s+of|converted\s+into|net\s+settle|in\s+settlement", re.I)
+
+
+def units_as_common(notes: str) -> bool:
+    """A Table I acquisition whose footnote calls the shares units, and
+    neither a stock award nor the settlement of units already granted."""
+    return bool(notes) and bool(UNIT_WORDS.search(notes)) and not AWARD_WORDS.search(notes) and not SETTLE_WORDS.search(notes)
+
+
+def _footnotes(root) -> dict:
+    return {x.get("id"): " ".join((x.text or "").split()) for x in root.findall("footnotes/footnote")}
+
+
 def _rows(root, form: str, when: str, acc: str) -> list[Line]:
     """Table I in document order, then Table II's share classes."""
     out = []
+    notes = _footnotes(root)
     for tag, table in (("nonDerivativeTransaction", "I"),
                        ("nonDerivativeHolding", "I"),
                        ("derivativeTransaction", "II"),
@@ -1097,7 +1124,8 @@ def _rows(root, form: str, when: str, acc: str) -> list[Line]:
             ad = (_t(amounts, "transactionAcquiredDisposedCode") or "A").upper()[:1]
             out.append(Line(
                 title, (_t(own, "directOrIndirectOwnership") or "D").upper()[:1],
-                _t(own, "natureOfOwnership"), "",
+                _t(own, "natureOfOwnership"),
+                " ".join(notes.get(y.get("id"), "") for y in node.iter("footnoteId")),   # the row's own footnotes, whole
                 (_t(node.find("transactionCoding"), "transactionCode") or ""),
                 _num(amounts, "transactionShares") or 0.0,
                 # THE PRICE THE TRADE ACTUALLY EXECUTED AT, not a market
@@ -1380,6 +1408,9 @@ class Ledger:
     option_titles: dict = field(default_factory=dict)
     partnership_units: float = 0.0
     unit_titles: dict = field(default_factory=dict)   # {unit title: amount}, the newest statement of each (2026-09-24)
+    units_in_table1: float = 0.0     # RSUs/PSUs this filer reported as common stock on grant (2026-09-29); counted, and said
+    units_grants: int = 0
+    units_first: str = ""
     converted: list = field(default_factory=list)
     flows: Flows = field(default_factory=Flows)
 
@@ -1704,6 +1735,10 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
         for r in rows + settlements_only_in_table_ii(root, rows, when, f.get("accessionNumber") or "", form):
             if not r.code:
                 continue
+            if r.table == "I" and r.code == "A" and r.acquired and r.moved == r.moved and units_as_common(r.notes):
+                led.units_in_table1 += r.moved
+                led.units_grants += 1
+                led.units_first = min(led.units_first or when, when)
             if r.table == "II" and not is_share_class(r.security):
                 continue
             led.flows.add(r.code, r.acquired, r.moved,

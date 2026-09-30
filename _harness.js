@@ -447,7 +447,8 @@ const P=runPage();
   for(const t of ["What ownership means here",               // the definition, in words
                   "shares outstanding",                       // the denominator's source
                   "10-Q or 10-K",
-                  "have not vested are not counted",          // what does not count
+                  "Options are never counted",                // what does not count
+                  "units that have not yet vested",           // what is counted that a reader might not expect (2026-09-29)
                   "proxy statement says so",                  // who is a founder
                   "Rule 10b5-1",                              // the kinds of trade
                   "EDGAR",                                    // where the numbers come from

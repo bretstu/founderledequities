@@ -74,6 +74,10 @@ function band(r){
     :r.pct===null?(r.flags||"the record could not settle on a figure")
     :r.conf==="low"?("the site's confidence in this stake is low: "+((r.flags||"").split("\n")[0]||"the record could not settle on a figure")):"";
   const flagLine=flag?`<div class="cnot"><span class="k">Caution</span> ${esc(flag)}</div>`:"";
+  /* UNITS REPORTED AS SHARES (2026-09-29): where the walk found restricted
+     stock units filed as common stock, the number includes them from the
+     grant, and this line says so. Nothing where it did not. */
+  const unitsLine=/restricted stock units this filer reports as shares/.test((C.row&&C.row.cautions)||"")?`<div class="cnot"><span class="k">Includes</span> restricted stock units this filer reports as shares before they vest.</div>`:"";
   /* NOT COUNTED (2026-09-19; folded to one line 2026-09-24): the lines the
      register removes, behind a one-line expander -- the fact that shares
      were left out stays beside the number it qualifies, the itemised
@@ -84,7 +88,7 @@ function band(r){
   const notCounted=items.length?`<details class="cnot"><summary><span class="k">Not counted</span>${exclSh?fmt(exclSh)+" shares in ":""}${items.length} holding${items.length===1?"":"s"} the filings' own footnotes leave out</summary><div class="cnx">${items.map(x=>esc(x)).join("<br>")}</div></details>`:"";
   const heldHere=(C.held||[]).length>0;   /* the expander's home follows the section (2026-09-25) */
   if(heldHere)window.__notCounted=notCounted;
-  return cards+flagLine+(heldHere?"":notCounted);
+  return cards+flagLine+unitsLine+(heldHere?"":notCounted);
 }
 
 /* ---- the record: the price and the stake, with the trades on the line ----
