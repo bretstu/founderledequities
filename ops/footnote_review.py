@@ -12,7 +12,9 @@ neighbours before pasting.
 """
 import csv
 import datetime as dt
+import json
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -21,20 +23,55 @@ READS = os.path.join(ROOT, "universe", "footnote-reads.csv")
 REVIEWED = os.path.join(ROOT, "universe", "footnote-reviewed.csv")
 
 
+_SUFFIX = re.compile(r"\b(inc|incorporated|llc|l\.l\.c|corp|corporation|co|ltd|limited|lp|l\.p|the)\b\.?")
+_PHRASES = ("no pecuniary interest", "disclaims beneficial ownership", "disclaim beneficial ownership",
+            "except to the extent of", "pecuniary interest")
+
+
+def vehicle_key(nature: str) -> str:
+    """THE VEHICLE'S NAME, AS A NAME (2026-10-01): lower case, punctuation and
+    corporate suffixes dropped, one space. 'By Chan Zuckerberg Biohub' and
+    'By Chan Zuckerberg Biohub, Inc.' are one vehicle; 'Holdings IV' and
+    'Holdings V' are not."""
+    s = (nature or "").lower().replace("&", " and ")
+    s = re.sub(r"[^a-z0-9 ]+", " ", s)
+    s = _SUFFIX.sub(" ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def phrase_of(quote: str) -> str:
+    """the operative words of a disclaimer, so a ruling is copied only to a
+    footnote that says the same thing"""
+    q = (quote or "").lower()
+    return next((p for p in _PHRASES if p in q), "")
+
+
 def decided(reads_rows, reviewed):
-    """WHICH LINES ARE DECIDED (2026-09-20). By the line's key or its
-    filing-and-row id, as before; and BY THE FOOTNOTE'S TEXT: a reading the
-    reader copied from an identical line inherits that line's verdict, since
-    the same words got the same ruling. A founder's next filing with last
-    month's footnotes is decided the moment it is read.
+    """WHICH LINES ARE DECIDED (2026-09-20; by vehicle 2026-10-01). Three
+    tiers. By the line's key or its filing-and-row id: a person ruled on this
+    line. By the footnote's text: the reader copied an identical line, and
+    the same words got the same ruling. By the vehicle: the same owner, the
+    same vehicle name (suffixes aside), the same fresh label from the reader
+    and the same operative phrase in the quote as a line a PERSON ruled on;
+    a new filing that lists a known foundation with last month's disclaimer
+    reworded is decided the moment it is read, and a new vehicle, a changed
+    label or a changed disclaimer still asks. The reader reads every line
+    either way; only the asking is skipped.
     -> {reads key: (verdict, note, source key)}"""
     by_key = {k: v for k, v in reviewed.items()}
     by_id = {"|".join(k.split("|")[:3]): v for k, v in reviewed.items()}
-    by_content = {}
+    by_content, by_vehicle = {}, {}
     for r in reads_rows:
         v = by_key.get(r["key"]) or by_id.get("|".join(r["key"].split("|")[:3]))
-        if v and r.get("content"):
+        if not v:
+            continue
+        if r.get("content"):
             by_content.setdefault((r["content"], r["label"]), (v, r["key"]))
+        if "inherited" in (v.get("note") or ""):
+            continue                      # only a person's own ruling seeds the vehicle tier
+        vk = vehicle_key(r.get("nature"))
+        if vk and r.get("direct", "").upper() == "I":
+            by_vehicle.setdefault((r.get("owner_cik"), vk, r["label"], phrase_of(r.get("quote"))), (v, r["key"]))
     out = {}
     for r in reads_rows:
         v = by_key.get(r["key"]) or by_id.get("|".join(r["key"].split("|")[:3]))
@@ -44,6 +81,12 @@ def decided(reads_rows, reviewed):
         c = by_content.get((r.get("content"), r["label"]))
         if c:
             out[r["key"]] = (c[0]["verdict"], c[0].get("note", "") + " (inherited)", c[1])
+            continue
+        vk = vehicle_key(r.get("nature"))
+        if vk and r.get("direct", "").upper() == "I":
+            c = by_vehicle.get((r.get("owner_cik"), vk, r["label"], phrase_of(r.get("quote"))))
+            if c:
+                out[r["key"]] = (c[0]["verdict"], (c[0].get("note", "") + " (inherited by vehicle)").strip(), c[1])
     return out
 
 
@@ -193,17 +236,41 @@ def main(argv):
         rows = [r for r in rows if r["key"] not in dec]
     if "--summary" in argv:
         # THE NIGHTLY'S LINE (2026-09-20): how many need a person, written to
-        # drafts/ and mailed when there are any
+        # drafts/ and mailed when there are any. MAILED ON CHANGE (2026-10-01):
+        # the watcher deploys during the day, so the mail goes only when the
+        # set of lines waiting differs from the last mail; a question is asked
+        # once. The mail also lists what was copied without asking, by vehicle,
+        # so an inheritance is seen and can be overruled with --reviewed ... no.
         out = [f"# Footnotes to review · {dt.date.today().isoformat()}", ""]
+        inherited = [(k, v) for k, v in dec.items() if "inherited by vehicle" in v[1]]
         for r in sorted(rows, key=lambda r: (r["ticker"], -float(r["shares"] or 0))):
             out.append(f"- {r['ticker']} {r['ceo']} [{r['label']}] {r['security'][:24]} {r['direct']} {r['nature'][:40]!r} {float(r['shares'] or 0):,.0f}")
             out.append(f"  \"{r['quote'][:240]}\"")
             out.append(f"  ok:  python3 ops/footnote_review.py --reviewed '{r['key']}' ok")
             out.append(f"  no:  python3 ops/footnote_review.py --reviewed '{r['key']}' no")
+        if inherited:
+            byk = {r["key"]: r for r in allrows}
+            out += ["", f"# Copied without asking, by vehicle: {len(inherited)}", ""]
+            for k, v in sorted(inherited):
+                r = byk.get(k, {})
+                out.append(f"- {r.get('ticker', '')} {r.get('nature', '')[:50]!r} {float(r.get('shares') or 0):,.0f} -> {v[0]} (from {v[2]})")
+                out.append(f"  overrule: python3 ops/footnote_review.py --reviewed '{k}' no")
         os.makedirs(os.path.join(ROOT, "drafts"), exist_ok=True)
         open(os.path.join(ROOT, "drafts", "footnotes-to-review.md"), "w", encoding="utf-8").write("\n".join(out) + "\n")
-        print(f"  footnotes: {len(rows)} line(s) to review" + (" (drafts/footnotes-to-review.md)" if rows else ""))
+        print(f"  footnotes: {len(rows)} line(s) to review" + (" (drafts/footnotes-to-review.md)" if rows else "")
+              + (f", {len(inherited)} copied by vehicle" if inherited else ""))
+        mailed_p = os.path.join(ROOT, "drafts", "footnotes-mailed.json")
+        pending = sorted(r["key"] for r in rows) + sorted("~" + k for k, _v in inherited)
+        last = []
+        try:
+            last = json.load(open(mailed_p, encoding="utf-8"))
+        except Exception:  # noqa: BLE001 - no record yet
+            last = []
+        if rows and pending == last and "--force-mail" not in argv:
+            print("  (not mailed: the same lines as last time)")
+            rows = []
         if rows:
+            json.dump(pending, open(mailed_p, "w", encoding="utf-8"))
             try:
                 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
                 from live import send_mail

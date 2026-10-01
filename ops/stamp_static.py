@@ -222,6 +222,13 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
     else:
         fw = '<div class="fwempty">A quiet week on the tape. <a href="/tape/">The full record</a> is a click away.</div>'
     page = page.replace('<div class="fwrows" id="fwrows"></div>', f'<div class="fwrows" id="fwrows">{fw}</div>', 1)
+    # THE SUB-LINE SAYS THE WINDOW (2026-10-01): the section is a rolling window
+    # (7 days, widened to 14 then 30 on a quiet week), not a calendar week, and
+    # its sub-line says which it used, so a Wednesday showing last Thursday's
+    # filing is not a surprise.
+    span = {7: "seven days", 14: "two weeks", 30: "month"}.get(days, f"{days} days")
+    page = page.replace("The three biggest founder moves, by the size of the trade",
+                        f"The three biggest founder moves of the last {span}, by the size of the trade", 1)
     # THE THREE LARGEST FOUNDER STAKES, BY VALUE: the cards are the home
     # page's authority flowing to the flagship pages.
     cards = []
