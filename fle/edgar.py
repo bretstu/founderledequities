@@ -8,6 +8,7 @@ number after EDGAR has moved on.
 """
 from __future__ import annotations
 
+import gzip
 import hashlib
 import html
 import json
@@ -158,6 +159,35 @@ def html_to_text(raw: str) -> str:
     text = html.unescape(text)
     return _WS.sub(" ", text).strip()
 
+# THE BIG DOCUMENTS ARE STORED PACKED (2026-10-07). The cache held 230 GB,
+# and 97% of it was inline-XBRL 10-K and 10-Q documents, 1 to 10 MB each,
+# fetched once per company per quarter for the cover's share count and then
+# read again only on a full walk. Inline XBRL is repetitive text and gzips
+# ten to twenty times. A body over GZIP_FROM bytes is written gzipped and
+# every read sniffs the first two bytes, so a packed file and a plain one
+# are the same document to the caller and the path (the URL's hash) does
+# not change. Form 4s, under the threshold, are stored as before: the hot
+# path pays nothing. ops/cache_pack.py packs what is already on disk.
+GZIP_FROM = 64 * 1024
+_GZ_MAGIC = b"\x1f\x8b"
+
+
+def _read_cached(path: str) -> str:
+    with open(path, "rb") as fh:
+        raw = fh.read()
+    if raw[:2] == _GZ_MAGIC:
+        raw = gzip.decompress(raw)
+    return raw.decode("utf-8", errors="replace")
+
+
+def _write_cached(path: str, text: str) -> None:
+    data = text.encode("utf-8")
+    if len(data) >= GZIP_FROM:
+        data = gzip.compress(data, compresslevel=6)
+    with open(path, "wb") as fh:
+        fh.write(data)
+
+
 class EdgarClient:
     def __init__(self, user_agent: str | None = None, cache_dir: str | None = None):
         self.user_agent = user_agent or SETTINGS.user_agent
@@ -202,8 +232,7 @@ class EdgarClient:
         if use_cache and os.path.exists(path):
             fresh_enough = (max_age is None
                             or time.time() - os.path.getmtime(path) <= max_age)
-            with open(path, "r", encoding="utf-8", errors="replace") as fh:
-                body = fh.read()
+            body = _read_cached(path)
             if fresh_enough:
                 return body
             stale_fallback = body
@@ -246,8 +275,7 @@ class EdgarClient:
                     # any reader sees the old body or the new one, never a
                     # torn half-written file.
                     tmp = f"{path}.{os.getpid()}.tmp"
-                    with open(tmp, "w", encoding="utf-8") as fh:
-                        fh.write(text)
+                    _write_cached(tmp, text)
                     os.replace(tmp, path)
                 return text
             except FileNotFoundError:
