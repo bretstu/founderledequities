@@ -44,3 +44,31 @@ def test_the_packer_keeps_the_mtime(tmp_path, monkeypatch):
     assert p.read_bytes()[:2] == _GZ_MAGIC
     assert abs(os.path.getmtime(p) - then) < 2, "the freshness clock survives the pack"
     assert gzip.decompress(p.read_bytes()) == b"y" * (GZIP_FROM * 3)
+
+
+def test_the_client_stores_a_new_big_document_packed_and_serves_it_from_the_cache(tmp_path):
+    """THE PATH EVERY FUTURE 10-Q TAKES (2026-10-07): fetched once from the
+    network, written packed, read back identical with no second request."""
+    from fle.edgar import EdgarClient
+
+    class _Resp:
+        status_code = 200
+        headers = {}
+        def __init__(self, text): self.text = text; self.content = text.encode()
+        def raise_for_status(self): pass
+
+    class _Session:
+        calls = 0
+        def get(self, url, timeout=30):
+            _Session.calls += 1
+            return _Resp("<ix:nonFraction name='dei:EntityCommonStockSharesOutstanding'>54672510</ix:nonFraction>" + "<p>cover</p>" * 20000)
+
+    c = EdgarClient(user_agent="test", cache_dir=str(tmp_path))
+    c._session = _Session()
+    url = "https://www.sec.gov/Archives/edgar/data/1430723/000117184326005359/sfbs-20260630.htm"
+    first = c.get(url)
+    assert _Session.calls == 1 and "54672510" in first and len(first) > GZIP_FROM
+    assert open(c._cache_path(url), "rb").read(2) == _GZ_MAGIC, "stored packed"
+    second = c.get(url)
+    assert _Session.calls == 1, "served from the cache, no second request"
+    assert second == first

@@ -9,7 +9,11 @@ they find with what the panel found before the change:
 
 A difference with a NEWER filing date than the panel's is a filing that
 landed since the panel was computed, not a read error; the report says
-which. The founder flag reads its documents through the same client.get,
+which. A panel row restated through a stock split carries the as-filed
+count in its caution ("... (54,672,510 as filed)"), and the fresh read is
+compared with that, since shares_outstanding returns the cover as filed
+and the panel stores it in today's shares (ServisFirst, 2026-10-07: a
+real 2-for-1, read as a doubling until the caution was consulted). The founder flag reads its documents through the same client.get,
 so a third pass inflates every packed document the sample's proxies and
 10-Ks map to and checks each one parses as text. No model call.
 
@@ -23,6 +27,7 @@ the pipeline's own freshness window, exactly as the nightly does.
 import csv
 import os
 import random
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -32,6 +37,18 @@ from fle.identity import peo_from_certification         # noqa: E402
 from fle.outstanding import shares_outstanding          # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+AS_FILED = re.compile(r"shares outstanding restated [\d.]+x through the split\(s\) since the cover page of (\S+) \(([\d,]+) as filed\)")
+
+
+def _panel_as_filed(r: dict) -> tuple[float, str]:
+    """the cover count as the filing stated it, before the panel's split
+    restatement: from the caution when there was one, the row otherwise"""
+    m = AS_FILED.search(r.get("cautions") or "")
+    if m:
+        return float(m.group(2).replace(",", "")), m.group(1)
+    return float(r["outstanding"]), r.get("outstanding_as_of") or ""
 
 
 def _norm(name: str) -> str:
@@ -76,14 +93,14 @@ def main() -> int:
         cik = int(r["cik"]); tk = r["ticker"]
         try:
             o = shares_outstanding(client, cik)
-            panel_out = float(r["outstanding"])
+            panel_out, panel_as_of = _panel_as_filed(r)
             if o.shares and abs(o.shares - panel_out) < 1:
                 den_ok += 1
-            elif o.as_of and o.as_of > (r.get("outstanding_as_of") or ""):
+            elif o.as_of and o.as_of > panel_as_of:
                 den_newer += 1
             else:
                 den_diff += 1
-                diffs.append(f"  {tk:6s} denominator: panel {panel_out:,.0f} (as of {r.get('outstanding_as_of', '')}) "
+                diffs.append(f"  {tk:6s} denominator: panel {panel_out:,.0f} as filed (as of {panel_as_of}) "
                              f"vs read {o.shares or 0:,.0f} (as of {o.as_of}, {o.form})")
         except Exception as e:  # noqa: BLE001
             errors += 1; diffs.append(f"  {tk:6s} denominator: error {e}")
