@@ -49,3 +49,10 @@ universe/footnote-reads.prev.csv
 history-state.json.before-full
 weekly-walk.log
 ops/.assemble-preview.sh
+
+# the blind-audit fixture and the scoper (2026-10-07): data, not code
+holdings.csv
+rsu_scope.csv
+rsu_scope.py
+universe-data/
+universe-parked/

@@ -19,7 +19,7 @@ This module exists for the stamped first paint (ops/stamp_static.py and
 ops/build_company_pages.py write the tape's rows into the HTML so a
 crawler sees what the script draws). tests/test_kinds.py runs the page's
 JavaScript through node over every code, label and plan the pipeline
-writes and holds this file to the same answers. ops/letter.py, ops/fact.py
+writes and holds this file to the same answers. ops/fact.py
 and ops/live.py still read purchases and sales only (their own kind_of);
 they move here next.
 """

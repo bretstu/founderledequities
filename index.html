@@ -149,7 +149,6 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    Three sizes of grey prose with a mono date wedged mid-sentence buried
    the only numbers worth reading. One quiet line of method, a hairline,
    then the figures at a size that matches their importance. */
-.hero .lede{margin-top:18px;max-width:52ch;color:var(--mut);font-size:var(--fs-m);line-height:1.55}
 /* THE HERO IN TWO COLUMNS. The sentence keeps a measure a reader can take
    in one glance (22ch); the third of the page that left empty now holds
    the three numbers that back it, with the date beneath. On a phone the
@@ -165,14 +164,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    and Send on the right, inside the same column as the tables, with its
    own air above the footer. No weekday (a send is a week, not a
    calendar), no price. */
-.hometape{margin-top:28px;padding:14px 18px;background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap}
-.hometape .homesub{display:contents}
-.hometape .hs-k{font-family:var(--ui);font-size:var(--fs-l);font-weight:500;margin-right:auto;line-height:1.25}
-.hometape .hs-msg{flex-basis:100%;font-size:var(--fs-s);color:var(--mut)}
-.hometape .hs-msg:empty{display:none}
-.hometape .hs-free{color:var(--mut);font-weight:400}
 .homesub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.homesub .hs-k{font-size:var(--fs-m);font-weight:600;margin-right:4px}
 .homesub input{font:inherit;font-size:var(--fs-m);padding:9px 12px;border:1px solid var(--pline);background:var(--white);border-radius:var(--r-s);width:220px}
 .homesub button{font:inherit;font-size:var(--fs-m);font-weight:600;color:var(--white);background:var(--accent);border:0;border-radius:var(--r-s);padding:9px 16px;cursor:pointer}
 .homesub button:hover{background:var(--blue-d)}
@@ -183,15 +175,12 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .hstat .n.hl{color:var(--ink)}
 .hstat .k{font-family:var(--ui);font-weight:600;font-size:var(--fs-2xs);letter-spacing:.06em;
   text-transform:uppercase;color:var(--faint);margin-top:9px}
-.valstat{margin-top:14px;font-size:var(--fs-b);color:var(--mut)}
-.valstat b{font-family:var(--mono);font-weight:600;color:var(--ink)}
 
 /* ---------- leaderboard ---------- */
 .shead{display:flex;justify-content:space-between;align-items:baseline;gap:18px;margin-bottom:20px;flex-wrap:wrap}
 .shead h2{font-family:var(--ui);font-weight:700;letter-spacing:-.02em;font-size:clamp(24px,2.4vw,32px);line-height:1.1}
 .shead .r{font-size:var(--fs-s);color:var(--mut)}
 .screenline{min-height:22px;font-size:var(--fs-b);line-height:22px;color:var(--mut);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.shead .shr{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:flex-end}
 /* Ten bars in the frame, the rest a scroll away -- the ranking runs the
    whole index, so cutting it at ten hid 490 companies behind nothing at
    all. Room is left on the right so the scrollbar does not sit on the
@@ -206,7 +195,6 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 /* A SECTION BODY IS A PANEL (design b slice 2, 2026-09-29): the controls and the table
    in one card; the title and its exit stay on the canvas above it. */
 .sbody{background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px 6px;margin-top:14px}
-.sbody .bsub{margin-top:0}
 /* THE LIST SCROLLS INSIDE THE CARD. Ten rows show; the rest are a scroll
    away, in the same card, with no button that unrolls two thousand rows
    onto the page. */
@@ -218,7 +206,6 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
    its edge are set the same way; a screenshot is done without a cursor on
    it. Hover deepens the tone. */
 /* (the seal, its pill and the blur CSS left with the paid tier, 2026-09-23) */
-.bsub{margin:-10px 0 18px;font-size:var(--fs-s);color:var(--mut)}
 
 /* ---------- table ---------- */
 .controls{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
@@ -249,13 +236,12 @@ table.screen td{overflow:hidden}   /* the two text columns truncate; a header ne
 .tscroll{overflow-x:hidden}
 /* /companies/: eleven columns, widths that sum to 100 */
 .w-rk{width:4%}.w-co{width:31%}.w-ceo{width:27%}.w-own{width:10%}.w-val{width:10%}.w-mc{width:10%}.w-r1{width:8%}
-.c-ltd .ltd,.c-ltf .ltd{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);white-space:nowrap}   /* as the tape's Traded and Filed columns */
+.c-ltd .ltd{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);white-space:nowrap}   /* as the tape's Traded and Filed columns */
 table.screen thead th{letter-spacing:.05em}
 table.screen thead th .arr{width:auto}
 table.screen .c-lt .lt{gap:6px}
 thead th.c,td.c{text-align:center}
 .c-ns .nsy{display:inline-block;font-weight:700;color:var(--buy);font-size:var(--fs-m)}
-.c-lt .ltv{font-family:var(--mono);font-weight:600;font-size:var(--fs-s);color:var(--ink)}
 table.screen thead th .arr{width:.7em}
 /* the screener's cells: no left inset, a gutter on every numeric column so
    a right-aligned figure sits away from the next column's words */
@@ -265,8 +251,8 @@ td.c-co .nm,td.ceo .cn{display:block;white-space:nowrap;overflow:hidden;text-ove
 td.ceo .fb{vertical-align:2px}
 .c-mc{white-space:nowrap}
 @media(max-width:980px){.h-mc,.c-mc,.w-mc{display:none}.w-co{width:24%}}
-@media(max-width:760px){.h-conf,.c-conf,.w-conf,.h-lt,.c-lt,.w-lt,.h-ltd,.c-ltd,.w-ltd,.h-ltf,.c-ltf,.w-ltf,.h-d3,.c-d3,.w-d3,.h-mc,.c-mc,.w-mc{display:none}.w-co{width:34%}.w-ceo{width:26%}.w-own{width:20%}.w-val{width:14%}
-  table.screen .tbar{display:none}table.screen .tpct{min-width:0}table.screen thead th,table.screen tbody td{padding-left:8px;padding-right:8px}}
+@media(max-width:760px){.c-conf,.c-lt,.c-ltd,.h-mc,.c-mc,.w-mc{display:none}.w-co{width:34%}.w-ceo{width:26%}.w-own{width:20%}.w-val{width:14%}
+  table.screen .tbar{display:none}table.screen thead th,table.screen tbody td{padding-left:8px;padding-right:8px}}
 thead th{font-family:var(--ui);font-size:var(--fs-xs);font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--panel);z-index:1}
 /* A NUMBER SITS AWAY FROM THE NEXT COLUMN'S WORDS. Right-aligned figures
    end at their column's edge, where a left-aligned label begins; without
@@ -287,11 +273,8 @@ td.ceo{white-space:nowrap;overflow:hidden}
 td.ceo .ceow{display:flex;align-items:center;gap:8px;min-width:0}
 td.ceo .cn{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
 td.ceo .fb{flex:none;margin-left:0}
-.cell-own{display:flex;align-items:center;gap:10px}
 .tbar{flex:1;height:4px;background:var(--line2);border-radius:2px;overflow:hidden;min-width:40px}
 .tbar i{display:block;height:100%;background:var(--stone-d)}
-.tpct{font-family:var(--mono);font-weight:600;font-size:var(--fs-s);min-width:64px;text-align:right}
-.tarr{font-size:var(--fs-2xs);margin-left:6px;vertical-align:1px}.tarr.up{color:var(--buy)}.tarr.down{color:var(--sell)}.tarr.flat{color:var(--faint)}
 /* A FIGURE IS THE SAME FIGURE IN EVERY TABLE (2026-09-14: the home table's
    cell rule at 14px outranked this at 13px; now one rule names both tables
    at a specificity nothing else reaches) */
@@ -307,11 +290,10 @@ td.src a:hover{color:var(--blue)}
 .c-lt .up{color:var(--buy);font-weight:600}.c-lt .down{color:var(--sell);font-weight:600}
 /* THE 12-MONTH CHANGE (2026-09-17): points, coloured by direction like the tape's change; a dash for a record younger than a year */
 /* no colour in the figures (2026-09-18): a stake a year ago is a figure, not a verdict */
-td.c-fd,td.c-man{font-size:var(--fs-s);color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+td.c-fd{font-size:var(--fs-s);color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* a right-aligned number beside a left-aligned word reads as one token; the
    word column gets a gutter so the two groups (numbers, then the trade)
-   stay apart */
-table.screen th.h-lt,table.screen td.c-lt{padding-left:0}
+   stay apart */table.screen td.c-lt{padding-left:0}
 /* the 1-year return is a figure, uncoloured */
 .tfoot{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 0 8px;font-size:var(--fs-s);color:var(--mut);flex-wrap:wrap}
 .tablesec.home .tfoot{padding:14px 0 0;font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint)}   /* the same count line as the tape's */
@@ -351,23 +333,12 @@ td.c-lt .dt{display:none;font-family:var(--mono);font-size:var(--fs-xs);color:va
 .more:hover{background:var(--ink);border-color:var(--ink);color:var(--white)}
 
 /* the screener's two new cells */
-.c-d3 .d3{display:inline-flex;align-items:baseline;gap:3px;white-space:nowrap;font-family:var(--mono);font-size:var(--fs-s)}
-.c-d3 .d3 b{font-weight:600}
-.c-d3 .d3 small{font-size:var(--fs-2xs);color:var(--faint);margin-left:-4px}
-.c-d3 .d3.up b,.c-d3 .d3.up .spark{color:var(--buy)}
-.c-d3 .d3.down b,.c-d3 .d3.down .spark{color:var(--sell)}
-.c-d3 .d3.flat b,.c-d3 .d3.flat .spark{color:var(--mut)}
-.c-d3 .spark{display:block;flex:none}
 .c-lt .ns{display:inline-block;font-family:var(--ui);font-size:var(--fs-2xs);font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--accent-l);border-radius:var(--r-pill);padding:2px 6px;margin-top:4px}
 .c-lt .lt{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .chip.export{margin-left:auto}
 .c-lt .ltd{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint)}
 
 /* ---------- trends ---------- */
-.protag{font-family:var(--ui);font-size:var(--fs-2xs);font-weight:600;letter-spacing:.06em;color:var(--white);background:var(--ink);border-radius:var(--r-pill);padding:4px 8px;vertical-align:middle}
-.protag.ghost{color:var(--ink);background:none;border:1px solid var(--ink)}
-.chartbox{position:relative}
-.chartbox svg{display:block;width:100%;height:auto}
 /* ONE LOCK, USED EVERYWHERE.
    There were two: a blurred table with a floating seal, and a bordered box
    over a blurred chart -- so a reader met two different things meaning the
@@ -376,30 +347,19 @@ td.c-lt .dt{display:none;font-family:var(--mono);font-size:var(--fs-xs);color:va
    the page colour over it so the text underneath cannot be read, and one
    card on top. What is locked is the shape you can still see; what unlocks
    it is the same button every time. */
-.locked{position:relative;overflow:hidden;border-radius:var(--radius)}
 /* A LOCKED TABLE IS THE SAME SIZE AS AN OPEN ONE.
    Blurring nine rows produced a 500px field of haze taller than the table
    it was teasing. The locked block is capped to the height of the tables
    elsewhere on the page, and what does not fit is simply clipped -- the
    point is to show the shape of what is missing, and that reads in 340px
    as well as it does in 900. */
-.locked.tablelock{max-height:340px}
-.locked .under{filter:blur(7px);opacity:.55;pointer-events:none;user-select:none}
-.locked::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.35) 0%,rgba(255,255,255,.8) 62%,#fff 100%)}
 .lock{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:11px;text-align:center;padding:20px}
 .lock .seal{width:40px;height:40px;border-radius:50%;background:var(--ink);color:#fff;
   display:grid;place-items:center;font-size:var(--fs-b)}
 .lock p{font-size:var(--fs-s);color:var(--mut);max-width:34ch;line-height:1.5}
-.lockbtn{font-size:var(--fs-s);font-weight:600;color:var(--white);background:var(--accent);border-radius:var(--r-s);padding:9px 18px}
-.lockbtn:hover{background:var(--blue-d)}
 /* a locked block never collapses to nothing: the blur needs room to read as
    content rather than as a smudge */
-.locked.tall{min-height:260px}
-.freetag{position:absolute;top:6px;right:6px;font-family:var(--ui);font-size:var(--fs-2xs);font-weight:600;letter-spacing:.04em;color:var(--accent);background:var(--accent-l);border-radius:var(--r-pill);padding:3px 8px}
-.tnote{font-size:var(--fs-xs);color:var(--faint);margin-top:8px}
-
 
 /* ---------- recent activity ---------- */
 /* THE DAY STRIP. One bordered box, the newest filing day, every filing on
@@ -476,7 +436,6 @@ table.tape tr.dim td.kd .kind{color:var(--faint)}
 table.tape td.kd{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 table.tape td.kd .detail{font-size:var(--fs-xs);color:var(--mut);margin-left:7px}
 table.tape td.kd .detail a{color:inherit;text-decoration:none}table.tape td.kd .detail a:hover{text-decoration:underline}
-table.tape td.st .arrw{color:var(--mut);margin:0 3px}
 table.tape td.td .late{color:var(--mut);white-space:nowrap}   /* a filing that landed days after its transaction says so (2026-09-20) */
 
 table.tape .lowc{font-family:var(--mono);font-size:var(--fs-2xs);color:var(--faint);margin-left:4px;cursor:help}
@@ -497,28 +456,12 @@ table.tape td.ceo{overflow:hidden;text-overflow:ellipsis}
 table.tape td.ceo .cn{display:inline-block;max-width:calc(100% - 40px);overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
 table.tape td.n{font-family:var(--mono);font-size:var(--fs-s)}
 table.tape td.v a{color:inherit;text-decoration:none}table.tape td.v a:hover{text-decoration:underline}
-table.tape td.mn{color:var(--mut);font-size:var(--fs-s)}
 table.tape td.td .dt,table.tape td.fd .dt{color:var(--ink);font-family:var(--ui);font-size:var(--fs-m);white-space:nowrap;font-variant-numeric:tabular-nums}
-.daylist.tall{height:auto;max-height:560px;margin:0;padding:0}
 .firstb{display:inline-block;margin-left:8px;font-family:var(--mono);font-size:var(--fs-2xs);letter-spacing:.1em;text-transform:uppercase;color:var(--buy);border:1px solid var(--buy);border-radius:999px;padding:1px 6px;vertical-align:middle}
 .actnote{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);margin-top:14px}
 .actnote a{color:var(--faint);text-decoration:underline;text-underline-offset:2px}
-.daytab{width:100%;border-collapse:collapse;margin-top:6px}
-.daytab th{font-family:var(--ui);font-size:var(--fs-2xs);letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:600;text-align:left;padding:6px 8px 8px;border-bottom:1px solid var(--line)}
-.daytab th.n,.daytab td.n{text-align:right}
-.daytab td{padding:9px 8px;border-top:1px solid var(--line2);font-size:var(--fs-s);vertical-align:middle;white-space:nowrap}
-.daytab tr.dayrow{display:table-row;cursor:pointer}
-.daytab tr.dayrow:hover td{background:var(--slate-l)}
-.daytab td.co{min-width:0;max-width:280px;overflow:hidden;text-overflow:ellipsis}
-.daytab td.co .atk{margin-right:8px}
-.daytab td.n{font-family:var(--mono);font-size:var(--fs-s)}
-.daytab td.v b{font-weight:600;color:var(--ink)}
-.daytab td.st{color:var(--mut)}
-.daytab td.mn,.daytab td.tx{font-family:var(--mono);font-size:var(--fs-xs);color:var(--mut)}
-.daytab td.fl a{color:var(--faint);text-decoration:none}
-.daytab td.fl a:hover{color:var(--ink)}
 .dayempty{padding:14px 24px 10px;font-size:var(--fs-s);color:var(--mut);line-height:1.6;text-align:center}
-@media(max-width:640px){.dayrow{grid-template-columns:auto minmax(0,1fr)}.dayrow .drv{grid-column:1/-1;text-align:left;padding-left:2px}}
+@media(max-width:640px){.dayrow{grid-template-columns:auto minmax(0,1fr)}}
 
 /* THE TWO COLUMNS. Same frame, same chips, same bar; only the colour and
    the heading differ, so the eye compares them as a pair. Each column
@@ -530,8 +473,6 @@ table.tape td.td .dt,table.tape td.fd .dt{color:var(--ink);font-family:var(--ui)
    tint of the same colour; the bars said it with stripes, a second
    vocabulary for the same thing. Now the light tint everywhere. */
 /* on a phone the bar takes its own line beneath the name, full width */
-@media(max-width:640px){
-}
 /* THE FOUNDER MARK. The site exists to tell founders from hired hands, so
    the section says which is which -- quietly, and in the leaderboard's own
    badge: the same ink pill, abbreviated to F, always after the name so
@@ -543,7 +484,6 @@ table.tape td.td .dt,table.tape td.fd .dt{color:var(--ink);font-family:var(--ui)
 /* THE STRIP IS A FIXED FRAME. A day of three trades and a day of thirty
    take the same space; the rows scroll inside it, and the page below never
    jumps when a chip is chosen. */
-.daylist{height:290px;overflow:auto;overscroll-behavior:contain;margin:0 -18px;padding:0 18px}
 .dayempty{height:100%;display:grid;place-items:center}
 /* SALES THAT DID NOT MOVE A STAKE ARE OFF THE PAGE AND ONE CLICK AWAY.
    The site's question is ownership. Options cashed and units converted
@@ -560,20 +500,9 @@ table.tape td.td .dt,table.tape td.fd .dt{color:var(--ink);font-family:var(--ui)
    manners of selling, the founders-only modifier -- sit on the panel wash,
    so the row reads as two families even before the divider is noticed.
    The divider itself steps up to the section-rule grey. */
-.chipdiv{width:2px;align-self:stretch;background:var(--rule);border-radius:1px;margin:2px 5px}
 .chip[data-kind]{background:var(--panel)}
 .chip[data-kind].on{background:var(--ink)}
 #perfchart svg{width:100%;height:auto;display:block}
-.dph{display:flex;align-items:center;gap:14px;font-size:var(--fs-s);color:var(--mut);margin-bottom:12px}
-.dph b{color:var(--ink);font-family:var(--mono)}
-.dpx{border:0;background:transparent;font-size:var(--fs-l);line-height:1;color:var(--faint);cursor:pointer;padding:0 2px}
-.dtiles{display:flex;flex-wrap:wrap;gap:6px}
-.dtile{display:inline-flex;align-items:baseline;gap:6px;padding:5px 9px;border-radius:var(--r-s);text-decoration:none;color:var(--ink);font-family:var(--mono);font-size:var(--fs-xs);line-height:1;border:1px solid rgba(0,0,0,.08);background-image:linear-gradient(rgba(255,255,255,.42),rgba(255,255,255,.42))}
-.dtile b{font-weight:600}.dtile span{opacity:.8;font-size:var(--fs-2xs)}
-.dtile small{font-size:var(--fs-2xs);opacity:.7;font-family:var(--ui)}
-.dtile.joined{}
-
-.dtile:hover{filter:brightness(0.9)}
 .fsw{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
   font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:.02em;color:var(--faint)}
 .fsw .tr{width:34px;height:19px;border-radius:999px;background:var(--line);position:relative;
@@ -588,37 +517,12 @@ table.tape td.td .dt,table.tape td.fd .dt{color:var(--ink);font-family:var(--ui)
 .chip.on i{color:rgba(255,255,255,.62)}
 /* the badge in a row is the fastest filter on the page, so it acts like one */
 /* the feed is a window, not a wall -- same rule as the company table */
-.aplan{display:block;font-family:var(--mono);font-size:var(--fs-2xs);color:var(--faint);letter-spacing:.05em;margin-top:4px}
-.apx{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);display:block;font-weight:400;margin-top:2px}
 .pwarn{cursor:help;color:var(--amber)}
 .approx{cursor:help;color:var(--amber)}
-td.asrc a{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint)}
-td.asrc a:hover{color:var(--blue)}
-.efoot{padding:12px 2px 0;font-size:var(--fs-s);color:var(--mut)}
-.eempty{height:520px;display:grid;place-items:center;text-align:center;
-  font-size:var(--fs-s);color:var(--mut);line-height:1.7;padding:0 24px}
-.adate{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);white-space:nowrap}
-.adate .atd{display:block;font-size:var(--fs-2xs);color:var(--faint);margin-top:2px}
-.atk{font-family:var(--mono);font-weight:600;font-size:var(--fs-s)}
-.aceo{font-size:var(--fs-xs);color:var(--mut);margin-left:9px}
 /* ONE BOX FOR EVERY BADGE. BOUGHT is two letters wider than SOLD and a
    column of them raggedly staggered the figures beside them; every badge
    is now the same width, its word centred, wherever it appears. */
-.abadge{display:inline-block;box-sizing:border-box;min-width:62px;text-align:center;font-family:var(--ui);font-size:var(--fs-2xs);font-weight:600;letter-spacing:.04em;padding:4px 8px;border-radius:var(--r-pill)}
-.abadge.up{background:var(--buy);color:var(--white)}
-.abadge.soft{background:var(--buy-l);color:var(--buy)}
-.abadge.down{background:var(--sell);color:var(--white)}
-.abadge.dsoft{background:var(--sell-l);color:var(--sell)}
-.abadge.neu{border:1px solid var(--line);color:var(--mut)}
-.adlt{font-family:var(--mono);font-weight:600;font-size:var(--fs-s)}
-.adlt.up{color:var(--buy)}
-.adlt.down{color:var(--sell)}
-.asub{font-family:var(--mono);font-size:var(--fs-xs);color:var(--mut)}
-.aval{font-family:var(--mono);font-weight:600;font-size:var(--fs-s)}
-.aval.up{color:var(--buy)}
-.aval.down{color:var(--sell)}
 .nopr{color:var(--faint);font-weight:400}
-.actlock{margin-top:16px}
 
 .fb{display:inline-block;font-family:var(--ui);font-size:var(--fs-2xs);font-weight:600;letter-spacing:.06em;border-radius:var(--r-pill);padding:2px 7px;margin-left:8px;vertical-align:1px}
 .fb.yes{background:var(--accent-l);color:var(--accent)}
@@ -632,17 +536,6 @@ td.c-co .tk a:hover{text-decoration:underline}
 /* ---------- modal ---------- */
 .modal{position:fixed;inset:0;display:none;place-items:center;z-index:60;padding:20px;background:rgba(12,13,14,.4)}
 .modal.on{display:grid}
-.mcard{position:relative;background:var(--white);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.12);max-width:440px;width:100%;padding:34px}
-.mcard .seal{width:48px;height:48px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:var(--fs-l);margin-bottom:16px}
-.mcard h3{font-family:var(--ui);font-weight:700;font-size:var(--fs-xl);letter-spacing:-.02em;margin-bottom:6px}
-.mcard>p{font-size:var(--fs-m);color:var(--mut);margin-bottom:16px}
-.mcard ul{list-style:none;margin-bottom:22px}
-.mcard li{font-size:var(--fs-s);padding:8px 0;border-bottom:1px solid var(--line2);display:flex;gap:10px}
-.mcard li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue);flex:none;margin-top:6px}
-.mwide{width:100%;text-align:center;font-weight:600;color:var(--white);background:var(--accent);border-radius:var(--r-s);padding:12px}
-.mwide:hover{background:var(--blue-d)}
-.mlater{display:block;text-align:center;margin-top:10px;font-size:var(--fs-s);color:var(--faint)}
-.mclose{position:absolute;top:14px;right:14px;width:30px;height:30px;color:var(--faint)}
 
 footer{padding:22px 0 44px;font-family:var(--ui);font-size:var(--fs-s);color:var(--faint);border-top:1px solid var(--line)}
 footer .row{display:flex;justify-content:center;text-align:center;align-items:baseline;gap:4px 20px;flex-wrap:wrap}
@@ -664,7 +557,6 @@ footer .mono{font-family:var(--ui);font-size:var(--fs-s)}   /* the dates in the 
 .navqd .qceo{font-size:var(--fs-s);color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:34%}
 .navqd .qpct{font-family:var(--mono);font-size:var(--fs-xs);font-weight:600;white-space:nowrap}
 .navqd .qf{font-family:var(--mono);font-size:var(--fs-2xs);letter-spacing:.08em;color:var(--accent);font-weight:700}
-.navqd .qnone{padding:10px 12px;font-size:var(--fs-s);color:var(--mut)}
 @media(max-width:700px){.navsearch input{width:120px}}
 
 /* ---- THE FRONT-DOOR HOME PAGE (2026-09-23) ---- */
@@ -749,7 +641,6 @@ table.tape tr.dgrp a{color:var(--ink);text-decoration:none}
 table.tape tr.dgrp a:hover{color:var(--accent)}
 table.tape tr.dgrp .dsub{color:var(--faint);font-weight:500}
 table.tape tr.dgrp .dn{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);margin-left:12px}
-table.tape .kd .detail.tdt{color:var(--faint)}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Founder Led Equities","url":"https://founderledequities.com/","logo":"https://founderledequities.com/og.png","sameAs":["https://x.com/FounderLedEq"]},{"@type":"WebSite","name":"Founder Led Equities","url":"https://founderledequities.com/","description":"What every CEO owns of the company they run, computed from SEC filings."}]}</script>
 </head>
@@ -788,7 +679,6 @@ table.tape .kd .detail.tdt{color:var(--faint)}
   </div>
   <div class="herostats" id="herostats"></div>
 </div></section>
-
 
 <section class="fweek" id="fweek"><div class="wrap">
   <!-- PROOF OF LIFE: the five biggest founder moves of the trailing week,
@@ -843,7 +733,6 @@ table.tape .kd .detail.tdt{color:var(--faint)}
   <span class="hs-msg" id="homemsg"></span>
   <div class="capfine">An email within minutes of any founder&rsquo;s stake moving more than 1%. Free. No account.</div>
 </div></section>
-
 
 <!-- THE FOOTER: the name in the serif, then one line in one face: what the
      site is, the two links, the two dates. The confidence legend that stood
@@ -939,7 +828,6 @@ table.tape .kd .detail.tdt{color:var(--faint)}
 </div></section>
 </template>
 
-
 <script>
 /* ================================================================
    Founder Led Equities — analytics layer
@@ -978,7 +866,6 @@ const compact=n=>n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B"
              :n>=1e3?Math.round(n/1e3)+"K":String(Math.round(n));
 
 const state={q:"",min:0,max:null,who:"founders",sp:false,sold:"any",buy:"any",screen:"",sort:{key:"val",dir:-1},tbF:true,tbH:false,ev:{win:"7",f:true,kind:"all",moved:false,sort:{key:null,dir:-1}},live:{panel:false,hist:false,prices:false,founders:false,events:false}};
-
 
 /* ---------------- what real people do here ----------------
    THE PAGE COUNTS ITS OWN VISITORS. The host counts every request for the
@@ -2304,7 +2191,6 @@ function setKind(g){state.ev.kind=g;renderActivity();}
 /*@shared*/
 function setMoved(on){state.ev.moved=!!on;renderActivity();}
 
-
 /* EVERY ROW IS A DOOR. A bar, a screener row, a trade in the feed: one
    click, the company's own page. The side drawer that used to open here
    was a second, smaller version of that page; the page won. */
@@ -2369,7 +2255,6 @@ document.querySelectorAll(".chip.win").forEach(c=>
 {const el=$("#tg-f");if(el)el.addEventListener("change",()=>{state.ev.f=el.checked;renderActivity();});}
 /* ?day=YYYY-MM-DD pins the day strip: the link in a post lands on the day
    the post was about, whatever day it is read */
-
 
 /* THE ACTIONS THAT SAY WHAT A READER WANTED. Each is wrapped, not edited,
    so the count is one line per action and the action itself is untouched. */

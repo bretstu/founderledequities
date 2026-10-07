@@ -1,5 +1,5 @@
 /* the companies page: the screener in full. Loads the same files the home
-   page loads for the reader's tier and renders the same table, unlimited */
+   page loads and renders the same table, unlimited */
 const DATA_V="dev";
 const withV=p=>p+(p.includes("?")?"&":"?")+"v="+DATA_V;
 const $=s=>document.querySelector(s);

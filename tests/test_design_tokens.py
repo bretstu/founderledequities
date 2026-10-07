@@ -89,3 +89,25 @@ def test_type_sizes_come_from_the_scale():
         # the one literal: the kind chip is 10px so COMPENSATION fits the tape's fixed column
         assert loose in ([], ["10"]), (name, loose)
     assert "--fs-m:" in _styles(_read("index.html"))
+
+
+def test_every_class_the_stylesheet_defines_is_used_somewhere():
+    """A RULE WITH NO ELEMENT IS DEBT (2026-10-07). The review that day found 64
+    classes from retired features (the paid tier's locks and seals, the sign-in
+    modal, the old home tape, the sparkline) still styled in index.html's sheet.
+    A class the stylesheet defines must appear in a template, the builder, or a
+    script; a comment does not count. Deliberate exceptions go in ALLOW with a
+    dated reason."""
+    import glob
+    page = _read("index.html")
+    css = _styles(page)
+    nocomment = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    classes = sorted(set(re.findall(r"\.([a-zA-Z_][\w-]*)", nocomment)))
+    files = ([n for n in TEMPLATES if n != "index.html"] + ["_harness.js"]
+             + glob.glob(os.path.join(ROOT, "assets", "*.js")) + glob.glob(os.path.join(ROOT, "ops", "*.py"))
+             + glob.glob(os.path.join(ROOT, "fle", "*.py")))
+    corpus = re.sub(r"<style>.*?</style>", "", page, flags=re.S) + "\n" + "\n".join(
+        open(f if os.path.isabs(f) else os.path.join(ROOT, f), encoding="utf-8", errors="ignore").read() for f in files)
+    ALLOW = set()
+    dead = [c for c in classes if c not in ALLOW and re.search(r"(?<![\w-])%s(?![\w-])" % re.escape(c), corpus) is None]
+    assert not dead, dead

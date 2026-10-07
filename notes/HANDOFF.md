@@ -104,14 +104,11 @@ strategy is:
    retail investors care about, within minutes, plus one sentence of the
    owner's own view. Fridays: the week's open-market buyers as one chart
    (a card renderer for this is not yet built).
-4. The weekly letter, Sundays, written by the owner himself (not drafted by
-   a model; Substack's detector read issue 1 as 85% AI and the owner wants
-   his own voice). Six sections, see notes/THE-LETTER.md. The kit
-   (`ops/letter_kit.py`) now produces a research brief, not prose.
-5. Nothing else built for ~12 weeks. Monetization later: paid letter tier,
-   sponsorship of the letter, opportunistic data licensing; affiliates and
-   ads judged small. Honest odds discussed: $1K/month within 24 months
-   maybe 30–40%.
+4. (The weekly letter left the site and the pipeline on 2026-09-29; any
+   future letter is Substack's, with no code here.)
+5. Nothing else built for ~12 weeks. Monetization later: a paid watchlist
+   alert, opportunistic data licensing; affiliates and ads judged small.
+   Honest odds discussed: $1K/month within 24 months maybe 30–40%.
 
 ## Open items, none urgent (verify before touching)
 
@@ -150,14 +147,14 @@ strategy is:
   `fle/cli.py` (refresh, the weekly walk, anchors), `fle/footnotes.py`
   (the reader, prompt v297), `fle/exclusions.py` (the register).
 - `ops/deploy.sh`, `ops/now.sh`, `ops/rewalk.sh`, `ops/build_site_data.py`,
-  `ops/build_company_pages.py`, `ops/letter.py`, `ops/letter_kit.py`,
-  `ops/moves.py`, `ops/footnote_reads.py|review.py|register.py`,
-  `ops/upc_probe.py`, `ops/units_probe.py`, `ops/brand.py`.
+  `ops/build_company_pages.py`, `ops/moves.py`,
+  `ops/footnote_reads.py|review.py|register.py`, `ops/upc_census.py`,
+  `ops/partnerships_stage.py`, `ops/brand.py`.
 - `index.html` (the home page and the shared JS the other pages are built
   from; `/*@shared*/` marks what is lifted), `company.html`, `tape.html`,
   `assets/*.js`, `_harness.js`.
 - Data: `panel.csv` (the current row per company), `history.csv`,
-  `events.csv`, `founders.csv`, `universe/*.csv`, `weekly/letter-*.md`.
+  `events.csv`, `founders.csv`, `universe/*.csv`.
 - Notes: `notes/THE-PRODUCT.md`, `notes/THE-PLAN.md`,
-  `notes/DISTRIBUTION.md`, `notes/THE-LETTER.md`, and this file.
+  `notes/DISTRIBUTION.md`, and this file.
 - Secrets live in `.env` on the owner's machine (never in a zip).
