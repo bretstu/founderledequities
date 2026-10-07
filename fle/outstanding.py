@@ -286,6 +286,16 @@ def shares_outstanding(client, cik: int) -> Outstanding:
     chosen = max(by_accession.items(),
                  key=lambda kv: max((x.get("filed") or "") for x in kv[1]))[1]
 
+    # THE SAME FACT TWICE IS ONE FACT (2026-10-07). The concept API echoes a
+    # count the filing tagged in two places as two rows, same accession, same
+    # date, same value; summing them doubled ServisFirst's 54,672,510 to
+    # 109,345,020 and read its chief executive at half his stake for two
+    # months. Two classes on one cover carry two different counts; an
+    # identical value is a duplicate, and counts once.
+    distinct: dict = {}
+    for u in chosen:
+        distinct.setdefault(float(u["val"]), u)
+    chosen = list(distinct.values())
     total = sum(float(u["val"]) for u in chosen)
     hist = [(u.get("end") or "", float(u["val"]), u.get("form") or "")
             for u in rows[-12:]]

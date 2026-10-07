@@ -29,6 +29,20 @@ def test_multi_class_is_summed_not_picked():
     assert "3 share classes" in out.note
 
 
+def test_the_same_fact_echoed_twice_counts_once():
+    """SERVISFIRST (2026-10-07). The concept API returned the cover count
+    twice for one 10-Q (the filing tags it in two places): same accession,
+    same date, same value. The per-class sum doubled it to 109,345,020 and
+    the chief executive read at half his stake until a cache check caught
+    it. An identical value in one filing is one fact; two classes carry two
+    different counts, and those still sum."""
+    out = shares_outstanding(_C(_facts([
+        {"val": 54_672_510, "end": "2026-08-04", "filed": "2026-08-06", "form": "10-Q", "accn": "0001171843-26-005359"},
+        {"val": 54_672_510, "end": "2026-08-04", "filed": "2026-08-06", "form": "10-Q", "accn": "0001171843-26-005359"},
+    ])), 1430723)
+    assert out.shares == 54_672_510 and out.classes == 1 and not out.note
+
+
 def test_an_amendment_supersedes_rather_than_adds():
     """An amended filing restates the same cover date. Summing both doubles
     the denominator."""
