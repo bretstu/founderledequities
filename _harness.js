@@ -2,6 +2,11 @@
 // then walks every render path. Not a pixel test -- a "does the logic run
 // and produce sane markup" test.
 const fs = require("fs");
+// FIXTURE DATES RIDE THE CALENDAR (2026-10-07): the synthetic rows below are
+// tested under 30-day windows, so a fixed date falls out of the window a month
+// after it is written (the guarded-row check failed on its own on 2026-10-02).
+// ago(n) is n days before the run, as an ISO date.
+const ago=n=>new Date(Date.now()-n*86400e3).toISOString().slice(0,10);
 
 function el(id){
   return {
@@ -224,11 +229,11 @@ const P=runPage();
     assert(P.tapeDetail({c:"S",lb:"sale",pl:"unknown"})==="not stated"&&P.tapeDetail({c:"S",lb:"exercise, part sold",pl:"plan"})==="options cashed, part kept"&&P.tapeDetail({c:"F",lb:"shares withheld for tax"})==="withheld for tax","the detail is the filing's label in the site's words");
     assert(P.tapeManner({c:"S",lb:"sale",pl:"unknown"})==="Plan not stated"&&P.tapeManner({c:"S",lb:"scheduled sale",pl:"plan"})==="Planned","the manner on the hover");
     // THE GUARD: a filing with no purchase or sale that takes the position to zero is not ranked
-    const zero={tk:"ZERO",ceo:"Gone Person",c:"D",lb:"forfeited",pl:"unknown",sh:1402911,v:null,fd:"2026-09-01",td:"2026-09-01",pc:-100,po:0,ha:0,nc:-1402911,rs:null,u:"https://www.sec.gov/z"};
+    const zero={tk:"ZERO",ceo:"Gone Person",c:"D",lb:"forfeited",pl:"unknown",sh:1402911,v:null,fd:ago(6),td:ago(6),pc:-100,po:0,ha:0,nc:-1402911,rs:null,u:"https://www.sec.gov/z"};
     assert(P.evMove(zero)===null&&P.moveWhy(zero).includes("takes the position on record to zero"),"a forfeiture of the whole holding is not ranked, and the cell says why");
     assert(P.evMove({...zero,c:"S",lb:"discretionary sale",pl:"discretionary"})!==null,"a sale of the whole holding is a sale, and is ranked");
     const savedE=P.EVENTS;
-    P.EVENTS=savedE.concat([zero,{tk:"OLDS",ceo:"Old Seller",c:"S",lb:"sale",pl:"unknown",sh:1000,v:2e6,fd:"2026-09-02",td:"2026-09-01",pc:-3,po:4,ha:1e6,nc:-1000,rs:null,u:"https://www.sec.gov/o"}]);
+    P.EVENTS=savedE.concat([zero,{tk:"OLDS",ceo:"Old Seller",c:"S",lb:"sale",pl:"unknown",sh:1000,v:2e6,fd:ago(5),td:ago(6),pc:-3,po:4,ha:1e6,nc:-1000,rs:null,u:"https://www.sec.gov/o"}]);
     state.ev.f=false; setWin(30); renderActivity();
     const h=els["#actwrap"]._html;
     const z=h.slice(h.indexOf("openCompany('ZERO')"),h.indexOf("openCompany('ZERO')")+1400);
@@ -242,8 +247,8 @@ const P=runPage();
   // ---- the first-ever purchase ----
   {
     const savedE=P.EVENTS;
-    P.EVENTS=[{tk:"NEWB",ceo:"First Timer",c:"P",lb:"open-market purchase",pl:"discretionary",sh:1000,v:5e5,fd:"2026-09-03",td:"2026-09-02",pc:2.5,po:41.0,ha:41000,nc:1000,rs:null,u:"https://www.sec.gov/x",fb:true},
-              {tk:"OLDB",ceo:"Old Hand",c:"P",lb:"open-market purchase",pl:"discretionary",sh:1000,v:9e5,fd:"2026-09-03",td:"2026-09-02",pc:0.1,po:1.0,ha:1e6,nc:1000,rs:null,u:"https://www.sec.gov/y",fb:false}];
+    P.EVENTS=[{tk:"NEWB",ceo:"First Timer",c:"P",lb:"open-market purchase",pl:"discretionary",sh:1000,v:5e5,fd:ago(4),td:ago(5),pc:2.5,po:41.0,ha:41000,nc:1000,rs:null,u:"https://www.sec.gov/x",fb:true},
+              {tk:"OLDB",ceo:"Old Hand",c:"P",lb:"open-market purchase",pl:"discretionary",sh:1000,v:9e5,fd:ago(4),td:ago(5),pc:0.1,po:1.0,ha:1e6,nc:1000,rs:null,u:"https://www.sec.gov/y",fb:false}];
     state.ev.f=false; setWin(30); renderActivity();
     assert(els["#actstats"]._html.includes('<div class="n">1</div><div class="k">first buy on record</div>'),"the stats count first-ever purchases");
     assert(els["#actwrap"]._html.includes('class="firstb"'),"and the row carries the tag");
@@ -255,8 +260,8 @@ const P=runPage();
   // ---- the named screens: four questions, each a predicate the build also counts ----
   {
     const savedP=P.PANEL,savedC=P.SCREEN_COUNTS,savedL=P.state.screen;
-    P.PANEL=[{tk:"NS",co:"Never",ceo:"a",pct:12,val:1,conf:"high",asof:"2026-09-01",fd:true},
-             {tk:"HI",co:"Hired",ceo:"b",pct:0.3,val:1,conf:"high",asof:"2026-09-01",fd:false}];
+    P.PANEL=[{tk:"NS",co:"Never",ceo:"a",pct:12,val:1,conf:"high",asof:ago(6),fd:true},
+             {tk:"HI",co:"Hired",ceo:"b",pct:0.3,val:1,conf:"high",asof:ago(6),fd:false}];
     P.SCREEN_COUNTS={"s:over-10":3,"s:hired-under-1":2};
     P.TABLE_LIMIT=0;
     P.setScreen("over-10");
@@ -547,9 +552,9 @@ const P=runPage();
   const savedE=P.EVENTS,savedF=P.FOUNDERS;
   P.FOUNDERS={FND:{f:"yes",ev:"co-founded",src:"x"},HIRE:{f:"no",ev:"",src:"x"}};
   P.EVENTS=[
-    {tk:"FND",ceo:"A Founder",c:"S",lb:"sale",pl:"plan",sh:100,v:1e6,fd:"2026-09-02",td:"2026-09-01",pc:-10,po:5,ha:1000,nc:-100,rs:null},
-    {tk:"HIRE",ceo:"A Hire",c:"S",lb:"sale",pl:"discretionary",sh:100,v:5e6,fd:"2026-09-02",td:"2026-09-01",pc:-20,po:1,ha:1000,nc:-100,rs:null},
-    {tk:"HIRE",ceo:"A Hire",c:"S",lb:"exercise and sell",pl:"plan",sh:10,v:2e5,fd:"2026-09-02",td:"2026-09-01",pc:null,po:1,ha:1000,nc:0,rs:null},
+    {tk:"FND",ceo:"A Founder",c:"S",lb:"sale",pl:"plan",sh:100,v:1e6,fd:ago(5),td:ago(6),pc:-10,po:5,ha:1000,nc:-100,rs:null},
+    {tk:"HIRE",ceo:"A Hire",c:"S",lb:"sale",pl:"discretionary",sh:100,v:5e6,fd:ago(5),td:ago(6),pc:-20,po:1,ha:1000,nc:-100,rs:null},
+    {tk:"HIRE",ceo:"A Hire",c:"S",lb:"exercise and sell",pl:"plan",sh:10,v:2e5,fd:ago(5),td:ago(6),pc:null,po:1,ha:1000,nc:0,rs:null},
   ];
   P.state.pro=true;P.state.ev.f=false;setWin(30);renderActivity();
   const off=els["#actwrap"]._html;
