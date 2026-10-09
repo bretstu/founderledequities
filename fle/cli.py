@@ -1252,8 +1252,17 @@ def cmd_market_universe(args) -> int:
                           on_step=_p, checkpoint=checkpoint)
     print()
     n_members, n_review = write_snapshot(snap, stem, evidence, review)
+    # THE PAGE FOLLOWS THE SNAPSHOT THAT IS LIVE (2026-10-09). A snapshot
+    # written under universe/ is the site's list from the next nightly on,
+    # so its page is written now; one written anywhere else (a rehearsal
+    # at another bar, under _staging/) is not, since the tracked page would
+    # otherwise describe a universe the site is not running.
     from .market_universe import write_page
-    page = write_page(stem, evidence, today, "about.html", "universe.html")
+    page = None
+    if os.path.basename(os.path.dirname(os.path.abspath(stem))) == "universe":
+        page = write_page(stem, evidence, today, "about.html", "universe.html")
+    else:
+        print(f"  universe.html not written: {stem} is not under universe/ (a rehearsal)")
     by = {}
     for r in snap.rows:
         by[r.status.split(":")[0]] = by.get(r.status.split(":")[0], 0) + 1
@@ -1650,8 +1659,17 @@ def _refresh(args, log) -> int:
     # 2b -- the same question of every company: a share count that moved
     # with no newer filing to explain it is the rules moving, not the person
     odd = [t for t in unexplained_moves(path("panel.csv", staged=False), path("panel.csv")) if t not in forget]   # a register change explains its own moves
+    # 2c -- WHO LEFT (2026-10-09). Eight listed companies left the panel on
+    # 17 September on a misread Form 15 and were not missed for three weeks:
+    # "delisted: 8 left the panel" in a log nobody reads at 02:30 is not a
+    # report. A company that was published yesterday and is not in tonight's
+    # panel is named, with the reason the files give, in a mail of its own
+    # the same night, and in the weekly report.
+    left = _departures(args.dir, path("panel.csv", staged=False), path("panel.csv"))
+    if left:
+        _mail_departures(log, args.dir, left)
     if full:
-        _mail_weekly_diff(log, args.dir, odd, path("panel.csv", staged=False), path("panel.csv"))
+        _mail_weekly_diff(log, args.dir, odd, path("panel.csv", staged=False), path("panel.csv"), left)
     if odd and len(odd) > UNEXPLAINED_LIMIT and not args.force and not full:
         log(f"REFUSING TO PUBLISH -- {len(odd)} companies' share counts moved "
             f"with no newer filing to explain it ({', '.join(odd[:12])}"
@@ -1847,10 +1865,71 @@ def _progress_pings(log, minutes: int = 30) -> None:
     threading.Thread(target=loop, daemon=True).start()
 
 
-def _mail_weekly_diff(log, root, odd, before_p, after_p) -> None:
+def _departures(root, before_p, after_p) -> list:
+    """-> [(ticker, company, reason)] for every company in the published
+    panel that is not in tonight's. The reason is what the files say:
+    universe/delisted.csv names a Form 15 the vendor confirmed; otherwise
+    the universe no longer lists it (a snapshot, an exclusion)."""
+    try:
+        b = {r["ticker"]: r for r in csv.DictReader(open(before_p, encoding="utf-8-sig"))}
+        a = {r["ticker"] for r in csv.DictReader(open(after_p, encoding="utf-8-sig"))}
+    except OSError:
+        return []
+    gone = sorted(t for t in b if t not in a)
+    if not gone:
+        return []
+    from .delisted import read as _delisted
+    d = _delisted(os.path.join(root, "universe", "delisted.csv"))
+    out = []
+    for t in gone:
+        r = d.get(t.upper())
+        why = (f"delisted: Form {r.get('form', '')} filed {r.get('date', '')}, the vendor confirms the ticker is inactive"
+               if r else "not in tonight's universe (a snapshot or an exclusion)")
+        out.append((t, (b[t].get("company") or "")[:40], why))
+    return out
+
+
+def _mail_departures(log, root, left) -> None:
+    """The same night, in its own mail: who left and why."""
+    day = datetime.date.today().isoformat()
+    lines = [f"# Left the site, {day}", "",
+             f"{len(left)} compan{'y' if len(left) == 1 else 'ies'} published yesterday are not in tonight's panel. "
+             "Each line is a reason the files give; a company that still trades should not be here.", ""]
+    for t, co, why in left:
+        lines.append(f"- {t:6} {co:40} {why}")
+    text = "\n".join(lines) + "\n"
+    try:
+        os.makedirs(os.path.join(root, "drafts"), exist_ok=True)
+        open(os.path.join(root, "drafts", f"left-{day}.md"), "w", encoding="utf-8").write(text)
+    except OSError:
+        pass
+    log(f"left the site: {', '.join(t for t, _, _ in left)}")
+    to = _live_to(root)
+    if not to:
+        return
+    try:
+        sys.path.insert(0, os.path.join(root, "ops"))
+        from live import send_mail   # noqa: E402
+        if send_mail(to, f"Left the site: {', '.join(t for t, _, _ in left[:6])}{', ...' if len(left) > 6 else ''}", text):
+            log(f"left the site: the report was mailed to {to}")
+    except Exception as exc:  # noqa: BLE001
+        log(f"left the site: the report was not mailed ({exc.__class__.__name__})")
+
+
+def _live_to(root) -> str:
+    to = os.environ.get("LIVE_TO") or ""
+    if not to and os.path.exists(os.path.join(root, ".env")):
+        for line in open(os.path.join(root, ".env"), encoding="utf-8"):
+            if line.startswith("LIVE_TO="):
+                to = line.split("=", 1)[1].strip().strip('"').strip("'")
+    return to
+
+
+def _mail_weekly_diff(log, root, odd, before_p, after_p, left=None) -> None:
     """The Sunday report: every company whose share count moved with no
     filing to explain it, before and after, written to drafts/ and mailed
-    to LIVE_TO. An empty list is the good news and is mailed too."""
+    to LIVE_TO. An empty list is the good news and is mailed too. Who left
+    tonight is listed as well (2026-10-09)."""
     day = datetime.date.today().isoformat()
     lines = [f"# The weekly walk, {day}", ""]
     try:
@@ -1867,23 +1946,25 @@ def _mail_weekly_diff(log, root, odd, before_p, after_p) -> None:
             x, y = b.get(t, {}), a.get(t, {})
             lines.append(f"- {t:6} {y.get('ceo','')[:26]:26} {float(x.get('shares') or 0):>14,.0f} -> {float(y.get('shares') or 0):>14,.0f}   "
                          f"{float(x.get('pct') or 0):6.2f}% -> {float(y.get('pct') or 0):6.2f}%   as of {y.get('shares_as_of','')}")
+    if left:
+        lines += ["", f"{len(left)} compan{'y' if len(left) == 1 else 'ies'} left the site tonight:", ""]
+        lines += [f"- {t:6} {co:40} {why}" for t, co, why in left]
+    joined = sorted(t for t in a if t not in b)
+    if joined:
+        lines += ["", f"{len(joined)} joined: {', '.join(joined[:40])}{', ...' if len(joined) > 40 else ''}"]
     text = "\n".join(lines) + "\n"
     try:
         os.makedirs(os.path.join(root, "drafts"), exist_ok=True)
         open(os.path.join(root, "drafts", f"weekly-walk-{day}.md"), "w", encoding="utf-8").write(text)
     except OSError:
         pass
-    to = os.environ.get("LIVE_TO") or ""
-    if not to and os.path.exists(os.path.join(root, ".env")):
-        for line in open(os.path.join(root, ".env"), encoding="utf-8"):
-            if line.startswith("LIVE_TO="):
-                to = line.split("=", 1)[1].strip().strip('"').strip("'")
+    to = _live_to(root)
     if not to:
         return
     try:
         sys.path.insert(0, os.path.join(root, "ops"))
         from live import send_mail   # noqa: E402
-        if send_mail(to, f"The weekly walk: {len(odd)} unexplained move(s)", text):
+        if send_mail(to, f"The weekly walk: {len(odd)} unexplained move(s)" + (f", {len(left)} left" if left else ""), text):
             log(f"weekly walk: the report was mailed to {to}")
     except Exception as exc:  # noqa: BLE001
         log(f"weekly walk: the report was not mailed ({exc.__class__.__name__})")

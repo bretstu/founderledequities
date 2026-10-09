@@ -161,7 +161,11 @@ def fetch_splits(client, ticker: str, api_key: str | None = None) -> Splits:
     url = (f"https://api.polygon.io/v3/reference/splits?ticker={ticker}"
            f"&limit=1000&apiKey={api_key}")
     try:
-        data = client.get_json(url)
+        # A LIST OF WHAT HAS HAPPENED SO FAR, so it ages (2026-10-09): the
+        # cached copy is reread within a day, refetched after. Frozen at the
+        # first walk, a split executed later was never seen.
+        from .config import SPLITS_MAX_AGE
+        data = client.get_json(url, max_age=SPLITS_MAX_AGE)
     except Exception as exc:  # noqa: BLE001
         out.note = f"could not read splits: {exc}"
         return out

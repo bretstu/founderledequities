@@ -76,3 +76,44 @@ def test_the_weekly_walk_has_its_flags_and_its_report(tmp_path, monkeypatch):
     assert "AAA" in rep and "100 ->" in rep and "90" in rep and "1 share count(s) moved" in rep
     cli._mail_weekly_diff(lambda m: None, str(tmp_path), [], str(before), str(after))
     assert "nothing moved without a filing" in next((tmp_path / "drafts").glob("weekly-walk-*.md")).read_text()
+
+
+def test_a_company_that_leaves_the_site_is_named_the_same_night(tmp_path, monkeypatch):
+    """WHO LEFT (2026-10-09): eight listed companies left on a misread Form 15
+    and were not missed for three weeks. A company published yesterday and
+    absent tonight is named with the files' reason, in its own report and in
+    the weekly one; a targeted or nightly run alike."""
+    import csv
+    import inspect
+    from fle import cli
+    (tmp_path / "universe").mkdir()
+    with open(tmp_path / "universe" / "delisted.csv", "w", newline="") as fh:
+        w = csv.writer(fh); w.writerow(["ticker", "cik", "company", "ceo", "form", "date", "noted"])
+        w.writerow(["CRNX", "1", "Crinetics", "R. Scott Struthers", "15-12B", "2026-09-15", "2026-09-17"])
+    before, after = tmp_path / "before.csv", tmp_path / "after.csv"
+    with open(before, "w", newline="") as fh:
+        w = csv.writer(fh); w.writerow(["ticker", "company", "ceo", "shares", "pct", "shares_as_of"])
+        w.writerow(["BMY", "BRISTOL MYERS SQUIBB CO", "Christopher Boerner", "100", "0.01", "2026-03-02"])
+        w.writerow(["CRNX", "Crinetics", "R. Scott Struthers", "0", "0.0", "2026-09-01"])
+        w.writerow(["TSLA", "Tesla", "Elon Musk", "1", "28.4", "2026-06-16"])
+    with open(after, "w", newline="") as fh:
+        w = csv.writer(fh); w.writerow(["ticker", "company", "ceo", "shares", "pct", "shares_as_of"])
+        w.writerow(["TSLA", "Tesla", "Elon Musk", "1", "28.4", "2026-06-16"])
+        w.writerow(["NEWCO", "New Co", "A Founder", "5", "5.0", "2026-10-01"])
+    left = cli._departures(str(tmp_path), str(before), str(after))
+    assert [t for t, _, _ in left] == ["BMY", "CRNX"]
+    assert "Form 15-12B filed 2026-09-15" in left[1][2] and "vendor confirms" in left[1][2]
+    assert "not in tonight's universe" in left[0][2], "no delisting on file: the universe dropped it, and the report says so"
+    assert cli._departures(str(tmp_path), str(after), str(after)) == []
+    monkeypatch.delenv("LIVE_TO", raising=False)
+    logged = []
+    cli._mail_departures(logged.append, str(tmp_path), left)
+    rep = next((tmp_path / "drafts").glob("left-*.md")).read_text()
+    assert "BMY" in rep and "CRNX" in rep and "2 companies published yesterday" in rep
+    assert any("left the site: BMY, CRNX" in m for m in logged)
+    cli._mail_weekly_diff(lambda m: None, str(tmp_path), [], str(before), str(after), left)
+    wk = next((tmp_path / "drafts").glob("weekly-walk-*.md")).read_text()
+    assert "2 companies left the site tonight" in wk and "BMY" in wk and "1 joined: NEWCO" in wk
+    src = inspect.getsource(cli._refresh)
+    assert "_departures(" in src and "_mail_departures(" in src
+    assert src.index("_departures(") < src.index("_mail_weekly_diff(")

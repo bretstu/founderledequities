@@ -158,3 +158,25 @@ def test_a_quote_from_the_filings_other_footnotes_is_verified_too(monkeypatch):
     assert F.classify(line, "k")["verified"], "the filing's own words, from a context footnote, verify"
     monkeypatch.setattr(F, "_post", lambda body, key: {"content": [{"type": "tool_use", "input": {"label": "economic", "quote": "words from nowhere in this filing", "basis": "statement"}}]})
     assert not F.classify(line, "k")["verified"]
+
+
+def test_the_reader_takes_a_panel_and_founders_file_of_its_own(tmp_path, monkeypatch):
+    """A rehearsal panel's founders are read before promotion (2026-10-09):
+    --panel and --founders point the reader at staged files; the live
+    files stay the default and a ticker list still parses beside them."""
+    import importlib.util
+    import os
+    spec = importlib.util.spec_from_file_location("footnote_reads", os.path.join(ROOT, "ops", "footnote_reads.py"))
+    mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+    src = open(os.path.join(ROOT, "ops", "footnote_reads.py"), encoding="utf-8").read()
+    assert '"--panel"' in src and '"--founders"' in src
+    assert 'open(panel_p, encoding="utf-8-sig")' in src and 'open(founders_p, encoding="utf-8-sig")' in src
+    assert 'os.path.join(ROOT, "panel.csv")' in src.split("panel_p =")[1].split("\n")[0], "the live panel is the default"
+    # the argument after --panel is a path, not a ticker list
+    seen = {}
+    def fake_env_key(): return None
+    monkeypatch.setattr(mod, "env_key", fake_env_key)
+    argv = ["x", "--panel", str(tmp_path / "p.csv"), "--founders", str(tmp_path / "f.csv"), "META,TKO"]
+    assert mod.main(argv) == 1, "stops at the missing key, after parsing"
+    valued = src.split("valued = ")[1].split("\n")[0]
+    assert "--panel" in valued and "--founders" in valued and "--limit" in valued

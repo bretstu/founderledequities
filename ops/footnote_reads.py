@@ -10,6 +10,9 @@ read once per filing that states it. Nothing here changes a number.
     python3 ops/footnote_reads.py META,TKO,CRM   # just these, printing each reading
     python3 ops/footnote_reads.py --limit 300    # at most N model calls this run
     python3 ops/footnote_reads.py --reread META  # read these companies' lines again (after a prompt change)
+    python3 ops/footnote_reads.py --panel _staging/adds.csv --founders _staging/adds-founders.csv
+                                                 # a rehearsal panel (2026-10-09): its founders read before promotion;
+                                                 # the readings land in the same register, keyed by filing
 Needs ANTHROPIC_API_KEY in .env (the founder stage's key). Prints a line per company.
 """
 import csv
@@ -60,16 +63,20 @@ def main(argv):
     elif nightly:
         limit = 80                     # a night's ceiling on model calls: under a dollar; the rest waits for tomorrow
     reread = "--reread" in argv
+    # the panel and founders files, by default the live ones (2026-10-09)
+    panel_p = argv[argv.index("--panel") + 1] if "--panel" in argv else os.path.join(ROOT, "panel.csv")
+    founders_p = argv[argv.index("--founders") + 1] if "--founders" in argv else os.path.join(ROOT, "founders.csv")
+    valued = {"--limit", "--panel", "--founders"}
     for a in argv[1:]:
-        if not a.startswith("--") and not a.isdigit() and (argv[argv.index(a) - 1] != "--limit"):
+        if not a.startswith("--") and not a.isdigit() and (argv[argv.index(a) - 1] not in valued):
             only = {t.strip().upper() for t in a.split(",")}
     key = env_key()
     if not key:
         print("  no ANTHROPIC_API_KEY in the environment or .env")
         return 1
     client = EdgarClient()
-    panel = list(csv.DictReader(open(os.path.join(ROOT, "panel.csv"), encoding="utf-8-sig")))
-    founders = {r["ticker"].upper() for r in csv.DictReader(open(os.path.join(ROOT, "founders.csv"), encoding="utf-8-sig")) if (r.get("founder") or "").lower() == "yes"} if os.path.exists(os.path.join(ROOT, "founders.csv")) else set()
+    panel = list(csv.DictReader(open(panel_p, encoding="utf-8-sig")))
+    founders = {r["ticker"].upper() for r in csv.DictReader(open(founders_p, encoding="utf-8-sig")) if (r.get("founder") or "").lower() == "yes"} if os.path.exists(founders_p) else set()
     done_p = os.path.join(ROOT, "universe", "footnote-done.json")
     import json
     done_state = json.load(open(done_p)) if os.path.exists(done_p) else {}

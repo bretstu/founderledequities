@@ -67,3 +67,13 @@ SEC_DATA = "https://data.sec.gov"
 # evening still leaves the nightly asking afresh; a rerun within the hour
 # costs no requests.
 SUBMISSIONS_MAX_AGE = float(os.environ.get("FLE_SUBMISSIONS_MAX_AGE") or 4 * 3600)
+
+# HOW OLD A SPLIT HISTORY MAY BE (2026-10-09). The vendor's list of a
+# ticker's splits is the same kind of thing as a submissions feed: a list of
+# what has happened so far. It was cached without a clock, so a company's
+# splits were frozen at its first walk and a split executed after that was
+# invisible to the denominator until the next cover page caught up (the
+# window the split logic exists to bridge). A day: splits are announced
+# weeks ahead and executed on a known date, and one small request per
+# company per night is nothing.
+SPLITS_MAX_AGE = float(os.environ.get("FLE_SPLITS_MAX_AGE") or 24 * 3600)

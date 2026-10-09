@@ -307,3 +307,70 @@ def test_sizing_respects_each_measures_unit_domain():
     r.mcap_vendor, r.mcap_sec = 2.0e9, 2.1e9
     classify(r); decide(r, 1e9, 8e8, {}, "2026-08-31")
     assert r.status == "sized" and r.decision == "in"
+
+
+# THE COVER COUNT IN THE CLOSE'S UNITS (2026-10-09). The $200M snapshot admitted
+# New Fortress at $1.3B (285.6M shares x $4.55, after a 1-for-50) and Granite
+# Point at $347M (48.2M x $7.20, after a 1-for-10 three days earlier); Polygon
+# had them at $28M and $36M. Fifteen of 882 adds were reverse-split artifacts.
+class _Vendor:
+    """facts for the cover, splits for the ticker, both from one fake."""
+    def __init__(self, facts, splits):
+        self.facts, self.splits, self.asked = facts, splits, []
+
+    def get(self, url, use_cache=True):
+        return json.dumps(self.facts)
+
+    def get_json(self, url, use_cache=True, max_age=None):
+        self.asked.append(max_age)
+        return {"results": self.splits}
+
+
+def test_newest_cover_returns_the_counts_own_date():
+    from fle.market_universe import newest_cover
+    v = _Vendor({"units": {"shares": [
+        {"val": 285_634_650, "end": "2026-07-28", "accn": "Q2", "filed": "2026-08-06"},
+        {"val": 285_000_000, "end": "2026-04-28", "accn": "Q1", "filed": "2026-05-06"}]}}, [])
+    assert newest_cover(v, 1) == (285_634_650, "2026-07-28")
+    assert newest_cover(_Vendor({"units": {"shares": []}}, []), 1) == (None, "")
+
+
+def test_a_reverse_split_after_the_cover_restates_the_count_for_sizing():
+    from fle.market_universe import in_todays_shares
+    nfe = _Vendor({}, [{"execution_date": "2026-09-14", "split_from": 50, "split_to": 1}])
+    shares, note = in_todays_shares(nfe, "NFE", 285_634_650, "2026-07-28", "k")
+    assert abs(shares - 5_712_693) < 1, "1-for-50: today's shares"
+    assert abs(shares * 4.55 - 26e6) < 0.5e6, "and the product is a $26M company, not $1.3B"
+    assert note.startswith("cover count 285,634,650 as of 2026-07-28 restated 0.02x")
+    gpmt = _Vendor({}, [{"execution_date": "2026-10-05", "split_from": 10, "split_to": 1}])
+    shares, note = in_todays_shares(gpmt, "GPMT", 48_198_166, "2026-06-30", "k")
+    assert abs(shares - 4_819_817) < 1 and "0.1x" in note
+    # a split BEFORE the cover is already in the count; a forward split scales up
+    assert in_todays_shares(gpmt, "GPMT", 4_819_817, "2026-10-06", "k") == (4_819_817, "")
+    sfbs = _Vendor({}, [{"execution_date": "2026-08-18", "split_from": 1, "split_to": 2}])
+    assert in_todays_shares(sfbs, "SFBS", 54_672_510, "2026-07-31", "k")[0] == 109_345_020
+    # nothing to size, nothing to ask
+    assert in_todays_shares(sfbs, "X", None, "2026-07-31", "k") == (None, "")
+    assert in_todays_shares(sfbs, "X", 100.0, "", "k") == (100.0, "")
+
+
+def test_the_split_history_ages_like_a_feed():
+    """Cached without a clock, a company's splits were frozen at its first
+    walk (2026-10-09); they are now reread within a day and refetched after."""
+    from fle.splits import fetch_splits
+    from fle.config import SPLITS_MAX_AGE
+    v = _Vendor({}, [{"execution_date": "2026-10-05", "split_from": 10, "split_to": 1}])
+    sp = fetch_splits(v, "GPMT", "k")
+    assert sp.events and sp.events[0].factor == 0.1
+    assert v.asked == [SPLITS_MAX_AGE] and 0 < SPLITS_MAX_AGE <= 7 * 86400
+
+
+def test_a_rehearsal_snapshot_does_not_write_the_universe_page():
+    """A snapshot taken to _staging/ at another bar must leave the tracked
+    universe.html describing the universe the site is running (2026-10-09)."""
+    import inspect
+    import fle.cli as C
+    src = inspect.getsource(C.cmd_market_universe)
+    assert '== "universe"' in src and "not written" in src
+    guard = src[src.index("page = None"):src.index("by = {}")]
+    assert "write_page(" in guard and guard.index('== "universe"') < guard.index("write_page(")

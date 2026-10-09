@@ -17,7 +17,8 @@ WHO IS IN
     them, so the site cannot measure them. Excluded by construction, not
     by choice, and the About page says so.
   - with Section 16 activity: at least one Form 3, 4 or 5 ever filed
-  - market cap at or above the entry bar (default $1B) by the rules below
+  - market cap at or above the entry bar (default $1B; the site runs at
+    $200M since 2026-10, set in fle/cli.py) by the rules below
 
 WHO IS OUT
   - blank-check companies (SIC 6770): a shell has no chief executive in
@@ -43,7 +44,7 @@ HOW SIZE IS DECIDED -- two measures, no silent verdicts
 
 HYSTERESIS -- the edge must not flap
   A company enters at the entry bar and leaves only after two consecutive
-  snapshots below the EXIT bar (default $800M). Otherwise names near $1B
+  snapshots below the EXIT bar (default $800M; $160M on the site). Otherwise names near the bar
   blink in and out each refresh, their histories appearing and vanishing,
   which reads as instability even when every decision was right. The
   prior snapshot's evidence file is the memory.
@@ -218,16 +219,19 @@ def eligibility(subs: dict, name: str = "") -> str:
     return ""
 
 
-def newest_shares(client, cik: int) -> float | None:
-    """Cover-page share count from the most recently FILED report only, so
-    an amendment never double-counts; per-class facts summed."""
+def newest_cover(client, cik: int) -> tuple[float | None, str]:
+    """-> (cover-page share count, its as-of date) from the most recently
+    FILED report only, so an amendment never double-counts; per-class
+    facts summed. The date is the cover's own, which the sizing needs
+    (2026-10-09): a count is only in today's shares if no split has run
+    since it was stated."""
     try:
         facts = json.loads(client.get(CONCEPT_URL.format(cik=cik),
                                       use_cache=False))
         vals = [v for v in facts.get("units", {}).get("shares", [])
                 if v.get("val") and v.get("accn")]
         if not vals:
-            return None
+            return None, ""
         newest = max(vals, key=lambda v: v.get("filed") or "")["accn"]
         mine = [v for v in vals if v["accn"] == newest]
         end = max(v.get("end") or "" for v in mine)
@@ -238,10 +242,36 @@ def newest_shares(client, cik: int) -> float | None:
         # guards against (JBS), living one API over. NVIDIA, the largest
         # count on any US exchange, has 24 billion.
         if total > 50e9:
-            return None
-        return total
+            return None, ""
+        return total, end
     except Exception:  # noqa: BLE001
-        return None
+        return None, ""
+
+
+def newest_shares(client, cik: int) -> float | None:
+    """The count alone (the older name; the snapshot uses newest_cover)."""
+    return newest_cover(client, cik)[0]
+
+
+def in_todays_shares(client, ticker: str, shares: float | None, as_of: str,
+                     api_key: str | None) -> tuple[float | None, str]:
+    """THE COVER COUNT IS ONLY A MARKET CAP IN THE CLOSE'S UNITS (2026-10-09).
+    New Fortress stated 285.6M shares on its last cover, then did a
+    1-for-50; the snapshot multiplied the old count by the new price and
+    admitted a $28M company as $1.3B. Granite Point's 1-for-10 three days
+    before the snapshot did the same at $347M for $36M; fifteen of the
+    $200M expansion's 882 adds were this. The ownership walk restates
+    covers through splits (fle/splits.py); the sizing now does the same.
+    -> (count in today's shares, a note when it was restated)."""
+    if not shares or not as_of:
+        return shares, ""
+    from .splits import fetch_splits
+    sp = fetch_splits(client, ticker, api_key)
+    f = sp.factor_since(as_of)
+    if f == 1.0:
+        return shares, ""
+    return shares * f, (f"cover count {shares:,.0f} as of {as_of} restated "
+                        f"{f:g}x through the split(s) since")
 
 
 def vendor_details(client, ticker: str, api_key: str | None) -> tuple:
@@ -437,7 +467,11 @@ def build_snapshot(client, api_key: str | None, entry: float = 1e9,
             row.decision = "out"
             snap.rows.append(row); _ck(ck, row, snapshot)
             continue
-        row.shares_sec = newest_shares(client, m.cik)
+        row.shares_sec, cover_as_of = newest_cover(client, m.cik)
+        row.shares_sec, restated = in_todays_shares(
+            client, m.ticker, row.shares_sec, cover_as_of, api_key)
+        if restated:
+            row.note = (row.note + "; " if row.note else "") + restated
         row.close = closes.get(m.ticker) or closes.get(polygon_ticker(m.ticker))
         # THE SEC MEASURE IS ONLY VALID IN ITS UNIT'S DOMAIN. For an ADS
         # (ADRC), EDGAR's dei fact counts ORDINARY shares while the close
