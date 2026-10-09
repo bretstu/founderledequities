@@ -490,12 +490,14 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     rec.filings_read = led.filings_read
     rec.settled = led.settled
     rec.form4_url = led.last_url
-    # ACQUIRED AND GONE (fle/delisted.py): a Form 25 or 15 by the issuer on or
-    # after the person's newest filing; the panel drops the row on publish
+    # ACQUIRED AND GONE (fle/delisted.py): a Form 15 by the issuer on or
+    # after the person's newest filing, AND the vendor says the ticker no
+    # longer trades (2026-10-09); the panel drops the row on publish
     try:
         from .delisted import delisting
         newest = max((f.get("filingDate") or "" for f in (led.mine or [])), default="")
-        gone = delisting(client, cik, newest)
+        gone = delisting(client, cik, newest, ticker=ticker,
+                         api_key=SETTINGS.polygon_api_key)
         rec.delisted = f"{gone[0]} {gone[1]}" if gone else ""
     except Exception:  # noqa: BLE001
         rec.delisted = ""

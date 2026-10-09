@@ -27,13 +27,50 @@ import os
 # the company stops reporting, which is what "gone" means, and no warrant
 # delisting produces one. The cost is days: Crinetics' 25 came on 3 Sept, its
 # 15 on the 15th.
+#
+# THE FORM 15 IS NOT ENOUGH EITHER (2026-10-09, third try). A 15-12G ends a
+# 12(g) registration, and an issuer can hold several: Bristol Myers filed
+# one in March for a class that was not its stock, Apollo and ONEOK in the
+# summer, Enbridge a 15-12B in 2019 for a redeemed preferred. Eight listed
+# companies left the site on 17 September and were not missed for three
+# weeks; Gladstone Land and Wave would have gone the same way on the first
+# walk of the $200M expansion. The form says a registration ended, not which.
+# Whether the STOCK still trades is the vendor's fact: Polygon's reference
+# record for the ticker carries `active`, false with a `delisted_utc` once
+# the exchange is done with it. So: the Form 15 raises the question and the
+# vendor answers it. Without an answer (no key, a vendor error) nobody
+# leaves: a founder page reading 0.00% for a few weeks is a flaw, deleting
+# Bristol Myers is a different kind of thing, and the quarterly snapshot
+# drops delisted tickers regardless.
 DELISTING_FORMS = {"15", "15-12B", "15-12G", "15-15D"}
 FILE = os.path.join("universe", "delisted.csv")
 
 
-def delisting(client, cik: int, after: str) -> tuple | None:
+def still_listed(client, ticker: str, api_key: str | None) -> bool | None:
+    """-> True when the vendor says the ticker is active, False when it says
+    delisted, None when it cannot say (no key, no record, an error)."""
+    if not api_key or not ticker:
+        return None
+    import json
+    from .market_universe import DETAILS_URL, polygon_ticker
+    try:
+        data = json.loads(client.get(
+            DETAILS_URL.format(ticker=polygon_ticker(ticker), key=api_key),
+            use_cache=False))
+    except Exception:  # noqa: BLE001
+        return None
+    r = data.get("results") or {}
+    if "active" not in r:
+        return None
+    return bool(r["active"]) and not r.get("delisted_utc")
+
+
+def delisting(client, cik: int, after: str, ticker: str = "",
+              api_key: str | None = None, listed=None) -> tuple | None:
     """-> (form, filingDate) of the earliest delisting form filed on or after
-    `after` (the person's newest filing date), or None."""
+    `after` (the person's newest filing date) WHEN the vendor confirms the
+    stock no longer trades; None otherwise. `listed` is the vendor check,
+    (client, ticker, api_key) -> bool | None; the default asks Polygon."""
     if not after:
         return None
     try:
@@ -42,7 +79,12 @@ def delisting(client, cik: int, after: str) -> tuple | None:
         return None
     hits = sorted((f.get("filingDate") or "", f.get("form") or "") for f in subs.get("_filings", [])
                   if (f.get("form") or "") in DELISTING_FORMS and (f.get("filingDate") or "") >= after)
-    return (hits[0][1], hits[0][0]) if hits else None
+    if not hits:
+        return None
+    trading = (listed or still_listed)(client, ticker, api_key)
+    if trading is False:
+        return (hits[0][1], hits[0][0])
+    return None
 
 
 def path_for(universe_path: str) -> str:
