@@ -1476,7 +1476,7 @@ def _refresh(args, log) -> int:
         if due == "take":
             log(f"universe: snapshot {taken} is {age} days old; taking a new one")
             if run("universe", lambda: cmd_market_universe(ns(
-                    min_cap=1e9, exit_cap=8e8, prior=evidence_path,
+                    min_cap=2e8, exit_cap=1.6e8, prior=evidence_path,
                     out=os.path.join(args.dir, "universe",
                                      f"universe-{datetime.date.today()}.csv"),
                     limit=None))):

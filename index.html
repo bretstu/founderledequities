@@ -670,7 +670,7 @@ table.tape tr.dgrp .dn{font-family:var(--mono);font-size:var(--fs-xs);color:var(
        in ten seconds and routes out. Nothing here competes with /tape/ or
        the company pages. -->
   <h1 id="thesis">What every CEO owns of the company they run.</h1>
-  <p class="herosub" id="herosub">Every US public company worth $1B or more, computed from the SEC filings they signed. Updated nightly, never estimated.</p>
+  <p class="herosub" id="herosub">Every US public company worth $200M or more, computed from the SEC filings they signed. Updated nightly, never estimated.</p>
   <div class="navsearch herosearch" id="navsearch">
     <svg class="hsico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
     <input type="search" id="hq" placeholder="A ticker, a company, or a CEO: TSLA, Medpace, Elon Musk&hellip;" autocomplete="off" spellcheck="false" aria-label="Find a company or CEO" aria-expanded="false" role="combobox" aria-controls="hqd">
@@ -1472,7 +1472,7 @@ function screenSentence(f){
   if(f.sold&&f.sold!=="any")clauses.push(f.sold==="none"?"have not sold at their own discretion since 2016":`last sold at their own discretion ${soldW[f.sold]}`);
   if(f.buy&&f.buy!=="any")clauses.push(f.buy==="none"?"have not bought on the open market since 2016":`last bought on the open market ${buyW[f.buy]}`);
   const isDefault=!parts.length&&!clauses.length&&(f.who||"all")==="all";
-  if(isDefault)return "Every US public company worth $1B or more, with what its CEO owns.";
+  if(isDefault)return "Every US public company worth $200M or more, with what its CEO owns.";
   let out=who+(parts.length?" "+parts.join(" "):"");
   if(clauses.length)out+=(parts.length?" and ":" who ")+clauses.join(" and ");
   if(f.who==="founders"&&!parts.length&&!clauses.length)out="Companies whose CEO founded them, by the company's own proxy statement";

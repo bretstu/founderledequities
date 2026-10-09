@@ -8,7 +8,7 @@ were wrong") that a fresh look is the point.
 ## What the project is
 
 A site, founderledequities.com, that answers one question for every US
-public company worth $1B or more (2,077 of them): how much of the company
+public company worth $200M or more (about 3,000 of them; $1B until 2026-10): how much of the company
 does the chief executive own, computed from every SEC filing they signed
 since 2016, never estimated, with the reasons shown when the record is
 unsure. A nightly pipeline (Python, Cloudflare Pages, D1, Resend) rebuilds

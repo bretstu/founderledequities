@@ -1,6 +1,6 @@
 # Founder Led Equities
 
-> What the person running each US public company worth $1 billion or more reports owning of it on the Forms 3, 4 and 5 they signed with the SEC, as a share of the company. Never estimated. Refreshed nightly from EDGAR.
+> What the person running each US public company worth $200 million or more reports owning of it on the Forms 3, 4 and 5 they signed with the SEC, as a share of the company. Never estimated. Refreshed nightly from EDGAR.
 
 For each of about 2,100 companies (those whose chief executive holds the business through partnership units the filings do not restate as stock are left out): the chief executive's economic stake as a share of the company and in dollars; whether the proxy names them a founder; every purchase and sale that moved the stake since 2016, each classified as an open-market purchase, a discretionary sale, a sale under a pre-set (Rule 10b5-1) plan, or compensation; and a link to every filing.
 

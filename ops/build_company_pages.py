@@ -607,7 +607,7 @@ def _years_since(day):
 
 SCREENS = [
     ("founder-led", "Founder-led companies",
-     "US public companies worth $1B or more whose chief executive founded them, by the company's own proxy statement, with what each founder owns today",
+     "US public companies worth $200M or more whose chief executive founded them, by the company's own proxy statement, with what each founder owns today",
      lambda r, f: f),
     ("never-sold", "CEOs with no discretionary sale since 2016",
      "chief executives who have not sold a share of their company at their own discretion since 2016, the start of the record: every Form 4 they signed, with sales on a Rule 10b5-1 plan set aside",
@@ -754,7 +754,7 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
     nav = " ".join(f'<a href="#{l}">{l}</a>' for l in sorted(by))
     n = f"{len(rows):,}"
     index_html_block = (f"<div class=\"cidx\"><div class=\"wrap\"><h2 style=\"font-family:var(--ui);font-weight:700;font-size:var(--fs-xl);letter-spacing:-.01em;color:var(--ink);margin:28px 0 4px\">The index, A to Z</h2>"
-                        f"<div class=\"sub\">{n} US public companies worth $1B or more, each with a page for what its chief executive owns.</div>"
+                        f"<div class=\"sub\">{n} US public companies worth $200M or more, each with a page for what its chief executive owns.</div>"
                         f"<div class=\"letters\">{nav}</div>{''.join(parts)}</div></div>")
     # THE SCREENER IN FULL (PLAN.md section 5): the page is the template
     # companies.html (the table with its controls, the same block the home
@@ -796,7 +796,7 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
                     "never-sold": "CEOs who have not sold at their own discretion since 2016.",
                     "over-10": "CEOs who own at least 10%.",
                     "bought-this-year": "CEOs who last bought on the open market in the last year.",
-                    "hired-under-1": "Hired CEOs who own less than 1%."}.get(preset, "Every US public company worth $1B or more, with what its CEO owns.")
+                    "hired-under-1": "Hired CEOs who own less than 1%."}.get(preset, "Every US public company worth $200M or more, with what its CEO owns.")
             t = table.replace("{{HEADING}}", "Every company").replace("{{DEF}}", f'<div class="screenline" id="screenline">{html.escape(line)}</div>')
             pg = (tpl.replace("{{TABLE}}", t)
                      .replace("{{TOPNAV}}", topnav)
@@ -826,7 +826,7 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
                  '<a href="/screens/hired-under-1-percent/">Hired, under 1% &rarr;</a></div>')
         page = companies_page("Every company", "", "", index_html_block, "Every company",
                               "", "https://founderledequities.com/companies/")
-        line = "Every US public company worth $1B or more, with what its CEO owns."
+        line = "Every US public company worth $200M or more, with what its CEO owns."
         marker = f'<div class="screenline" id="screenline">{line}</div>'
         assert marker in page, "the companies screenline moved"
         page = page.replace(marker, marker + chips, 1)

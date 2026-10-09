@@ -1,6 +1,6 @@
 """The market-cap universe: which companies the site covers, and why each.
 
-THE CLAIM ON THE HERO IS A PROMISE. "Every US company over $1B" is a
+THE CLAIM ON THE HERO IS A PROMISE. "Every US company over $200M" is a
 sentence strangers will test -- someone will search for a $1.3B company
 they own and judge every other number by whether it is there. Market caps
 move daily, so the only version of that promise that can be kept is a
@@ -569,7 +569,7 @@ registrants that files domestic reports (a 10-K or 10-Q, or for a company
 too young for either, a Form 10, S-1 or successor-issuer filing), has
 ownership filings on record (or is a successor issuer whose officers' filings
 sit under a predecessor), and had a market capitalization at or above
-<b>$1 billion</b> on the snapshot date. One row per company: a dual-class
+<b>$200 million</b> on the snapshot date. One row per company: a dual-class
 filer counts once.</p>
 <p><b>Who is out, and why.</b> Foreign private issuers file 20-Fs and their
 officers file no ownership forms; Section 16 does not reach them, so this site
@@ -586,13 +586,13 @@ within 25%, the company is sized. When they disagree, it is admitted if either
 clears the bar and flagged for a human reading. When neither is available, a
 current member is kept and a newcomer waits: a counting failure never evicts
 and never admits.</p>
-<p><b>The edge does not flap.</b> A company enters at $1 billion and leaves
-only after two consecutive quarterly snapshots below $800 million. Otherwise
+<p><b>The edge does not flap.</b> A company enters at $200 million and leaves
+only after two consecutive quarterly snapshots below $160 million. Otherwise
 names near the line would blink in and out, their histories appearing and
 vanishing.</p>
 <p><b>Snapshots are quarterly and dated.</b> This list is what the rules
 produced on the date shown, from the sources named. A company that crossed
-$1 billion after that date joins at the next snapshot. If you believe a
+$200 million after that date joins at the next snapshot. If you believe a
 company is missing in error, write to
 <a href="mailto:corrections@founderledequities.com">corrections@founderledequities.com</a>
 with the ticker; the evidence behind every decision is kept.</p>
@@ -659,7 +659,7 @@ def write_page(members_path: str, evidence_path: str, taken: str,
     main = f"""<main>
   <h1>Every company on the site.</h1>
   <p class="standfirst">{n:,} US public companies with a market capitalization at or
-  above $1 billion on <b>{html.escape(taken)}</b>, chosen by the rules below.
+  above $200 million on <b>{html.escape(taken)}</b>, chosen by the rules below.
   {flagged:,} carried a flag for human review at that snapshot.{_sp_note(members_path)}</p>
 
   <section id="rules">
