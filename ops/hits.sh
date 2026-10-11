@@ -2,10 +2,18 @@
 # WHO CAME. The site's own count of visitors (every page carries the same
 # beacon; crawlers and unfurlers never fire it), read from the D1 table.
 #
-#   ops/hits.sh            # the last 7 days
+#   ops/hits.sh                        # the last 7 days
 #   ops/hits.sh today
-#   ops/hits.sh 30         # the last 30 days
-#   ops/hits.sh visitors   # today, one line per visit: when, who (a short id), where from, country, what they did
+#   ops/hits.sh yesterday
+#   ops/hits.sh 30                     # the last 30 days
+#   ops/hits.sh 2026-10-10             # that day (Eastern), any day the table has
+#   ops/hits.sh 2026-10-06..2026-10-10 # those days inclusive
+#   ops/hits.sh visitors               # today, one line per visit: when, who (a short id), where from, country, what they did
+#   ops/hits.sh visitors 2026-10-10    # the same for any window above (a day, a range, a count of days)
+#
+# A WINDOW IS A WINDOW (2026-10-11): every section runs over whatever the
+# first argument names, so a spike can be read on the day it happened,
+# weeks later, with the same report and the same visit list.
 #
 # Below the daily counts: new or returning by source, pages per visitor, and
 # each visitor's landing page (2026-09-29). A returning direct visitor is the
@@ -21,15 +29,25 @@ cd "$(dirname "$0")/.."
 
 ARG="${1:-7}"
 VISITORS=0
-if [ "$ARG" = "visitors" ]; then VISITORS=1; ARG="today"; fi
+if [ "$ARG" = "visitors" ]; then VISITORS=1; ARG="${2:-today}"; fi
 # the visit's day in Eastern time: UTC minus four hours (EDT); five in winter
 OFF=$(TZ=America/New_York date +%z | sed -E 's/^([+-])0?([0-9]+)00$/\1\2/')
 EDAY="date(ts, '${OFF} hours')"
-if [ "$ARG" = "today" ]; then
-  WHERE="$EDAY = date('now', '${OFF} hours')"; LABEL="today"; START="date('now', '${OFF} hours')"
-else
-  WHERE="$EDAY >= date('now', '${OFF} hours', '-${ARG} days')"; LABEL="last ${ARG} days"; START="date('now', '${OFF} hours', '-${ARG} days')"
-fi
+TODAY="date('now', '${OFF} hours')"
+# the window: SINGLE=1 is one day (the "seen before" question applies);
+# START is the window's first day, for that question
+SINGLE=0
+case "$ARG" in
+  today)      WHERE="$EDAY = $TODAY"; LABEL="today"; START="$TODAY"; SINGLE=1 ;;
+  yesterday)  WHERE="$EDAY = date('now', '${OFF} hours', '-1 days')"; LABEL="yesterday"; START="date('now', '${OFF} hours', '-1 days')"; SINGLE=1 ;;
+  [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]..[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])
+              A="${ARG%%..*}"; B="${ARG##*..}"
+              WHERE="$EDAY BETWEEN '$A' AND '$B'"; LABEL="$A to $B"; START="'$A'" ;;
+  [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])
+              WHERE="$EDAY = '$ARG'"; LABEL="$ARG"; START="'$ARG'"; SINGLE=1 ;;
+  ''|*[!0-9]*) echo "usage: ops/hits.sh [today|yesterday|N|YYYY-MM-DD|YYYY-MM-DD..YYYY-MM-DD]  or  ops/hits.sh visitors [window]" >&2; exit 2 ;;
+  *)          WHERE="$EDAY >= date('now', '${OFF} hours', '-${ARG} days')"; LABEL="last ${ARG} days"; START="date('now', '${OFF} hours', '-${ARG} days')" ;;
+esac
 # WHERE THEY CAME FROM, IN FOUR WORDS (2026-09-29): a referrer is a URL; a
 # reader wants to know search, X, direct or elsewhere. Direct is a bucket
 # (typed, a bookmark, an app, a private window, a browser that strips the
@@ -60,10 +78,12 @@ for r in rows:
 }
 
 if [ "$VISITORS" = "1" ]; then
-  echo "== today's visits, one line each (Eastern) =="
-  Q "SELECT substr(datetime(ts, '${OFF} hours'), 12, 5) AS at, substr(vid, 1, 6) AS who, country, path, COALESCE(NULLIF(ref,''),'(direct)') AS came_from, COALESCE(NULLIF(device,''),'') AS device, CASE WHEN pro=1 THEN 'pro' ELSE '' END AS pro FROM hits WHERE kind='view' AND $WHERE ORDER BY ts"
-  echo "== and what each did (clicks, pages opened) =="
-  Q "SELECT substr(datetime(ts, '${OFF} hours'), 12, 5) AS at, substr(vid, 1, 6) AS who, kind, name, COALESCE(detail,'') AS detail, path FROM hits WHERE kind IN ('click','open','switch','sort') AND $WHERE ORDER BY ts"
+  # the day column is shown only when the window spans days
+  if [ "$SINGLE" = "1" ]; then WHEN="substr(datetime(ts, '${OFF} hours'), 12, 5) AS at"; else WHEN="substr(datetime(ts, '${OFF} hours'), 1, 16) AS at"; fi
+  echo "== visits ($LABEL), one line each (Eastern) =="
+  Q "SELECT $WHEN, substr(vid, 1, 6) AS who, country, path, COALESCE(NULLIF(ref,''),'(direct)') AS came_from, COALESCE(NULLIF(device,''),'') AS device, CASE WHEN pro=1 THEN 'pro' ELSE '' END AS pro FROM hits WHERE kind='view' AND $WHERE ORDER BY ts"
+  echo "== and what each did ($LABEL): clicks, pages opened =="
+  Q "SELECT $WHEN, substr(vid, 1, 6) AS who, kind, name, COALESCE(detail,'') AS detail, path FROM hits WHERE kind IN ('click','open','switch','sort') AND $WHERE ORDER BY ts"
   exit 0
 fi
 echo "== views per day ($LABEL) =="
@@ -83,8 +103,8 @@ Q "SELECT kind || ' ' || name AS what, COUNT(*) AS n FROM hits WHERE kind IN ('c
 # table goes; a visitor on two or more days from direct is the nearest
 # thing this table has to a bookmark. On "today" the window is one day, so
 # the second query asks instead whether today's visitors were seen before.
-if [ "$ARG" = "today" ]; then
-  echo "== seen before today, by where they came from (today) =="
+if [ "$SINGLE" = "1" ]; then
+  echo "== seen before that day, by where they came from ($LABEL) =="
   Q "WITH v AS (SELECT vid, $SRC AS src FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), seen AS (SELECT DISTINCT vid FROM hits WHERE kind='view' AND $EDAY < $START) SELECT v.src AS came_from, SUM(CASE WHEN seen.vid IS NULL THEN 1 ELSE 0 END) AS first_time, SUM(CASE WHEN seen.vid IS NOT NULL THEN 1 ELSE 0 END) AS seen_before FROM v LEFT JOIN seen ON seen.vid = v.vid GROUP BY v.src ORDER BY COUNT(*) DESC"
 else
   echo "== days visited per visitor, by where they first came from ($LABEL): 2+ days is a person who came back =="
