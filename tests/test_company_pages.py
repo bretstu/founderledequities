@@ -669,6 +669,8 @@ def test_one_confirmation_per_address_and_the_watch_is_counted():
     assert "WHERE email = ?1 AND confirmed = 1 LIMIT 1" in w, "is the address known?"
     assert "VALUES (?1, ?2, ?3, 1, ?4, ?5)" in w, "a known address's new watch is inserted confirmed"
     assert "Every alert has a stop link" in w
+    assert "an email for any discretionary buy/sell, or any filing that moves their stake 1% or more" in w, "the confirmation promises what the watch sends: the About page's rule, in one line (2026-10-14)"
+    assert "buy on the open market or make a discretionary sale" not in w, "the old line promised less than the watch does"
     assert 'UPDATE watches SET confirmed = 1 WHERE email = ?1 AND confirmed = 0").bind(w.email)' in w, "one click confirms every pending watch of the address"
     assert w.index("LIMIT 1").__class__ is int and w.index("SELECT 1 AS k") < w.index("INSERT INTO watches (email, tk, ceo, confirmed, token, created) VALUES (?1, ?2, ?3, 0"), "the known check comes before the pending insert"
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
