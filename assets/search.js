@@ -12,9 +12,12 @@
    default), Escape closes, and "/" anywhere on the page focuses the box. */
 (function(){
 "use strict";
-var box=document.getElementById("hq")||document.getElementById("navq"),dd=document.getElementById("hqd")||document.getElementById("navqd");
-if(!box||!dd)return;
-var IDX=null,LOADING=null,SEL=0,ROWS=[];
+/* EVERY BOX IS LIVE (2026-10-14). The nav's box used to hide on the home
+   and alerts pages because this file bound one box, and those pages carry
+   a big one of their own; the nav's links then shifted between pages. The
+   index is loaded once and shared; each box gets its own rows and
+   highlight. "/" focuses the page's big box when it has one, else the nav's. */
+var IDX=null,LOADING=null;
 const DATA_V="dev";   /* stamped by ops/deploy.sh, like every data-loading script: the deploy sed matches the const spelling exactly */
 var esc=function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");};
 function load(){
@@ -40,42 +43,50 @@ function match(q){
   out.sort(function(a,b){return a[0]-b[0]||a[1]-b[1]||a[2]-b[2]||a[3]-b[3];});
   return out.slice(0,8).map(function(x){return x[4];});
 }
-function paint(){
-  if(!ROWS.length){dd.innerHTML="";dd.style.display="none";return;}
-  dd.innerHTML=ROWS.map(function(r,i){
-    var pct=r.p===null||r.p===undefined||r.p===""?"":(r.p<1?Number(r.p).toFixed(2):Number(r.p).toFixed(1))+"%";
-    return '<a class="qrow'+(i===SEL?" on":"")+'" href="/company/'+encodeURIComponent(r.t)+'/">'
-      +'<span class="qtk">'+esc(r.t)+'</span><span class="qco">'+esc(r.c||"")+'</span>'
-      +'<span class="qceo">'+esc(r.e||"")+'</span>'
-      +(pct?'<span class="qpct">'+pct+'</span>':"")
-      +(r.f?'<span class="qf">FOUNDER-LED</span>':"")
-      +'</a>';
-  }).join("");
-  dd.style.display="block";
-}
-function go(){
-  var r=ROWS[SEL]||ROWS[0];
-  if(r)location.href="/company/"+encodeURIComponent(r.t)+"/";
-}
-function close(){ROWS=[];SEL=0;paint();}
-box.addEventListener("focus",function(){load();});
-box.addEventListener("input",function(){
-  var q=box.value;
-  load().then(function(){ROWS=match(q);SEL=0;paint();});
-});
-box.addEventListener("keydown",function(ev){
-  if(ev.key==="ArrowDown"){SEL=Math.min(SEL+1,ROWS.length-1);paint();ev.preventDefault();}
-  else if(ev.key==="ArrowUp"){SEL=Math.max(SEL-1,0);paint();ev.preventDefault();}
-  else if(ev.key==="Enter"){if(ROWS.length){go();ev.preventDefault();}}
-  else if(ev.key==="Escape"){close();box.blur();}
-});
-document.addEventListener("keydown",function(ev){
-  if(ev.key==="/"&&document.activeElement!==box
-     &&!/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement||{}).tagName||"")){
-    box.focus();ev.preventDefault();
+function bind(box,dd){
+  var SEL=0,ROWS=[];
+  function paint(){
+    if(!ROWS.length){dd.innerHTML="";dd.style.display="none";return;}
+    dd.innerHTML=ROWS.map(function(r,i){
+      var pct=r.p===null||r.p===undefined||r.p===""?"":(r.p<1?Number(r.p).toFixed(2):Number(r.p).toFixed(1))+"%";
+      return '<a class="qrow'+(i===SEL?" on":"")+'" href="/company/'+encodeURIComponent(r.t)+'/">'
+        +'<span class="qtk">'+esc(r.t)+'</span><span class="qco">'+esc(r.c||"")+'</span>'
+        +'<span class="qceo">'+esc(r.e||"")+'</span>'
+        +(pct?'<span class="qpct">'+pct+'</span>':"")
+        +(r.f?'<span class="qf">FOUNDER-LED</span>':"")
+        +'</a>';
+    }).join("");
+    dd.style.display="block";
   }
-});
-document.addEventListener("click",function(ev){
-  if(!dd.contains(ev.target)&&ev.target!==box)close();
+  function go(){
+    var r=ROWS[SEL]||ROWS[0];
+    if(r)location.href="/company/"+encodeURIComponent(r.t)+"/";
+  }
+  function close(){ROWS=[];SEL=0;paint();}
+  box.addEventListener("focus",function(){load();});
+  box.addEventListener("input",function(){
+    var q=box.value;
+    load().then(function(){ROWS=match(q);SEL=0;paint();});
+  });
+  box.addEventListener("keydown",function(ev){
+    if(ev.key==="ArrowDown"){SEL=Math.min(SEL+1,ROWS.length-1);paint();ev.preventDefault();}
+    else if(ev.key==="ArrowUp"){SEL=Math.max(SEL-1,0);paint();ev.preventDefault();}
+    else if(ev.key==="Enter"){if(ROWS.length){go();ev.preventDefault();}}
+    else if(ev.key==="Escape"){close();box.blur();}
+  });
+  document.addEventListener("click",function(ev){
+    if(!dd.contains(ev.target)&&ev.target!==box)close();
+  });
+}
+var pairs=[["hq","hqd"],["navq","navqd"]],first=null,i;
+for(i=0;i<pairs.length;i++){
+  var b=document.getElementById(pairs[i][0]),d=document.getElementById(pairs[i][1]);
+  if(b&&d){bind(b,d);if(!first)first=b;}
+}
+if(first)document.addEventListener("keydown",function(ev){
+  if(ev.key==="/"&&document.activeElement!==first
+     &&!/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement||{}).tagName||"")){
+    first.focus();ev.preventDefault();
+  }
 });
 })();

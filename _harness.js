@@ -109,8 +109,8 @@ const P=runPage();
     "the tape module left the home page for /tape/");
   assert(idxsrc.indexOf('<template id="pagesrc">')>-1&&idxsrc.indexOf('class="tablesec')>idxsrc.indexOf('<template id="pagesrc">')&&idxsrc.indexOf('id="tbody"')>idxsrc.indexOf('<template id="pagesrc">'),
     "the table markup survives only inside the inert extraction template");
-  assert(idxsrc.includes('class="navsearch herosearch"')&&idxsrc.includes('id="hq"')&&idxsrc.includes(".home .topnav .navsearch{display:none}"),
-    "the hero carries the big search (#hq, bound first by search.js); the nav's box hides on the home page and rides every other page");
+  assert(idxsrc.includes('class="navsearch herosearch"')&&idxsrc.includes('id="hq"')&&!idxsrc.includes(".home .topnav .navsearch{display:none}"),
+    "the hero carries the big search (#hq); the nav's box rides every page, the home page too, first in the nav so the links never move (2026-10-14)");
   assert(idxsrc.includes('id="fwrows"')&&idxsrc.includes('id="stakecards"')&&idxsrc.includes('id="lednum"')&&idxsrc.includes('id="herostats"'),
     "every section is a stamp anchor: the page is real HTML before any script");
   assert(idxsrc.includes('<a class="exit" href="/tape/">The full tape &rarr;</a>')&&idxsrc.includes('<a class="exit" href="/companies/">All companies &rarr;</a>'),

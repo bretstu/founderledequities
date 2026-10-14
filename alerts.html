@@ -37,7 +37,6 @@
     .way .hs-msg:empty{display:none}
     .way .herosearch{margin:0;flex:1 1 380px;height:44px;background:var(--white)}
     .way .herosearch input{font-size:var(--fs-b);width:auto;max-width:none}   /* the nav rule caps the box at 38vw; here it has the row */
-    body.alerts .topnav .navsearch{display:none}   /* the page carries the search itself, as the home page does; search.js binds one box */
     /* the reader's own watches: one row each, the stop at the right */
     .wlist{background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:6px 24px;font-size:var(--fs-s)}
     .wlist .row{display:flex;justify-content:space-between;align-items:center;gap:10px;white-space:nowrap;overflow:hidden;padding:12px 0;border-top:1px solid var(--line)}
@@ -87,7 +86,7 @@
   <div class="lk">One company</div>
   <div class="way">
     <div class="oq"><b>Any chief executive, founder or not.</b><span>Find the company; the Watch field is at the top of its page.</span></div>
-    <div class="navsearch herosearch" id="navsearch">
+    <div class="navsearch herosearch" id="herosearch">
       <svg class="hsico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
       <input type="search" id="hq" placeholder="A ticker, a company, or a CEO&hellip;" autocomplete="off" spellcheck="false" aria-label="Find a company or CEO" aria-expanded="false" role="combobox" aria-controls="hqd">
       <div class="navqd" id="hqd" role="listbox" hidden></div>

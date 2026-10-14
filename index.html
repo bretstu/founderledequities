@@ -552,7 +552,7 @@ footer .mono{font-family:var(--ui);font-size:var(--fs-s)}   /* the dates in the 
 .navmenu a{display:block;padding:8px 14px;color:var(--ink);font-weight:500}
 .navmenu a:hover{background:var(--panel)}
 .navmenu a:last-child{color:var(--mut);border-top:1px solid var(--line)}
-.navsearch{position:relative;margin-left:6px}
+.navsearch{position:relative;margin-right:6px}
 .navsearch input{font-family:var(--ui);font-size:var(--fs-s);width:210px;max-width:38vw;padding:8px 10px;border:1px solid var(--pline);background:var(--white);color:var(--ink);border-radius:var(--r-s)}
 .navsearch input:focus{outline:none;border-color:var(--accent)}
 .navqd{position:absolute;right:0;top:calc(100% + 6px);width:min(430px,92vw);background:var(--white);border:1px solid var(--pline);border-radius:var(--r-s);box-shadow:0 8px 24px rgba(15,23,42,.10);z-index:60;max-height:60vh;overflow:auto}
@@ -618,7 +618,7 @@ footer .mono{font-family:var(--ui);font-size:var(--fs-s)}   /* the dates in the 
 .capfine a{color:var(--ink)}
 @media(max-width:900px){.stakecards{grid-template-columns:1fr}.mrow{flex-direction:column;gap:26px}}
 @media(max-width:640px){.fwbadge{display:none}.hero h1{font-size:34px}}
-.home .topnav .navsearch{display:none}
+/* the nav's box shows on the home page too (2026-10-14): one more box bound by search.js, and the links never move */
 
 /* ---- COMPANIES REDESIGN (2026-09-24): the screener is the page ---- */
 .tablesec:not(.home) .controls{border-top:0;border-bottom:1px solid var(--line);padding:0 0 16px;margin:0 0 6px}
@@ -658,6 +658,11 @@ table.tape tr.dgrp .dn{font-family:var(--mono);font-size:var(--fs-xs);color:var(
     onclick="window.scrollTo({top:0,behavior:'smooth'})"
     onkeydown="if(event.key==='Enter')window.scrollTo({top:0,behavior:'smooth'})">Founder Led <i>Equities</i></div>
   <div class="topnav">
+    <!-- THE SEARCH FIRST, ON EVERY PAGE (2026-10-14): the links never move -->
+    <div class="navsearch" id="navsearch">
+      <input type="search" id="navq" placeholder="Company or CEO…" autocomplete="off" spellcheck="false" aria-label="Find a company or CEO" aria-expanded="false" role="combobox" aria-controls="navqd">
+      <div class="navqd" id="navqd" role="listbox" hidden></div>
+    </div>
     <a href="/tape/">Activity</a>
     <a href="/companies/">Companies</a>
     <a href="/alerts/">Alerts</a>
@@ -669,10 +674,6 @@ table.tape tr.dgrp .dn{font-family:var(--mono);font-size:var(--fs-xs);color:var(
       <div class="navmenu" id="navmenu" hidden><a href="/alerts/">Your watches</a><a href="/signin/" id="navme-out">Sign out</a></div>
     </div>
     <script type="text/javascript">window.fleNav=function(){try{var v=JSON.parse(localStorage.getItem("fle_watches")||"null"),a=document.getElementById("navme-a"),m=document.getElementById("navmenu"),w=document.getElementById("navme");if(!a)return;if(v&&v.token){a.textContent=(v.email||"Signed in")+" \u25BE";a.href="#";a.title="Signed in as "+(v.email||"");w.classList.add("in");a.onclick=function(e){e.preventDefault();m.hidden=!m.hidden;};document.getElementById("navme-out").onclick=function(e){e.preventDefault();try{localStorage.removeItem("fle_watches");}catch(x){}location.reload();};document.addEventListener("click",function(e){if(!w.contains(e.target))m.hidden=true;});}else{a.textContent="Sign in";a.href="/signin/";a.onclick=null;w.classList.remove("in");m.hidden=true;}}catch(e){}};fleNav();</script>
-    <div class="navsearch" id="navsearch">
-      <input type="search" id="navq" placeholder="Company or CEO…" autocomplete="off" spellcheck="false" aria-label="Find a company or CEO" aria-expanded="false" role="combobox" aria-controls="navqd">
-      <div class="navqd" id="navqd" role="listbox" hidden></div>
-    </div>
     <script defer src="/search.js"></script>
   </div>
 </div></div>
@@ -685,7 +686,7 @@ table.tape tr.dgrp .dn{font-family:var(--mono);font-size:var(--fs-xs);color:var(
        the company pages. -->
   <h1 id="thesis">What every CEO owns of the company they run.</h1>
   <p class="herosub" id="herosub">Every US public company worth $200M or more, computed from the SEC filings they signed. Updated nightly, never estimated.</p>
-  <div class="navsearch herosearch" id="navsearch">
+  <div class="navsearch herosearch" id="herosearch">
     <svg class="hsico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
     <input type="search" id="hq" placeholder="A ticker, a company, or a CEO: TSLA, Medpace, Elon Musk&hellip;" autocomplete="off" spellcheck="false" aria-label="Find a company or CEO" aria-expanded="false" role="combobox" aria-controls="hqd">
     <span class="hskey" aria-hidden="true">/</span>
