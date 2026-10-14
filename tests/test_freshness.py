@@ -84,6 +84,47 @@ def test_submissions_uses_the_age_rule(tmp_path):
     assert edgar.SUBMISSIONS_MAX_AGE <= 24 * 3600, "at most a day: the nightly must see yesterday"
 
 
+def test_a_history_file_the_sec_rewrote_is_read_again(tmp_path):
+    """THE NEWEST HISTORY FILE IS NOT CLOSED (2026-10-14). Joby's cached
+    history file held 434 filings to 2023-06-15; the live one 476 to
+    2023-07-05; the main feed began 2023-07-06. The 42 filings that had
+    rolled out of the feed into the file were in neither piece the client
+    held, and 1,079 of 2,969 issuers had such a gap. The feed's manifest
+    says what the file holds now, and a copy behind it is re-read."""
+    def feed(count, to):
+        return json.dumps({"filings": {"recent": {"accessionNumber": ["r1"], "form": ["4"],
+                                                  "filingDate": ["2026-10-01"]},
+                                       "files": [{"name": "CIK0000000007-submissions-001.json",
+                                                  "filingCount": count, "filingFrom": "2020-01-01",
+                                                  "filingTo": to}]}})
+    def chunk(accs, dates):
+        return json.dumps({"accessionNumber": accs, "form": ["4"] * len(accs), "filingDate": dates})
+    old_chunk = chunk(["h1", "h2"], ["2023-06-01", "2023-06-15"])
+    new_chunk = chunk(["h1", "h2", "h3"], ["2023-06-01", "2023-06-15", "2023-07-05"])
+    c, calls = _client(tmp_path, [feed(2, "2023-06-15"), old_chunk,
+                                  feed(3, "2023-07-05"), new_chunk])
+    got = [f["accessionNumber"] for f in c.submissions(7)["_filings"]]
+    assert got == ["r1", "h1", "h2"] and len(calls) == 2
+    # the file agrees with the manifest: served from the cache, no fetch
+    assert [f["accessionNumber"] for f in c.submissions(7)["_filings"]] == ["r1", "h1", "h2"]
+    assert len(calls) == 2, "a history file the manifest agrees with is not refetched"
+    # the feed ages and now says the file holds three: the copy is behind and is re-read
+    old = time.time() - edgar.SUBMISSIONS_MAX_AGE - 60
+    os.utime(c._cache_path("https://data.sec.gov/submissions/CIK0000000007.json"), (old, old))
+    got = [f["accessionNumber"] for f in c.submissions(7)["_filings"]]
+    assert got == ["r1", "h1", "h2", "h3"], "the filing that rolled into the history file is read"
+    assert len(calls) == 4
+    # and the re-read copy is the cache now: no fetch on the next call
+    assert len([f for f in c.submissions(7)["_filings"]]) == 4 and len(calls) == 4
+    # a copy AHEAD of the manifest (fetched after the feed was) is never a reason to refetch
+    assert not edgar._history_moved({"filingCount": 2, "filingTo": "2023-06-15"},
+                                    json.loads(new_chunk))
+    assert edgar._history_moved({"filingCount": 3, "filingTo": "2023-07-05"}, json.loads(old_chunk))
+    assert edgar._history_moved({"filingCount": 2, "filingTo": "2023-07-05"}, json.loads(old_chunk)), \
+        "the same count but a later end date is a rewrite too"
+    assert not edgar._history_moved({}, json.loads(old_chunk)), "a manifest that says nothing cannot be compared"
+
+
 def test_a_finished_checkpoint_becomes_the_prior_and_an_unfinished_one_resumes(tmp_path):
     """Resumed as-is, a finished checkpoint asks EDGAR nothing. Moved aside
     as the prior, it is what lets the panel carry unchanged companies. A

@@ -319,7 +319,26 @@ class EdgarClient:
         for extra in data.get("filings", {}).get("files", []):
             extra_url = f"{SEC_DATA}/submissions/{extra['name']}"
             try:
-                rows.extend(_columns_to_rows(self.get_json(extra_url)))
+                # THE NEWEST HISTORY FILE IS NOT CLOSED (2026-10-14). The main
+                # feed inlines the newest 1,000 filings; each one the issuer
+                # files pushes the oldest of those into the first history
+                # file, which the SEC rewrites. Cached forever as "closed
+                # history", that file ended where it ended the day it was
+                # first read, and every filing that rolled past it since was
+                # in neither piece: Joby's cached file held 434 filings to
+                # 2023-06-15, the live one 476 to 2023-07-05, the main feed
+                # began 2023-07-06, and Bevirt's vesting in the gap was
+                # never walked. 1,079 of 2,969 issuers had a gap that day.
+                # The feed's own manifest says what the file holds now; a
+                # cached copy that disagrees is re-read, one that agrees is
+                # served. No clock, and no fetch when nothing has rolled.
+                chunk = self.get_json(extra_url)
+                if _history_moved(extra, chunk):
+                    # max_age 0: the cached copy is never fresh enough, so it is
+                    # refetched and rewritten; if the SEC is down the stale copy
+                    # is served and counted, as the main feed's is
+                    chunk = self.get_json(extra_url, max_age=0.0)
+                rows.extend(_columns_to_rows(chunk))
             except Exception as exc:  # noqa: BLE001
                 failed.append(f"{extra['name']}: {exc}")
         if failed:
@@ -400,6 +419,29 @@ class EdgarClient:
 
     def primary_document(self, cik: int, accession: str, doc_name: str) -> str:
         return self.get(f"{self.filing_dir(cik, accession)}/{doc_name}")
+
+
+def _history_moved(manifest: dict, chunk: dict) -> bool:
+    """Has the SEC rewritten a history file since this copy was read?
+
+    The main feed's manifest states each file's `filingCount` and
+    `filingTo`; the copy states its own. A copy that holds fewer filings,
+    or ends earlier, than the manifest says is behind. A manifest that
+    says nothing (an older feed shape) cannot be compared and the copy
+    stands, as it always did.
+    """
+    count = manifest.get("filingCount")
+    to = (manifest.get("filingTo") or "")[:10]
+    have = chunk.get("accessionNumber") or []
+    dates = chunk.get("filingDate") or []
+    # behind, never ahead: a copy fetched after the main feed was can hold
+    # more than the manifest says, and refetching it on every call until the
+    # feed caught up would be a storm (the feed is read several times a night)
+    if isinstance(count, int) and len(have) < count:
+        return True
+    if to and dates and max(dates)[:10] < to:
+        return True
+    return False
 
 
 def _columns_to_rows(cols: dict) -> list[dict]:
