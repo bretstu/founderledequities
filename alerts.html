@@ -44,6 +44,7 @@
     .wlist .row>span{overflow:hidden;text-overflow:ellipsis}
     .wlist .tk{font-weight:700;margin-right:8px}
     .wlist .row .when{color:var(--faint);margin-left:8px;font-size:var(--fs-xs)}
+    .wlist .row .rule{color:var(--mut);margin-left:8px}   /* the founder stream's one line, first in the list */
     .wlist .stop{font:inherit;font-size:var(--fs-2xs);font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);background:none;border:0;cursor:pointer;padding:0}
     .wlist .stop:hover{color:var(--sell)}
     .lfoot{font-size:var(--fs-xs);color:var(--mut);margin-top:10px}
@@ -85,10 +86,11 @@
 
   <div class="lk">One company</div>
   <div class="way">
-    <div class="oq"><b>Any chief executive, founder or not.</b><span>Find the company; the Watch field is at the top of its page.</span></div>
+    <div class="oq"><b>Any chief executive, founder or not.</b><span id="onesub">Pick a company; the Watch field is at the top of its page.</span></div>
+    <!-- THE BOX IS THE WATCH (2026-10-14): signed in, a pick goes straight onto the list below; signed out, to the company page with the field ready -->
     <div class="navsearch herosearch" id="herosearch">
       <svg class="hsico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
-      <input type="search" id="hq" placeholder="A ticker, a company, or a CEO&hellip;" autocomplete="off" spellcheck="false" aria-label="Find a company or CEO" aria-expanded="false" role="combobox" aria-controls="hqd">
+      <input type="search" id="hq" data-pick="watchPick" placeholder="A ticker, a company, or a CEO&hellip;" autocomplete="off" spellcheck="false" aria-label="Find a company to watch" aria-expanded="false" role="combobox" aria-controls="hqd">
       <div class="navqd" id="hqd" role="listbox" hidden></div>
     </div>
   </div>

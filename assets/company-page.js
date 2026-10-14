@@ -672,6 +672,7 @@ async function fetchText(paths){
       else if(LANDED==="alloff")WATCHES.forget();
       history.replaceState(null,"",location.pathname);
       if(window.fleNav)fleNav();   /* the nav drew before the landing was read */
+      if(LANDED==="1"){LANDED="";setTimeout(()=>{const i=$("#wemail");if(i)i.focus();},0);}   /* from the alerts page's box, signed out: the field is ready */
     }
     if(WATCHES.has(C.tk||""))WATCHING={tk:C.tk};
   }

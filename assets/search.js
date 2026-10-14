@@ -43,13 +43,22 @@ function match(q){
   out.sort(function(a,b){return a[0]-b[0]||a[1]-b[1]||a[2]-b[2]||a[3]-b[3];});
   return out.slice(0,8).map(function(x){return x[4];});
 }
+/* A BOX CAN DO SOMETHING OTHER THAN NAVIGATE (2026-10-14): a box with
+   data-pick="name" hands the chosen row to window[name](row); if that
+   returns true the pick is handled there (the alerts page adds a watch
+   from its box), otherwise the company page opens as always. */
 function bind(box,dd){
-  var SEL=0,ROWS=[];
+  var SEL=0,ROWS=[],pickName=box.getAttribute("data-pick");
+  function open(r){
+    var h=pickName&&window[pickName];
+    if(h&&h(r)===true){close();box.value="";return;}
+    location.href="/company/"+encodeURIComponent(r.t)+"/";
+  }
   function paint(){
     if(!ROWS.length){dd.innerHTML="";dd.style.display="none";return;}
     dd.innerHTML=ROWS.map(function(r,i){
       var pct=r.p===null||r.p===undefined||r.p===""?"":(r.p<1?Number(r.p).toFixed(2):Number(r.p).toFixed(1))+"%";
-      return '<a class="qrow'+(i===SEL?" on":"")+'" href="/company/'+encodeURIComponent(r.t)+'/">'
+      return '<a class="qrow'+(i===SEL?" on":"")+'" data-i="'+i+'" href="/company/'+encodeURIComponent(r.t)+'/">'
         +'<span class="qtk">'+esc(r.t)+'</span><span class="qco">'+esc(r.c||"")+'</span>'
         +'<span class="qceo">'+esc(r.e||"")+'</span>'
         +(pct?'<span class="qpct">'+pct+'</span>':"")
@@ -60,9 +69,15 @@ function bind(box,dd){
   }
   function go(){
     var r=ROWS[SEL]||ROWS[0];
-    if(r)location.href="/company/"+encodeURIComponent(r.t)+"/";
+    if(r)open(r);
   }
   function close(){ROWS=[];SEL=0;paint();}
+  dd.addEventListener("click",function(ev){
+    var a=ev.target.closest?ev.target.closest("a.qrow"):null;
+    if(!a||!pickName)return;
+    var r=ROWS[Number(a.getAttribute("data-i"))];
+    if(r){ev.preventDefault();open(r);}
+  });
   box.addEventListener("focus",function(){load();});
   box.addEventListener("input",function(){
     var q=box.value;

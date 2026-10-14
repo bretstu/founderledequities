@@ -55,6 +55,25 @@ function drawBand(){
     form.innerHTML=FORM0;
     if(fine)fine.textContent="";
   }
+  /* the company panel's line says what its box does in this state */
+  const sub=$("#onesub");
+  if(sub)sub.textContent=WATCHES.token?"Pick a company and it's on your list.":"Pick a company; the Watch field is at the top of its page.";
+}
+/* THE BOX IS THE WATCH (2026-10-14): search.js hands the chosen row here.
+   Signed in, the watch is posted with the reader's token and the list
+   redraws; signed out, the company page opens with its field ready. */
+function watchPick(r){
+  if(!WATCHES.token){location.href=`/company/${encodeURIComponent(r.t)}/?watch=1`;return true;}
+  (async()=>{
+    try{
+      const q=await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk:r.t,ceo:r.e||"",t:WATCHES.token})});
+      const j=await q.json();
+      if(j.ok&&j.watching){hit("click","watch",`${r.t}:on`);WATCHES.remember(WATCHES.token,r.t,r.e||"");$("#said").textContent=`You're watching ${r.e||r.t}.`;drawList();}
+      else if(j.signedout){WATCHES.forget();location.href="/signin/?next=/alerts/";}
+      else{hit("click","watch",`${r.t}:fail`);$("#said").textContent=j.message||"That didn't work.";}
+    }catch(e){hit("click","watch",`${r.t}:error`);$("#said").textContent="Something went wrong; write to hello@founderledequities.com.";}
+  })();
+  return true;
 }
 async function joinAll(ev){
   ev.preventDefault();
@@ -89,7 +108,9 @@ async function drawList(){
   if(window.fleNav)fleNav();   /* the address may have just arrived, or the token may have died */
   if(ws===null){mine.hidden=true;already.hidden=true;return;}   /* the fetch failed: nothing is claimed either way */
   if(!WATCHES.token){mine.hidden=true;already.hidden=false;drawBand();return;}   /* the token is gone: signed out elsewhere */
-  const name=w=>w.tk==="FOUNDERS"?"Every founder":`<span class="tk">${esc(w.tk)}</span>${esc(w.ceo||"")}`;
+  /* the founder stream first, always, drawn as the stream; the companies by date after it */
+  ws.sort((a,b)=>(b.tk==="FOUNDERS")-(a.tk==="FOUNDERS")||String(a.since).localeCompare(String(b.since)));
+  const name=w=>w.tk==="FOUNDERS"?`Every founder<span class="rule">any move of 1% or more</span>`:`<span class="tk">${esc(w.tk)}</span>${esc(w.ceo||"")}`;
   const day=d=>{const t=Date.parse(d+"T00:00:00Z");return isNaN(t)?d:new Date(t).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});};
   body.innerHTML=ws.length?ws.map(w=>`<div class="row"><span>${name(w)}${w.since?`<span class="when">since ${esc(day(w.since))}</span>`:""}</span><button class="stop" onclick="return stopOne('${esc(w.token)}','${esc(w.tk)}')">Stop</button></div>`).join("")
     :`<div class="row"><span>Nothing yet. Watch the founders above, or find a company.</span></div>`;

@@ -764,3 +764,21 @@ def test_subscribers_report_counts_addresses_that_get_alerts():
     assert "api.resend.com" not in sh and "RESEND_API_KEY" not in sh, "no letter, no contact list"
     assert 'DB="${FLE_HITS_DB:-fle-hits}"' in sh and "wrangler d1 list" not in sh
     assert "readers_with_a_watch" not in sh, "the count that mixed the unconfirmed in is gone"
+
+
+def test_the_founder_stream_leads_the_list_and_the_box_is_the_watch():
+    """TWO SMALL THINGS ON THE ALERTS PAGE (2026-10-14): the founder stream
+    is first in Your watches, always, drawn as the stream; and the One
+    company panel's box adds a watch rather than being a second search:
+    signed in, straight onto the list; signed out, to the company page with
+    its field ready. search.js hands a data-pick box's row to the page."""
+    al = open(os.path.join(ROOT, "assets", "alerts-page.js"), encoding="utf-8").read()
+    assert 'ws.sort((a,b)=>(b.tk==="FOUNDERS")-(a.tk==="FOUNDERS")' in al and 'Every founder<span class="rule">any move of 1% or more</span>' in al
+    assert "function watchPick(r)" in al and "/?watch=1" in al and 'body:JSON.stringify({tk:r.t,ceo:r.e||"",t:WATCHES.token})' in al
+    assert "Pick a company and it's on your list." in al
+    html = open(os.path.join(ROOT, "alerts.html"), encoding="utf-8").read()
+    assert 'id="hq" data-pick="watchPick"' in html and 'id="onesub"' in html and "Find the company; the Watch field" not in html
+    sj = open(os.path.join(ROOT, "assets", "search.js"), encoding="utf-8").read()
+    assert 'pickName=box.getAttribute("data-pick")' in sj and "if(h&&h(r)===true){close();box.value=\"\";return;}" in sj and 'data-i="\'+i+\'"' in sj
+    cp = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
+    assert 'if(LANDED==="1"){LANDED="";' in cp and 'i.focus()' in cp, "signed out, the pick lands on the company page with the field focused"
