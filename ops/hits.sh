@@ -109,15 +109,17 @@ for r in out[0]["results"]:
 
 # ------------------------------------------------------------ the visitors
 if [ "$VISITORS" = "1" ]; then
-  echo "== visitors ($LABEL), one row each: when they arrived, where from, the page they landed on, pages seen, what they did =="
-  Q "WITH f AS $FIRST, s AS $SOURCE, p AS (SELECT vid, COUNT(*) AS pages, MIN(country) AS country FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT vid, GROUP_CONCAT(did || CASE WHEN n > 1 THEN ' x' || n ELSE '' END, ', ') AS did FROM (SELECT vid, did, COUNT(*) AS n, MIN(ts) AS first_ts FROM ($DID_ROW) GROUP BY vid, did ORDER BY first_ts) GROUP BY vid) SELECT $AT_FIRST AS first, substr(f.vid, 1, 6) AS who, p.country, s.src AS came_from, s.landed AS landed_on, p.pages, COALESCE(d.did, '') AS did FROM f JOIN p ON p.vid=f.vid LEFT JOIN s ON s.vid=f.vid LEFT JOIN d ON d.vid=f.vid ORDER BY f.first_ts"
-  # then each reader who saw more than one page: the journey in order, with
-  # what they did on the row where they did it (at most 40 such readers); a
-  # one-page visitor is their row above, landing page included
-  R "WITH f AS $FIRST, s AS $SOURCE, p AS (SELECT vid, COUNT(*) AS pages, MIN(country) AS country FROM hits WHERE kind='view' AND $WHERE GROUP BY vid) SELECT f.vid, substr(f.vid,1,6), p.country, s.src, p.pages FROM f JOIN p ON p.vid=f.vid LEFT JOIN s ON s.vid=f.vid WHERE p.pages > 1 ORDER BY f.first_ts LIMIT 40" | while IFS=$'\t' read -r vid who country src pages; do
+  # the overview: one row per visitor, with a COUNT of actions; the words
+  # live in the journey tables below, so nothing is shown twice
+  echo "== visitors ($LABEL), one row each: when they arrived, where from, the page they landed on, pages seen, actions taken =="
+  Q "WITH f AS $FIRST, s AS $SOURCE, p AS (SELECT vid, COUNT(*) AS pages, MIN(country) AS country FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT vid, COUNT(*) AS actions FROM ($DID_ROW) GROUP BY vid) SELECT $AT_FIRST AS first, substr(f.vid, 1, 6) AS who, p.country, s.src AS came_from, s.landed AS landed_on, p.pages, COALESCE(d.actions, 0) AS actions FROM f JOIN p ON p.vid=f.vid LEFT JOIN s ON s.vid=f.vid LEFT JOIN d ON d.vid=f.vid ORDER BY f.first_ts"
+  # then a table for everyone with more than one page or any action: the
+  # journey in order, each action on the row where it happened (at most 40);
+  # a one-page visitor who did nothing is their row above
+  R "WITH f AS $FIRST, s AS $SOURCE, p AS (SELECT vid, COUNT(*) AS pages, MIN(country) AS country FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT vid, COUNT(*) AS actions FROM ($DID_ROW) GROUP BY vid) SELECT f.vid, substr(f.vid,1,6), p.country, s.src, p.pages, COALESCE(d.actions, 0) FROM f JOIN p ON p.vid=f.vid LEFT JOIN s ON s.vid=f.vid LEFT JOIN d ON d.vid=f.vid WHERE p.pages > 1 OR d.actions > 0 ORDER BY f.first_ts LIMIT 40" | while IFS=$'\t' read -r vid who country src pages actions; do
     echo
-    echo "== $who, $country, from $src: $pages pages =="
-    Q "SELECT at, path, did FROM (SELECT ts, $AT AS at, path, $FILTER_OF AS did FROM hits WHERE kind='view' AND vid='$vid' AND $WHERE UNION ALL SELECT ts, $AT AS at, path, did FROM ($DID_ACTS) WHERE vid='$vid') ORDER BY ts"
+    echo "== $who, $country, from $src: $pages pages, $actions actions =="
+    Q "SELECT at, path, action FROM (SELECT ts, $AT AS at, path, $FILTER_OF AS action FROM hits WHERE kind='view' AND vid='$vid' AND $WHERE UNION ALL SELECT ts, $AT AS at, path, did FROM ($DID_ACTS) WHERE vid='$vid') ORDER BY ts"
   done
   exit 0
 fi
@@ -126,12 +128,12 @@ fi
 # 1. how many came
 if [ "$SINGLE" = "1" ]; then
   echo "== $LABEL: how many came =="
-  Q "WITH v AS (SELECT vid, COUNT(*) AS pages FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), seen AS (SELECT DISTINCT vid FROM hits WHERE kind='view' AND $EDAY < $START), d AS (SELECT DISTINCT vid FROM ($DID_ROW)) SELECT COUNT(*) AS visitors, COALESCE(SUM(pages), 0) AS views, (SELECT COUNT(*) FROM v JOIN seen ON seen.vid=v.vid) AS seen_on_an_earlier_day, (SELECT COUNT(*) FROM v JOIN d ON d.vid=v.vid) AS did_anything FROM v"
+  Q "WITH v AS (SELECT vid, COUNT(*) AS pages FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), seen AS (SELECT DISTINCT vid FROM hits WHERE kind='view' AND $EDAY < $START), d AS (SELECT DISTINCT vid FROM ($DID_ROW)) SELECT COUNT(*) AS visitors, COALESCE(SUM(pages), 0) AS views, (SELECT COUNT(*) FROM v JOIN seen ON seen.vid=v.vid) AS seen_on_an_earlier_day, (SELECT COUNT(*) FROM v JOIN d ON d.vid=v.vid) AS took_an_action FROM v"
 else
   echo "== $LABEL: how many came, by day =="
   Q "SELECT $EDAY AS day, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY 1 ORDER BY 1"
   echo "== and over the whole window: a visitor seen on 2+ days is a person who came back =="
-  Q "WITH v AS (SELECT vid, COUNT(*) AS pages, COUNT(DISTINCT $EDAY) AS days FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT DISTINCT vid FROM ($DID_ROW)) SELECT COUNT(*) AS visitors, COALESCE(SUM(pages), 0) AS views, SUM(CASE WHEN days>=2 THEN 1 ELSE 0 END) AS came_back, (SELECT COUNT(*) FROM v JOIN d ON d.vid=v.vid) AS did_anything FROM v"
+  Q "WITH v AS (SELECT vid, COUNT(*) AS pages, COUNT(DISTINCT $EDAY) AS days FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT DISTINCT vid FROM ($DID_ROW)) SELECT COUNT(*) AS visitors, COALESCE(SUM(pages), 0) AS views, SUM(CASE WHEN days>=2 THEN 1 ELSE 0 END) AS came_back, (SELECT COUNT(*) FROM v JOIN d ON d.vid=v.vid) AS took_an_action FROM v"
 fi
 echo "== by country ($LABEL) =="
 Q "SELECT country, COUNT(DISTINCT vid) AS visitors FROM hits WHERE kind='view' AND $WHERE GROUP BY country ORDER BY visitors DESC LIMIT 8"
@@ -146,7 +148,7 @@ Q "SELECT path, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHE
 
 # 4. how deep, and what they did. One page and gone is a bounce, whoever
 # it was; two or more is a person reading.
-echo "== how deep ($LABEL): pages viewed per visitor, and how many did anything =="
-Q "WITH v AS (SELECT vid, COUNT(*) AS pages FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT DISTINCT vid FROM ($DID_ROW)) SELECT CASE WHEN pages=1 THEN '1 page' WHEN pages<=3 THEN '2-3 pages' ELSE '4+ pages' END AS depth, COUNT(*) AS visitors, SUM(CASE WHEN d.vid IS NOT NULL THEN 1 ELSE 0 END) AS did_anything FROM v LEFT JOIN d ON d.vid=v.vid GROUP BY depth ORDER BY MIN(pages)"
-echo "== what they did ($LABEL): the page's controls, the watch form, a filter on the companies page =="
-Q "SELECT did AS what, COUNT(*) AS n, COUNT(DISTINCT vid) AS visitors FROM ($DID_ROW) GROUP BY did ORDER BY n DESC LIMIT 15"
+echo "== how deep ($LABEL): pages viewed per visitor, and how many took an action =="
+Q "WITH v AS (SELECT vid, COUNT(*) AS pages FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT DISTINCT vid FROM ($DID_ROW)) SELECT CASE WHEN pages=1 THEN '1 page' WHEN pages<=3 THEN '2-3 pages' ELSE '4+ pages' END AS depth, COUNT(*) AS visitors, SUM(CASE WHEN d.vid IS NOT NULL THEN 1 ELSE 0 END) AS took_an_action FROM v LEFT JOIN d ON d.vid=v.vid GROUP BY depth ORDER BY MIN(pages)"
+echo "== actions ($LABEL): the page's controls, the watch form, a filter on the companies page =="
+Q "SELECT did AS action, COUNT(*) AS n, COUNT(DISTINCT vid) AS visitors FROM ($DID_ROW) GROUP BY did ORDER BY n DESC LIMIT 15"
