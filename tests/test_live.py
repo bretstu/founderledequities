@@ -91,3 +91,31 @@ def test_a_relisted_filing_the_site_already_carries_is_not_news(monkeypatch):
     lines, decisions = live.one_pass(Client(), uni, set())
     assert decisions == [], "no run, no mail"
     assert len(lines) == 1 and "already on the site" in lines[0] and "feed page 0" in lines[0], "the evidence is kept in the day file"
+
+
+def test_the_watcher_waits_while_a_refresh_holds_the_staging_folder(tmp_path, monkeypatch):
+    """ONE REFRESH AT A TIME (2026-10-14). A full walk wrote 2,969 rows to
+    the staging folder at 16:59; the watcher's targeted run at 17:05 wrote
+    the live panel plus one company over them and at 17:38 shipped it, and
+    the walk's publish at 17:40 found two files. The refresh now holds
+    weekly/refresh.lock for its whole run; the watcher reads it and lets
+    the pending filings wait for the next pass."""
+    import os
+    monkeypatch.setattr(live, "ROOT", str(tmp_path))
+    (tmp_path / "weekly").mkdir()
+    launched = []
+    import subprocess
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: launched.append(a) or type("R", (), {"returncode": 1})())
+    uni = {1: {"tk": "JOBY", "ceo": "JoeBen Bevirt"}}
+    pending = [("0001819848-26-000001", 1)]
+    # a live refresh (this very process) holds the lock: nothing is launched, everything waits
+    (tmp_path / "weekly" / "refresh.lock").write_text(f"{os.getpid()}\nfull walk\n2026-10-14 16:33:14\n")
+    lines, still = live.publish_and_mail(pending, uni)
+    assert still == pending and not launched
+    assert lines == [f"  a refresh is running (pid {os.getpid()}, full walk, since 2026-10-14 16:33:14); 1 decision(s) wait for the next pass"]
+    # a lock whose process is gone is stale: the watcher runs
+    (tmp_path / "weekly" / "refresh.lock").write_text("999999999\nfull walk\n2026-10-14 16:33:14\n")
+    assert live.refresh_holder() == ""
+    # and no lock at all is no lock
+    os.remove(tmp_path / "weekly" / "refresh.lock")
+    assert live.refresh_holder() == ""

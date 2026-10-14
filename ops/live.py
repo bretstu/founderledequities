@@ -356,6 +356,24 @@ def worth_a_post(u, r):
     return ""
 
 
+def refresh_holder():
+    """Who holds weekly/refresh.lock (pid, mode, start; one per line), or ""
+    when no live process does. The same reading fle.cli makes; a dead pid
+    is a stale lock from a crash and names nobody."""
+    try:
+        with open(os.path.join(ROOT, "weekly", "refresh.lock"), encoding="utf-8") as fh:
+            pid, mode, started = (fh.read().split("\n") + ["", "", ""])[:3]
+        pid = int(pid)
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return ""
+    except PermissionError:
+        pass
+    except (OSError, ValueError):
+        return ""
+    return f"pid {pid}, {mode or 'a refresh'}, since {started or '?'}"
+
+
 def publish_and_mail(pending, uni):
     """ops/now.sh once for everything pending, then one mail per decision
     with the published number. Returns the lines to log."""
@@ -363,6 +381,15 @@ def publish_and_mail(pending, uni):
     lock = os.path.join(ROOT, "weekly", "live-run.lock")
     if os.path.exists(lock) and time.time() - os.path.getmtime(lock) < 1800:
         return [f"  a run is in progress; {len(pending)} decision(s) wait for the next pass"], pending
+    # A REFRESH HOLDS THE STAGING FOLDER (2026-10-14): the nightly or a full
+    # walk by hand (fle.cli refresh writes weekly/refresh.lock for its whole
+    # run). A targeted run now would write over its files and ship them;
+    # the pending filings wait, and are picked up on the next pass. The
+    # refresh refuses on its own too; this check keeps the journal quiet
+    # and the wait deliberate.
+    held = refresh_holder()
+    if held:
+        return [f"  a refresh is running ({held}); {len(pending)} decision(s) wait for the next pass"], pending
     open(lock, "w").write(str(os.getpid()))
     tickers = ",".join(sorted({uni[cik]["tk"] for _, cik in pending}))
     try:

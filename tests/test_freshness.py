@@ -421,3 +421,47 @@ def test_the_breaker_gives_up_after_an_hour_of_rest_even_with_successes_between(
         lim.clear()             # a request got through
         assert not lim.exhausted or rested > 3600
     assert rested > 3600 and lim.exhausted, "an hour of rest in total is the run's whole budget"
+
+
+def test_one_refresh_at_a_time(tmp_path, monkeypatch):
+    """ONE REFRESH AT A TIME (2026-10-14): the refresh holds weekly/refresh.lock
+    for its whole run, a second refresh refuses and names the holder, a lock
+    left by a dead process is taken over, and the lock is dropped however
+    the run ends."""
+    import os
+    import types
+    from fle import cli
+    live = str(tmp_path)
+    args = types.SimpleNamespace(dir=live, full=True, tickers=None)
+    monkeypatch.setattr(cli, "_heartbeat", lambda *a, **k: None)
+    seen = {}
+
+    def fake_refresh(a, log):
+        seen["held"] = cli.refresh_lock_holder(live)
+        # a second refresh, while the first runs: refused, nothing run
+        inner = types.SimpleNamespace(dir=live, full=False, tickers="JOBY")
+        seen["second"] = cli.cmd_refresh(inner)
+        return 0
+    monkeypatch.setattr(cli, "_refresh", fake_refresh)
+    assert cli.cmd_refresh(args) == 0
+    assert seen["held"].startswith(f"pid {os.getpid()}, full walk, since 20"), "the holder is named: pid, mode, start"
+    assert seen["second"] == 75, "a second refresh refuses with EX_TEMPFAIL and runs nothing"
+    assert not os.path.exists(os.path.join(live, "weekly", "refresh.lock")), "dropped when the run ends"
+    log = open(os.path.join(live, "refresh.log"), encoding="utf-8").read()
+    assert "refusing: another refresh holds weekly/refresh.lock (pid" in log
+
+    # a run that dies drops the lock too
+    def dying(a, log):
+        raise RuntimeError("boom")
+    monkeypatch.setattr(cli, "_refresh", dying)
+    with pytest.raises(RuntimeError):
+        cli.cmd_refresh(args)
+    assert not os.path.exists(os.path.join(live, "weekly", "refresh.lock"))
+
+    # a stale lock (its process gone) names nobody and is taken over
+    os.makedirs(os.path.join(live, "weekly"), exist_ok=True)
+    with open(os.path.join(live, "weekly", "refresh.lock"), "w") as fh:
+        fh.write("999999999\nfull walk\n2026-10-14 16:33:14\n")
+    assert cli.refresh_lock_holder(live) == ""
+    monkeypatch.setattr(cli, "_refresh", lambda a, log: 0)
+    assert cli.cmd_refresh(args) == 0

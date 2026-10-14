@@ -1291,6 +1291,21 @@ def cmd_refresh(args) -> int:
     lives in the service unit, not in .env.
     """
     log = _logger(args.dir)
+    # ONE REFRESH AT A TIME (2026-10-14). Every refresh, full or targeted,
+    # builds in the one staging folder and moves what it finds there live.
+    # A full walk wrote its 2,969 rows there at 16:59; the five-minute
+    # watcher's targeted run at 17:05 wrote "the live panel plus BLND" over
+    # them, and at 17:38 moved that live; the walk's own publish at 17:40
+    # found only the two files it had written since. An hour of work, and
+    # the seam it was run to close, went nowhere, and nothing said so.
+    # The lock is held for the whole run; a second refresh refuses to start
+    # and says who holds it, so the watcher (ops/live.py reads the same
+    # file) waits for the next pass instead of overwriting.
+    held = refresh_lock_holder(args.dir)
+    if held:
+        log(f"refusing: another refresh holds {REFRESH_LOCK} ({held}); its staging folder is in use")
+        return 75      # EX_TEMPFAIL: try again later
+    take_refresh_lock(args.dir, args)
     _heartbeat(log, "start")
     try:
         code = _refresh(args, log)
@@ -1298,8 +1313,59 @@ def cmd_refresh(args) -> int:
         log(f"FAILED refresh: {exc.__class__.__name__}: {exc}")
         _heartbeat(log, 1, _log_tail(args.dir))
         raise
+    finally:
+        drop_refresh_lock(args.dir)
     _heartbeat(log, code or 0, _log_tail(args.dir))
     return code
+
+
+REFRESH_LOCK = os.path.join("weekly", "refresh.lock")   # under the live dir; pid, mode and start, one per line
+
+
+def refresh_lock_holder(live: str) -> str:
+    """Who holds the refresh lock, as a short sentence, or "" when no live
+    process does. A lock whose process is gone (a crash, a reboot) is
+    stale and names nobody: the next refresh takes it over."""
+    p = os.path.join(live, REFRESH_LOCK)
+    try:
+        with open(p, encoding="utf-8") as fh:
+            pid, mode, started = (fh.read().split("\n") + ["", "", ""])[:3]
+        pid = int(pid)
+    except (OSError, ValueError):
+        return ""
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return ""
+    except PermissionError:
+        pass       # alive, owned by someone else
+    return f"pid {pid}, {mode or 'a refresh'}, since {started or '?'}"
+
+
+def take_refresh_lock(live: str, args) -> None:
+    mode = ("full walk" if getattr(args, "full", False)
+            else f"targeted: {args.tickers}" if getattr(args, "tickers", None)
+            else "nightly")
+    p = os.path.join(live, REFRESH_LOCK)
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    tmp = f"{p}.{os.getpid()}.tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        fh.write(f"{os.getpid()}\n{mode}\n{time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+    os.replace(tmp, p)
+
+
+def drop_refresh_lock(live: str) -> None:
+    p = os.path.join(live, REFRESH_LOCK)
+    try:
+        with open(p, encoding="utf-8") as fh:
+            mine = fh.readline().strip() == str(os.getpid())
+    except OSError:
+        return
+    if mine:
+        try:
+            os.remove(p)
+        except OSError:
+            pass
 
 
 def _logger(live: str):
