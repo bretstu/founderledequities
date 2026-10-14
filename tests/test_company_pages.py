@@ -680,4 +680,5 @@ def test_one_confirmation_per_address_and_the_watch_is_counted():
     kinds = open(os.path.join(ROOT, "functions", "api", "hit.js"), encoding="utf-8").read()
     assert '"click"' in kinds.split("KINDS")[1].split("]")[0]
     sh = open(os.path.join(ROOT, "ops", "hits.sh"), encoding="utf-8").read()
-    assert "probable_crawlers" in sh and "PEOPLE=" in sh and "crawler?" in sh, "the report tells a scraper from a reader by behaviour"
+    assert 'DB="${FLE_HITS_DB:-fle-hits}"' in sh and "wrangler d1 list" not in sh.split("DB=")[1].split("\n")[0], "the database by name: no listing call to fail on a login notice"
+    assert "probable" not in sh and "PEOPLE=" not in sh, "no classification of visitors: every view counts (2026-10-14)"
