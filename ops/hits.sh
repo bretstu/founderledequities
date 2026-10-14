@@ -109,10 +109,11 @@ for r in out[0]["results"]:
 
 # ------------------------------------------------------------ the visitors
 if [ "$VISITORS" = "1" ]; then
-  echo "== visitors ($LABEL), one row each: when they arrived, where from, pages seen, what they did =="
-  Q "WITH f AS $FIRST, s AS $SOURCE, p AS (SELECT vid, COUNT(*) AS pages, MIN(country) AS country FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT vid, GROUP_CONCAT(did, ', ') AS did FROM (SELECT * FROM ($DID_ROW) ORDER BY ts) GROUP BY vid) SELECT $AT_FIRST AS first, substr(f.vid, 1, 6) AS who, p.country, s.src AS came_from, p.pages, COALESCE(d.did, '') AS did FROM f JOIN p ON p.vid=f.vid LEFT JOIN s ON s.vid=f.vid LEFT JOIN d ON d.vid=f.vid ORDER BY f.first_ts"
+  echo "== visitors ($LABEL), one row each: when they arrived, where from, the page they landed on, pages seen, what they did =="
+  Q "WITH f AS $FIRST, s AS $SOURCE, p AS (SELECT vid, COUNT(*) AS pages, MIN(country) AS country FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT vid, GROUP_CONCAT(did || CASE WHEN n > 1 THEN ' x' || n ELSE '' END, ', ') AS did FROM (SELECT vid, did, COUNT(*) AS n, MIN(ts) AS first_ts FROM ($DID_ROW) GROUP BY vid, did ORDER BY first_ts) GROUP BY vid) SELECT $AT_FIRST AS first, substr(f.vid, 1, 6) AS who, p.country, s.src AS came_from, s.landed AS landed_on, p.pages, COALESCE(d.did, '') AS did FROM f JOIN p ON p.vid=f.vid LEFT JOIN s ON s.vid=f.vid LEFT JOIN d ON d.vid=f.vid ORDER BY f.first_ts"
   # then each reader who saw more than one page: the journey in order, with
-  # what they did on the row where they did it (at most 40 such readers)
+  # what they did on the row where they did it (at most 40 such readers); a
+  # one-page visitor is their row above, landing page included
   R "WITH f AS $FIRST, s AS $SOURCE, p AS (SELECT vid, COUNT(*) AS pages, MIN(country) AS country FROM hits WHERE kind='view' AND $WHERE GROUP BY vid) SELECT f.vid, substr(f.vid,1,6), p.country, s.src, p.pages FROM f JOIN p ON p.vid=f.vid LEFT JOIN s ON s.vid=f.vid WHERE p.pages > 1 ORDER BY f.first_ts LIMIT 40" | while IFS=$'\t' read -r vid who country src pages; do
     echo
     echo "== $who, $country, from $src: $pages pages =="
