@@ -483,8 +483,8 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     # A COUNTED DERIVATIVE (fle/exclusions.py, 2026-10-14): a convertible
     # preferred a person recorded as the person's shares; the page says so
     # beside the number, with the receipt
-    for veh, (sh, note) in led.counted_derivatives.items():
-        flag(CAUTION, f"includes {int(sh):,} shares held {veh}: a convertible preferred counted as converted. {note}")
+    for (sec, _k), (sh, veh, note) in led.counted_derivatives.items():
+        flag(CAUTION, f"includes {int(sh):,} of {sec} ({veh}), a convertible preferred counted as converted. {note}")
     # THE DETECTOR (2026-10-14): a preferred with a live balance that the
     # register does not count is named, with the ratio its own row states,
     # so the next Rocket Lab is seen the week it is filed. A person reads

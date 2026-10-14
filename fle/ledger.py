@@ -1173,9 +1173,15 @@ def _rows(root, form: str, when: str, acc: str, counted=()) -> list[Line]:
                 amounts = node.find("transactionAmounts")
                 ad = (_t(amounts, "transactionAcquiredDisposedCode") or "A").upper()[:1]
                 nature = _t(own, "natureOfOwnership")
+                # ITS OWN CLASS (2026-10-14, second try). As a vehicle of the common
+                # it was dropped by the next filing that restated the common
+                # without mentioning it (Beck's July 2026 sale carries no Table
+                # II), since a filing states a class whole. The preferred IS a
+                # class: the title is the security, so only a filing that
+                # mentions it restates it, and the total sums it like any class.
                 out.append(Line(
-                    under, (_t(own, "directOrIndirectOwnership") or "D").upper()[:1],
-                    f"as {title.strip()} ({cnt.ratio:g}:1)" + (f", {nature.strip()}" if nature else ""),
+                    title.strip(), (_t(own, "directOrIndirectOwnership") or "D").upper()[:1],
+                    f"converts {cnt.ratio:g}:1 into {under}" + (f", {nature.strip()}" if nature else ""),
                     COUNTED_NOTE + f"{title.strip()} at {cnt.ratio:g}:1, recorded from {cnt.source}",
                     (_t(node.find("transactionCoding"), "transactionCode") or ""),
                     (_num(amounts, "transactionShares") or 0.0) * cnt.ratio,
@@ -1529,7 +1535,7 @@ class Ledger:
     # label -> (shares, reason, source), from the curated list
     excluded: dict = field(default_factory=dict)
     supplemented: dict = field(default_factory=dict)   # {security: (shares, note)} lines the walk injected
-    counted_derivatives: dict = field(default_factory=dict)   # {vehicle: (shares, note)} Table II rows the register counts (2026-10-14)
+    counted_derivatives: dict = field(default_factory=dict)   # {(title, vehicle key): (shares, vehicle, note)} Table II rows the register counts (2026-10-14)
     preferred_live: dict = field(default_factory=dict)   # {title: (balance, ratio)} the newest Table II statement of each preferred with a balance
     options_seen: bool = False   # a Table II has been read, even one whose balances are all zero
 
@@ -1805,7 +1811,7 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
         for x in rows:
             # the newest statement of each counted derivative, for the page (newest first, so the first seen wins)
             if x.notes.startswith(COUNTED_NOTE) and x.shares == x.shares:
-                led.counted_derivatives.setdefault(x.nature or x.security, (x.shares, x.notes))
+                led.counted_derivatives.setdefault((x.security, (x.nature or "").lower()), (x.shares, x.nature or "", x.notes))
         extra = supplement_rows(root, rows, form, when, acc, exclude)
         if extra:
             rows = rows + extra
@@ -1858,7 +1864,9 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
                 continue
             # THE CLASS, NOT THE TITLE. With one class every title is it;
             # with several the title is matched to the company's own list.
-            if share_classes == 1 and not names_another_letter(r.security, the_class):
+            if r.notes.startswith(COUNTED_NOTE):
+                title = r.security.strip()      # a counted derivative is its own class, under its own title (2026-10-14)
+            elif share_classes == 1 and not names_another_letter(r.security, the_class):
                 title = SINGLE_CLASS
             else:
                 title = match_class(r.security, letters)

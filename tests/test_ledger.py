@@ -4579,14 +4579,14 @@ def test_a_register_row_can_count_a_table_ii_preferred_as_shares(tmp_path):
     got = _rows(root, "4", "2025-01-07", "acc", [row])
     assert len(got) == 2
     c = got[1]
-    assert c.security == "Common Stock" and c.direct == "I" and c.table == "I" and c.code == "A" and c.acquired
+    assert c.security == pref and c.direct == "I" and c.table == "I" and c.code == "A" and c.acquired, "its own class, under its own title"
     assert c.shares == 50951250.0 and c.moved == 50951250.0
-    assert c.nature == f"as {pref} (1:1), By The Equatorial Trust" and c.notes.startswith(COUNTED_NOTE)
+    assert c.nature == "converts 1:1 into Common Stock, By The Equatorial Trust" and c.notes.startswith(COUNTED_NOTE)
     # the day nets to zero: an exchange, not a forfeiture
     assert sum((r.moved if r.acquired else -r.moved) for r in got) == 0.0
     # a ratio scales balances and movements alike
     half = _rows(root, "4", "2025-01-07", "acc", [Exclusion(cik="1", ticker="X", security=pref, reason="r", source="https://s", ratio=0.5)])[1]
-    assert half.shares == 25475625.0 and half.moved == 25475625.0 and "(0.5:1)" in half.nature
+    assert half.shares == 25475625.0 and half.moved == 25475625.0 and "converts 0.5:1" in half.nature
     # apply_exclusions does not treat a counted row as a removal
     g = Group(security="Common Stock", direct="I"); g.last_txn = {("I", "x"): 10.0}; g.shares = 10.0
     here = {("Common Stock", "I"): g}
@@ -4642,9 +4642,12 @@ def test_end_to_end_a_counted_preferred_rides_the_walk_and_the_detector_names_an
     f1 = "<ownershipDocument>" + own + t1("D", "D", 50951250, 0) + direct + t2("A", "A", 50951250, 50951250) + "</ownershipDocument>"
     f2 = ("<ownershipDocument>" + own + t1("C", "A", 5000000, 5000000, day="2025-06-17") + direct.replace("2025-01-07", "2025-06-17")
           + t2("C", "D", 5000000, 45951250, day="2025-06-17") + "</ownershipDocument>")
-    docs = {"f1": f1, "f2": f2}
+    # Form 4 three: a sale of common from the trust, no Table II at all (Beck's July 2026 shape)
+    f3 = ("<ownershipDocument>" + own + t1("S", "D", 3000000, 2000000, day="2026-07-08") + direct.replace("2025-01-07", "2026-07-08") + "</ownershipDocument>")
+    docs = {"f1": f1, "f2": f2, "f3": f3}
     feed = [{"form": "4", "accessionNumber": "f1", "filingDate": "2025-01-10", "reportDate": "2025-01-07", "primaryDocument": "d.xml"},
-            {"form": "4", "accessionNumber": "f2", "filingDate": "2025-06-20", "reportDate": "2025-06-17", "primaryDocument": "d.xml"}]
+            {"form": "4", "accessionNumber": "f2", "filingDate": "2025-06-20", "reportDate": "2025-06-17", "primaryDocument": "d.xml"},
+            {"form": "4", "accessionNumber": "f3", "filingDate": "2026-07-10", "reportDate": "2026-07-08", "primaryDocument": "d.xml"}]
 
     class _Edgar:
         def submissions(self, cik): return {"_filings": feed}
@@ -4656,16 +4659,16 @@ def test_end_to_end_a_counted_preferred_rides_the_walk_and_the_detector_names_an
 
     row = Exclusion(cik="1819994", ticker="RKLB", security=pref, reason="stock in another wrapper", source="https://www.sec.gov/x", ratio=1.0)
     led = build_ledger(_Edgar(), 1819994, owner_cik="1881842", share_classes=1, exclude=[row])
-    assert led.total == 789373 + 5000000 + 45951250, "the whole position: his shares, the converted common in the trust, the preferred as converted"
-    (veh, (sh, note)), = led.counted_derivatives.items()
-    assert sh == 45951250.0 and veh.startswith(f"as {pref} (1:1)") and "recorded from https://www.sec.gov/x" in note
+    assert led.total == 789373 + 2000000 + 45951250, "the whole position: his shares, what is left in the trust after the sale, and the preferred the sale filing never mentioned"
+    ((sec, _k), (sh, veh, note)), = led.counted_derivatives.items()
+    assert sec == pref and sh == 45951250.0 and veh.startswith("converts 1:1 into Common Stock") and "recorded from https://www.sec.gov/x" in note
     assert led.preferred_live == {pref: (45951250.0, 1.0)}, "the newest statement of the preferred, with the ratio its own row states"
     plain = build_ledger(_Edgar(), 1819994, owner_cik="1881842", share_classes=1)
-    assert plain.total == 789373 + 5000000, "without the row, the common alone, as before"
+    assert plain.total == 789373 + 2000000, "without the row, the common alone, as before"
     assert plain.preferred_live == {pref: (45951250.0, 1.0)}, "and the live preferred is named for a person to decide"
     # the options snapshot: the newest Table II is read even when its balances are zero
-    f3 = "<ownershipDocument>" + own + direct.replace("2025-01-07", "2026-01-05") + t2("C", "D", 45951250, 0, day="2026-01-05") + "</ownershipDocument>"
-    docs["f3"] = f3
-    feed.append({"form": "4", "accessionNumber": "f3", "filingDate": "2026-01-08", "reportDate": "2026-01-05", "primaryDocument": "d.xml"})
+    f4 = "<ownershipDocument>" + own + direct.replace("2025-01-07", "2026-09-05") + t2("C", "D", 45951250, 0, day="2026-09-05") + "</ownershipDocument>"
+    docs["f4"] = f4
+    feed.append({"form": "4", "accessionNumber": "f4", "filingDate": "2026-09-08", "reportDate": "2026-09-05", "primaryDocument": "d.xml"})
     gone = build_ledger(_Edgar(), 1819994, owner_cik="1881842", share_classes=1)
     assert gone.options_seen and gone.options == 0 and gone.preferred_live[pref][0] == 0.0, "a conversion to zero is the newest statement, not 'no options'"
