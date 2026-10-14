@@ -528,7 +528,11 @@ async function watchThis(tk,ev){
     /* THE ONE CONVERSION THE SITE HAS IS COUNTED (2026-10-14): a reader who
        submitted three watches read as "(none)" under what they did */
     hit("click","watch",`${tk}:${j.ok?(j.watching?"on":"sent"):"fail"}`);
-    if(j.ok&&j.watching){WATCHES.remember(j.token,tk,C.ceo||"");WATCHING={tk};LANDED="";redrawWatch();}
+    /* on at once for a known address; the pill is for this visit unless the
+       browser already holds the address's token (a link it opened from the
+       inbox), in which case the watch joins its memory. the reply carries
+       no token: a typed address is not proof of owning it (2026-10-14) */
+    if(j.ok&&j.watching){if(WATCHES.token)WATCHES.remember(WATCHES.token,tk,C.ceo||"");WATCHING={tk};LANDED="";redrawWatch();}
     else if(j.ok){SENT={tk,email};redrawWatch();}
     else{if(btn){btn.disabled=false;btn.innerHTML="Watch &rarr;";}if(f)f.textContent=j.message||"That didn't work.";}
   }catch(e){hit("click","watch",`${tk}:error`);if(btn){btn.disabled=false;btn.innerHTML="Watch &rarr;";}if(f)f.textContent="Something went wrong; write to hello@founderledequities.com.";}

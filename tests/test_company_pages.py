@@ -703,7 +703,8 @@ def test_your_watches_without_an_account():
     assert 'u.searchParams.get("json") === "1"' in w and 'stopped: "all"' in w, "the page stops by fetch"
     assert "/alerts/?watch=off" in w and "/alerts/?watch=alloff" in w, "the founder stream's stops land on the alerts page, not /company/FOUNDERS/"
     assert '.replace(", or any filing", ",<br>or any filing")' in w, "the confirmation sentence breaks at the comma"
-    assert "token: existing.token" in w and "token: t, message" in w, "an instant watch answers with its token"
+    assert "token: existing.token" not in w and "token: t, message" not in w, "a POST reply never carries the token: a typed address is not proof of owning it; the browser earns the token from a link in the inbox"
+    assert "THE TOKEN NEVER TRAVELS IN A POST REPLY" in w
     s = open(os.path.join(ROOT, "functions", "api", "subscribe.js"), encoding="utf-8").read()
     assert "/alerts/?watch=on&t=${tokenOut}" in s and "/tape/?subscribed=1" not in s, "the founder confirm lands on the alerts page with its token"
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
@@ -714,7 +715,8 @@ def test_your_watches_without_an_account():
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
     assert "&#10003; Watching</button>" in js and 'onclick="return notYou(' in js and "/alerts/?t=${esc(WATCHES.token)}" in js, "the pill, the list link, the way out"
     assert "<b>Check your inbox</b>, or Promotions: one click confirms it." in js and "SENT={tk,email}" in js, "the sent state keeps the address and greys the button"
-    assert 'WATCHES.remember(j.token,tk,C.ceo||"")' in js and 'WATCHES.remember(q.get("t")||"",C.tk||"",C.ceo||"")' in js, "the token is kept on an instant watch and on the confirm landing"
+    assert 'if(WATCHES.token)WATCHES.remember(WATCHES.token,tk,C.ceo||"")' in js and 'WATCHES.remember(q.get("t")||"",C.tk||"",C.ceo||"")' in js, "an instant watch joins the memory only if the browser already holds the token; the confirm landing grants it"
+    assert "j.token" not in js
     assert 'history.replaceState(null,"",location.pathname)' in js, "the address is cleaned of the token"
     assert "WATCHES.refresh().then(" in js, "the store is checked against the worker"
     al = open(os.path.join(ROOT, "assets", "alerts-page.js"), encoding="utf-8").read()

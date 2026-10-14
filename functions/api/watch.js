@@ -81,7 +81,14 @@ export async function onRequestPost({ request, env }) {
   if (!EMAIL.test(email)) return json({ ok: false, message: "An email address is needed." }, 400);
   const now = new Date().toISOString();
   const existing = await env.HITS.prepare("SELECT id, confirmed, token FROM watches WHERE email = ?1 AND tk = ?2").bind(email, tk).first();
-  if (existing && existing.confirmed) return json({ ok: true, watching: true, token: existing.token, message: `You're watching ${ceo || tk}.` });
+  // THE TOKEN NEVER TRAVELS IN A POST REPLY (2026-10-14, same day). A known
+  // address's watch is on at once, but whoever typed the address is not
+  // necessarily its owner: the reply that carried the token handed the
+  // address's whole list, and every stop, to anyone who knew the address.
+  // A browser earns the token one way only, by opening a link that arrived
+  // in the address's own inbox (the confirm click, "Your watches" in any
+  // alert, or the mailed list link).
+  if (existing && existing.confirmed) return json({ ok: true, watching: true, message: `You're watching ${ceo || tk}.` });
   const t = existing ? existing.token : token();
   // ONE CONFIRMATION PER ADDRESS (2026-10-14). The first stranger to want
   // alerts watched three companies in three minutes, got three emails each
@@ -94,7 +101,7 @@ export async function onRequestPost({ request, env }) {
     if (existing) await env.HITS.prepare("UPDATE watches SET confirmed = 1 WHERE id = ?1").bind(existing.id).run();
     else await env.HITS.prepare("INSERT INTO watches (email, tk, ceo, confirmed, token, created) VALUES (?1, ?2, ?3, 1, ?4, ?5)")
       .bind(email, tk, ceo, t, now).run();
-    return json({ ok: true, watching: true, token: t, message: `You're watching ${ceo || tk}. Every alert has a stop link.` });
+    return json({ ok: true, watching: true, message: `You're watching ${ceo || tk}. Every alert has a stop link.` });
   }
   if (!existing) {
     await env.HITS.prepare("INSERT INTO watches (email, tk, ceo, confirmed, token, created) VALUES (?1, ?2, ?3, 0, ?4, ?5)")
