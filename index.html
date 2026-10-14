@@ -545,6 +545,13 @@ footer .mono{font-family:var(--ui);font-size:var(--fs-s)}   /* the dates in the 
 /* THE SEARCH IS THE NAV (2026-09-23): a ticker box in the header, on every
    page. It matches tickers, companies AND chief executives, because the
    queries that reach the site are people's names. /search.js fills it. */
+/* THE ACCOUNT IN THE NAV (2026-10-14): the address, a caret, a small menu beneath */
+.navme{position:relative}
+.navme.in>a{color:var(--ink);max-width:26ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:bottom}
+.navmenu{position:absolute;right:0;top:calc(100% + 10px);min-width:190px;background:var(--white);border:1px solid var(--pline);border-radius:var(--r-s);box-shadow:var(--shadow);padding:6px 0;z-index:40}
+.navmenu a{display:block;padding:8px 14px;color:var(--ink);font-weight:500}
+.navmenu a:hover{background:var(--panel)}
+.navmenu a:last-child{color:var(--mut);border-top:1px solid var(--line)}
 .navsearch{position:relative;margin-left:6px}
 .navsearch input{font-family:var(--ui);font-size:var(--fs-s);width:210px;max-width:38vw;padding:8px 10px;border:1px solid var(--pline);background:var(--white);color:var(--ink);border-radius:var(--r-s)}
 .navsearch input:focus{outline:none;border-color:var(--accent)}
@@ -557,7 +564,7 @@ footer .mono{font-family:var(--ui);font-size:var(--fs-s)}   /* the dates in the 
 .navqd .qceo{font-size:var(--fs-s);color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:34%}
 .navqd .qpct{font-family:var(--mono);font-size:var(--fs-xs);font-weight:600;white-space:nowrap}
 .navqd .qf{font-family:var(--mono);font-size:var(--fs-2xs);letter-spacing:.08em;color:var(--accent);font-weight:700}
-@media(max-width:700px){.navsearch input{width:120px}}
+@media(max-width:700px){.navsearch input{width:120px}.navmenu{left:0;right:auto}}
 
 /* ---- THE FRONT-DOOR HOME PAGE (2026-09-23) ---- */
 .hero .wrap.heroin{display:flex;flex-direction:column;align-items:center;text-align:center;padding:4px 0 40px}
@@ -655,8 +662,13 @@ table.tape tr.dgrp .dn{font-family:var(--mono);font-size:var(--fs-xs);color:var(
     <a href="/companies/">Companies</a>
     <a href="/alerts/">Alerts</a>
     <a href="about.html">About</a>
-    <a href="/signin/" id="navme">Sign in</a>
-    <script type="text/javascript">/* SIGNED IN OR NOT (2026-10-14): the nav says which before the page paints; the store is the shared WATCHES store's */(function(){try{var v=JSON.parse(localStorage.getItem("fle_watches")||"null");if(v&&v.token){var a=document.getElementById("navme");a.textContent="Your watches";a.href="/alerts/";}}catch(e){}})();</script>
+    <!-- THE ACCOUNT IN THE NAV (2026-10-14): signed out, Sign in; signed in,
+         the address with a menu: Your watches, Sign out. fleNav() redraws
+         it from the store; the page scripts call it when the store changes -->
+    <div class="navme" id="navme"><a href="/signin/" id="navme-a">Sign in</a>
+      <div class="navmenu" id="navmenu" hidden><a href="/alerts/">Your watches</a><a href="/signin/" id="navme-out">Sign out</a></div>
+    </div>
+    <script type="text/javascript">window.fleNav=function(){try{var v=JSON.parse(localStorage.getItem("fle_watches")||"null"),a=document.getElementById("navme-a"),m=document.getElementById("navmenu"),w=document.getElementById("navme");if(!a)return;if(v&&v.token){a.textContent=(v.email||"Signed in")+" \u25BE";a.href="#";a.title="Signed in as "+(v.email||"");w.classList.add("in");a.onclick=function(e){e.preventDefault();m.hidden=!m.hidden;};document.getElementById("navme-out").onclick=function(e){e.preventDefault();try{localStorage.removeItem("fle_watches");}catch(x){}location.reload();};document.addEventListener("click",function(e){if(!w.contains(e.target))m.hidden=true;});}else{a.textContent="Sign in";a.href="/signin/";a.onclick=null;w.classList.remove("in");m.hidden=true;}}catch(e){}};fleNav();</script>
     <div class="navsearch" id="navsearch">
       <input type="search" id="navq" placeholder="Company or CEO…" autocomplete="off" spellcheck="false" aria-label="Find a company or CEO" aria-expanded="false" role="combobox" aria-controls="navqd">
       <div class="navqd" id="navqd" role="listbox" hidden></div>

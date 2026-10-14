@@ -515,7 +515,7 @@ function watchCard(r){
 }
 function redrawWatch(){const slot=$("#cwatchslot");if(slot)slot.innerHTML=watchCard(window._lastRow||PANEL[0]);}
 /* sign out: the browser forgets the token; the field comes back and the nav reads Sign in */
-function notYou(tk){WATCHES.forget();WATCHING=null;SENT=null;LANDED="";hit("click","signin","out");const a=document.getElementById("navme");if(a){a.textContent="Sign in";a.href="/signin/";}redrawWatch();return false;}
+function notYou(tk){WATCHES.forget();WATCHING=null;SENT=null;LANDED="";hit("click","signin","out");if(window.fleNav)fleNav();redrawWatch();return false;}
 async function watchThis(tk,ev){
   if(ev)ev.preventDefault();
   /* TWO FORMS, ONE FLOW (design v4): the card beside the answer and the
@@ -671,6 +671,7 @@ async function fetchText(paths){
       else if(LANDED==="off")WATCHES.forget(C.tk||"");
       else if(LANDED==="alloff")WATCHES.forget();
       history.replaceState(null,"",location.pathname);
+      if(window.fleNav)fleNav();   /* the nav drew before the landing was read */
     }
     if(WATCHES.has(C.tk||""))WATCHING={tk:C.tk};
   }
@@ -685,7 +686,7 @@ async function fetchText(paths){
   setRow(row);
   renderOpen(row,{animate:false});   /* the numbers first; the record and trades fill in */
   /* the store's word is checked against the worker's, once, after the first paint */
-  if(WATCHES.token)WATCHES.refresh().then(ws=>{if(ws===null)return;const on=ws.some(w=>w.tk===C.tk);if(on!==!!WATCHING){WATCHING=on?{tk:C.tk}:null;if(!on)LANDED="";redrawWatch();}});
+  if(WATCHES.token)WATCHES.refresh().then(ws=>{if(ws===null)return;if(window.fleNav)fleNav();const on=ws.some(w=>w.tk===C.tk);if(on!==!!WATCHING||!WATCHES.token){WATCHING=on?{tk:C.tk}:null;if(!on)LANDED="";redrawWatch();}});
   /* ONE TREE (2026-09-23): every company's full record and trades live at
      the root; the shards carry everything since 2016. */
   const [h,e,p]=await Promise.all([

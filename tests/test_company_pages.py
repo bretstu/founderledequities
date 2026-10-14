@@ -717,12 +717,15 @@ def test_the_email_is_the_account(tmp_path):
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
     assert "/alerts/?t=${anyToken}" in run and ">Your watches</a>" in run, "every alert links to the list, and the link signs the device in"
     idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
-    assert '<a href="/signin/" id="navme">Sign in</a>' in idx and '<script type="text/javascript">/* SIGNED IN OR NOT' in idx and 'a.textContent="Your watches";a.href="/alerts/";' in idx, "the nav says which, before the page paints"
+    assert '<div class="navme" id="navme"><a href="/signin/" id="navme-a">Sign in</a>' in idx and 'id="navme-out">Sign out</a>' in idx and "window.fleNav=function()" in idx, "the account in the nav: Sign in, or the address with Your watches and Sign out, drawn before the page paints"
+    nav = bcp.extract_topnav(idx)
+    assert 'id="navq"' in nav and 'id="navme-out"' in nav, "the nav extractor stops at the first </div></div>; the menu's markup must not end with one"
+    assert ".navmenu{position:absolute" in idx
     assert "/*@shared*/\nconst WATCHES=(()=>{" in idx and 'const K="fle_watches"' in idx and "get email()" in idx, "the store is shared by every page script and carries the address"
     assert 'fetch("/api/watch?mine="+v.token)' in idx and "if(!j.email){write(null);return [];}" in idx and "if(j.token)v.token=j.token;" in idx, "the list is the worker's; a dead token clears the store; a watch token is upgraded"
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
     assert "&#10003; Watching</button>" in js and "}else if(WATCHES.token){" in js and "t:WATCHES.token}" in js, "signed in: one click, no field"
-    assert 'onclick="return notYou(' in js and ">Sign out</a>" in js and 'a.textContent="Sign in"' in js, "the way out, and the nav follows"
+    assert 'onclick="return notYou(' in js and ">Sign out</a>" in js and "if(window.fleNav)fleNav()" in js, "the way out, and the nav follows"
     assert "<b>Check your inbox</b>, or Promotions: one click confirms it." in js and "SENT={tk,email}" in js, "the sent state keeps the address and greys the button"
     assert 'WATCHES.remember(q.get("t")||"",C.tk||"",C.ceo||"")' in js and 'history.replaceState(null,"",location.pathname)' in js and "WATCHES.refresh().then(" in js
     assert "j.token" not in js and 'if(WATCHES.token)WATCHES.remember(WATCHES.token,tk,C.ceo||"")' in js

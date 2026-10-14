@@ -27,7 +27,7 @@ function boot(){
   else if(w==="off")WATCHES.forget("FOUNDERS");
   else if(w==="alloff")WATCHES.forget();
   else if(t)WATCHES.remember(t);
-  if(w||t)history.replaceState(null,"",location.pathname);
+  if(w||t){history.replaceState(null,"",location.pathname);if(window.fleNav)fleNav();}
   hit("view","page");   /* after the cleaning: the token is a secret and the beacon records the path */
   drawBand();
   drawList();
@@ -86,6 +86,7 @@ async function drawList(){
   const mine=$("#mine"),already=$("#already"),body=$("#lbody"),foot=$("#lfoot");
   if(!WATCHES.token){mine.hidden=true;already.hidden=false;return;}
   const ws=await WATCHES.refresh();
+  if(window.fleNav)fleNav();   /* the address may have just arrived, or the token may have died */
   if(ws===null){mine.hidden=true;already.hidden=true;return;}   /* the fetch failed: nothing is claimed either way */
   if(!WATCHES.token){mine.hidden=true;already.hidden=false;drawBand();return;}   /* the token is gone: signed out elsewhere */
   const name=w=>w.tk==="FOUNDERS"?"Every founder":`<span class="tk">${esc(w.tk)}</span>${esc(w.ceo||"")}`;
