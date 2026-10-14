@@ -58,6 +58,14 @@ RULES FOR ENTRIES.
   - the panel reports every entry applied; nothing is silently adjusted.
   - an entry names ONE class at ONE company. It cannot affect anything else.
   - an exclusion (no `shares`) does not expire: the filing will not change.
+  - a FRACTION (`fraction` set, between 0 and 1) counts that share of the
+    line instead of removing it (2026-10-14). Venture Global's Class B is
+    held by Venture Global Partners II, LLC, which the Department of Energy's
+    change-in-control notice states is "50% owned and controlled by each of
+    the two Principals" (Sabel and Pender); the SEC filings attribute the
+    whole block to each founder, as shared control requires, and state no
+    split. Half the line is Sabel's pecuniary interest. The source carries
+    the split; the row ages like any other and is reviewed by hand.
   - a supplement (`shares` set) is injected only into filings by the named
     owner whose remark still states the figure and whose tables do not
     already report the class held directly.
@@ -71,7 +79,7 @@ from pathlib import Path
 
 DEFAULT = "universe/exclusions.csv"
 
-COLUMNS = ["cik", "ticker", "security", "direct", "reason", "source", "shares", "owner_cik", "since", "vehicle", "decided"]
+COLUMNS = ["cik", "ticker", "security", "direct", "reason", "source", "shares", "owner_cik", "since", "vehicle", "decided", "fraction"]
 
 
 def class_key(security: str) -> str:
@@ -102,6 +110,7 @@ class Exclusion:
     # means the whole class-and-direction, as before (TKO).
     vehicle: str = ""
     decided: str = ""              # blank for a hand row; "reader YYYY-MM-DD" for a row the decisions file produced
+    fraction: float | None = None  # set: the share of the line that is the person's (a co-owned vehicle); unset: the whole line goes
 
     @property
     def is_addition(self) -> bool:
@@ -186,6 +195,17 @@ def read_exclusions(path: str | None = None) -> Exclusions:
                     # a PERSON holds the shares; a new chief executive must not inherit them
                     raise ValueError(f"{p}: {row.get('ticker') or cik} adds shares without the owner's CIK")
 
+            fraction = None
+            rawf = (row.get("fraction") or "").strip()
+            if rawf:
+                try:
+                    fraction = float(rawf)
+                except ValueError:
+                    raise ValueError(f"{p}: {row.get('ticker') or cik} has a non-numeric fraction {rawf!r}")
+                if not (0 < fraction < 1):
+                    raise ValueError(f"{p}: {row.get('ticker') or cik} has a fraction outside (0, 1): {rawf!r}; a whole line is an exclusion, not a fraction")
+                if shares is not None:
+                    raise ValueError(f"{p}: {row.get('ticker') or cik} sets both shares and fraction; a supplement is whole")
             out.by_cik.setdefault(str(int(cik)), []).append(Exclusion(
                 cik=str(int(cik)),
                 ticker=(row.get("ticker") or "").strip().upper(),
@@ -196,7 +216,8 @@ def read_exclusions(path: str | None = None) -> Exclusions:
                 owner_cik=str(int(row.get("owner_cik"))) if shares is not None else "",
                 since=(row.get("since") or "").strip(),
                 vehicle=(row.get("vehicle") or "").strip(),
-                decided=(row.get("decided") or "").strip()))
+                decided=(row.get("decided") or "").strip(),
+                fraction=fraction))
     return out
 
 

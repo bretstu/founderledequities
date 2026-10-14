@@ -85,7 +85,10 @@ function band(r){
   const excl=(C.row&&C.row.excluded_detail)||"";
   const items=excl?excl.split(" | ").filter(Boolean):[];
   const exclSh=num(C.row&&C.row.excluded_shares)||0;
-  const notCounted=items.length?`<details class="cnot"><summary><span class="k">Not counted</span>${exclSh?fmt(exclSh)+" shares in ":""}${items.length} holding${items.length===1?"":"s"} the filings' own footnotes leave out</summary><div class="cnx">${items.map(x=>esc(x)).join("<br>")}</div></details>`:"";
+  /* a co-owned vehicle counted at the person's share (2026-10-14, Venture Global): the reason is a public record, not a footnote */
+  const shared=items.some(x=>/ counted\) = /.test(x));
+  const why=shared?`${items.length===1?"a co-owned holding":"co-owned holdings"} counted at the founder\u2019s stated share`:`${items.length} holding${items.length===1?"":"s"} the filings\u2019 own footnotes leave out`;
+  const notCounted=items.length?`<details class="cnot"><summary><span class="k">Not counted</span>${exclSh?fmt(exclSh)+" shares in ":""}${why}</summary><div class="cnx">${items.map(x=>esc(x)).join("<br>")}</div></details>`:"";
   const heldHere=(C.held||[]).length>0;   /* the expander's home follows the section (2026-09-25) */
   if(heldHere)window.__notCounted=notCounted;
   return cards+flagLine+unitsLine+(heldHere?"":notCounted);

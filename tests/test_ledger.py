@@ -4489,3 +4489,51 @@ def test_partnership_units_carry_forward_from_the_filing_that_stated_them(monkey
         if not led2.unit_titles and units_ii:
             led2.unit_titles = dict(units_ii); led2.partnership_units = sum(led2.unit_titles.values())
     assert led2.partnership_units == 7655333.0
+
+
+def test_a_register_row_can_count_a_fraction_of_a_line(tmp_path):
+    """A CO-OWNED VEHICLE (2026-10-14, Venture Global): the Class B is held
+    by Venture Global Partners II, LLC, "50% owned and controlled by each of
+    the two Principals" per the DOE's change-in-control notice; the SEC
+    filings attribute the whole block to each founder and state no split.
+    A row with a fraction counts that share of the line, whole-class or by
+    vehicle, scaling every balance the document carries for it and
+    recording what left for the page. A whole line is an exclusion, not a
+    fraction; the register refuses a fraction outside (0, 1) or beside a
+    supplement."""
+    from fle.exclusions import Exclusion, read_exclusions
+    from fle.ledger import Group, apply_exclusions, vehicle_key
+    # whole-class: VG's Form 3 states the Class B as held directly
+    g = Group(security="Class B Common Stock", direct="D")
+    own = vehicle_key("D", "")
+    g.last_txn = {own: 1968604458.0}
+    g.shares = 1968604458.0
+    here = {("Class B Common Stock", "D"): g}
+    row = Exclusion(cik="2007855", ticker="VG", security="Class B Common Stock", direct="D",
+                    reason="half of VG Partners II is Pender's", source="https://www.govinfo.gov/content/pkg/FR-2023-12-18/html/2023-27717.htm", fraction=0.5)
+    rec = {}
+    apply_exclusions(here, [row], rec)
+    assert here[("Class B Common Stock", "D")].shares == 984302229.0, "half the line stands"
+    (lab, (gone, why, src)), = rec.items()
+    assert gone == 984302229.0 and "0.5 counted" in lab and "Pender" in why and src.startswith("https://www.govinfo.gov")
+    # by vehicle: the co-owned LLC scaled, the trust untouched; opening and holdings agree
+    g2 = Group(security="Common Stock", direct="I")
+    llc = vehicle_key("I", "By Partners II, LLC"); trust = vehicle_key("I", "By Family Trust")
+    g2.hold_by_vehicle = {llc: 1000.0, trust: 300.0}; g2.holdings = 1300.0; g2.opening = {llc: 1000.0}; g2.shares = 1300.0
+    here2 = {("Common Stock", "I"): g2}
+    apply_exclusions(here2, [Exclusion(cik="1", ticker="X", security="Common Stock", direct="I", reason="r", source="https://s", vehicle="By Partners II, LLC", fraction=0.25)], {})
+    assert here2[("Common Stock", "I")].shares == 550.0 and g2.hold_by_vehicle[llc] == 250.0 and g2.opening[llc] == 250.0 and g2.hold_by_vehicle[trust] == 300.0
+    # the register's rules
+    import csv
+    def write(**kw):
+        p = tmp_path / "ex.csv"
+        with p.open("w", newline="", encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=["cik", "ticker", "security", "direct", "reason", "source", "shares", "owner_cik", "since", "vehicle", "decided", "fraction"])
+            w.writeheader(); w.writerow({"cik": "1", "ticker": "X", "security": "Common Stock", "direct": "D", "reason": "r", "source": "https://s", **kw})
+        return str(p)
+    assert read_exclusions(write(fraction="0.5")).for_issuer(1)[0].fraction == 0.5
+    import pytest
+    with pytest.raises(ValueError):
+        read_exclusions(write(fraction="1"))
+    with pytest.raises(ValueError):
+        read_exclusions(write(fraction="0.5", shares="100", owner_cik="2"))

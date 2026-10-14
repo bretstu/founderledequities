@@ -428,10 +428,36 @@ def apply_exclusions(here: dict, exclude, record: dict | None = None) -> None:
     rows = [e for e in exclude if not getattr(e, "is_addition", False)]
     if not rows:
         return
+
+    # A FRACTION OF A LINE (2026-10-14): a co-owned vehicle, counted at the
+    # person's stated share of it. Every balance the vehicle carries in this
+    # document is scaled, so the chain, the holdings and the opening agree;
+    # `passed` keeps the filer's own balances, which is what a later
+    # restatement is matched against. Each document is scaled once: `here`
+    # is built fresh from the document's rows before this runs.
+    def scale(g, vs, f):
+        for v in vs:
+            if v in g.last_txn:
+                g.last_txn[v] *= f
+            if v in g.hold_by_vehicle:
+                keep = g.hold_by_vehicle[v] * f
+                g.holdings -= g.hold_by_vehicle[v] - keep
+                g.hold_by_vehicle[v] = keep
+            if v in g.opening:
+                g.opening[v] *= f
+        g.shares = sum(g.last_txn.values()) + g.holdings
+
     for key in list(here):
         g = here[key]
         whole = next((e for e in rows if not getattr(e, "vehicle", "") and e.matches(g.security, g.direct)), None)
         if whole:
+            f = getattr(whole, "fraction", None)
+            if f is not None:
+                before = g.shares
+                scale(g, list(g.vehicles()), f)
+                if record is not None and before - g.shares:
+                    record.setdefault(f"{g.label()} ({f:g} counted)", (before - g.shares, whole.reason, whole.source))
+                continue
             if record is not None:
                 record.setdefault(g.label(), (g.shares, whole.reason, whole.source))
             del here[key]
@@ -446,6 +472,12 @@ def apply_exclusions(here: dict, exclude, record: dict | None = None) -> None:
             if is_anonymous(e.vehicle, g.direct) and len(hits) > 1:
                 continue      # which pointer? the register cannot say; a person can
             before = g.shares
+            f = getattr(e, "fraction", None)
+            if f is not None:
+                scale(g, hits, f)
+                if record is not None and before - g.shares:
+                    record.setdefault(f"{g.security} \u00b7 {e.vehicle} ({f:g} counted)", (before - g.shares, e.reason, e.source))
+                continue
             for v in hits:
                 g.last_txn.pop(v, None)
                 if v in g.hold_by_vehicle:
