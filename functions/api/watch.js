@@ -9,7 +9,7 @@
 // POST /api/watch {signin: email}   -> a six-digit code mailed (and a link that signs a device in)
 // POST /api/watch {code, email}     -> the code checked; the reader's token returned
 //
-// THE EMAIL IS THE ACCOUNT (2026-10-14). The site has no passwords. A reader
+// THE EMAIL IS THE ACCOUNT (2026-10-14). Nothing to make up, nothing to forget. A reader
 // is an address plus one sign-in token (the `readers` table); a browser
 // that holds the token is signed in, and holds it only because something
 // arrived in that inbox: the confirm click on a first watch, the "Your

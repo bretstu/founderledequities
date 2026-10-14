@@ -579,7 +579,9 @@ def test_the_alerts_page_is_one_promise(tmp_path):
     assert 'id="hq"' in page and page.count('class="way"') == 2, "the founder form and the search sit in panels of one shape"
     assert 'class="homecap"' not in page and "capfine" not in page, "the site's capture band left this page: its headline said what the H1 says"
     assert "every Sunday" not in page and "/letter/" not in page
-    assert "An email, within about ten minutes of the SEC filing. Free. No password." in page, "the lead (2026-10-14): no 'usually' beside 'about'; the stop sentence left; no password, now that there is a sign-in"
+    assert "An email, within about ten minutes of the SEC filing. Free.</p>" in page, "the lead (2026-10-14): no 'usually' beside 'about'; the stop sentence left"
+    for f in ("alerts.html", "signin.html", "company.html", "about.html", "index.html"):
+        assert "no password" not in open(os.path.join(ROOT, f), encoding="utf-8").read().split("<body")[-1].lower(), f + ": the phrase means nothing to a reader (2026-10-14)"
     assert 'href="/signin/">Sign in</a> to see and stop your watches' in page, "the signed-out line to the sign-in page"
     assert 'class="pro">Members' not in page and "trial" not in page.lower(), "no members mark: everything on the page is free"
     assert "Paul Gu bought $1.3M of Upstart" in page and "1.33% &rarr; 1.38%" in page and "Upstart on Founder Led Equities" in page, "the sample is the email as it arrives"
