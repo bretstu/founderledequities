@@ -962,6 +962,22 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         os.makedirs(os.path.join(out_dir, "alerts"), exist_ok=True)
         with open(os.path.join(out_dir, "alerts", "index.html"), "w", encoding="utf-8") as fh:
             fh.write(a_html)
+    # THE SIGN-IN PAGE (2026-10-14): the address, then the six-digit code;
+    # built like the alerts page, with the shared block for the store and the beacon
+    s_tpl_p = os.path.join(root, "signin.html")
+    s_js_p = os.path.join(root, "assets", "signin-page.js")
+    if os.path.exists(s_tpl_p) and os.path.exists(s_js_p):
+        s_js = header + shared + "\n\n" + open(s_js_p, encoding="utf-8").read()
+        with open(os.path.join(out_dir, "signin.js"), "w", encoding="utf-8") as fh:
+            fh.write(s_js)
+        s_v = hashlib.sha256(s_js.encode("utf-8")).hexdigest()[:10]
+        s_html = (open(s_tpl_p, encoding="utf-8").read()
+                  .replace("{{TOPNAV}}", extract_topnav(index_html))
+                  .replace('href="/site.css"', f'href="/site.css?v={css_v}"')
+                  .replace('src="/signin.js"', f'src="/signin.js?v={s_v}"'))
+        os.makedirs(os.path.join(out_dir, "signin"), exist_ok=True)
+        with open(os.path.join(out_dir, "signin", "index.html"), "w", encoding="utf-8") as fh:
+            fh.write(s_html)
     topnav = extract_topnav(index_html)
     # THE ABOUT PAGE: a template with the masthead from index.html, written
     # where the site has always served it (/about.html)

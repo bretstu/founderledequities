@@ -7,7 +7,7 @@
 // and a list should a broadcast ever be wanted), but it is not what
 // confirms. The response to POST is the same whatever the address, so
 // the endpoint cannot be used to test which addresses are on the list.
-import { site, redirect, json } from "../_shared.js";
+import { site, redirect, json, readerToken } from "../_shared.js";
 
 const RESEND = (env) => env.RESEND_API_BASE || "https://api.resend.com";
 
@@ -74,10 +74,8 @@ export async function onRequestGet({ request, env }) {
       const t = [...crypto.getRandomValues(new Uint8Array(24))].map((b) => b.toString(16).padStart(2, "0")).join("");
       await env.HITS.prepare("INSERT INTO watches (email, tk, ceo, confirmed, token, created) VALUES (?1, 'FOUNDERS', 'every founder', 1, ?2, ?3) ON CONFLICT(email, tk) DO UPDATE SET confirmed = 1")
         .bind(email, t, new Date().toISOString()).run();
-      // the page is told which token this address holds (2026-10-14): a
-      // re-run of the click keeps the first token, so it is read back
-      const row = await env.HITS.prepare("SELECT token FROM watches WHERE email = ?1 AND tk = 'FOUNDERS'").bind(email).first();
-      tokenOut = (row && row.token) || t;
+      // the click came from the inbox: the browser that lands is signed in as the reader (2026-10-14)
+      tokenOut = await readerToken(env, email);
       ok = true;
     } catch { ok = false; }
   }

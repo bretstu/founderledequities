@@ -182,7 +182,7 @@ python3 ops/build_company_pages.py panel.csv founders.csv prices.csv "$SP_LIST" 
 DATAV=$(date -u +%Y%m%d%H%M)
 # every built script that fetches data carries the key: companies.js was missing (2026-09-21), so the Companies page
 # fetched /universe.csv?v=dev and the edge served the first copy it ever cached
-for f in public/index.html public/about.html public/company.js public/tape.js public/companies.js public/alerts.js public/search.js; do
+for f in public/index.html public/about.html public/company.js public/tape.js public/companies.js public/alerts.js public/signin.js public/search.js; do
   [ -f "$f" ] && sed -i "s|const DATA_V=\"dev\"|const DATA_V=\"$DATAV\"|" "$f"
 done
 echo "  data version: $DATAV"

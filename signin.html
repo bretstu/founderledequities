@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sign in · Founder Led Equities</title>
+  <meta name="description" content="Sign in with the address your alerts go to. No password: a six-digit code by email.">
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="https://founderledequities.com/signin/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/site.css">
+  <style>
+    /* THE SIGN-IN PAGE (2026-10-14): no password. the address the alerts go
+       to, then the six-digit code the inbox gets, typed on this page so it
+       is THIS browser that ends up signed in (a link opened from a phone's
+       mail app signs in the mail app's browser instead). the same panel
+       shape as the alerts page. */
+    .lpage{max-width:var(--max);margin:0 auto;padding:clamp(36px,4.5vw,60px) clamp(20px,3.5vw,48px) 80px}
+    .lpage h1{font-family:var(--ui);font-weight:700;letter-spacing:-.02em;line-height:1.05;font-size:clamp(36px,5vw,56px);margin:0 0 10px}
+    .lpage .lead{font-size:var(--fs-l);line-height:1.5;color:var(--mut);max-width:58ch;margin:0}
+    .lpage .lk{font-family:var(--ui);font-weight:600;font-size:var(--fs-2xs);letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin:30px 0 10px}
+    .way{background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 24px;display:flex;align-items:center;gap:14px 28px;flex-wrap:wrap}
+    .way .oq{flex:1 1 300px}
+    .way .oq b{display:block;font-size:var(--fs-l);font-weight:600;letter-spacing:-.01em}
+    .way .oq span{display:block;font-size:var(--fs-s);color:var(--mut);margin-top:4px}
+    .way .homesub{flex:none;margin:0}
+    .way .homesub input{width:min(300px,60vw);height:44px;padding:0 16px;font-size:var(--fs-b)}
+    .way .homesub input.code{width:min(180px,60vw);font-family:var(--mono);font-size:var(--fs-l);letter-spacing:.18em;text-align:center}
+    .way .homesub button{height:44px;padding:0 20px;font-family:var(--ui)}
+    .way .hs-msg{flex-basis:100%;font-size:var(--fs-s);color:var(--mut)}
+    .way .hs-msg:empty{display:none}
+    .way .hs-msg a{color:var(--ink)}
+    .lpage .said{margin-top:14px;font-size:var(--fs-m);color:var(--ink);font-weight:600}
+    .lpage .said:empty{display:none}
+    .lpage .said a{color:var(--ink)}
+  </style>
+</head>
+<body class="signin">
+{{TOPNAV}}
+<main class="lpage">
+  <h1>Sign in.</h1>
+  <p class="lead">No password. Enter the address your alerts go to and we&#8217;ll email a six-digit code.</p>
+  <div class="said" id="said"></div>
+
+  <section id="step1">
+    <div class="lk">Your email</div>
+    <div class="way">
+      <div class="oq"><b>The address your alerts go to.</b><span>New here? The same address becomes your account the moment you use it.</span></div>
+      <form class="homesub" id="emailform" onsubmit="return askCode(event)">
+        <input type="email" id="iemail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email">
+        <button type="submit">Send the code &rarr;</button>
+      </form>
+      <span class="hs-msg" id="efine"></span>
+    </div>
+  </section>
+
+  <section id="step2" hidden>
+    <div class="lk">The code</div>
+    <div class="way">
+      <div class="oq"><b>Enter the six digits from the email.</b><span id="cwho">It works for ten minutes. Check Promotions if it isn&#8217;t in the inbox.</span></div>
+      <form class="homesub" id="codeform" onsubmit="return checkCode(event)">
+        <input type="text" id="icode" class="code" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" required autocomplete="one-time-code" aria-label="Six-digit code">
+        <button type="submit">Sign in &rarr;</button>
+      </form>
+      <span class="hs-msg" id="cfine"></span>
+    </div>
+  </section>
+</main>
+<script src="/signin.js"></script>
+</body>
+</html>

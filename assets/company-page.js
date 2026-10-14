@@ -489,10 +489,17 @@ function watchCard(r){
      browser that holds the watch, with the list and a way out for a
      shared machine. The pill is drawn from the store, then checked against
      the worker, so a watch stopped from an email elsewhere does not linger. */
+  /* THE EMAIL IS THE ACCOUNT (2026-10-14): a signed-in browser (the reader's
+     token, earned from the inbox) gets one click and no field; the fine
+     print says who it is watching as, with the list and the way out. */
   let form,fine;
+  const me=WATCHES.email?`as <b>${esc(WATCHES.email)}</b> &middot; `:"";
   if(on){
     form=`<div class="wform"><button class="wbtn won" type="button" disabled>&#10003; Watching</button></div>`;
-    fine=`${LANDED==="on"?"<b>Confirmed.</b> ":""}You'll get an email when the stake moves. <a href="/alerts/?t=${esc(WATCHES.token)}">Your watches</a> &middot; <a href="#" onclick="return notYou('${r.tk}')">not you?</a>`;
+    fine=`${LANDED==="on"?"<b>Confirmed.</b> ":""}You'll get an email when the stake moves${me?", "+me:". "}<a href="/alerts/">Your watches</a> &middot; <a href="#" onclick="return notYou('${r.tk}')">Sign out</a>`;
+  }else if(WATCHES.token){
+    form=`<div class="wform"><button class="wbtn" type="button" onclick="return watchThis('${r.tk}')">Watch &rarr;</button></div>`;
+    fine=`${said?`<b>${esc(said)}</b> `:""}Signed in ${me}<a href="/alerts/">Your watches</a> &middot; <a href="#" onclick="return notYou('${r.tk}')">Sign out</a>`;
   }else if(sent){
     form=`<form class="wform" onsubmit="return false"><input type="email" value="${esc(SENT.email)}" disabled aria-label="Email address"><button class="wbtn" type="button" disabled>Sent</button></form>`;
     fine=`<b>Check your inbox</b>, or Promotions: one click confirms it.`;
@@ -507,8 +514,8 @@ function watchCard(r){
   </div>`;
 }
 function redrawWatch(){const slot=$("#cwatchslot");if(slot)slot.innerHTML=watchCard(window._lastRow||PANEL[0]);}
-/* a shared machine: the pill is someone else's; the store goes and the field comes back */
-function notYou(tk){WATCHES.forget();WATCHING=null;SENT=null;LANDED="";hit("click","watch",`${tk}:notyou`);redrawWatch();return false;}
+/* sign out: the browser forgets the token; the field comes back and the nav reads Sign in */
+function notYou(tk){WATCHES.forget();WATCHING=null;SENT=null;LANDED="";hit("click","signin","out");const a=document.getElementById("navme");if(a){a.textContent="Sign in";a.href="/signin/";}redrawWatch();return false;}
 async function watchThis(tk,ev){
   if(ev)ev.preventDefault();
   /* TWO FORMS, ONE FLOW (design v4): the card beside the answer and the
@@ -520,11 +527,13 @@ async function watchThis(tk,ev){
   const f=(scope&&scope.querySelector(".wfine"))||$("#wfine");
   const btn=form?form.querySelector("button"):document.querySelector("#cwatch .wbtn");
   const email=inp?(inp.value||"").trim():"";
-  if(!email)return false;
+  const signed=!inp&&!!WATCHES.token;   /* no field: the signed-in button; the token names the address */
+  if(!email&&!signed)return false;
   if(btn){btn.disabled=true;btn.textContent="…";}
   try{
-    const q=await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk,ceo:C.ceo||"",email})});
+    const q=await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(signed?{tk,ceo:C.ceo||"",t:WATCHES.token}:{tk,ceo:C.ceo||"",email})});
     const j=await q.json();
+    if(j.signedout){WATCHES.forget();location.href=`/signin/?next=${encodeURIComponent(location.pathname)}`;return false;}
     /* THE ONE CONVERSION THE SITE HAS IS COUNTED (2026-10-14): a reader who
        submitted three watches read as "(none)" under what they did */
     hit("click","watch",`${tk}:${j.ok?(j.watching?"on":"sent"):"fail"}`);

@@ -655,6 +655,8 @@ table.tape tr.dgrp .dn{font-family:var(--mono);font-size:var(--fs-xs);color:var(
     <a href="/companies/">Companies</a>
     <a href="/alerts/">Alerts</a>
     <a href="about.html">About</a>
+    <a href="/signin/" id="navme">Sign in</a>
+    <script type="text/javascript">/* SIGNED IN OR NOT (2026-10-14): the nav says which before the page paints; the store is the shared WATCHES store's */(function(){try{var v=JSON.parse(localStorage.getItem("fle_watches")||"null");if(v&&v.token){var a=document.getElementById("navme");a.textContent="Your watches";a.href="/alerts/";}}catch(e){}})();</script>
     <div class="navsearch" id="navsearch">
       <input type="search" id="navq" placeholder="Company or CEO…" autocomplete="off" spellcheck="false" aria-label="Find a company or CEO" aria-expanded="false" role="combobox" aria-controls="navqd">
       <div class="navqd" id="navqd" role="listbox" hidden></div>
@@ -909,24 +911,27 @@ const HIT=(()=>{
 })();
 /*@shared*/
 function hit(kind,name,detail){HIT.hit(kind,name,detail);}
-/* YOUR WATCHES, REMEMBERED (2026-10-14). the site has no accounts. a browser
-   that confirmed a watch, or made one instantly, keeps the address's token
-   in localStorage; the company page renders "watching" from it and the
-   alerts page lists by it. the list is always the worker's answer
-   (/api/watch?mine=<token>): the store is the key to it and a cache of what
-   it last said, so a watch stopped from an email on another device drops
-   off here on the next load. "not you?" clears it. device-specific by
-   design: there is nothing to sign in to. */
+/* THE EMAIL IS THE ACCOUNT (2026-10-14). the site has no passwords. a
+   browser is signed in when it holds the reader's token, which it gets only
+   from something that arrived in the inbox: the confirm click on a first
+   watch, the "Your watches" link in any alert, or the six-digit code the
+   sign-in page mails. the token and the address live in localStorage; the
+   company page renders "watching" from the store and the alerts page lists
+   by it. the list is always the worker's answer (/api/watch?mine=<token>):
+   the store is the key to it and a cache of what it last said, so a watch
+   stopped from an email on another device drops off here on the next load,
+   and a browser that kept a watch token from an alert's link is upgraded to
+   the reader's. sign out clears it. */
 /*@shared*/
 const WATCHES=(()=>{
   const K="fle_watches";
   const read=()=>{try{const v=JSON.parse(localStorage.getItem(K)||"null");return v&&typeof v.token==="string"&&v.tks?v:null;}catch(e){return null;}};
   const write=v=>{try{if(v)localStorage.setItem(K,JSON.stringify(v));else localStorage.removeItem(K);}catch(e){}};
   const has=tk=>{const v=read();return !!(v&&v.tks[tk]);};
-  const remember=(token,tk,ceo)=>{
+  const remember=(token,tk,ceo,email)=>{
     if(!/^[0-9a-f]{48}$/.test(token||""))return read();
     const v=read()||{token,tks:{}};
-    v.token=token;
+    v.token=token;if(email)v.email=email;
     if(tk)v.tks[tk]={ceo:ceo||"",since:(v.tks[tk]||{}).since||new Date().toISOString().slice(0,10)};
     write(v);return v;
   };
@@ -935,13 +940,14 @@ const WATCHES=(()=>{
   const refresh=async()=>{
     const v=read();if(!v)return [];
     try{
-      const q=await fetch("/api/watch?mine="+v.token);const j=await q.json();const ws=j.watches||[];
-      if(!ws.length){write(null);return [];}
-      v.token=ws[0].token;v.tks={};for(const w of ws)v.tks[w.tk]={ceo:w.ceo||"",since:w.since||""};
+      const q=await fetch("/api/watch?mine="+v.token);const j=await q.json();
+      if(!j.email){write(null);return [];}
+      const ws=j.watches||[];
+      if(j.token)v.token=j.token;v.email=j.email;v.tks={};for(const w of ws)v.tks[w.tk]={ceo:w.ceo||"",since:w.since||""};
       write(v);return ws;
     }catch(e){return null;}
   };
-  return {read,has,remember,forget,refresh,get token(){const v=read();return v?v.token:"";}};
+  return {read,has,remember,forget,refresh,get token(){const v=read();return v?v.token:"";},get email(){const v=read();return v?(v.email||""):"";}};
 })();
 
 /* ---------------- embedded fallback (real pipeline output) ------ */

@@ -576,16 +576,18 @@ def test_the_alerts_page_is_one_promise(tmp_path):
     assert "within about ten minutes" in page, "the live chain (live.py -> now.sh -> deploy -> alerts.py) makes the claim true"
     # TWO WAYS, ONE SHAPE (2026-10-14): the founder stream and the single company are two panels of the same class, each under its label
     assert 'class="lcard' not in page and "Watch the founders" in page and ">Every founder</div>" in page and ">One company</div>" in page
-    assert 'id="hq"' in page and page.count('class="way"') == 3, "the founder form, the search and the mailed-list form sit in panels of one shape"
+    assert 'id="hq"' in page and page.count('class="way"') == 2, "the founder form and the search sit in panels of one shape"
     assert 'class="homecap"' not in page and "capfine" not in page, "the site's capture band left this page: its headline said what the H1 says"
-    assert "every Sunday" not in page and "/letter/" not in page and "one-click stop" in page
+    assert "every Sunday" not in page and "/letter/" not in page
+    assert "An email, within about ten minutes of the SEC filing. Free. No password." in page, "the lead (2026-10-14): no 'usually' beside 'about'; the stop sentence left; no password, now that there is a sign-in"
+    assert 'href="/signin/">Sign in</a> to see and stop your watches' in page, "the signed-out line to the sign-in page"
     assert 'class="pro">Members' not in page and "trial" not in page.lower(), "no members mark: everything on the page is free"
     assert "Paul Gu bought $1.3M of Upstart" in page and "1.33% &rarr; 1.38%" in page and "Upstart on Founder Led Equities" in page, "the sample is the email as it arrives"
     assert 'href="/alerts/">Alerts' in page, "the page carries the nav with itself in it"
     js = open(os.path.join(out, "alerts.js"), encoding="utf-8").read()
     assert "/api/subscribe" in js, "one form, the unified signup"
-    assert 'tk:"FOUNDERS"' not in js, "the page no longer posts its own FOUNDERS watch; the confirm click writes it"
-    assert "trial" not in js.lower() and "/api/me" not in js and "ME&&ME.pro" not in js, "no session, no trial button"
+    assert 'tk:"FOUNDERS",ceo:"every founder",t:WATCHES.token' in js and js.count('tk:"FOUNDERS"') == 1, "signed out, the confirm click writes the FOUNDERS watch; signed in, one click posts it with the reader's token (2026-10-14)"
+    assert "trial" not in js.lower() and "/api/me" not in js and "ME&&ME.pro" not in js, "no trial button"
     w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
     assert 'tk === "FOUNDERS"' in w and "for members" not in w
     assert "env.RESEND_API_KEY || env.RESEND_KEY" in w, "one key name; the mismatch that silenced every confirmation stays fixed"
@@ -688,45 +690,63 @@ def test_one_confirmation_per_address_and_the_watch_is_counted():
     assert "probable" not in sh and "PEOPLE=" not in sh, "no classification of visitors: every view counts (2026-10-14)"
 
 
-def test_your_watches_without_an_account():
-    """YOUR WATCHES, WITHOUT AN ACCOUNT (2026-10-14). A browser that confirmed
-    or made a watch keeps the address's token; the company page shows a
-    Watching pill from it (checked against the worker), the alerts page
-    lists every watch of the address with a stop beside each, a new device
-    asks for the link by email, and every alert links to the list. No
-    sessions, no sign-in: the token any alert carries is the key."""
+def test_the_email_is_the_account(tmp_path):
+    """THE EMAIL IS THE ACCOUNT (2026-10-14). No passwords. A reader is an
+    address plus one sign-in token (the readers table); a browser holds it
+    only because something arrived in the inbox: the confirm click on a
+    first watch, the "Your watches" link in any alert, or the six-digit
+    code the sign-in page mails. Signed in: the nav says Your watches, the
+    company card is one click with no field, the alerts page lists every
+    watch with a stop beside each, who you are, and Sign out. A token never
+    travels in the reply to a typed address."""
     w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
-    assert 'u.searchParams.get("mine")' in w and "SELECT tk, ceo, token, created FROM watches WHERE email = ?1 AND confirmed = 1" in w, "?mine=<token> lists the address's confirmed watches"
-    assert "body.list !== undefined" in w and "If that address has watches, the list is on its way." in w, "{list: email} mails the link, the same reply whatever the address"
-    assert "listreq:" in w, "one list mail per address per window"
-    assert "/alerts/?watch=on&t=${confirm}" in w and "/?watch=on&t=${confirm}" in w, "the confirm landing carries the token"
-    assert 'u.searchParams.get("json") === "1"' in w and 'stopped: "all"' in w, "the page stops by fetch"
-    assert "/alerts/?watch=off" in w and "/alerts/?watch=alloff" in w, "the founder stream's stops land on the alerts page, not /company/FOUNDERS/"
-    assert '.replace(", or any filing", ",<br>or any filing")' in w, "the confirmation sentence breaks at the comma"
-    assert "token: existing.token" not in w and "token: t, message" not in w, "a POST reply never carries the token: a typed address is not proof of owning it; the browser earns the token from a link in the inbox"
+    sh = open(os.path.join(ROOT, "functions", "_shared.js"), encoding="utf-8").read()
+    assert "CREATE TABLE IF NOT EXISTS readers (email TEXT PRIMARY KEY, token TEXT UNIQUE, created TEXT)" in sh and "export async function readerToken" in sh
+    assert "body.signin !== undefined" in w and "code:${email}" in w and "expirationTtl: 600" in w and "codereq:${email}" in w, "a six-digit code, ten minutes, one a minute per address"
+    assert "body.code !== undefined" in w and "rec.tries >= 5" in w and "token: await readerToken(env, email)" in w, "five tries; the right code returns the reader's token"
+    assert "body.t !== undefined" in w and "signedout: true" in w, "a signed-in watch: the token names the address; on at once"
+    assert "body.list" not in w, "the mailed list link became the sign-in code"
+    assert 'u.searchParams.get("mine")' in w and "email, token: await readerToken(env, email)" in w, "?mine= answers with the address and the reader's token (a watch token from an alert's link is upgraded)"
+    assert "const t = await readerToken(env, w.email);" in w and "/alerts/?watch=on&t=${t}" in w and "/?watch=on&t=${t}" in w, "the confirm landing signs the browser in"
+    assert "token: existing.token" not in w and "token: t, message" not in w, "a POST reply never carries a token: a typed address is not proof of owning it"
     assert "THE TOKEN NEVER TRAVELS IN A POST REPLY" in w
-    s = open(os.path.join(ROOT, "functions", "api", "subscribe.js"), encoding="utf-8").read()
-    assert "/alerts/?watch=on&t=${tokenOut}" in s and "/tape/?subscribed=1" not in s, "the founder confirm lands on the alerts page with its token"
+    assert 'u.searchParams.get("json") === "1"' in w and 'stopped: "all"' in w and "/alerts/?watch=off" in w and "/alerts/?watch=alloff" in w
+    assert '.replace(", or any filing", ",<br>or any filing")' in w, "the confirmation sentence breaks at the comma"
+    sub = open(os.path.join(ROOT, "functions", "api", "subscribe.js"), encoding="utf-8").read()
+    assert "tokenOut = await readerToken(env, email);" in sub and "/alerts/?watch=on&t=${tokenOut}" in sub and "/tape/?subscribed=1" not in sub
     run = open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
-    assert "/alerts/?t=${anyToken}" in run and ">Your watches</a>" in run, "every alert links to the list"
+    assert "/alerts/?t=${anyToken}" in run and ">Your watches</a>" in run, "every alert links to the list, and the link signs the device in"
     idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
-    assert "/*@shared*/\nconst WATCHES=(()=>{" in idx and 'const K="fle_watches"' in idx, "the store is shared by every page script"
-    assert 'fetch("/api/watch?mine="+v.token)' in idx and "if(!ws.length){write(null);return [];}" in idx, "the list is the worker's; a dead token clears the store"
+    assert '<a href="/signin/" id="navme">Sign in</a>' in idx and '<script type="text/javascript">/* SIGNED IN OR NOT' in idx and 'a.textContent="Your watches";a.href="/alerts/";' in idx, "the nav says which, before the page paints"
+    assert "/*@shared*/\nconst WATCHES=(()=>{" in idx and 'const K="fle_watches"' in idx and "get email()" in idx, "the store is shared by every page script and carries the address"
+    assert 'fetch("/api/watch?mine="+v.token)' in idx and "if(!j.email){write(null);return [];}" in idx and "if(j.token)v.token=j.token;" in idx, "the list is the worker's; a dead token clears the store; a watch token is upgraded"
     js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
-    assert "&#10003; Watching</button>" in js and 'onclick="return notYou(' in js and "/alerts/?t=${esc(WATCHES.token)}" in js, "the pill, the list link, the way out"
+    assert "&#10003; Watching</button>" in js and "}else if(WATCHES.token){" in js and "t:WATCHES.token}" in js, "signed in: one click, no field"
+    assert 'onclick="return notYou(' in js and ">Sign out</a>" in js and 'a.textContent="Sign in"' in js, "the way out, and the nav follows"
     assert "<b>Check your inbox</b>, or Promotions: one click confirms it." in js and "SENT={tk,email}" in js, "the sent state keeps the address and greys the button"
-    assert 'if(WATCHES.token)WATCHES.remember(WATCHES.token,tk,C.ceo||"")' in js and 'WATCHES.remember(q.get("t")||"",C.tk||"",C.ceo||"")' in js, "an instant watch joins the memory only if the browser already holds the token; the confirm landing grants it"
-    assert "j.token" not in js
-    assert 'history.replaceState(null,"",location.pathname)' in js, "the address is cleaned of the token"
-    assert "WATCHES.refresh().then(" in js, "the store is checked against the worker"
+    assert 'WATCHES.remember(q.get("t")||"",C.tk||"",C.ceo||"")' in js and 'history.replaceState(null,"",location.pathname)' in js and "WATCHES.refresh().then(" in js
+    assert "j.token" not in js and 'if(WATCHES.token)WATCHES.remember(WATCHES.token,tk,C.ceo||"")' in js
+    assert "/signin/?next=" in js, "a token the worker no longer knows sends the reader to sign in, and back"
     al = open(os.path.join(ROOT, "assets", "alerts-page.js"), encoding="utf-8").read()
-    assert "async function drawList()" in al and "/api/watch?stop=${token}&json=1" in al and "/api/watch?stopall=${token}&json=1" in al
-    assert 'body:JSON.stringify({list:email})' in al, "the new-device form"
+    assert "async function drawList()" in al and "/api/watch?stop=${token}&json=1" in al and "/api/watch?stopall=${WATCHES.token}&json=1" in al
+    assert "Signed in as <b>${esc(WATCHES.email" in al and "function signOut()" in al and "async function joinSigned()" in al
     assert "Watching the founders</button>" in al and "<b>Check your inbox</b>, or Promotions" in al
+    assert "{list:" not in al
     html = open(os.path.join(ROOT, "alerts.html"), encoding="utf-8").read()
-    assert 'id="mine" hidden' in html and 'id="already" hidden' in html and 'id="listform"' in html and 'id="lbody"' in html
+    assert 'id="mine" hidden' in html and 'id="already" hidden' in html and 'id="lbody"' in html and 'id="listform"' not in html
+    si = open(os.path.join(ROOT, "signin.html"), encoding="utf-8").read()
+    sj = open(os.path.join(ROOT, "assets", "signin-page.js"), encoding="utf-8").read()
+    assert '<meta name="robots" content="noindex">' in si and 'id="iemail"' in si and 'id="icode"' in si and 'autocomplete="one-time-code"' in si
+    assert "JSON.stringify({signin:email})" in sj and "JSON.stringify({code,email:EMAIL})" in sj and 'WATCHES.remember(j.token,"","",j.email)' in sj
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    built = open(os.path.join(out, "signin", "index.html"), encoding="utf-8").read()
+    assert "{{TOPNAV}}" not in built and 'id="navme"' in built and "/signin.js?v=" in built, "the sign-in page is built with the masthead and its own script"
+    assert "const WATCHES=" in open(os.path.join(out, "signin.js"), encoding="utf-8").read()
     ch = open(os.path.join(ROOT, "company.html"), encoding="utf-8").read()
     assert ".wcard .wbtn.won" in ch, "the pill is styled"
+    dep = open(os.path.join(ROOT, "ops", "deploy.sh"), encoding="utf-8").read()
+    assert "public/signin.js" in dep
 
 
 def test_subscribers_report_counts_addresses_that_get_alerts():
