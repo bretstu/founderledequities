@@ -8,22 +8,24 @@
 #   ops/hits.sh 30                     # the last 30 days
 #   ops/hits.sh 2026-10-10             # that day (Eastern), any day the table has
 #   ops/hits.sh 2026-10-06..2026-10-10 # those days inclusive
-#   ops/hits.sh visitors               # today, one line per visit: when, who (a short id), where from, country, what they did
+#   ops/hits.sh visitors               # today: one row per visitor, then each reader's journey as a table
 #   ops/hits.sh visitors 2026-10-10    # the same for any window above (a day, a range, a count of days)
+#
+# FOUR QUESTIONS, IN ORDER (2026-10-14): how many came, how they found the
+# site, what they looked at, what they did. The summary answers each once;
+# the earlier report asked "how they found it" three ways (referrer, seen
+# before, landed) and listed the site's own pages as referrers, which was
+# a reader's navigation, not a source. Every view counts: nothing is
+# classified or hidden, a scraping night reads as what it was.
 #
 # A WINDOW IS A WINDOW (2026-10-11): every section runs over whatever the
 # first argument names, so a spike can be read on the day it happened,
-# weeks later, with the same report and the same visit list.
-#
-# Below the daily counts: new or returning by source, pages per visitor, and
-# each visitor's landing page (2026-09-29). A returning direct visitor is the
-# closest thing here to a bookmark.
+# weeks later, with the same report and the same visitor list.
 #
 # Days are Eastern (the table stores UTC timestamps; the report shifts them
 # by four hours, so a visit at 9 p.m. counts as today, not tomorrow). A
 # private window is a new visitor every time; the owner's
 # usual browser is switched off with ?nohit=1 once in the address bar.
-# t.co in the referrer column is X; blank is direct, private, or an app.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -34,8 +36,8 @@ if [ "$ARG" = "visitors" ]; then VISITORS=1; ARG="${2:-today}"; fi
 OFF=$(TZ=America/New_York date +%z | sed -E 's/^([+-])0?([0-9]+)00$/\1\2/')
 EDAY="date(ts, '${OFF} hours')"
 TODAY="date('now', '${OFF} hours')"
-# the window: SINGLE=1 is one day (the "seen before" question applies);
-# START is the window's first day, for that question
+# the window: SINGLE=1 is one day; START is the window's first day, for the
+# question of who was seen on an earlier day
 SINGLE=0
 case "$ARG" in
   today)      WHERE="$EDAY = $TODAY"; LABEL="today"; START="$TODAY"; SINGLE=1 ;;
@@ -48,18 +50,33 @@ case "$ARG" in
   ''|*[!0-9]*) echo "usage: ops/hits.sh [today|yesterday|N|YYYY-MM-DD|YYYY-MM-DD..YYYY-MM-DD]  or  ops/hits.sh visitors [window]" >&2; exit 2 ;;
   *)          WHERE="$EDAY >= date('now', '${OFF} hours', '-${ARG} days')"; LABEL="last ${ARG} days"; START="date('now', '${OFF} hours', '-${ARG} days')" ;;
 esac
-# WHERE THEY CAME FROM, IN FOUR WORDS (2026-09-29): a referrer is a URL; a
-# reader wants to know search, X, direct or elsewhere. Direct is a bucket
-# (typed, a bookmark, an app, a private window, a browser that strips the
-# referrer), never a source.
-SRC="CASE WHEN ref LIKE '%google.%' OR ref LIKE '%bing.com%' OR ref LIKE '%duckduckgo%' OR ref LIKE '%yahoo.%' OR ref LIKE '%ecosia%' OR ref LIKE '%brave.com%' THEN 'search' WHEN ref LIKE '%t.co/%' OR ref LIKE '%twitter.com%' OR ref LIKE '%x.com%' THEN 'x' WHEN ref='' OR ref IS NULL THEN 'direct' ELSE 'other' END"
+# the clock: a time of day on a single day, the date and time otherwise
+if [ "$SINGLE" = "1" ]; then AT="substr(datetime(ts, '${OFF} hours'), 12, 5)"; else AT="substr(datetime(ts, '${OFF} hours'), 1, 16)"; fi
+AT_FIRST="${AT//ts,/f.first_ts,}"
+
+# WHERE A VISITOR CAME FROM, AS A SOURCE (2026-10-14): the host of the
+# referrer on their FIRST page, with the site's own pages (navigation) and
+# an empty referrer both reading as direct. Direct is a bucket (typed, a
+# bookmark, an app, a private window, a link in an AI answer, a browser
+# that strips the referrer), never a source.
+HOST="CASE WHEN ref IS NULL OR ref='' OR ref LIKE '%founderledequities.com%' THEN 'direct' ELSE replace(CASE WHEN instr(substr(ref, instr(ref,'://')+3), '/')>0 THEN substr(substr(ref, instr(ref,'://')+3), 1, instr(substr(ref, instr(ref,'://')+3), '/')-1) ELSE substr(ref, instr(ref,'://')+3) END, 'www.', '') END"
+# a visitor's first view in the window, and the source it carried
+FIRST="(SELECT vid, MIN(ts) AS first_ts FROM hits WHERE kind='view' AND $WHERE GROUP BY vid)"
+SOURCE="(SELECT h.vid, $HOST AS src, h.path AS landed FROM hits h JOIN $FIRST f ON f.vid=h.vid AND f.first_ts=h.ts WHERE h.kind='view' AND $WHERE)"
+# what a visitor DID: the page's own controls (a sort, a filing opened, a
+# switch, a chip, the watch form), and a filter on the companies page, which
+# is a page address with a query and the most telling thing a reader does
+ACTIONS="kind IN ('click','open','switch','sort')"
+FILTER_OF="CASE WHEN path LIKE '/companies/?%' THEN 'filter ' || replace(substr(path, instr(path,'?')+1), '&', ', ') ELSE '' END"
+DID_ACTS="SELECT vid, ts, path, name || CASE WHEN COALESCE(detail,'')<>'' THEN ' ' || detail ELSE '' END AS did FROM hits WHERE $ACTIONS AND $WHERE"
+DID_ROW="$DID_ACTS UNION ALL SELECT vid, ts, path, $FILTER_OF FROM hits WHERE kind='view' AND path LIKE '/companies/?%' AND $WHERE"
 
 # THE DATABASE BY NAME (2026-10-14). Asking `wrangler d1 list` for it meant the
 # first run after wrangler refreshed its login printed a notice before the
 # JSON and the script died on the parse; the second run worked. The name is
 # fle-hits (ops/hits-schema.sql); FLE_HITS_DB overrides it.
 DB="${FLE_HITS_DB:-fle-hits}"
-Q() {
+Q() {   # a query, printed as a table
   wrangler d1 execute "$DB" --remote --json --command "$1" 2>/dev/null | python3 -c '
 import sys, json
 out = json.load(sys.stdin)
@@ -80,47 +97,55 @@ for r in rows:
     print("  " + "  ".join(cell(c, r[c]) for c in cols))
 '
 }
+R() {   # a query, one row per line, tab-separated, for the script itself to read
+  wrangler d1 execute "$DB" --remote --json --command "$1" 2>/dev/null | python3 -c '
+import sys, json
+out = json.load(sys.stdin)
+if not isinstance(out, list): sys.exit()
+for r in out[0]["results"]:
+    print("\t".join(str(v) for v in r.values()))
+'
+}
 
+# ------------------------------------------------------------ the visitors
 if [ "$VISITORS" = "1" ]; then
-  # the day column is shown only when the window spans days
-  if [ "$SINGLE" = "1" ]; then WHEN="substr(datetime(ts, '${OFF} hours'), 12, 5) AS at"; else WHEN="substr(datetime(ts, '${OFF} hours'), 1, 16) AS at"; fi
-  echo "== visits ($LABEL), one line each (Eastern) =="
-  Q "SELECT $WHEN, substr(vid, 1, 6) AS who, country, path, COALESCE(NULLIF(ref,''),'(direct)') AS came_from, COALESCE(NULLIF(device,''),'') AS device, CASE WHEN pro=1 THEN 'pro' ELSE '' END AS pro FROM hits WHERE kind='view' AND $WHERE ORDER BY ts"
-  echo "== and what each did ($LABEL): clicks, pages opened =="
-  Q "SELECT $WHEN, substr(vid, 1, 6) AS who, kind, name, COALESCE(detail,'') AS detail, path FROM hits WHERE kind IN ('click','open','switch','sort') AND $WHERE ORDER BY ts"
+  echo "== visitors ($LABEL), one row each: when they arrived, where from, pages seen, what they did =="
+  Q "WITH f AS $FIRST, s AS $SOURCE, p AS (SELECT vid, COUNT(*) AS pages, MIN(country) AS country FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT vid, GROUP_CONCAT(did, ', ') AS did FROM (SELECT * FROM ($DID_ROW) ORDER BY ts) GROUP BY vid) SELECT $AT_FIRST AS first, substr(f.vid, 1, 6) AS who, p.country, s.src AS came_from, p.pages, COALESCE(d.did, '') AS did FROM f JOIN p ON p.vid=f.vid LEFT JOIN s ON s.vid=f.vid LEFT JOIN d ON d.vid=f.vid ORDER BY f.first_ts"
+  # then each reader who saw more than one page: the journey in order, with
+  # what they did on the row where they did it (at most 40 such readers)
+  R "WITH f AS $FIRST, s AS $SOURCE, p AS (SELECT vid, COUNT(*) AS pages, MIN(country) AS country FROM hits WHERE kind='view' AND $WHERE GROUP BY vid) SELECT f.vid, substr(f.vid,1,6), p.country, s.src, p.pages FROM f JOIN p ON p.vid=f.vid LEFT JOIN s ON s.vid=f.vid WHERE p.pages > 1 ORDER BY f.first_ts LIMIT 40" | while IFS=$'\t' read -r vid who country src pages; do
+    echo
+    echo "== $who, $country, from $src: $pages pages =="
+    Q "SELECT at, path, did FROM (SELECT ts, $AT AS at, path, $FILTER_OF AS did FROM hits WHERE kind='view' AND vid='$vid' AND $WHERE UNION ALL SELECT ts, $AT AS at, path, did FROM ($DID_ACTS) WHERE vid='$vid') ORDER BY ts"
+  done
   exit 0
 fi
-echo "== views per day ($LABEL) =="
-Q "SELECT $EDAY AS day, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY 1 ORDER BY 1"
-echo "== by page ($LABEL) =="
-Q "SELECT path, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY path ORDER BY views DESC LIMIT 20"
-echo "== by referrer ($LABEL): t.co is X; (direct) is typed, private, or an app =="
-Q "SELECT COALESCE(NULLIF(ref,''),'(direct)') AS ref, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY ref ORDER BY views DESC LIMIT 12"
+
+# ------------------------------------------------------------- the summary
+# 1. how many came
+if [ "$SINGLE" = "1" ]; then
+  echo "== $LABEL: how many came =="
+  Q "WITH v AS (SELECT vid, COUNT(*) AS pages FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), seen AS (SELECT DISTINCT vid FROM hits WHERE kind='view' AND $EDAY < $START), d AS (SELECT DISTINCT vid FROM ($DID_ROW)) SELECT COUNT(*) AS visitors, COALESCE(SUM(pages), 0) AS views, (SELECT COUNT(*) FROM v JOIN seen ON seen.vid=v.vid) AS seen_on_an_earlier_day, (SELECT COUNT(*) FROM v JOIN d ON d.vid=v.vid) AS did_anything FROM v"
+else
+  echo "== $LABEL: how many came, by day =="
+  Q "SELECT $EDAY AS day, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY 1 ORDER BY 1"
+  echo "== and over the whole window: a visitor seen on 2+ days is a person who came back =="
+  Q "WITH v AS (SELECT vid, COUNT(*) AS pages, COUNT(DISTINCT $EDAY) AS days FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT DISTINCT vid FROM ($DID_ROW)) SELECT COUNT(*) AS visitors, COALESCE(SUM(pages), 0) AS views, SUM(CASE WHEN days>=2 THEN 1 ELSE 0 END) AS came_back, (SELECT COUNT(*) FROM v JOIN d ON d.vid=v.vid) AS did_anything FROM v"
+fi
 echo "== by country ($LABEL) =="
 Q "SELECT country, COUNT(DISTINCT vid) AS visitors FROM hits WHERE kind='view' AND $WHERE GROUP BY country ORDER BY visitors DESC LIMIT 8"
-echo "== what they did ($LABEL) =="
-Q "SELECT kind || ' ' || name AS what, COUNT(*) AS n FROM hits WHERE kind IN ('click','open') AND $WHERE GROUP BY what ORDER BY n DESC LIMIT 10"
-# WHO CAME BACK (2026-09-29): the beacon keeps one visitor id per browser,
-# so a person who returns is the same id on another day, and a crawler that
-# keeps no storage is a new id every time. Counted within the window (days
-# visited per visitor) so the answer does not depend on how far back the
-# table goes; a visitor on two or more days from direct is the nearest
-# thing this table has to a bookmark. On "today" the window is one day, so
-# the second query asks instead whether today's visitors were seen before.
-if [ "$SINGLE" = "1" ]; then
-  echo "== seen before that day, by where they came from ($LABEL) =="
-  Q "WITH v AS (SELECT vid, $SRC AS src FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), seen AS (SELECT DISTINCT vid FROM hits WHERE kind='view' AND $EDAY < $START) SELECT v.src AS came_from, SUM(CASE WHEN seen.vid IS NULL THEN 1 ELSE 0 END) AS first_time, SUM(CASE WHEN seen.vid IS NOT NULL THEN 1 ELSE 0 END) AS seen_before FROM v LEFT JOIN seen ON seen.vid = v.vid GROUP BY v.src ORDER BY COUNT(*) DESC"
-else
-  echo "== days visited per visitor, by where they first came from ($LABEL): 2+ days is a person who came back =="
-  Q "WITH v AS (SELECT vid, COUNT(DISTINCT $EDAY) AS days, MIN(ts) AS first_ts FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), f AS (SELECT vid, $SRC AS src FROM hits WHERE kind='view' AND $WHERE) SELECT (SELECT src FROM f WHERE f.vid = v.vid LIMIT 1) AS came_from, SUM(CASE WHEN days=1 THEN 1 ELSE 0 END) AS one_day, SUM(CASE WHEN days=2 THEN 1 ELSE 0 END) AS two_days, SUM(CASE WHEN days>=3 THEN 1 ELSE 0 END) AS three_plus FROM v GROUP BY came_from ORDER BY COUNT(*) DESC"
-fi
-# HOW DEEP (2026-09-29): one page and gone is a bounce, whoever it was; two
-# or more is a person reading. The count of visitors who clicked anything at
-# all is the number the home page is judged by.
-echo "== how deep ($LABEL): pages viewed per visitor, and how many clicked anything =="
-Q "WITH d AS (SELECT vid, COUNT(*) AS pages FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), c AS (SELECT DISTINCT vid FROM hits WHERE kind IN ('click','open','switch','sort') AND $WHERE) SELECT CASE WHEN pages=1 THEN '1 page' WHEN pages<=3 THEN '2-3 pages' ELSE '4+ pages' END AS depth, COUNT(*) AS visitors, SUM(CASE WHEN c.vid IS NOT NULL THEN 1 ELSE 0 END) AS clicked FROM d LEFT JOIN c ON c.vid = d.vid GROUP BY depth ORDER BY MIN(pages)"
-# WHERE THEY LANDED (2026-09-29): the first page of each visit, with its
-# source; a company page from search is the SEO working, the home page
-# direct is a link or a bot.
-echo "== where they landed ($LABEL): each visitor's first page, by source =="
-Q "WITH f AS (SELECT vid, path, $SRC AS src, ROW_NUMBER() OVER (PARTITION BY vid ORDER BY ts) AS rn FROM hits WHERE kind='view' AND $WHERE) SELECT path, src AS came_from, COUNT(*) AS visitors FROM f WHERE rn=1 GROUP BY path, src ORDER BY visitors DESC LIMIT 12"
+
+# 2. how they found it: one row per visitor, the source of their first page
+echo "== how they found it ($LABEL): each visitor's source, and the page they landed on =="
+Q "WITH s AS $SOURCE SELECT src AS came_from, COUNT(*) AS visitors, CASE WHEN COUNT(DISTINCT landed) > 3 THEN COUNT(DISTINCT landed) || ' different pages' ELSE GROUP_CONCAT(DISTINCT landed) END AS landed_on FROM s GROUP BY src ORDER BY visitors DESC"
+
+# 3. what they looked at
+echo "== what they looked at ($LABEL) =="
+Q "SELECT path, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY path ORDER BY views DESC LIMIT 20"
+
+# 4. how deep, and what they did. One page and gone is a bounce, whoever
+# it was; two or more is a person reading.
+echo "== how deep ($LABEL): pages viewed per visitor, and how many did anything =="
+Q "WITH v AS (SELECT vid, COUNT(*) AS pages FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT DISTINCT vid FROM ($DID_ROW)) SELECT CASE WHEN pages=1 THEN '1 page' WHEN pages<=3 THEN '2-3 pages' ELSE '4+ pages' END AS depth, COUNT(*) AS visitors, SUM(CASE WHEN d.vid IS NOT NULL THEN 1 ELSE 0 END) AS did_anything FROM v LEFT JOIN d ON d.vid=v.vid GROUP BY depth ORDER BY MIN(pages)"
+echo "== what they did ($LABEL): the page's controls, the watch form, a filter on the companies page =="
+Q "SELECT did AS what, COUNT(*) AS n, COUNT(DISTINCT vid) AS visitors FROM ($DID_ROW) GROUP BY did ORDER BY n DESC LIMIT 15"
