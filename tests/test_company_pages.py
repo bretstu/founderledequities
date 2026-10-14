@@ -796,3 +796,18 @@ def test_no_beacon_fires_before_the_token_is_stripped():
         for m in re.finditer(r'hit\("(view|click)","(page|watch-confirmed)"', js):
             assert m.start() > strip, f"{name}: a beacon fires before the address is cleaned"
 
+
+def test_hits_reads_only_the_windows_days():
+    """D1'S DAILY READ CAP (2026-10-14): the Eastern day is a function of ts,
+    which no index serves; every query read the whole table, a dozen times
+    a run, and a morning of runs spent 91% of the free tier's five million
+    rows, with the sign-in and the alert run behind the same cap. Every
+    window is bounded by the indexed UTC day, a day wide on each side, and
+    the earlier-day question goes through the visitor index."""
+    sh = open(os.path.join(ROOT, "ops", "hits.sh"), encoding="utf-8").read()
+    assert "WHERE=\"day BETWEEN date($START, '-1 day') AND date($END, '+1 day') AND $WHERE\"" in sh
+    assert sh.count('END="') >= 5, "every window names its last day"
+    assert "CREATE INDEX IF NOT EXISTS $IX" in sh and "hits_vid ON hits(vid, kind, day)" in sh and "hits_kind_day ON hits(kind, day)" in sh, "kind plus the day range is what most queries filter on"
+    assert "SELECT DISTINCT vid FROM hits WHERE kind='view' AND $EDAY < $START" not in sh, "the earlier-day question no longer reads every view ever recorded"
+    assert "EXISTS (SELECT 1 FROM hits s WHERE s.vid=v.vid AND s.kind='view' AND s.day < date($START))" in sh
+

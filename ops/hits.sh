@@ -40,16 +40,24 @@ TODAY="date('now', '${OFF} hours')"
 # question of who was seen on an earlier day
 SINGLE=0
 case "$ARG" in
-  today)      WHERE="$EDAY = $TODAY"; LABEL="today"; START="$TODAY"; SINGLE=1 ;;
-  yesterday)  WHERE="$EDAY = date('now', '${OFF} hours', '-1 days')"; LABEL="yesterday"; START="date('now', '${OFF} hours', '-1 days')"; SINGLE=1 ;;
+  today)      WHERE="$EDAY = $TODAY"; LABEL="today"; START="$TODAY"; END="$TODAY"; SINGLE=1 ;;
+  yesterday)  WHERE="$EDAY = date('now', '${OFF} hours', '-1 days')"; LABEL="yesterday"; START="date('now', '${OFF} hours', '-1 days')"; END="$START"; SINGLE=1 ;;
   [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]..[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])
               A="${ARG%%..*}"; B="${ARG##*..}"
-              WHERE="$EDAY BETWEEN '$A' AND '$B'"; LABEL="$A to $B"; START="'$A'" ;;
+              WHERE="$EDAY BETWEEN '$A' AND '$B'"; LABEL="$A to $B"; START="'$A'"; END="'$B'" ;;
   [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])
-              WHERE="$EDAY = '$ARG'"; LABEL="$ARG"; START="'$ARG'"; SINGLE=1 ;;
+              WHERE="$EDAY = '$ARG'"; LABEL="$ARG"; START="'$ARG'"; END="'$ARG'"; SINGLE=1 ;;
   ''|*[!0-9]*) echo "usage: ops/hits.sh [today|yesterday|N|YYYY-MM-DD|YYYY-MM-DD..YYYY-MM-DD]  or  ops/hits.sh visitors [window]" >&2; exit 2 ;;
-  *)          WHERE="$EDAY >= date('now', '${OFF} hours', '-${ARG} days')"; LABEL="last ${ARG} days"; START="date('now', '${OFF} hours', '-${ARG} days')" ;;
+  *)          WHERE="$EDAY >= date('now', '${OFF} hours', '-${ARG} days')"; LABEL="last ${ARG} days"; START="date('now', '${OFF} hours', '-${ARG} days')"; END="$TODAY" ;;
 esac
+# ONLY THE WINDOW'S ROWS ARE READ (2026-10-14). The Eastern day is a function
+# of ts, which no index serves, so every query read the whole table since
+# September, a dozen times a run; a few runs in a morning read five million
+# rows and Cloudflare warned that D1's free daily cap was 91% spent, with the
+# sign-in, the confirms and the alert run behind the same cap. The UTC `day`
+# column is indexed: a window bounded by it, one day wide on each side, reads
+# two or three days of rows instead of all of them.
+WHERE="day BETWEEN date($START, '-1 day') AND date($END, '+1 day') AND $WHERE"
 # the clock: a time of day on a single day, the date and time otherwise
 if [ "$SINGLE" = "1" ]; then AT="substr(datetime(ts, '${OFF} hours'), 12, 5)"; else AT="substr(datetime(ts, '${OFF} hours'), 1, 16)"; fi
 AT_FIRST="${AT//ts,/f.first_ts,}"
@@ -76,6 +84,10 @@ DID_ROW="$DID_ACTS UNION ALL SELECT vid, ts, path, $FILTER_OF FROM hits WHERE ki
 # JSON and the script died on the parse; the second run worked. The name is
 # fle-hits (ops/hits-schema.sql); FLE_HITS_DB overrides it.
 DB="${FLE_HITS_DB:-fle-hits}"
+# the indexes the windows and the earlier-day question rely on; a no-op once they exist
+for IX in "hits_day ON hits(day)" "hits_kind_day ON hits(kind, day)" "hits_vid ON hits(vid, kind, day)"; do
+  wrangler d1 execute "$DB" --remote --command "CREATE INDEX IF NOT EXISTS $IX" >/dev/null 2>&1 || true
+done
 Q() {   # a query, printed as a table
   wrangler d1 execute "$DB" --remote --json --command "$1" 2>/dev/null | python3 -c '
 import sys, json
@@ -128,7 +140,8 @@ fi
 # 1. how many came
 if [ "$SINGLE" = "1" ]; then
   echo "== $LABEL: how many came =="
-  Q "WITH v AS (SELECT vid, COUNT(*) AS pages FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), seen AS (SELECT DISTINCT vid FROM hits WHERE kind='view' AND $EDAY < $START), d AS (SELECT DISTINCT vid FROM ($DID_ROW)) SELECT COUNT(*) AS visitors, COALESCE(SUM(pages), 0) AS views, (SELECT COUNT(*) FROM v JOIN seen ON seen.vid=v.vid) AS seen_on_an_earlier_day, (SELECT COUNT(*) FROM v JOIN d ON d.vid=v.vid) AS took_an_action FROM v"
+  # seen on an earlier day: asked per window visitor through the vid index, not by reading every view ever recorded
+  Q "WITH v AS (SELECT vid, COUNT(*) AS pages FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT DISTINCT vid FROM ($DID_ROW)) SELECT COUNT(*) AS visitors, COALESCE(SUM(pages), 0) AS views, (SELECT COUNT(*) FROM v WHERE EXISTS (SELECT 1 FROM hits s WHERE s.vid=v.vid AND s.kind='view' AND s.day < date($START))) AS seen_on_an_earlier_day, (SELECT COUNT(*) FROM v JOIN d ON d.vid=v.vid) AS took_an_action FROM v"
 else
   echo "== $LABEL: how many came, by day =="
   Q "SELECT $EDAY AS day, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY 1 ORDER BY 1"
