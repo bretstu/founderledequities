@@ -52,11 +52,25 @@ export async function onRequestPost({ request, env }) {
   const existing = await env.HITS.prepare("SELECT id, confirmed, token FROM watches WHERE email = ?1 AND tk = ?2").bind(email, tk).first();
   if (existing && existing.confirmed) return json({ ok: true, watching: true, message: `You're watching ${ceo || tk}.` });
   const t = existing ? existing.token : token();
+  // ONE CONFIRMATION PER ADDRESS (2026-10-14). The first stranger to want
+  // alerts watched three companies in three minutes, got three emails each
+  // asking for a click, and confirmed none. An address that has confirmed
+  // any watch is known: its later watches are on at once, and every alert
+  // carries its own stop link. The confirm click below also confirms every
+  // watch the address had pending, so one click covers whatever they asked.
+  const known = await env.HITS.prepare("SELECT 1 AS k FROM watches WHERE email = ?1 AND confirmed = 1 LIMIT 1").bind(email).first();
+  if (known) {
+    if (existing) await env.HITS.prepare("UPDATE watches SET confirmed = 1 WHERE id = ?1").bind(existing.id).run();
+    else await env.HITS.prepare("INSERT INTO watches (email, tk, ceo, confirmed, token, created) VALUES (?1, ?2, ?3, 1, ?4, ?5)")
+      .bind(email, tk, ceo, t, now).run();
+    return json({ ok: true, watching: true, message: `You're watching ${ceo || tk}. Every alert has a stop link.` });
+  }
   if (!existing) {
     await env.HITS.prepare("INSERT INTO watches (email, tk, ceo, confirmed, token, created) VALUES (?1, ?2, ?3, 0, ?4, ?5)")
       .bind(email, tk, ceo, t, now).run();
   }
-  // every watch confirms by one click
+  // the first watch from an address confirms by one click; the click
+  // confirms everything pending for the address
   const link = `${site(env)}/api/watch?confirm=${t}`;
   const what = tk === "FOUNDERS"
     ? "an email when any founder's stake moves 1% or more, usually within minutes of the SEC filing"
@@ -77,7 +91,8 @@ export async function onRequestGet({ request, env }) {
   if (confirm && /^[0-9a-f]{48}$/.test(confirm)) {
     const w = await env.HITS.prepare("SELECT id, tk, email FROM watches WHERE token = ?1").bind(confirm).first();
     if (!w) return redirect(`${site(env)}/?watch=expired`);
-    await env.HITS.prepare("UPDATE watches SET confirmed = 1 WHERE id = ?1").bind(w.id).run();
+    // one click confirms this watch and every other the address had pending (2026-10-14)
+    await env.HITS.prepare("UPDATE watches SET confirmed = 1 WHERE email = ?1 AND confirmed = 0").bind(w.email).run();
     return redirect(w.tk === "FOUNDERS" ? `${site(env)}/alerts/?watch=on` : `${site(env)}/company/${w.tk}/?watch=on`);
   }
   if (stop && /^[0-9a-f]{48}$/.test(stop)) {

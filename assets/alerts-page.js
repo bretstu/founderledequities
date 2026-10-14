@@ -13,12 +13,14 @@ function boot(){
      confirm link that expired */
   const said={on:"Confirmed. The next founder move of 1% or more lands in your inbox, minutes after the filing.",expired:"That link expired; enter your address again below."}[q.get("watch")]||"";
   $("#said").textContent=said;
+  /* the confirm click, counted (2026-10-14); "act" was never a kind the beacon's worker accepts, so the old line recorded nothing */
+  if(q.get("watch")==="on")hit("click","watch-confirmed","FOUNDERS");
 }
 async function joinAll(ev){
   ev.preventDefault();
   const email=($("#semail").value||"").trim(),f=$("#sfine");
   if(!email)return false;
-  try{const q=await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});const j=await q.json();f.textContent=j.message||"";if(j.ok)$("#semail").disabled=true;hit("act","subscribe","alerts-page");}
+  try{const q=await fetch("/api/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});const j=await q.json();f.textContent=j.message||"";if(j.ok)$("#semail").disabled=true;hit("click","watch",`FOUNDERS:${j.ok?"sent":"fail"}`);}
   catch(e){f.textContent="Something went wrong; write to hello@founderledequities.com.";}
   return false;
 }

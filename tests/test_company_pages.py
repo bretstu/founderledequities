@@ -656,3 +656,28 @@ def test_how_the_stake_is_held_is_baked_with_its_gate(tmp_path):
     sealed = open(os.path.join(out, "company", "SEALD", "index.html"), encoding="utf-8").read()
     assert 'id="chold"' not in sealed and '"held":' not in sealed, \
         "rows that do not sum to the published stake show nothing: excluded, not guessed"
+
+
+def test_one_confirmation_per_address_and_the_watch_is_counted():
+    """ONE CONFIRMATION PER ADDRESS (2026-10-14): the first stranger to want
+    alerts watched three companies in three minutes, got three emails and
+    confirmed none. A known address's later watches are on at once; the
+    confirm click confirms everything pending for the address; and the
+    watch form is a beacon event, so the report can see the one
+    conversion the site has."""
+    w = open(os.path.join(ROOT, "functions", "api", "watch.js"), encoding="utf-8").read()
+    assert "WHERE email = ?1 AND confirmed = 1 LIMIT 1" in w, "is the address known?"
+    assert "VALUES (?1, ?2, ?3, 1, ?4, ?5)" in w, "a known address's new watch is inserted confirmed"
+    assert "Every alert has a stop link" in w
+    assert 'UPDATE watches SET confirmed = 1 WHERE email = ?1 AND confirmed = 0").bind(w.email)' in w, "one click confirms every pending watch of the address"
+    assert w.index("LIMIT 1").__class__ is int and w.index("SELECT 1 AS k") < w.index("INSERT INTO watches (email, tk, ceo, confirmed, token, created) VALUES (?1, ?2, ?3, 0"), "the known check comes before the pending insert"
+    js = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
+    assert 'hit("click","watch",`${tk}:${j.ok?(j.watching?"on":"sent"):"fail"}`)' in js
+    assert 'hit("click","watch-confirmed",C.tk||"")' in js, "the confirm landing is counted"
+    al = open(os.path.join(ROOT, "assets", "alerts-page.js"), encoding="utf-8").read()
+    assert 'hit("act"' not in al, '"act" is not a kind the hit worker accepts; it recorded nothing'
+    assert 'hit("click","watch",`FOUNDERS:' in al and 'hit("click","watch-confirmed","FOUNDERS")' in al
+    kinds = open(os.path.join(ROOT, "functions", "api", "hit.js"), encoding="utf-8").read()
+    assert '"click"' in kinds.split("KINDS")[1].split("]")[0]
+    sh = open(os.path.join(ROOT, "ops", "hits.sh"), encoding="utf-8").read()
+    assert "probable_crawlers" in sh and "PEOPLE=" in sh and "crawler?" in sh, "the report tells a scraper from a reader by behaviour"

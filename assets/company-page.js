@@ -504,10 +504,13 @@ async function watchThis(tk,ev){
   try{
     const q=await fetch("/api/watch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tk,ceo:C.ceo||"",email})});
     const j=await q.json();
+    /* THE ONE CONVERSION THE SITE HAS IS COUNTED (2026-10-14): a reader who
+       submitted three watches read as "(none)" under what they did */
+    hit("click","watch",`${tk}:${j.ok?(j.watching?"on":"sent"):"fail"}`);
     if(j.ok&&j.watching){WATCHING={tk};renderOpen(PANEL[0],{animate:false});}
     else if(j.ok){if(f)f.innerHTML=`<b>Sent.</b> ${esc(j.message||"Confirm from the email and the watch is on.")}`;}
     else{if(f)f.textContent=j.message||"That didn't work.";}
-  }catch(e){if(f)f.textContent="Something went wrong; write to hello@founderledequities.com.";}
+  }catch(e){hit("click","watch",`${tk}:error`);if(f)f.textContent="Something went wrong; write to hello@founderledequities.com.";}
   return false;
 }
 /* THE SENTENCE, COPYABLE (distribution): the stake as of the filing, the
@@ -622,6 +625,8 @@ async function fetchText(paths){
 
 (async function main(){
   hit("view","page");   /* THE PAGE COUNTS ITS OWN VISITORS, like the home page: the same beacon, shared */
+  /* the confirm link lands here with ?watch=on: the click that made the watch real (2026-10-14) */
+  if(new URLSearchParams(location.search).get("watch")==="on")hit("click","watch-confirmed",C.tk||"");
   let row=C.row?mapPanel([C.row])[0]:null;
   if(!row){
     /* a company whose record could not settle on a figure: the same page,
