@@ -33,7 +33,8 @@ def class_label(security: str) -> str:
         return "Common stock"
     m = re.match(r"^(class|series)\s+([a-z0-9]+)\b", s, re.I)
     if m:
-        return f"{m.group(1).title()} {m.group(2).upper()}"
+        # a preferred says so: "Series A preferred", not a "Series A" a reader takes for common (2026-10-14, Rocket Lab)
+        return f"{m.group(1).title()} {m.group(2).upper()}" + (" preferred" if "preferred" in s.lower() else "")
     s = re.sub(r"[,.]?\s*(?:\$?[\d.]+\s+)?par\s+value.*$", "", s, flags=re.I).strip(" ,.")
     return (s[:1].upper() + s[1:]) if s else "Common stock"
 
@@ -99,9 +100,21 @@ def holdings_rows(led, client=None, issuer_cik: int | None = None) -> list[dict]
         for veh, amt in g.vehicles().items():
             if not amt or amt <= 0:
                 continue
+            vehicle, klass = vehicle_label(veh, raws.get(veh)), class_label(g.security)
+            # A COUNTED DERIVATIVE (2026-10-14): its line was made by the walk, not read
+            # from Table I, so the filing's natures do not carry it; the ledger kept the
+            # vehicle it wrote ("converts 1:1 into Common Stock, By The Equatorial Trust")
+            for (sec, _k), (_sh, nat, _note) in getattr(led, "counted_derivatives", {}).items():
+                if sec == g.security and vehicle in ("Indirect holding", "Held directly"):
+                    m = re.match(r"converts\s+([\d.]+):1\s+into\s+[^,]+(?:,\s*(.*))?$", nat or "")
+                    if m:
+                        klass = f"{klass}, converts {m.group(1)}:1"
+                        if m.group(2):
+                            vehicle = vehicle_label(veh, m.group(2))
+                    break
             rows.append({
-                "vehicle": vehicle_label(veh, raws.get(veh)),
-                "klass": class_label(g.security),
+                "vehicle": vehicle,
+                "klass": klass,
                 "di": (veh[0] if isinstance(veh, tuple) and veh else getattr(g, "direct", "") or ""),
                 "shares": int(round(amt)),
                 "pct_of_stake": round(amt / total * 100, 1) if total else "",

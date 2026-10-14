@@ -4666,6 +4666,10 @@ def test_end_to_end_a_counted_preferred_rides_the_walk_and_the_detector_names_an
     plain = build_ledger(_Edgar(), 1819994, owner_cik="1881842", share_classes=1)
     assert plain.total == 789373 + 2000000, "without the row, the common alone, as before"
     assert plain.preferred_live == {pref: (45951250.0, 1.0)}, "and the live preferred is named for a person to decide"
+    # the held block names the preferred as what it is, by the vehicle the walk wrote (fle/holdings.py)
+    from fle.holdings import holdings_rows
+    hrows = {(r["klass"], r["vehicle"]): r["shares"] for r in holdings_rows(led)}
+    assert hrows[("Series A preferred, converts 1:1", "By The Equatorial Trust")] == 45951250
     # the options snapshot: the newest Table II is read even when its balances are zero
     f4 = "<ownershipDocument>" + own + direct.replace("2025-01-07", "2026-09-05") + t2("C", "D", 45951250, 0, day="2026-09-05") + "</ownershipDocument>"
     docs["f4"] = f4
