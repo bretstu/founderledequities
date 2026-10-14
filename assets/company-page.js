@@ -464,7 +464,9 @@ function tradesBlock(r){
    click; any number of names, each managed by the links in its own emails.
    The box sits under the record on every page, sealed or open: what a
    person does is not behind the seal, only what they own. */
-let WATCHING=null;   /* the signed-in reader's watch on this company, once known */
+let WATCHING=null;   /* this browser's watch on this company, once known: from the store on load, or the instant reply */
+let SENT=null;       /* {tk,email}: a watch asked for this visit that waits on the confirm click */
+let LANDED="";       /* ?watch=on|off|alloff|expired, read once and stripped from the address */
 /* THE FOURTH CARD (2026-09-17). The watch used to be a band under the
    numbers, taller than they were and louder than anything else on the
    page. It is now the last of the four cards: a label, a switch with the
@@ -476,18 +478,37 @@ let WATCHING=null;   /* the signed-in reader's watch on this company, once known
 function watchCard(r){
   const who=r.ceo||C.ceo||"this chief executive";
   const on=!!(WATCHING&&WATCHING.tk===r.tk);
-  const q=new URLSearchParams(location.search).get("watch");
-  const said={on:`You're watching ${who}.`,off:`Stopped. No more emails about ${who}.`,alloff:"Stopped. No more emails about anyone.",expired:"That link expired; ask again here."}[q];
-  const fine=on?`You'll get an email when the stake moves.`:`Free. No account.`;
+  const sent=!on&&!!(SENT&&SENT.tk===r.tk);
+  const said={on:`You're watching ${who}.`,off:`Stopped. No more emails about ${who}.`,alloff:"Stopped. No more emails about anyone.",expired:"That link expired; ask again here."}[LANDED];
   /* THE FIELD FIRST (2026-09-24). A reader from a search typed the person's
      name; the card asks the one thing they want next, with the field in
-     view. The switch is for a signed-in member, who is watching at once. */
+     view. */
+  /* THREE STATES, WITH MEMORY (2026-10-14). The field for a stranger; the
+     field kept and the button greyed once a confirmation is on its way, so
+     a second press cannot send a second email; a "Watching" pill for a
+     browser that holds the watch, with the list and a way out for a
+     shared machine. The pill is drawn from the store, then checked against
+     the worker, so a watch stopped from an email elsewhere does not linger. */
+  let form,fine;
+  if(on){
+    form=`<div class="wform"><button class="wbtn won" type="button" disabled>&#10003; Watching</button></div>`;
+    fine=`${LANDED==="on"?"<b>Confirmed.</b> ":""}You'll get an email when the stake moves. <a href="/alerts/?t=${esc(WATCHES.token)}">Your watches</a> &middot; <a href="#" onclick="return notYou('${r.tk}')">not you?</a>`;
+  }else if(sent){
+    form=`<form class="wform" onsubmit="return false"><input type="email" value="${esc(SENT.email)}" disabled aria-label="Email address"><button class="wbtn" type="button" disabled>Sent</button></form>`;
+    fine=`<b>Check your inbox</b>, or Promotions: one click confirms it.`;
+  }else{
+    form=`<form class="wform" onsubmit="return watchThis('${r.tk}',event)"><input type="email" id="wemail" placeholder="you@email.com" required autocomplete="email" aria-label="Email address"><button class="wbtn" type="submit">Watch &rarr;</button></form>`;
+    fine=`${said?`<b>${esc(said)}</b> `:""}Free. No account.`;
+  }
   return `<div class="wcard" id="cwatch" title="a buy or a discretionary sale of any size, or any other filing that moves the stake 1% or more">
     <div class="wq">Get an email when ${esc(who)}'s stake moves.</div>
-    <form class="wform" onsubmit="return watchThis('${r.tk}',event)"><input type="email" id="wemail" placeholder="you@email.com" required autocomplete="email" aria-label="Email address"><button class="wbtn" type="submit">Watch &rarr;</button></form>
-    <div class="wfine" id="wfine">${said?`<b>${esc(said)}</b> `:""}${fine}</div>
+    ${form}
+    <div class="wfine" id="wfine">${fine}</div>
   </div>`;
 }
+function redrawWatch(){const slot=$("#cwatchslot");if(slot)slot.innerHTML=watchCard(window._lastRow||PANEL[0]);}
+/* a shared machine: the pill is someone else's; the store goes and the field comes back */
+function notYou(tk){WATCHES.forget();WATCHING=null;SENT=null;LANDED="";hit("click","watch",`${tk}:notyou`);redrawWatch();return false;}
 async function watchThis(tk,ev){
   if(ev)ev.preventDefault();
   /* TWO FORMS, ONE FLOW (design v4): the card beside the answer and the
@@ -507,10 +528,10 @@ async function watchThis(tk,ev){
     /* THE ONE CONVERSION THE SITE HAS IS COUNTED (2026-10-14): a reader who
        submitted three watches read as "(none)" under what they did */
     hit("click","watch",`${tk}:${j.ok?(j.watching?"on":"sent"):"fail"}`);
-    if(j.ok&&j.watching){WATCHING={tk};renderOpen(PANEL[0],{animate:false});}
-    else if(j.ok){if(f)f.innerHTML=`<b>Sent.</b> ${esc(j.message||"Confirm from the email and the watch is on.")}`;}
-    else{if(f)f.textContent=j.message||"That didn't work.";}
-  }catch(e){hit("click","watch",`${tk}:error`);if(f)f.textContent="Something went wrong; write to hello@founderledequities.com.";}
+    if(j.ok&&j.watching){WATCHES.remember(j.token,tk,C.ceo||"");WATCHING={tk};LANDED="";redrawWatch();}
+    else if(j.ok){SENT={tk,email};redrawWatch();}
+    else{if(btn){btn.disabled=false;btn.innerHTML="Watch &rarr;";}if(f)f.textContent=j.message||"That didn't work.";}
+  }catch(e){hit("click","watch",`${tk}:error`);if(btn){btn.disabled=false;btn.innerHTML="Watch &rarr;";}if(f)f.textContent="Something went wrong; write to hello@founderledequities.com.";}
   return false;
 }
 /* THE SENTENCE, COPYABLE (distribution): the stake as of the filing, the
@@ -624,9 +645,23 @@ async function fetchText(paths){
 }
 
 (async function main(){
-  hit("view","page");   /* THE PAGE COUNTS ITS OWN VISITORS, like the home page: the same beacon, shared */
-  /* the confirm link lands here with ?watch=on: the click that made the watch real (2026-10-14) */
-  if(new URLSearchParams(location.search).get("watch")==="on")hit("click","watch-confirmed",C.tk||"");
+  /* THE LANDINGS (2026-10-14): the confirm link arrives with ?watch=on&t=<token>,
+     the click that made the watch real, and the browser keeps the token;
+     a stop link arrives with ?watch=off or alloff and the browser forgets.
+     The address is then cleaned, so a reload or a shared link carries
+     neither the token nor a second count. */
+  {
+    const q=new URLSearchParams(location.search);
+    LANDED=q.get("watch")||"";
+    if(LANDED){
+      if(LANDED==="on"){hit("click","watch-confirmed",C.tk||"");WATCHES.remember(q.get("t")||"",C.tk||"",C.ceo||"");}
+      else if(LANDED==="off")WATCHES.forget(C.tk||"");
+      else if(LANDED==="alloff")WATCHES.forget();
+      history.replaceState(null,"",location.pathname);
+    }
+    if(WATCHES.has(C.tk||""))WATCHING={tk:C.tk};
+  }
+  hit("view","page");   /* THE PAGE COUNTS ITS OWN VISITORS, like the home page: the same beacon, shared; after the cleaning, so no token is recorded */
   let row=C.row?mapPanel([C.row])[0]:null;
   if(!row){
     /* a company whose record could not settle on a figure: the same page,
@@ -636,6 +671,8 @@ async function fetchText(paths){
   if(C.price){row.price=C.price;row.val=row.sh?row.sh*C.price:null;PRICES_ASOF=C.price_date||"";}
   setRow(row);
   renderOpen(row,{animate:false});   /* the numbers first; the record and trades fill in */
+  /* the store's word is checked against the worker's, once, after the first paint */
+  if(WATCHES.token)WATCHES.refresh().then(ws=>{if(ws===null)return;const on=ws.some(w=>w.tk===C.tk);if(on!==!!WATCHING){WATCHING=on?{tk:C.tk}:null;if(!on)LANDED="";redrawWatch();}});
   /* ONE TREE (2026-09-23): every company's full record and trades live at
      the root; the shards carry everything since 2016. */
   const [h,e,p]=await Promise.all([

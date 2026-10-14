@@ -67,12 +67,17 @@ export async function onRequestGet({ request, env }) {
   // refused write is not a success: the page says so, and the token is
   // kept for a day so a fixed setting can retry the click.
   let ok = false;
+  let tokenOut = "";
   if (env.HITS) {
     try {
       await env.HITS.prepare("CREATE TABLE IF NOT EXISTS watches (id INTEGER PRIMARY KEY, email TEXT NOT NULL, tk TEXT NOT NULL, ceo TEXT, confirmed INTEGER DEFAULT 0, token TEXT, created TEXT, UNIQUE(email, tk))").run();
       const t = [...crypto.getRandomValues(new Uint8Array(24))].map((b) => b.toString(16).padStart(2, "0")).join("");
       await env.HITS.prepare("INSERT INTO watches (email, tk, ceo, confirmed, token, created) VALUES (?1, 'FOUNDERS', 'every founder', 1, ?2, ?3) ON CONFLICT(email, tk) DO UPDATE SET confirmed = 1")
         .bind(email, t, new Date().toISOString()).run();
+      // the page is told which token this address holds (2026-10-14): a
+      // re-run of the click keeps the first token, so it is read back
+      const row = await env.HITS.prepare("SELECT token FROM watches WHERE email = ?1 AND tk = 'FOUNDERS'").bind(email).first();
+      tokenOut = (row && row.token) || t;
       ok = true;
     } catch { ok = false; }
   }
@@ -92,5 +97,7 @@ export async function onRequestGet({ request, env }) {
       });
     } catch { /* the watch stands */ }
   }
-  return redirect(`${site(env)}/tape/?subscribed=1`);
+  // the alerts page shows the watch as on, and remembers the token in the
+  // browser so the list is one click away next time (2026-10-14)
+  return redirect(`${site(env)}/alerts/?watch=on&t=${tokenOut}`);
 }

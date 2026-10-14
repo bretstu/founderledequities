@@ -111,11 +111,12 @@ ${Array.isArray(e.facts) && e.facts.length
 <div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:#94A3B8;">FOUNDER LED EQUITIES</div>
 ${blocks}
 <div style="border-top:1px solid #D6D1C7;margin:4px 0 12px;"></div>
-<p style="font-size:11px;line-height:1.6;color:#94A3B8;margin:0;">${from}<br>${stopThese} &middot; <a href="${site(env)}/api/watch?stopall=${anyToken}" style="color:#94A3B8;">Stop everything</a> &middot; Nothing here is investment advice.</p>
+<p style="font-size:11px;line-height:1.6;color:#94A3B8;margin:0;">${from}<br><a href="${site(env)}/alerts/?t=${anyToken}" style="color:#94A3B8;">Your watches</a> &middot; ${stopThese} &middot; <a href="${site(env)}/api/watch?stopall=${anyToken}" style="color:#94A3B8;">Stop everything</a> &middot; Nothing here is investment advice.</p>
 </td></tr></table></td></tr></table></body></html>`;
     const text = b.items.map(({ e }) => `${short(e)}.\n${Array.isArray(e.facts) && e.facts.length ? e.facts.map(([k, v]) => `${k}: ${v}`).join("\n") : (e.body || `${dayLine(e)} ${stakeLine(e)}`.trim())}\n${site(env)}/company/${e.tk}/`).join("\n\n")
       + `\n\n${from.replace(/<[^>]+>/g, "")}\nStop these: ` + ws.map((w) => `${site(env)}/api/watch?stop=${w.token}`).join(" ")
-      + `\nStop everything: ${site(env)}/api/watch?stopall=${anyToken}`;
+      + `\nStop everything: ${site(env)}/api/watch?stopall=${anyToken}`
+      + `\nYour watches: ${site(env)}/alerts/?t=${anyToken}`;
     const r = await fetch(`${RESEND(env)}/emails`, {
       method: "POST",
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },

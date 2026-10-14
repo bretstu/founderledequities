@@ -909,6 +909,40 @@ const HIT=(()=>{
 })();
 /*@shared*/
 function hit(kind,name,detail){HIT.hit(kind,name,detail);}
+/* YOUR WATCHES, REMEMBERED (2026-10-14). the site has no accounts. a browser
+   that confirmed a watch, or made one instantly, keeps the address's token
+   in localStorage; the company page renders "watching" from it and the
+   alerts page lists by it. the list is always the worker's answer
+   (/api/watch?mine=<token>): the store is the key to it and a cache of what
+   it last said, so a watch stopped from an email on another device drops
+   off here on the next load. "not you?" clears it. device-specific by
+   design: there is nothing to sign in to. */
+/*@shared*/
+const WATCHES=(()=>{
+  const K="fle_watches";
+  const read=()=>{try{const v=JSON.parse(localStorage.getItem(K)||"null");return v&&typeof v.token==="string"&&v.tks?v:null;}catch(e){return null;}};
+  const write=v=>{try{if(v)localStorage.setItem(K,JSON.stringify(v));else localStorage.removeItem(K);}catch(e){}};
+  const has=tk=>{const v=read();return !!(v&&v.tks[tk]);};
+  const remember=(token,tk,ceo)=>{
+    if(!/^[0-9a-f]{48}$/.test(token||""))return read();
+    const v=read()||{token,tks:{}};
+    v.token=token;
+    if(tk)v.tks[tk]={ceo:ceo||"",since:(v.tks[tk]||{}).since||new Date().toISOString().slice(0,10)};
+    write(v);return v;
+  };
+  const forget=tk=>{const v=read();if(!v)return;if(tk===undefined){write(null);return;}delete v.tks[tk];write(v);};
+  /* the worker's list, the store rewritten from it: [] when the token is gone (the store is cleared), null when the fetch failed */
+  const refresh=async()=>{
+    const v=read();if(!v)return [];
+    try{
+      const q=await fetch("/api/watch?mine="+v.token);const j=await q.json();const ws=j.watches||[];
+      if(!ws.length){write(null);return [];}
+      v.token=ws[0].token;v.tks={};for(const w of ws)v.tks[w.tk]={ceo:w.ceo||"",since:w.since||""};
+      write(v);return ws;
+    }catch(e){return null;}
+  };
+  return {read,has,remember,forget,refresh,get token(){const v=read();return v?v.token:"";}};
+})();
 
 /* ---------------- embedded fallback (real pipeline output) ------ */
 const SAMPLE=[

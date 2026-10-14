@@ -47,6 +47,15 @@
     .wlist .tk{font-weight:700;margin-right:8px}
     .wlist .stop{font:inherit;font-size:var(--fs-2xs);font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);background:none;border:0;cursor:pointer;padding:0}
     .wlist .stop:hover{color:var(--sell)}
+    .wlist .row .when{color:var(--faint);margin-left:8px;font-size:var(--fs-xs)}
+    .lfoot{font-size:var(--fs-xs);color:var(--mut);margin-top:10px}
+    .lfoot a,.lfoot button{font:inherit;color:var(--mut);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
+    .lfoot button:hover{color:var(--sell)}
+    .onecap .homesub{flex:none}
+    .onecap .hs-msg{flex-basis:100%}
+    .onecap .hs-msg:empty{display:none}
+    /* the band when the browser holds the founder watch: the pill in the field's place */
+    .homecap .homesub button.won,.homecap .homesub button.won:disabled{opacity:1;color:var(--ink);background:var(--white);border:1.5px solid var(--ink);cursor:default}
     .lpage .said{margin-top:14px;font-size:var(--fs-m);color:var(--ink);font-weight:600}
     .lpage .said:empty{display:none}
   </style>
@@ -86,7 +95,26 @@
     <div class="foot">Watch the founders: any move that changes a founder&#8217;s stake by 1% or more.<br>Stop these &middot; Stop everything &middot; Nothing here is investment advice.</div>
   </div>
 
-  <div id="lbody"></div>
+  <!-- YOUR WATCHES (2026-10-14): drawn when the browser holds the address's
+       token (a confirm click, an instant watch, or the link in any alert),
+       from the worker's list; a stop beside each, one for everything -->
+  <section id="mine" hidden>
+    <div class="lk">Your watches</div>
+    <div class="wlist" id="lbody"></div>
+    <div class="lfoot" id="lfoot"></div>
+  </section>
+  <!-- ALREADY WATCHING? the new-device case: the list's link, mailed to the address the alerts go to -->
+  <section id="already" hidden>
+    <div class="lk">Already watching?</div>
+    <div class="onecap">
+      <div class="oq"><b>See and stop your watches from any device.</b><span>Enter the address the alerts go to; the link comes by email.</span></div>
+      <form class="homesub" id="listform" onsubmit="return sendList(event)">
+        <input type="email" id="lemail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email">
+        <button type="submit">Send me my watches &rarr;</button>
+      </form>
+      <span class="hs-msg" id="lfine"></span>
+    </div>
+  </section>
 </main>
 <script src="/alerts.js"></script>
 </body>

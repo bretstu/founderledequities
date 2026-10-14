@@ -4,7 +4,18 @@
 // stopped by one click from any alert. The reserved name FOUNDERS is the
 // live stream: every founder's move, within minutes of the filing, on the
 // same confirm/stop machinery as any other watch.
-// GET  /api/watch?confirm=<token> | ?stop=<token> | ?stopall=<token>
+// GET  /api/watch?confirm=<token> | ?stop=<token> | ?stopall=<token> | ?mine=<token>
+// POST /api/watch {list: email} -> the address's "your watches" link, mailed
+//
+// YOUR WATCHES, WITHOUT AN ACCOUNT (2026-10-14). The site has no sessions; a
+// watch is managed by the links in its own emails. The one thing that was
+// missing was a place to see them all: ?mine=<token> answers with every
+// confirmed watch of the address that token belongs to, each with its own
+// stop token, and /alerts/?t=<token> renders it. The token is the same
+// secret the stop links carry, so only someone holding the address's mail
+// can see the list. {list: email} mails that link on request, with the
+// same reply whatever the address, so the form cannot be used to learn
+// who watches what.
 import { site, json, redirect } from "../_shared.js";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -43,6 +54,26 @@ export async function onRequestPost({ request, env }) {
   await ensure(env);
   let body = {};
   try { body = await request.json(); } catch (e) { /* empty */ }
+  // "send me my watches": the link, mailed, if the address has any
+  if (body.list !== undefined) {
+    const generic = json({ ok: true, message: "If that address has watches, the list is on its way." });
+    const email = clean(body.list, 120).toLowerCase();
+    if (!EMAIL.test(email)) return generic;
+    if (env.SUBS) {   // one such mail per address per ten minutes
+      const seen = `listreq:${email}`;
+      if (await env.SUBS.get(seen)) return generic;
+      await env.SUBS.put(seen, "1", { expirationTtl: 600 });
+    }
+    const w = await env.HITS.prepare("SELECT token FROM watches WHERE email = ?1 AND confirmed = 1 ORDER BY created LIMIT 1").bind(email).first();
+    if (!w) return generic;
+    const link = `${site(env)}/alerts/?t=${w.token}`;
+    await send(env, email, "Your watches on Founder Led Equities",
+      `Everything this address watches, with a stop beside each:\n\n${link}\n\nIf you didn't ask for this, ignore it and nothing happens.`,
+      shell("Your watches.",
+        `<p style="font-size:14px;line-height:1.5;color:#64748B;margin:0;">Everything this address watches, with a stop beside each.</p>${button(link, "See your watches &rarr;")}`,
+        "If you didn't ask for this, ignore it and nothing happens."));
+    return generic;
+  }
   const tk = clean(body.tk, 12).toUpperCase();
   const ceo = clean(body.ceo, 80);
   if (!tk) return json({ ok: false, message: "Which company?" }, 400);
@@ -50,7 +81,7 @@ export async function onRequestPost({ request, env }) {
   if (!EMAIL.test(email)) return json({ ok: false, message: "An email address is needed." }, 400);
   const now = new Date().toISOString();
   const existing = await env.HITS.prepare("SELECT id, confirmed, token FROM watches WHERE email = ?1 AND tk = ?2").bind(email, tk).first();
-  if (existing && existing.confirmed) return json({ ok: true, watching: true, message: `You're watching ${ceo || tk}.` });
+  if (existing && existing.confirmed) return json({ ok: true, watching: true, token: existing.token, message: `You're watching ${ceo || tk}.` });
   const t = existing ? existing.token : token();
   // ONE CONFIRMATION PER ADDRESS (2026-10-14). The first stranger to want
   // alerts watched three companies in three minutes, got three emails each
@@ -63,7 +94,7 @@ export async function onRequestPost({ request, env }) {
     if (existing) await env.HITS.prepare("UPDATE watches SET confirmed = 1 WHERE id = ?1").bind(existing.id).run();
     else await env.HITS.prepare("INSERT INTO watches (email, tk, ceo, confirmed, token, created) VALUES (?1, ?2, ?3, 1, ?4, ?5)")
       .bind(email, tk, ceo, t, now).run();
-    return json({ ok: true, watching: true, message: `You're watching ${ceo || tk}. Every alert has a stop link.` });
+    return json({ ok: true, watching: true, token: t, message: `You're watching ${ceo || tk}. Every alert has a stop link.` });
   }
   if (!existing) {
     await env.HITS.prepare("INSERT INTO watches (email, tk, ceo, confirmed, token, created) VALUES (?1, ?2, ?3, 0, ?4, ?5)")
@@ -78,7 +109,7 @@ export async function onRequestPost({ request, env }) {
   await send(env, email, `Confirm: watch ${ceo || tk}`,
     `One click and you're watching ${ceo || tk}${tk === "FOUNDERS" ? "" : ` (${tk})`}: ${what}.\n\n${link}\n\nIf you didn't ask for this, ignore it and nothing happens.`,
     shell(`One click and you're watching ${ceo || tk}.`,
-      `<p style="font-size:14px;line-height:1.5;color:#64748B;margin:0;">${what.charAt(0).toUpperCase() + what.slice(1)}.</p>${button(link, "Confirm &rarr;")}`,
+      `<p style="font-size:14px;line-height:1.5;color:#64748B;margin:0;">${(what.charAt(0).toUpperCase() + what.slice(1)).replace(", or any filing", ",<br>or any filing")}.</p>${button(link, "Confirm &rarr;")}`,
       "If you didn't ask for this, ignore it and nothing happens."));
   return json({ ok: true, watching: false, message: "Check your inbox: one click confirms it." });
 }
@@ -88,27 +119,43 @@ export async function onRequestGet({ request, env }) {
   await ensure(env);
   const u = new URL(request.url);
   const confirm = u.searchParams.get("confirm"), stop = u.searchParams.get("stop"), tk = u.searchParams.get("tk");
-  if (confirm && /^[0-9a-f]{48}$/.test(confirm)) {
+  const asJson = u.searchParams.get("json") === "1";   // the watches page stops from a fetch, not a click
+  const TOKEN = /^[0-9a-f]{48}$/;
+  if (confirm && TOKEN.test(confirm)) {
     const w = await env.HITS.prepare("SELECT id, tk, email FROM watches WHERE token = ?1").bind(confirm).first();
     if (!w) return redirect(`${site(env)}/?watch=expired`);
     // one click confirms this watch and every other the address had pending (2026-10-14)
     await env.HITS.prepare("UPDATE watches SET confirmed = 1 WHERE email = ?1 AND confirmed = 0").bind(w.email).run();
-    return redirect(w.tk === "FOUNDERS" ? `${site(env)}/alerts/?watch=on` : `${site(env)}/company/${w.tk}/?watch=on`);
+    // the landing carries the token so the browser can remember the watch and link to the list
+    return redirect(w.tk === "FOUNDERS" ? `${site(env)}/alerts/?watch=on&t=${confirm}` : `${site(env)}/company/${w.tk}/?watch=on&t=${confirm}`);
   }
-  if (stop && /^[0-9a-f]{48}$/.test(stop)) {
+  // YOUR WATCHES: every confirmed watch of the address this token belongs to
+  const mine = u.searchParams.get("mine");
+  if (mine && TOKEN.test(mine)) {
+    const w = await env.HITS.prepare("SELECT email FROM watches WHERE token = ?1 AND confirmed = 1").bind(mine).first();
+    if (!w) return json({ watches: [] });
+    const rows = await env.HITS.prepare("SELECT tk, ceo, token, created FROM watches WHERE email = ?1 AND confirmed = 1 ORDER BY created").bind(w.email).all();
+    return json({ watches: (rows.results || []).map((r) => ({ tk: r.tk, ceo: r.ceo || "", token: r.token, since: String(r.created || "").slice(0, 10) })) });
+  }
+  if (stop && TOKEN.test(stop)) {
     const w = await env.HITS.prepare("SELECT id, tk FROM watches WHERE token = ?1").bind(stop).first();
     if (w) await env.HITS.prepare("DELETE FROM watches WHERE id = ?1").bind(w.id).run();
+    if (asJson) return json({ ok: true, stopped: w ? w.tk : null });
+    // the founder stream has no company page: its stop lands on the alerts page (2026-10-14)
+    if (w && w.tk === "FOUNDERS") return redirect(`${site(env)}/alerts/?watch=off`);
     return redirect(`${site(env)}/company/${w ? w.tk : ""}${w ? "/" : ""}?watch=off`);
   }
   // STOP EVERYTHING, one click from any alert, no sign-in: the token names
   // the person; every watch of theirs goes
   const stopall = u.searchParams.get("stopall");
-  if (stopall && /^[0-9a-f]{48}$/.test(stopall)) {
+  if (stopall && TOKEN.test(stopall)) {
     const w = await env.HITS.prepare("SELECT email, tk FROM watches WHERE token = ?1").bind(stopall).first();
     if (w) await env.HITS.prepare("DELETE FROM watches WHERE email = ?1").bind(w.email).run();
+    if (asJson) return json({ ok: true, stopped: "all" });
+    if (w && w.tk === "FOUNDERS") return redirect(`${site(env)}/alerts/?watch=alloff`);
     return redirect(`${site(env)}/company/${w ? w.tk : ""}${w ? "/" : ""}?watch=alloff`);
   }
   // no sessions, no sign-in (2026-09-23): a watch is managed by the links in
-  // its own emails, so there is no list to ask for
+  // its own emails; the list is at ?mine=<token>
   return json({ watches: [] });
 }

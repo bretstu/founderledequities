@@ -227,6 +227,9 @@
     .wcard .wbtn{height:40px;width:100%;font-family:var(--ui);font-size:var(--fs-m);font-weight:600;letter-spacing:0;color:var(--white);background:var(--accent);border:0;border-radius:var(--r-s);cursor:pointer}
     .wcard .wbtn:hover{background:var(--blue-d)}
     .wcard .wbtn:disabled{opacity:.55;cursor:default}
+    /* the "watching" pill (2026-10-14): settled, not greyed; ink on white */
+    .wcard .wbtn.won,.wcard .wbtn.won:disabled{opacity:1;color:var(--ink);background:var(--white);border:1.5px solid var(--ink);cursor:default}
+    .wcard .wbtn.won:hover{background:var(--white)}
     .factmsg{color:var(--mut);margin-left:6px}
     .cprose{font-size:var(--fs-b);line-height:1.6;color:var(--mut);max-width:78ch;margin:18px 0 0}
     .cshead{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
