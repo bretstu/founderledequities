@@ -667,10 +667,12 @@ async function fetchText(paths){
     const q=new URLSearchParams(location.search);
     LANDED=q.get("watch")||"";
     if(LANDED){
-      if(LANDED==="on"){hit("click","watch-confirmed",C.tk||"");WATCHES.remember(q.get("t")||"",C.tk||"",C.ceo||"");}
+      if(LANDED==="on")WATCHES.remember(q.get("t")||"",C.tk||"",C.ceo||"");
       else if(LANDED==="off")WATCHES.forget(C.tk||"");
       else if(LANDED==="alloff")WATCHES.forget();
       history.replaceState(null,"",location.pathname);
+      /* the confirm click is counted AFTER the cleaning (2026-10-14): the beacon records the path as it stands, and the token is a secret */
+      if(LANDED==="on")hit("click","watch-confirmed",C.tk||"");
       if(window.fleNav)fleNav();   /* the nav drew before the landing was read */
       if(LANDED==="1"){LANDED="";setTimeout(()=>{const i=$("#wemail");if(i)i.focus();},0);}   /* from the alerts page's box, signed out: the field is ready */
     }

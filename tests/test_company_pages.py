@@ -6,6 +6,7 @@ build, not copied; these tests hold the extraction to that."""
 import csv
 import html
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -782,3 +783,16 @@ def test_the_founder_stream_leads_the_list_and_the_box_is_the_watch():
     assert 'pickName=box.getAttribute("data-pick")' in sj and "if(h&&h(r)===true){close();box.value=\"\";return;}" in sj and 'data-i="\'+i+\'"' in sj
     cp = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
     assert 'if(LANDED==="1"){LANDED="";' in cp and 'i.focus()' in cp, "signed out, the pick lands on the company page with the field focused"
+
+
+def test_no_beacon_fires_before_the_token_is_stripped():
+    """THE CONFIRM CLICK LEAKED THE TOKEN (2026-10-14): the beacon records the
+    path as it stands, and the click fired before the address was cleaned,
+    so the first real subscriber's sign-in token landed in the hits table.
+    Every beacon now fires after history.replaceState."""
+    for name in ("company-page.js", "alerts-page.js"):
+        js = open(os.path.join(ROOT, "assets", name), encoding="utf-8").read()
+        strip = js.index('history.replaceState(null,"",location.pathname)')
+        for m in re.finditer(r'hit\("(view|click)","(page|watch-confirmed)"', js):
+            assert m.start() > strip, f"{name}: a beacon fires before the address is cleaned"
+

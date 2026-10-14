@@ -23,12 +23,14 @@ function boot(){
   const w=q.get("watch")||"",t=q.get("t")||"";
   const said={on:"Confirmed. The next founder move of 1% or more lands in your inbox, minutes after the filing.",off:"Stopped. No more emails from the founder stream.",alloff:"Stopped. No more emails about anyone.",expired:"That link expired; enter your address again below."}[w]||"";
   $("#said").textContent=said;
-  if(w==="on"){hit("click","watch-confirmed","FOUNDERS");WATCHES.remember(t,"FOUNDERS","every founder");}
+  if(w==="on")WATCHES.remember(t,"FOUNDERS","every founder");
   else if(w==="off")WATCHES.forget("FOUNDERS");
   else if(w==="alloff")WATCHES.forget();
   else if(t)WATCHES.remember(t);
   if(w||t){history.replaceState(null,"",location.pathname);if(window.fleNav)fleNav();}
-  hit("view","page");   /* after the cleaning: the token is a secret and the beacon records the path */
+  /* every beacon fires after the cleaning: it records the path as it stands, and the token is a secret (the confirm click used to fire first, 2026-10-14) */
+  hit("view","page");
+  if(w==="on")hit("click","watch-confirmed","FOUNDERS");
   drawBand();
   drawList();
 }
