@@ -10,25 +10,46 @@
   <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/site.css">
   <style>
-    /* THE ALERTS PAGE (rebuilt 2026-09-29, design b): one promise, one form.
-       the headline and a sentence; the same capture band every page ends
-       with, here at the top because it is the page's job; one row to watch
-       a single company, with the site's search in it; the sample of what
-       arrives; and the list of a reader's own watches when an email link
-       brings them here. the Sunday email retired the same day. */
+    /* THE ALERTS PAGE (rebuilt 2026-09-29, design b; two ways, 2026-10-14):
+       the headline and a sentence; then TWO WAYS TO WATCH, drawn as two
+       panels of the same shape (a label, a bold line, a muted line, the
+       control on the right) so the founder stream and a single company
+       read as the same kind of thing, not a promotion and a utility; then
+       the reader's own watches (or, with none on this browser, the form
+       that mails the link); the sample of what arrives last, for whoever
+       scrolled past both without acting. The site's capture band left
+       this page: its own headline said what the H1 says. */
     .lpage{max-width:var(--max);margin:0 auto;padding:clamp(36px,4.5vw,60px) clamp(20px,3.5vw,48px) 80px}
     .lpage h1{font-family:var(--ui);font-weight:700;letter-spacing:-.02em;line-height:1.05;font-size:clamp(36px,5vw,56px);margin:0 0 10px}
     .lpage .lead{font-size:var(--fs-l);line-height:1.5;color:var(--mut);max-width:58ch;margin:0}
-    .lpage .homecap{margin:24px 0 0;padding:0;max-width:none}
     .lpage .lk{font-family:var(--ui);font-weight:600;font-size:var(--fs-2xs);letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin:34px 0 10px}
-    /* one company: the search box inside a panel; picking a result lands on that page's watch strip */
-    .onecap{background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 24px;display:flex;align-items:center;gap:14px 28px;flex-wrap:wrap}
-    .onecap .oq{flex:1 1 300px}
-    .onecap .oq b{display:block;font-size:var(--fs-l);font-weight:600;letter-spacing:-.01em}
-    .onecap .oq span{display:block;font-size:var(--fs-s);color:var(--mut);margin-top:4px}
-    .onecap .herosearch{margin:0;flex:1 1 380px;height:48px;background:var(--white)}
-    .onecap .herosearch input{font-size:var(--fs-b)}
+    .lpage .lk:first-of-type{margin-top:30px}
+    /* ONE SHAPE FOR EVERY PANEL: the words on the left, the control on the right */
+    .way{background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 24px;display:flex;align-items:center;gap:14px 28px;flex-wrap:wrap}
+    .way .oq{flex:1 1 300px}
+    .way .oq b{display:block;font-size:var(--fs-l);font-weight:600;letter-spacing:-.01em}
+    .way .oq span{display:block;font-size:var(--fs-s);color:var(--mut);margin-top:4px}
+    .way .homesub{flex:none;margin:0}
+    .way .homesub input{width:min(300px,60vw);height:44px;padding:0 16px;font-size:var(--fs-b)}
+    .way .homesub button{height:44px;padding:0 20px;font-family:var(--ui)}
+    .way .homesub button.won,.way .homesub button.won:disabled{opacity:1;color:var(--ink);background:var(--white);border:1.5px solid var(--ink);cursor:default}
+    .way .hs-msg{flex-basis:100%;font-size:var(--fs-s);color:var(--mut)}
+    .way .hs-msg:empty{display:none}
+    .way .herosearch{margin:0;flex:1 1 380px;height:44px;background:var(--white)}
+    .way .herosearch input{font-size:var(--fs-b);width:auto;max-width:none}   /* the nav rule caps the box at 38vw; here it has the row */
     body.alerts .topnav .navsearch{display:none}   /* the page carries the search itself, as the home page does; search.js binds one box */
+    /* the reader's own watches: one row each, the stop at the right */
+    .wlist{background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:6px 24px;font-size:var(--fs-s)}
+    .wlist .row{display:flex;justify-content:space-between;align-items:center;gap:10px;white-space:nowrap;overflow:hidden;padding:12px 0;border-top:1px solid var(--line)}
+    .wlist .row:first-child{border-top:0}
+    .wlist .row>span{overflow:hidden;text-overflow:ellipsis}
+    .wlist .tk{font-weight:700;margin-right:8px}
+    .wlist .row .when{color:var(--faint);margin-left:8px;font-size:var(--fs-xs)}
+    .wlist .stop{font:inherit;font-size:var(--fs-2xs);font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);background:none;border:0;cursor:pointer;padding:0}
+    .wlist .stop:hover{color:var(--sell)}
+    .lfoot{font-size:var(--fs-xs);color:var(--mut);margin-top:10px}
+    .lfoot a,.lfoot button{font:inherit;color:var(--mut);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
+    .lfoot button:hover{color:var(--sell)}
     /* the sample alert, as the email is drawn */
     .sample{background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 24px;max-width:560px}
     .sample .from{font-size:var(--fs-2xs);font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
@@ -39,23 +60,6 @@
     .sample .p{font-size:var(--fs-m);margin-top:12px}
     .sample .p b{color:var(--accent);font-weight:600}
     .sample .foot{font-size:var(--fs-xs);line-height:1.6;color:var(--faint);margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
-    /* a reader's own watches, when an email link brings them here */
-    .wlist{background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 24px;font-size:var(--fs-s);max-width:560px}
-    .wlist .row{display:flex;justify-content:space-between;gap:10px;white-space:nowrap;overflow:hidden;padding:8px 0;border-top:1px solid var(--line)}
-    .wlist .row:first-child{border-top:0}
-    .wlist .row>span{overflow:hidden;text-overflow:ellipsis}
-    .wlist .tk{font-weight:700;margin-right:8px}
-    .wlist .stop{font:inherit;font-size:var(--fs-2xs);font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);background:none;border:0;cursor:pointer;padding:0}
-    .wlist .stop:hover{color:var(--sell)}
-    .wlist .row .when{color:var(--faint);margin-left:8px;font-size:var(--fs-xs)}
-    .lfoot{font-size:var(--fs-xs);color:var(--mut);margin-top:10px}
-    .lfoot a,.lfoot button{font:inherit;color:var(--mut);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
-    .lfoot button:hover{color:var(--sell)}
-    .onecap .homesub{flex:none}
-    .onecap .hs-msg{flex-basis:100%}
-    .onecap .hs-msg:empty{display:none}
-    /* the band when the browser holds the founder watch: the pill in the field's place */
-    .homecap .homesub button.won,.homecap .homesub button.won:disabled{opacity:1;color:var(--ink);background:var(--white);border:1.5px solid var(--ink);cursor:default}
     .lpage .said{margin-top:14px;font-size:var(--fs-m);color:var(--ink);font-weight:600}
     .lpage .said:empty{display:none}
   </style>
@@ -64,35 +68,28 @@
 {{TOPNAV}}
 <main class="lpage">
   <h1>When a founder&#8217;s stake moves.</h1>
-  <p class="lead">An email when any founder&#8217;s move changes their stake by 1% or more, usually within about ten minutes of the SEC filing. Free. No account. Every email carries its own one-click stop.</p>
+  <p class="lead">An email, usually within about ten minutes of the SEC filing. Free. No account. Every email carries its own one-click stop.</p>
   <div class="said" id="said"></div>
-  <section class="homecap" id="lcap"><div class="wrap capin">
-    <div class="caph">Know within minutes when a founder&#8217;s stake moves.</div>
+
+  <!-- TWO WAYS TO WATCH, the same shape -->
+  <div class="lk">Every founder</div>
+  <div class="way" id="lcap">
+    <div class="oq"><b>Any move that changes a founder&#8217;s stake by 1% or more.</b><span>Every founder on the site, one email per move.</span></div>
     <form class="homesub" id="subform" onsubmit="return joinAll(event)">
       <input type="email" id="semail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email">
       <button type="submit">Watch the founders &rarr;</button>
     </form>
     <span class="hs-msg" id="sfine"></span>
-    <div class="capfine">Any move that changes a founder&#8217;s stake by 1% or more. One click from your inbox confirms it.</div>
-  </div></section>
+  </div>
 
-  <div class="lk">Watch one company</div>
-  <div class="onecap">
+  <div class="lk">One company</div>
+  <div class="way">
     <div class="oq"><b>Any chief executive, founder or not.</b><span>Find the company; the Watch field is at the top of its page.</span></div>
     <div class="navsearch herosearch" id="navsearch">
       <svg class="hsico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
       <input type="search" id="hq" placeholder="A ticker, a company, or a CEO&hellip;" autocomplete="off" spellcheck="false" aria-label="Find a company or CEO" aria-expanded="false" role="combobox" aria-controls="hqd">
       <div class="navqd" id="hqd" role="listbox" hidden></div>
     </div>
-  </div>
-
-  <div class="lk">What one looks like</div>
-  <div class="sample">
-    <div class="from">Founder Led Equities</div>
-    <div class="h">Paul Gu bought $1.3M of Upstart on the open market.</div>
-    <table class="facts"><tr><td>Bought</td><td>61,700 shares &middot; $1.3M &middot; open market</td></tr><tr><td>Transaction date</td><td>09/10/2026</td></tr><tr><td>Filing date</td><td>09/14/2026</td></tr><tr><td>Stake</td><td>1.33% &rarr; 1.38% &nbsp;(+3.9% of the holding)</td></tr></table>
-    <div class="p"><b>Upstart on Founder Led Equities &rarr;</b></div>
-    <div class="foot">Watch the founders: any move that changes a founder&#8217;s stake by 1% or more.<br>Stop these &middot; Stop everything &middot; Nothing here is investment advice.</div>
   </div>
 
   <!-- YOUR WATCHES (2026-10-14): drawn when the browser holds the address's
@@ -106,7 +103,7 @@
   <!-- ALREADY WATCHING? the new-device case: the list's link, mailed to the address the alerts go to -->
   <section id="already" hidden>
     <div class="lk">Already watching?</div>
-    <div class="onecap">
+    <div class="way">
       <div class="oq"><b>See and stop your watches from any device.</b><span>Enter the address the alerts go to; the link comes by email.</span></div>
       <form class="homesub" id="listform" onsubmit="return sendList(event)">
         <input type="email" id="lemail" placeholder="you@example.com" required autocomplete="email" aria-label="Your email">
@@ -115,6 +112,15 @@
       <span class="hs-msg" id="lfine"></span>
     </div>
   </section>
+
+  <div class="lk">What one looks like</div>
+  <div class="sample">
+    <div class="from">Founder Led Equities</div>
+    <div class="h">Paul Gu bought $1.3M of Upstart on the open market.</div>
+    <table class="facts"><tr><td>Bought</td><td>61,700 shares &middot; $1.3M &middot; open market</td></tr><tr><td>Transaction date</td><td>09/10/2026</td></tr><tr><td>Filing date</td><td>09/14/2026</td></tr><tr><td>Stake</td><td>1.33% &rarr; 1.38% &nbsp;(+3.9% of the holding)</td></tr></table>
+    <div class="p"><b>Upstart on Founder Led Equities &rarr;</b></div>
+    <div class="foot">Watch the founders: any move that changes a founder&#8217;s stake by 1% or more.<br>Your watches &middot; Stop these &middot; Stop everything &middot; Nothing here is investment advice.</div>
+  </div>
 </main>
 <script src="/alerts.js"></script>
 </body>

@@ -14,7 +14,7 @@
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let SENT=false;   /* a founder watch asked for this visit, waiting on the confirm click */
-let FORM0="",CAP0="";   /* the band's form and fine print as the page shipped them, restored when no state applies */
+let FORM0="";   /* the founder panel's form as the page shipped it, restored when no state applies */
 function boot(){
   const q=new URLSearchParams(location.search);
   /* THE LANDINGS: a FOUNDERS watch confirmed (?watch=on&t=<token>), a stop
@@ -38,13 +38,12 @@ function boot(){
    once a confirmation is on its way; a "Watching" pill for a browser that
    holds the founder watch. */
 function drawBand(){
-  const form=$("#subform"),fine=$("#sfine"),cap=$("#lcap .capfine");
+  const form=$("#subform"),fine=$("#sfine");
   if(!form)return;
-  if(!FORM0){FORM0=form.innerHTML;CAP0=cap?cap.innerHTML:"";}
+  if(!FORM0)FORM0=form.innerHTML;
   if(WATCHES.has("FOUNDERS")){
     form.innerHTML=`<button type="button" class="won" disabled>&#10003; Watching the founders</button>`;
     if(fine)fine.textContent="";
-    if(cap)cap.innerHTML=`You'll get an email when any founder's stake moves 1% or more. Your watches are below &middot; <a href="#" onclick="return notYou()">not you?</a>`;
   }else if(SENT){
     const inp=form.querySelector("input"),btn=form.querySelector("button");
     if(inp)inp.disabled=true;
@@ -53,7 +52,6 @@ function drawBand(){
   }else{
     form.innerHTML=FORM0;
     if(fine)fine.textContent="";
-    if(cap)cap.innerHTML=CAP0;
   }
 }
 async function joinAll(ev){
