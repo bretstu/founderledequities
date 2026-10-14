@@ -58,6 +58,20 @@ RULES FOR ENTRIES.
   - the panel reports every entry applied; nothing is silently adjusted.
   - an entry names ONE class at ONE company. It cannot affect anything else.
   - an exclusion (no `shares`) does not expire: the filing will not change.
+  - a COUNTED DERIVATIVE (`ratio` set, above 0) counts the Table II rows
+    titled `security` as shares of the class they convert into, at that
+    ratio (2026-10-14, Rocket Lab). Peter Beck's trust exchanged 50,951,250
+    common for a Series A Convertible Participating Preferred that converts
+    one for one at his option, votes as common and takes dividends as
+    common; the walk leaves every "preferred" in Table II out, because the
+    usual one is a pre-IPO preferred that converted at the listing and
+    lingers in an old Form 3, and the balance field cannot tell that relic
+    from a live instrument (AMC's units were converted in 2023 and never
+    restated). A person reads the terms once and records them; the walk
+    then reads those rows as lines of the underlying class, so the chain,
+    the history, the events and the page all carry them. The nightly names
+    every live preferred it is NOT counting (ownership.py), so the next one
+    is seen the week it is filed.
   - a FRACTION (`fraction` set, between 0 and 1) counts that share of the
     line instead of removing it (2026-10-14). Venture Global's Class B is
     held by Venture Global Partners II, LLC, which the Department of Energy's
@@ -79,7 +93,7 @@ from pathlib import Path
 
 DEFAULT = "universe/exclusions.csv"
 
-COLUMNS = ["cik", "ticker", "security", "direct", "reason", "source", "shares", "owner_cik", "since", "vehicle", "decided", "fraction"]
+COLUMNS = ["cik", "ticker", "security", "direct", "reason", "source", "shares", "owner_cik", "since", "vehicle", "decided", "fraction", "ratio"]
 
 
 def class_key(security: str) -> str:
@@ -111,6 +125,11 @@ class Exclusion:
     vehicle: str = ""
     decided: str = ""              # blank for a hand row; "reader YYYY-MM-DD" for a row the decisions file produced
     fraction: float | None = None  # set: the share of the line that is the person's (a co-owned vehicle); unset: the whole line goes
+    ratio: float | None = None     # set: Table II rows titled `security` are counted as shares of their underlying class, at this ratio
+
+    @property
+    def is_counted(self) -> bool:
+        return self.ratio is not None
 
     @property
     def is_addition(self) -> bool:
@@ -206,6 +225,17 @@ def read_exclusions(path: str | None = None) -> Exclusions:
                     raise ValueError(f"{p}: {row.get('ticker') or cik} has a fraction outside (0, 1): {rawf!r}; a whole line is an exclusion, not a fraction")
                 if shares is not None:
                     raise ValueError(f"{p}: {row.get('ticker') or cik} sets both shares and fraction; a supplement is whole")
+            ratio = None
+            rawr = (row.get("ratio") or "").strip()
+            if rawr:
+                try:
+                    ratio = float(rawr)
+                except ValueError:
+                    raise ValueError(f"{p}: {row.get('ticker') or cik} has a non-numeric ratio {rawr!r}")
+                if ratio <= 0:
+                    raise ValueError(f"{p}: {row.get('ticker') or cik} has a ratio at or below zero: {rawr!r}")
+                if shares is not None or fraction is not None:
+                    raise ValueError(f"{p}: {row.get('ticker') or cik} sets ratio beside shares or fraction; a counted derivative is its own kind of row")
             out.by_cik.setdefault(str(int(cik)), []).append(Exclusion(
                 cik=str(int(cik)),
                 ticker=(row.get("ticker") or "").strip().upper(),
@@ -217,7 +247,7 @@ def read_exclusions(path: str | None = None) -> Exclusions:
                 since=(row.get("since") or "").strip(),
                 vehicle=(row.get("vehicle") or "").strip(),
                 decided=(row.get("decided") or "").strip(),
-                fraction=fraction))
+                fraction=fraction, ratio=ratio))
     return out
 
 

@@ -379,7 +379,7 @@ def _with_supplements(root, form, when, acc, exclude):
     """The history walk reads filings through the same door as the ledger:
     a supplement the filer stated in a remark is one more table line here too."""
     from .ledger import supplement_rows
-    rows = _rows(root, form, when, acc)
+    rows = _rows(root, form, when, acc, exclude)   # the register's counted derivatives ride along (2026-10-14)
     return rows + supplement_rows(root, rows, form, when, acc, exclude)
 
 

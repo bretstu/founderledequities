@@ -57,6 +57,7 @@ from .config import SETTINGS
 from .schedule13 import is_foreign_reporter, stake_from_schedule13
 from .identity import peo_from_certification
 from .ledger import build_ledger, retired_classes, closed_groups, title_letter, class_letters
+from .exclusions import class_key
 from .splits import fetch_splits
 from .successor import find_predecessor
 from .outstanding import shares_outstanding, jumped
@@ -479,6 +480,20 @@ def build(client, cik: int, company: str = "", ticker: str = "",
             rec.graded.append(("caution",
                 f"includes {int(sh):,} shares of {sec} the filings disclose in a remark rather than a table; "
                 f"{int(rec.shares_tabled):,} in the tables. {note}"))
+    # A COUNTED DERIVATIVE (fle/exclusions.py, 2026-10-14): a convertible
+    # preferred a person recorded as the person's shares; the page says so
+    # beside the number, with the receipt
+    for veh, (sh, note) in led.counted_derivatives.items():
+        flag(CAUTION, f"includes {int(sh):,} shares held {veh}: a convertible preferred counted as converted. {note}")
+    # THE DETECTOR (2026-10-14): a preferred with a live balance that the
+    # register does not count is named, with the ratio its own row states,
+    # so the next Rocket Lab is seen the week it is filed. A person reads
+    # the terms and decides; nothing here changes a number.
+    counted_keys = {class_key(e.security) for e in (exclusions.for_issuer(cik) if exclusions else ()) if getattr(e, "is_counted", False)}
+    for t, (bal, ratio) in led.preferred_live.items():
+        if bal and class_key(t) not in counted_keys:
+            flag(NOTE, f"a preferred with a live balance is not counted: {bal:,.0f} of {t}"
+                       + (f", converting at {ratio:g}:1" if ratio else "") + "; a person decides (universe/exclusions.csv, ratio)")
     # A CLASS CARRIED THROUGH A SPLIT IS SAID (2026-09-15): the number is
     # right by the split table, and a person should know which filing it
     # rests on, because no Form 4 has restated it

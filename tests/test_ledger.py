@@ -4537,3 +4537,135 @@ def test_a_register_row_can_count_a_fraction_of_a_line(tmp_path):
         read_exclusions(write(fraction="1"))
     with pytest.raises(ValueError):
         read_exclusions(write(fraction="0.5", shares="100", owner_cik="2"))
+
+
+def test_a_register_row_can_count_a_table_ii_preferred_as_shares(tmp_path):
+    """A COUNTED DERIVATIVE (2026-10-14, Rocket Lab). Beck's trust exchanged
+    50,951,250 common for a one-for-one convertible preferred; the walk
+    leaves every Table II "preferred" out, because the usual one is an IPO
+    relic, and the balance field cannot tell them apart. A register row
+    with a ratio reads that title's rows as lines of the underlying class,
+    scaled; without the row the title is skipped as before. apply_exclusions
+    ignores the row (it removes nothing); the register refuses a ratio at
+    zero or beside a supplement or a fraction."""
+    import csv
+    import pytest
+    from fle.exclusions import Exclusion, read_exclusions
+    from fle.ledger import Group, _rows, apply_exclusions, COUNTED_NOTE
+    pref = "Series A Convertible Participating Preferred Stock"
+    doc = ('<ownershipDocument><reportingOwner><reportingOwnerId><rptOwnerCik>0001881842</rptOwnerCik>'
+           '<rptOwnerName>Beck Peter</rptOwnerName></reportingOwnerId><reportingOwnerRelationship><isOfficer>1</isOfficer>'
+           '<officerTitle>CEO</officerTitle></reportingOwnerRelationship></reportingOwner>'
+           # Table I: the common leaves the trust (code D)
+           '<nonDerivativeTransaction><securityTitle><value>Common Stock</value></securityTitle>'
+           '<transactionDate><value>2025-01-07</value></transactionDate><transactionCoding><transactionCode>D</transactionCode></transactionCoding>'
+           '<transactionAmounts><transactionShares><value>50951250</value></transactionShares><transactionAcquiredDisposedCode><value>D</value></transactionAcquiredDisposedCode></transactionAmounts>'
+           '<postTransactionAmounts><sharesOwnedFollowingTransaction><value>0</value></sharesOwnedFollowingTransaction></postTransactionAmounts>'
+           '<ownershipNature><directOrIndirectOwnership><value>I</value></directOrIndirectOwnership><natureOfOwnership><value>By The Equatorial Trust</value></natureOfOwnership></ownershipNature></nonDerivativeTransaction>'
+           # Table II: the preferred arrives (code A), convertible one for one
+           f'<derivativeTransaction><securityTitle><value>{pref}</value></securityTitle>'
+           '<transactionDate><value>2025-01-07</value></transactionDate><transactionCoding><transactionCode>A</transactionCode></transactionCoding>'
+           '<transactionAmounts><transactionShares><value>50951250</value></transactionShares><transactionAcquiredDisposedCode><value>A</value></transactionAcquiredDisposedCode></transactionAmounts>'
+           '<underlyingSecurity><underlyingSecurityTitle><value>Common Stock</value></underlyingSecurityTitle><underlyingSecurityShares><value>50951250</value></underlyingSecurityShares></underlyingSecurity>'
+           '<postTransactionAmounts><sharesOwnedFollowingTransaction><value>50951250</value></sharesOwnedFollowingTransaction></postTransactionAmounts>'
+           '<ownershipNature><directOrIndirectOwnership><value>I</value></directOrIndirectOwnership><natureOfOwnership><value>By The Equatorial Trust</value></natureOfOwnership></ownershipNature></derivativeTransaction>'
+           '</ownershipDocument>')
+    root = ET.fromstring(doc)
+    # without a row: the preferred is skipped, as every Table II preferred is
+    plain = _rows(root, "4", "2025-01-07", "acc")
+    assert [r.security for r in plain] == ["Common Stock"] and plain[0].code == "D"
+    # with the row: one more line, of the class it converts into, under a name that says what it is
+    row = Exclusion(cik="1819994", ticker="RKLB", security=pref, reason="stock in another wrapper", source="https://sec.gov/x", ratio=1.0)
+    got = _rows(root, "4", "2025-01-07", "acc", [row])
+    assert len(got) == 2
+    c = got[1]
+    assert c.security == "Common Stock" and c.direct == "I" and c.table == "I" and c.code == "A" and c.acquired
+    assert c.shares == 50951250.0 and c.moved == 50951250.0
+    assert c.nature == f"as {pref} (1:1), By The Equatorial Trust" and c.notes.startswith(COUNTED_NOTE)
+    # the day nets to zero: an exchange, not a forfeiture
+    assert sum((r.moved if r.acquired else -r.moved) for r in got) == 0.0
+    # a ratio scales balances and movements alike
+    half = _rows(root, "4", "2025-01-07", "acc", [Exclusion(cik="1", ticker="X", security=pref, reason="r", source="https://s", ratio=0.5)])[1]
+    assert half.shares == 25475625.0 and half.moved == 25475625.0 and "(0.5:1)" in half.nature
+    # apply_exclusions does not treat a counted row as a removal
+    g = Group(security="Common Stock", direct="I"); g.last_txn = {("I", "x"): 10.0}; g.shares = 10.0
+    here = {("Common Stock", "I"): g}
+    apply_exclusions(here, [row], {})
+    assert here[("Common Stock", "I")].shares == 10.0
+    # the register's rules
+    def write(**kw):
+        p = tmp_path / "ex.csv"
+        with p.open("w", newline="", encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=["cik", "ticker", "security", "direct", "reason", "source", "shares", "owner_cik", "since", "vehicle", "decided", "fraction", "ratio"])
+            w.writeheader(); w.writerow({"cik": "1", "ticker": "X", "security": pref, "direct": "", "reason": "r", "source": "https://s", **kw})
+        return str(p)
+    assert read_exclusions(write(ratio="1")).for_issuer(1)[0].is_counted
+    for bad in ({"ratio": "0"}, {"ratio": "1", "fraction": "0.5"}, {"ratio": "1", "shares": "5", "owner_cik": "2"}):
+        with pytest.raises(ValueError):
+            read_exclusions(write(**bad))
+    # the live register carries Rocket Lab's row, and nothing else is counted
+    import os
+    live = read_exclusions(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "universe", "exclusions.csv"))
+    counted = [e for es in live.by_cik.values() for e in es if e.is_counted]
+    assert [(e.ticker, e.security, e.ratio) for e in counted] == [("RKLB", pref, 1.0)]
+
+
+def test_end_to_end_a_counted_preferred_rides_the_walk_and_the_detector_names_an_uncounted_one():
+    """ROCKET LAB, END TO END (2026-10-14). Form 4 one: the trust's common
+    leaves Table I (code D) and arrives in Table II as a one-for-one
+    convertible preferred (code A). Form 4 two: 5,000,000 preferred convert
+    (code C in Table II) into common (code C in Table I). With the register
+    row the total is the whole position throughout and the counted line is
+    recorded for the page; without it the total is the common alone and
+    the ledger names the live preferred for a person to decide. A Table II
+    whose balances read zero is still the newest statement of the options."""
+    from fle.exclusions import Exclusion
+    from fle.ledger import build_ledger
+    pref = "Series A Convertible Participating Preferred Stock"
+    own = ('<reportingOwner><reportingOwnerId><rptOwnerCik>0001881842</rptOwnerCik><rptOwnerName>Beck Peter</rptOwnerName></reportingOwnerId>'
+           '<reportingOwnerRelationship><isOfficer>1</isOfficer><officerTitle>CEO</officerTitle></reportingOwnerRelationship></reportingOwner>')
+    def t1(code, ad, moved, after, direct="I", nature="By The Equatorial Trust", day="2025-01-07"):
+        return (f'<nonDerivativeTransaction><securityTitle><value>Common Stock</value></securityTitle><transactionDate><value>{day}</value></transactionDate>'
+                f'<transactionCoding><transactionCode>{code}</transactionCode></transactionCoding><transactionAmounts><transactionShares><value>{moved}</value></transactionShares>'
+                f'<transactionAcquiredDisposedCode><value>{ad}</value></transactionAcquiredDisposedCode></transactionAmounts>'
+                f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts>'
+                f'<ownershipNature><directOrIndirectOwnership><value>{direct}</value></directOrIndirectOwnership>'
+                + (f'<natureOfOwnership><value>{nature}</value></natureOfOwnership>' if nature else '') + '</ownershipNature></nonDerivativeTransaction>')
+    def t2(code, ad, moved, after, day="2025-01-07"):
+        return (f'<derivativeTransaction><securityTitle><value>{pref}</value></securityTitle><transactionDate><value>{day}</value></transactionDate>'
+                f'<transactionCoding><transactionCode>{code}</transactionCode></transactionCoding><transactionAmounts><transactionShares><value>{moved}</value></transactionShares>'
+                f'<transactionAcquiredDisposedCode><value>{ad}</value></transactionAcquiredDisposedCode></transactionAmounts>'
+                f'<underlyingSecurity><underlyingSecurityTitle><value>Common Stock</value></underlyingSecurityTitle><underlyingSecurityShares><value>{moved}</value></underlyingSecurityShares></underlyingSecurity>'
+                f'<postTransactionAmounts><sharesOwnedFollowingTransaction><value>{after}</value></sharesOwnedFollowingTransaction></postTransactionAmounts>'
+                f'<ownershipNature><directOrIndirectOwnership><value>I</value></directOrIndirectOwnership><natureOfOwnership><value>By The Equatorial Trust</value></natureOfOwnership></ownershipNature></derivativeTransaction>')
+    direct = t1("A", "A", 789373, 789373, direct="D", nature=None)   # his own RSU shares, restated each time
+    f1 = "<ownershipDocument>" + own + t1("D", "D", 50951250, 0) + direct + t2("A", "A", 50951250, 50951250) + "</ownershipDocument>"
+    f2 = ("<ownershipDocument>" + own + t1("C", "A", 5000000, 5000000, day="2025-06-17") + direct.replace("2025-01-07", "2025-06-17")
+          + t2("C", "D", 5000000, 45951250, day="2025-06-17") + "</ownershipDocument>")
+    docs = {"f1": f1, "f2": f2}
+    feed = [{"form": "4", "accessionNumber": "f1", "filingDate": "2025-01-10", "reportDate": "2025-01-07", "primaryDocument": "d.xml"},
+            {"form": "4", "accessionNumber": "f2", "filingDate": "2025-06-20", "reportDate": "2025-06-17", "primaryDocument": "d.xml"}]
+
+    class _Edgar:
+        def submissions(self, cik): return {"_filings": feed}
+        def filing_index(self, cik, acc): return {"directory": {"item": [{"name": "d.xml", "type": "4"}]}}
+        def get(self, url, use_cache=True, **kw):
+            for k in docs:
+                if k in url: return docs[k]
+            raise KeyError(url)
+
+    row = Exclusion(cik="1819994", ticker="RKLB", security=pref, reason="stock in another wrapper", source="https://www.sec.gov/x", ratio=1.0)
+    led = build_ledger(_Edgar(), 1819994, owner_cik="1881842", share_classes=1, exclude=[row])
+    assert led.total == 789373 + 5000000 + 45951250, "the whole position: his shares, the converted common in the trust, the preferred as converted"
+    (veh, (sh, note)), = led.counted_derivatives.items()
+    assert sh == 45951250.0 and veh.startswith(f"as {pref} (1:1)") and "recorded from https://www.sec.gov/x" in note
+    assert led.preferred_live == {pref: (45951250.0, 1.0)}, "the newest statement of the preferred, with the ratio its own row states"
+    plain = build_ledger(_Edgar(), 1819994, owner_cik="1881842", share_classes=1)
+    assert plain.total == 789373 + 5000000, "without the row, the common alone, as before"
+    assert plain.preferred_live == {pref: (45951250.0, 1.0)}, "and the live preferred is named for a person to decide"
+    # the options snapshot: the newest Table II is read even when its balances are zero
+    f3 = "<ownershipDocument>" + own + direct.replace("2025-01-07", "2026-01-05") + t2("C", "D", 45951250, 0, day="2026-01-05") + "</ownershipDocument>"
+    docs["f3"] = f3
+    feed.append({"form": "4", "accessionNumber": "f3", "filingDate": "2026-01-08", "reportDate": "2026-01-05", "primaryDocument": "d.xml"})
+    gone = build_ledger(_Edgar(), 1819994, owner_cik="1881842", share_classes=1)
+    assert gone.options_seen and gone.options == 0 and gone.preferred_live[pref][0] == 0.0, "a conversion to zero is the newest statement, not 'no options'"

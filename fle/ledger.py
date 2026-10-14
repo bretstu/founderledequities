@@ -329,6 +329,12 @@ def is_partnership_unit(title: str) -> bool:
 
 
 
+def class_key_of(title: str) -> str:
+    """The register's class key (fle/exclusions.class_key), for matching a counted title."""
+    from .exclusions import class_key
+    return class_key(title)
+
+
 def is_share_class(title: str) -> bool:
     """Is this Table II row a convertible share class, or an option?"""
     t = unglue(title or "")
@@ -425,7 +431,7 @@ def apply_exclusions(here: dict, exclude, record: dict | None = None) -> None:
     when the group has exactly one such line, since the register cannot say
     which of several pointers it means; otherwise the row is left to a hand
     decision and nothing is removed."""
-    rows = [e for e in exclude if not getattr(e, "is_addition", False)]
+    rows = [e for e in exclude if not getattr(e, "is_addition", False) and not getattr(e, "is_counted", False)]
     if not rows:
         return
 
@@ -1126,10 +1132,25 @@ def _footnotes(root) -> dict:
     return {x.get("id"): " ".join((x.text or "").split()) for x in root.findall("footnotes/footnote")}
 
 
-def _rows(root, form: str, when: str, acc: str) -> list[Line]:
-    """Table I in document order, then Table II's share classes."""
+COUNTED_NOTE = "counted derivative: "   # the notes prefix of a line read from a counted Table II row
+
+
+def counted_rows(exclude) -> list:
+    """The register's counted-derivative rows among an issuer's entries."""
+    return [e for e in (exclude or ()) if getattr(e, "is_counted", False)]
+
+
+def _rows(root, form: str, when: str, acc: str, counted=()) -> list[Line]:
+    """Table I in document order, then Table II's share classes, then the
+    Table II rows the register counts (2026-10-14): a convertible preferred
+    a person has recorded as the person's shares, read as a line of the
+    class it converts into, its balances and movements scaled by the
+    recorded ratio, under a vehicle name that says what it is. Downstream
+    nothing knows the difference, which is the point: the chain, the
+    history, the events and the held block carry it like any line."""
     out = []
     notes = _footnotes(root)
+    by_key = {class_key_of(e.security): e for e in counted_rows(counted)}
     for tag, table in (("nonDerivativeTransaction", "I"),
                        ("nonDerivativeHolding", "I"),
                        ("derivativeTransaction", "II"),
@@ -1137,6 +1158,29 @@ def _rows(root, form: str, when: str, acc: str) -> list[Line]:
         for node in root.iter(tag):
             title = _t(node, "securityTitle")
             if not title:
+                continue
+            cnt = by_key.get(class_key_of(title)) if table == "II" and by_key else None
+            if cnt is not None:
+                own = node.find("ownershipNature")
+                under = (_t(node, "underlyingSecurity/underlyingSecurityTitle") or "Common Stock").strip()
+                bal = _num(node.find("postTransactionAmounts"), "sharesOwnedFollowingTransaction")
+                if bal is None:
+                    # a Form 3's Table II states no balance; the underlying count is already as converted
+                    u = _num(node.find("underlyingSecurity"), "underlyingSecurityShares")
+                    shares = u if u is not None else float("nan")
+                else:
+                    shares = bal * cnt.ratio
+                amounts = node.find("transactionAmounts")
+                ad = (_t(amounts, "transactionAcquiredDisposedCode") or "A").upper()[:1]
+                nature = _t(own, "natureOfOwnership")
+                out.append(Line(
+                    under, (_t(own, "directOrIndirectOwnership") or "D").upper()[:1],
+                    f"as {title.strip()} ({cnt.ratio:g}:1)" + (f", {nature.strip()}" if nature else ""),
+                    COUNTED_NOTE + f"{title.strip()} at {cnt.ratio:g}:1, recorded from {cnt.source}",
+                    (_t(node.find("transactionCoding"), "transactionCode") or ""),
+                    (_num(amounts, "transactionShares") or 0.0) * cnt.ratio,
+                    None, ad == "A", shares,
+                    _t(node, "transactionDate") or when, acc, form, "I"))
                 continue
             if table == "II" and not is_share_class(title):
                 continue
@@ -1485,6 +1529,9 @@ class Ledger:
     # label -> (shares, reason, source), from the curated list
     excluded: dict = field(default_factory=dict)
     supplemented: dict = field(default_factory=dict)   # {security: (shares, note)} lines the walk injected
+    counted_derivatives: dict = field(default_factory=dict)   # {vehicle: (shares, note)} Table II rows the register counts (2026-10-14)
+    preferred_live: dict = field(default_factory=dict)   # {title: (balance, ratio)} the newest Table II statement of each preferred with a balance
+    options_seen: bool = False   # a Table II has been read, even one whose balances are all zero
 
     @property
     def total(self) -> float:
@@ -1754,7 +1801,11 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
             led.last_remarks = (root.findtext("remarks") or "").strip()
         led.first_filing = when
 
-        rows = _rows(root, form, when, acc)
+        rows = _rows(root, form, when, acc, exclude)
+        for x in rows:
+            # the newest statement of each counted derivative, for the page (newest first, so the first seen wins)
+            if x.notes.startswith(COUNTED_NOTE) and x.shares == x.shares:
+                led.counted_derivatives.setdefault(x.nature or x.security, (x.shares, x.notes))
         extra = supplement_rows(root, rows, form, when, acc, exclude)
         if extra:
             rows = rows + extra
@@ -1992,8 +2043,28 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
         # later Form 4 restated them, so a newest-filing snapshot read zero.
         # Newest first, so the newest statement of each unit title wins.
         total_ii, titles_ii, units_ii = _options(root)
-        if not led.options and total_ii:
-            led.options, led.option_titles = total_ii, titles_ii
+        # A TABLE II THAT READS ZERO IS STILL THE NEWEST STATEMENT (2026-10-14):
+        # Spiegel's 2017 conversion left every preferred at 0, the snapshot
+        # skipped it as "no options", and his 2017 Form 3 supplied 107.9M of
+        # a preferred that no longer existed to the page's note
+        if not led.options_seen and titles_ii:
+            led.options, led.option_titles, led.options_seen = total_ii, titles_ii, True
+        # THE LIVE PREFERRED, FOR THE DETECTOR (2026-10-14): the newest row of
+        # each preferred title with a balance, and the ratio its own fields
+        # state; ownership.py names any the register does not count
+        for node in list(root.iter("derivativeTransaction")) + list(root.iter("derivativeHolding")):
+            t = (_t(node, "securityTitle") or "").strip()
+            if not t or "preferred" not in t.lower() or t in led.preferred_live:
+                continue
+            bal = _num(node.find("postTransactionAmounts"), "sharesOwnedFollowingTransaction")
+            under = _num(node.find("underlyingSecurity"), "underlyingSecurityShares")
+            amt = _num(node.find("transactionAmounts"), "transactionShares")
+            base = amt if (node.tag == "derivativeTransaction" and amt) else bal
+            ratio = (under / base) if (under and base) else None
+            if bal is None and form.startswith("3"):
+                bal = under          # a Form 3 states the holding by its underlying count
+                ratio = 1.0 if under else None
+            led.preferred_live[t] = (bal, ratio)
         # THE NEWEST FILING THAT STATES ANY UNITS STATES THEM WHOLE. Carrying
         # every title forward added Blue Owl's old Owl Rock titles to its
         # current ones (7.7M read as 144M); a filer who restates the units

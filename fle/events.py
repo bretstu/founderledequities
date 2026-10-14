@@ -557,7 +557,7 @@ def build_events(client, issuer_cik: int, owner_cik: str, ticker: str = "",
         acc = f.get("accessionNumber") or ""
         form = f.get("form") or ""
         when = f.get("reportDate") or f.get("filingDate") or ""
-        lines = _rows(root, form, when, acc)
+        lines = _rows(root, form, when, acc, exclude)   # the register's counted derivatives ride along (2026-10-14): an exchange into a counted preferred nets to zero and is no event
         if not lines:
             continue
         # A SETTLEMENT REPORTED ONLY IN TABLE II is the day's acquisition
