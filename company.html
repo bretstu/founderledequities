@@ -254,11 +254,15 @@
     .cwatchslot .wform{flex-direction:row;flex:none}
     .cwatchslot input[type=email]{width:300px}
     .cwatchslot .wbtn{width:auto;padding:0 24px}
-    .cwatchslot .wfine{flex:none}
+    /* THE FINE PRINT GOES UNDER (2026-10-14): on its own line below the ask,
+       so the field, the Sent button and the Watching pill all sit at the
+       same spot on the right and the band does not reshuffle between states */
+    .cwatchslot .wfine{flex-basis:100%;margin-top:-4px}
+    .cwatchslot .wform{margin-left:auto}
     /* THE CARD IS THE DESIGN'S (v4): a 1.5px ink border on white, the ask as
        its headline, the field and a full-width WATCH button stacked, and
        three words of fine print. */
-    @media(max-width:820px){.cwatchslot .wq{flex-basis:100%}.cwatchslot input[type=email]{width:min(300px,60vw)}}
+    @media(max-width:820px){.cwatchslot .wq{flex-basis:100%}.cwatchslot .wform{margin-left:0}.cwatchslot input[type=email]{width:min(300px,60vw)}}
     /* FOUNDER-LED IS A COLOUR (2026-09-23): the clay rule across the page's
        very top and the clay pill in the hero; a page whose chief executive
        is not a founder carries neither. */

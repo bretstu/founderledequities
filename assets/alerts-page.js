@@ -76,7 +76,8 @@ async function drawList(){
   if(ws===null){mine.hidden=true;already.hidden=false;return;}   /* the fetch failed: nothing is claimed */
   if(!ws.length){mine.hidden=true;already.hidden=false;drawBand();return;}   /* the token is gone: stopped elsewhere */
   const name=w=>w.tk==="FOUNDERS"?"Every founder":`<span class="tk">${esc(w.tk)}</span>${esc(w.ceo||"")}`;
-  body.innerHTML=ws.map(w=>`<div class="row"><span>${name(w)}${w.since?`<span class="when">since ${esc(w.since)}</span>`:""}</span><button class="stop" onclick="return stopOne('${esc(w.token)}','${esc(w.tk)}')">Stop</button></div>`).join("");
+  const day=d=>{const t=Date.parse(d+"T00:00:00Z");return isNaN(t)?d:new Date(t).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});};
+  body.innerHTML=ws.map(w=>`<div class="row"><span>${name(w)}${w.since?`<span class="when">since ${esc(day(w.since))}</span>`:""}</span><button class="stop" onclick="return stopOne('${esc(w.token)}','${esc(w.tk)}')">Stop</button></div>`).join("");
   foot.innerHTML=`<button type="button" onclick="return stopAll('${esc(ws[0].token)}')">Stop everything</button> &middot; <a href="#" onclick="return notYou()">not you?</a>`;
   mine.hidden=false;already.hidden=true;
   drawBand();
