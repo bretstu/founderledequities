@@ -1175,7 +1175,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                         + f'<form class="wform" onsubmit="return watchThis(&quot;{tk}&quot;,event)">'
                         + '<input type="email" id="wemail" placeholder="you@email.com" required autocomplete="email" aria-label="Email address">'
                         + '<button class="wbtn" type="submit">Watch &rarr;</button></form>'
-                        + '<div class="wfine" id="wfine">Free. No account.</div></div>')
+                        + '<div class="wfine" id="wfine">Free.</div></div>')
         # ONE ASK PER PAGE (2026-09-24): the white box under the header is the
         # company page's whole ask; the dark band at the foot belongs to every
         # other page. Two asks read as pressure.

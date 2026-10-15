@@ -159,7 +159,7 @@ export async function onRequestPost({ request, env }) {
   // confirms everything pending for the address
   const link = `${site(env)}/api/watch?confirm=${t}`;
   const what = tk === "FOUNDERS"
-    ? "an email when any founder's stake moves 1% or more, usually within minutes of the SEC filing"
+    ? "an email for any filing that moves a founder's holding 1% or more, within minutes of the SEC filing"
     : `an email for any discretionary buy/sell, or any filing that moves their stake 1% or more`;
   await send(env, email, `Confirm: watch ${ceo || tk}`,
     `One click and you're watching ${ceo || tk}${tk === "FOUNDERS" ? "" : ` (${tk})`}: ${what}.\n\n${link}\n\nIf you didn't ask for this, ignore it and nothing happens.`,

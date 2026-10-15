@@ -129,7 +129,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
     assert 'class="frow"' not in tsla and "the 2026 proxy" not in tsla and "proxy statement" not in tsla, \
         "the quote row and every proxy line left the page: the badge asserts, the record earns"
     assert 'class="kbadge"' not in sealed, "a non-founder page carries no badge"
-    assert 'id="cwatch"' in tsla and "Free. No account." in tsla, "the watch card is baked, field first (design v4)"
+    assert 'id="cwatch"' in tsla and "Free." in tsla and "No account" not in tsla, "the watch card is baked, field first (design v4); 'No account' left with the sign-in (2026-10-15)"
     assert 'class="ccap"' not in tsla and "One email when Elon Musk" not in tsla, \
         "ONE ASK PER PAGE (2026-09-24): the white watch box under the header is the company page's whole ask; no second band at the foot"
     assert 'class="answer">1,120,000,000 shares as of the' in tsla, "the first sentence carries the shares and the date in the HTML itself"
@@ -811,3 +811,18 @@ def test_hits_reads_only_the_windows_days():
     assert "SELECT DISTINCT vid FROM hits WHERE kind='view' AND $EDAY < $START" not in sh, "the earlier-day question no longer reads every view ever recorded"
     assert "EXISTS (SELECT 1 FROM hits s WHERE s.vid=v.vid AND s.kind='view' AND s.day < date($START))" in sh
 
+
+
+def test_the_founder_streams_promise_names_the_holding(tmp_path):
+    """THE PROMISE, MEASURED AGAINST THE HOLDING (2026-10-15): "changes a
+    founder's stake by 1%" read as a percentage point of the company, which
+    almost nothing clears; the stream sends a filing that moves the holding
+    by 1% of what it was. Every statement of it says so, the same way."""
+    import glob
+    files = ["alerts.html", "index.html", "tape.html", "assets/alerts-page.js", "assets/tape-page.js",
+             "functions/api/watch/run.js", "functions/api/watch.js", "functions/api/subscribe.js"]
+    for f in files:
+        t = open(os.path.join(ROOT, f), encoding="utf-8").read()
+        assert "changes a founder" not in t and "stake moves 1%" not in t and "stake moving more than 1%" not in t, f
+    assert "Any filing that moves a founder&#8217;s holding by 1% or more." in open(os.path.join(ROOT, "alerts.html"), encoding="utf-8").read()
+    assert "any filing that moves a founder\\u2019s holding by 1% or more" in open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()

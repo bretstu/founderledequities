@@ -21,7 +21,7 @@ function boot(){
      browser in and the address is cleaned, so a reload or a shared link
      carries neither the token nor a second count. */
   const w=q.get("watch")||"",t=q.get("t")||"";
-  const said={on:"Confirmed. The next founder move of 1% or more lands in your inbox, minutes after the filing.",off:"Stopped. No more emails from the founder stream.",alloff:"Stopped. No more emails about anyone.",expired:"That link expired; enter your address again below."}[w]||"";
+  const said={on:"Confirmed. The next filing that moves a founder's holding 1% or more lands in your inbox, minutes after the filing.",off:"Stopped. No more emails from the founder stream.",alloff:"Stopped. No more emails about anyone.",expired:"That link expired; enter your address again below."}[w]||"";
   $("#said").textContent=said;
   if(w==="on")WATCHES.remember(t,"FOUNDERS","every founder");
   else if(w==="off")WATCHES.forget("FOUNDERS");

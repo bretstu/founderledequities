@@ -101,7 +101,7 @@ export async function onRequestPost({ request, env }) {
     // page. The footer names the alert it came from and how to stop it.
     const ws = [...b.watches.values()];
     const liveW = ws.find((w) => w.tk === "FOUNDERS");
-    const from = liveW && ws.length === 1 ? "Watch the founders: any move that changes a founder\u2019s stake by 1% or more, within minutes of the filing."
+    const from = liveW && ws.length === 1 ? "Watch the founders: any filing that moves a founder\u2019s holding by 1% or more, within minutes of the filing."
       : `Your watch on ${ws.filter((w) => w.tk !== "FOUNDERS").map((w) => esc(w.ceo || w.tk)).join(", ")}${liveW ? ", and the founder stream" : ""}.`;
     const stopThese = ws.length === 1 ? `<a href="${site(env)}/api/watch?stop=${ws[0].token}" style="color:#94A3B8;">Stop these</a>`
       : ws.map((w) => `<a href="${site(env)}/api/watch?stop=${w.token}" style="color:#94A3B8;">stop ${w.tk === "FOUNDERS" ? "the founder stream" : "watching " + esc(w.ceo || w.tk)}</a>`).join(" &middot; ");

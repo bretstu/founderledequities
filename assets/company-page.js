@@ -508,7 +508,7 @@ function watchCard(r){
     fine=`<b>Check your inbox</b>, or Promotions: one click confirms it.`;
   }else{
     form=`<form class="wform" onsubmit="return watchThis('${r.tk}',event)"><input type="email" id="wemail" placeholder="you@email.com" required autocomplete="email" aria-label="Email address"><button class="wbtn" type="submit">Watch &rarr;</button></form>`;
-    fine=`${said?`<b>${esc(said)}</b> `:""}Free. No account.`;
+    fine=`${said?`<b>${esc(said)}</b> `:""}Free.`;   /* the second sentence left 2026-10-15: the email is the account now, and the line said otherwise */
   }
   return `<div class="wcard" id="cwatch" title="a buy or a discretionary sale of any size, or any other filing that moves the stake 1% or more">
     <div class="wq">Get an email when ${esc(who)}'s stake moves.</div>

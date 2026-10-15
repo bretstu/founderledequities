@@ -19,7 +19,7 @@ const confirmHtml = (link) => `<!doctype html><html><body style="margin:0;paddin
 <tr><td style="padding:28px;">
 <div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:#94A3B8;">FOUNDER LED EQUITIES</div>
 <h1 style="font-weight:700;letter-spacing:-.02em;font-size:26px;line-height:1.15;margin:16px 0 8px;">One click and you're on the list.</h1>
-<p style="font-size:14px;line-height:1.55;color:#64748B;margin:0 0 20px;">One email: an alert when any founder&rsquo;s stake moves 1% or more, usually within minutes of the SEC filing. Every email carries its own one-click stop.</p>
+<p style="font-size:14px;line-height:1.55;color:#64748B;margin:0 0 20px;">One email: an alert for any filing that moves a founder&rsquo;s holding 1% or more, within minutes of the SEC filing. Every email carries its own one-click stop.</p>
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 22px;"><tr><td style="background:#4F46E5;border-radius:8px;"><a href="${link}" style="display:inline-block;padding:11px 22px;color:#FFFFFF;font-size:14px;font-weight:600;text-decoration:none;">Confirm &rarr;</a></td></tr></table>
 <p style="font-size:11px;line-height:1.5;color:#94A3B8;margin:0;">The link works once and expires in a day. If you didn't ask for this, ignore it and nothing happens.</p>
 </td></tr></table></td></tr></table></body></html>`;
@@ -47,7 +47,7 @@ export async function onRequestPost({ request, env }) {
       from: "Founder Led Equities <tape@founderledequities.com>",
       to: [email],
       subject: `Confirm: founder moves, as they file (${new Date().toISOString().slice(0, 10)})`,
-      text: `One click and you're on the list: an alert when any founder's stake moves 1% or more, usually within minutes of the SEC filing. Every email carries its own one-click stop. Confirm: ${link}
+      text: `One click and you're on the list: an alert for any filing that moves a founder's holding 1% or more, within minutes of the SEC filing. Every email carries its own one-click stop. Confirm: ${link}
 
 The link works once and expires in a day. If you didn't ask for this, ignore it and nothing happens.`,
       html: confirmHtml(link),
