@@ -174,3 +174,23 @@ def test_the_days_other_disposition_is_named_and_the_percentage_is_the_transacti
     # the event reader: a J beside a trade, with a Forward Sale Contract in Table II, is named
     from fle.events import Event
     assert hasattr(Event, "also_shares") and hasattr(Event, "also_detail")
+
+
+def test_every_watch_the_mail_answers_is_recorded():
+    """ONE EMAIL, EVERY WATCH RECORDED (2026-10-15). A reader with a company
+    watch and the founder stream gets one mail for a filing both match; the
+    worker used to record only the watch that put the filing in the mail,
+    so the other watch asked again at the next deploy and the reader got
+    the same filing twice, an hour apart (the first subscriber, INBX,
+    2026-10-14 19:03 and 20:04). Every matched (watch, filing) pair is
+    written to alerts_sent after the one send."""
+    run = (ROOT / "functions" / "api" / "watch" / "run.js").read_text(encoding="utf-8")
+    assert "b.told.push({ w, acc: e.accession });" in run
+    assert run.index("b.told.push({ w, acc: e.accession });") < run.index("if (b.accs.has(e.accession)) continue;"), \
+        "the pair is recorded before the per-address dedupe skips the second watch"
+    assert "env.HITS.batch(b.told.map(({ w, acc }) =>" in run and "bind(w.id, acc, now)" in run
+    assert "env.HITS.batch(b.items.map(" not in run, "the record is of every watch answered, not of the items mailed"
+    # the subscribers report shows every date in Eastern, the last_alert column too
+    sub = (ROOT / "ops" / "subscribers.sh").read_text(encoding="utf-8")
+    assert "date(datetime(max(s.sent), '$OFF'))" in sub and "substr(max(s.sent),1,10)" not in sub
+    assert sub.index("OFF=$(") < sub.index("AS last_alert")

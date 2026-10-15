@@ -20,6 +20,8 @@ cd "$(dirname "$0")/.."
 DAYS="${1:-7}"
 # the database by name, as hits.sh does: listing the databases printed a login notice on a fresh shell and the name parse failed on it
 DB="${FLE_HITS_DB:-fle-hits}"
+# sent is stamped in UTC by the run endpoint; shown here in Eastern (EDT: -4h; EST: -5h), in every table (the first showed UTC until 2026-10-15)
+OFF=$(date +%Z | grep -q EDT && echo '-4 hours' || echo '-5 hours')
 Q() {   # a query, printed as a table
   wrangler d1 execute "$DB" --remote --json --command "$1" 2>/dev/null | python3 -c '
 import sys, json
@@ -61,7 +63,7 @@ Q "SELECT w.email AS address,
           sum(w.tk!='FOUNDERS' AND w.confirmed=1) AS companies,
           sum(w.confirmed=0) AS pending,
           substr(min(w.created),1,10) AS since,
-          coalesce((SELECT substr(max(s.sent),1,10) FROM alerts_sent s JOIN watches x ON x.id=s.watch_id WHERE x.email=w.email), '') AS last_alert
+          coalesce((SELECT date(datetime(max(s.sent), '$OFF')) FROM alerts_sent s JOIN watches x ON x.id=s.watch_id WHERE x.email=w.email), '') AS last_alert
    FROM watches w GROUP BY w.email HAVING sum(w.confirmed=1) > 0 ORDER BY since"
 read -r N_ON N_TRIED < <(R "SELECT
    (SELECT count(DISTINCT email) FROM watches WHERE confirmed=1),
@@ -83,8 +85,6 @@ Q "SELECT CASE WHEN tk='FOUNDERS' THEN 'every founder' ELSE tk END AS watch, CAS
 
 # ------------------------------------------------------------ what was sent
 SINCE=$(date -d "$DAYS days ago" +%Y-%m-%dT00:00:00 2>/dev/null || date -v-"$DAYS"d +%Y-%m-%dT00:00:00)
-# sent is stamped in UTC by the run endpoint; shown here in Eastern (EDT: -4h; EST: -5h)
-OFF=$(date +%Z | grep -q EDT && echo '-4 hours' || echo '-5 hours')
 echo
 echo "== alert emails sent, last $DAYS days (Eastern) =="
 Q "SELECT date(datetime(s.sent, '$OFF')) AS day, count(*) AS emails, count(DISTINCT x.email) AS addresses, group_concat(DISTINCT coalesce(x.tk, '(a watch since stopped)')) AS about

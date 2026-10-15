@@ -72,9 +72,16 @@ export async function onRequestPost({ request, env }) {
     for (const e of mine) {
       const seen = await env.HITS.prepare("SELECT 1 FROM alerts_sent WHERE watch_id = ?1 AND accession = ?2").bind(w.id, e.accession).first();
       if (seen) continue;
-      if (!byEmail.has(w.email)) byEmail.set(w.email, { items: [], watches: new Map(), accs: new Set() });
+      if (!byEmail.has(w.email)) byEmail.set(w.email, { items: [], watches: new Map(), accs: new Set(), told: [] });
       const b = byEmail.get(w.email);
       b.watches.set(w.id, w);
+      // EVERY WATCH THE MAIL ANSWERS IS RECORDED (2026-10-15). The one email
+      // tells the reader once, but it answers each of their watches that
+      // matched; a watch left unrecorded asks again at the next deploy. The
+      // first subscriber held INBX and the founder stream: Lappe's filing
+      // came at 19:03 under the INBX watch alone, and at 20:04 again, as
+      // the founder stream's, the same filing an hour later.
+      b.told.push({ w, acc: e.accession });
       if (b.accs.has(e.accession)) continue;
       b.accs.add(e.accession);
       b.items.push({ e, w });
@@ -125,8 +132,8 @@ ${blocks}
     if (!r.ok) continue;
     sent++;
     const now = new Date().toISOString();
-    await env.HITS.batch(b.items.map(({ e, w }) =>
-      env.HITS.prepare("INSERT OR IGNORE INTO alerts_sent (watch_id, accession, sent) VALUES (?1, ?2, ?3)").bind(w.id, e.accession, now)));
+    await env.HITS.batch(b.told.map(({ w, acc }) =>
+      env.HITS.prepare("INSERT OR IGNORE INTO alerts_sent (watch_id, accession, sent) VALUES (?1, ?2, ?3)").bind(w.id, acc, now)));
   }
   return json({ ok: true, sent, watchers: byEmail.size, events: events.length });
 }
