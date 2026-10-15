@@ -465,3 +465,57 @@ def test_one_refresh_at_a_time(tmp_path, monkeypatch):
     assert cli.refresh_lock_holder(live) == ""
     monkeypatch.setattr(cli, "_refresh", lambda a, log: 0)
     assert cli.cmd_refresh(args) == 0
+
+
+def test_the_weekly_mail_lists_every_preferred_the_register_does_not_count(tmp_path, monkeypatch):
+    """THE DETECTOR'S NOTES REACH A PERSON (2026-10-15). A note changes no
+    number and never reached the panel; the weekly walk's report now
+    lists each preferred with a live balance the register does not count,
+    the new ones first, so the week one is filed it is read and decided."""
+    import csv
+    from fle import cli
+    from fle.ownership import PREFERRED_NOTE
+    from fle.panel import COLUMNS
+    assert COLUMNS[-1] == "notes", "the note-level flags ride in the panel, last column"
+    cols = ["ticker", "ceo", "shares", "pct", "shares_as_of", "notes"]
+    def write(p, rows):
+        with open(p, "w", newline="", encoding="utf-8-sig") as fh:
+            w = csv.DictWriter(fh, fieldnames=cols); w.writeheader(); [w.writerow(r) for r in rows]
+    before, after = tmp_path / "before.csv", tmp_path / "after.csv"
+    write(before, [{"ticker": "HGTY", "ceo": "McKeel Hagerty", "shares": "1", "pct": "1", "shares_as_of": "2026-09-01",
+                    "notes": f"{PREFERRED_NOTE}: 1,000 of Series A Preferred, converting at 0.8:1; a person decides (universe/exclusions.csv, ratio)"},
+                   {"ticker": "RKLB", "ceo": "Peter Beck", "shares": "1", "pct": "1", "shares_as_of": "2026-09-01", "notes": "holds no common stock"}])
+    write(after, [{"ticker": "HGTY", "ceo": "McKeel Hagerty", "shares": "1", "pct": "1", "shares_as_of": "2026-09-01",
+                   "notes": f"{PREFERRED_NOTE}: 1,000 of Series A Preferred, converting at 0.8:1; a person decides (universe/exclusions.csv, ratio)"},
+                  {"ticker": "NEWP", "ceo": "A Founder", "shares": "1", "pct": "1", "shares_as_of": "2026-10-13",
+                   "notes": f"numerator and denominator 3 days apart|{PREFERRED_NOTE}: 500 of Series B Preferred, converting at 1:1; a person decides (universe/exclusions.csv, ratio)"},
+                  {"ticker": "RKLB", "ceo": "Peter Beck", "shares": "1", "pct": "1", "shares_as_of": "2026-09-01", "notes": "holds no common stock"}])
+    monkeypatch.delenv("LIVE_TO", raising=False)
+    cli._mail_weekly_diff(lambda m: None, str(tmp_path), [], str(before), str(after))
+    draft = next((tmp_path / "drafts").glob("weekly-walk-*.md")).read_text(encoding="utf-8")
+    assert "2 preferred with a live balance, not counted (1 new this week)" in draft
+    assert draft.index("NEWP") < draft.index("HGTY"), "the new one first"
+    assert "- NEWP   A Founder                  NEW  : 500 of Series B Preferred, converting at 1:1" in draft
+    assert "- HGTY   McKeel Hagerty                  : 1,000 of Series A Preferred, converting at 0.8:1" in draft
+    assert "RKLB" not in draft.split("not counted")[1], "a note that is not the detector's is not listed"
+    # nothing to list: no section
+    write(after, [{"ticker": "RKLB", "ceo": "Peter Beck", "shares": "1", "pct": "1", "shares_as_of": "2026-09-01", "notes": ""}])
+    cli._mail_weekly_diff(lambda m: None, str(tmp_path), [], str(before), str(after))
+    draft = next((tmp_path / "drafts").glob("weekly-walk-*.md")).read_text(encoding="utf-8")
+    assert "preferred with a live balance" not in draft
+
+
+def test_a_targeted_run_merges_its_holdings_rows_instead_of_replacing_the_file(tmp_path):
+    """THE HOLDINGS CARRY TOO (2026-10-15): a targeted run published a
+    holdings.csv of its targets alone over the universe's. Merged like the
+    history: the targets' rows replace theirs, the rest stand."""
+    from fle.cli import _merge_rows
+    live, fresh = tmp_path / "holdings.csv", tmp_path / "fresh.csv"
+    live.write_text("ticker,ceo,vehicle,shares\nTSLA,Elon Musk,direct,1\nTSLA,Elon Musk,By Trust,2\nMETA,Mark Zuckerberg,direct,3\nJOBY,JoeBen Bevirt,direct,4\n", encoding="utf-8-sig")
+    fresh.write_text("ticker,ceo,vehicle,shares\nMETA,Mark Zuckerberg,direct,30\nMETA,Mark Zuckerberg,By LLC,31\n", encoding="utf-8-sig")
+    assert _merge_rows(str(live), str(fresh), ["META"], "ticker") == 1
+    rows = [r.split(",") for r in fresh.read_text(encoding="utf-8-sig").strip().split("\n")[1:]]
+    assert [(r[0], r[3]) for r in rows] == [("TSLA", "1"), ("TSLA", "2"), ("META", "30"), ("META", "31"), ("JOBY", "4")], \
+        "two of Musk's vehicles stand, both of Zuckerberg's are replaced in place, Bevirt stands"
+    src = open(os.path.join(os.path.dirname(__file__), "..", "fle", "cli.py"), encoding="utf-8").read()
+    assert '_merge_rows(path("holdings.csv", staged=False), path("holdings.csv"), targeted, "ticker")' in src

@@ -23,7 +23,7 @@ from .identity import peo_from_certification
 from .ledger import build_ledger, is_partnership_unit
 from .outstanding import shares_outstanding, jumped
 from .exclusions import read_exclusions
-from .ownership import build
+from .ownership import build, PREFERRED_NOTE
 from .panel import run_panel, write_csv, summarise, COLUMNS as PANEL_COLUMNS
 from .universe import (fetch_members, write_universe, read_universe,
                        default_name)
@@ -1781,6 +1781,16 @@ def _refresh(args, log) -> int:
             log("targeted: no published history.csv to merge into; run the full refresh first")
             return 1
         log(f"targeted: {n} history row(s) replaced")
+        # THE HOLDINGS CARRY TOO (2026-10-15): the walk writes holdings.csv
+        # beside history.csv for the companies it walked, and a targeted run
+        # published that file whole, a header and the targets' rows, over
+        # the universe's (248 bytes on 2026-10-14). The pages were built
+        # from the walk's own file, so none lost its held block, but the
+        # published file was wrong until the next full walk. Merged like
+        # the history: the targets' rows replace theirs, the rest stand.
+        h = _merge_rows(path("holdings.csv", staged=False), path("holdings.csv"), targeted, "ticker")
+        if h is not None:
+            log(f"targeted: {h} compan{'y' if h == 1 else 'ies'}' holdings rows replaced")
         _merge_state(state_p, state_scratch, targeted)
 
     # 3.5 -- the trailing edge. History has just been rebuilt and the panel
@@ -2018,6 +2028,21 @@ def _mail_weekly_diff(log, root, odd, before_p, after_p, left=None) -> None:
     joined = sorted(t for t in a if t not in b)
     if joined:
         lines += ["", f"{len(joined)} joined: {', '.join(joined[:40])}{', ...' if len(joined) > 40 else ''}"]
+    # THE DETECTOR'S NOTES REACH A PERSON (2026-10-15). fle/ownership.py names
+    # every preferred with a live balance the register does not count; a note
+    # changes no number and never reached the panel, so the next Rocket Lab
+    # was seen only when someone ran that company by hand. The weekly walk
+    # lists them, newly seen first, so the week a preferred is filed it is
+    # read and decided (universe/exclusions.csv, ratio).
+    seen = {t: [n for n in (r.get("notes") or "").split("|") if n.startswith(PREFERRED_NOTE)] for t, r in a.items()}
+    seen = {t: ns for t, ns in seen.items() if ns}
+    if seen:
+        was = {t for t, r in b.items() if PREFERRED_NOTE in (r.get("notes") or "")}
+        new = sorted(t for t in seen if t not in was)
+        lines += ["", f"{len(seen)} preferred with a live balance, not counted ({len(new)} new this week). A person reads the terms and decides (universe/exclusions.csv, ratio):", ""]
+        for t in new + sorted(t for t in seen if t in was):
+            for n in seen[t]:
+                lines.append(f"- {t:6} {a[t].get('ceo', '')[:26]:26} {'NEW  ' if t in new else '     '}{n[len(PREFERRED_NOTE):].strip()}")
     text = "\n".join(lines) + "\n"
     try:
         os.makedirs(os.path.join(root, "drafts"), exist_ok=True)

@@ -4676,3 +4676,38 @@ def test_end_to_end_a_counted_preferred_rides_the_walk_and_the_detector_names_an
     feed.append({"form": "4", "accessionNumber": "f4", "filingDate": "2026-09-08", "reportDate": "2026-09-05", "primaryDocument": "d.xml"})
     gone = build_ledger(_Edgar(), 1819994, owner_cik="1881842", share_classes=1)
     assert gone.options_seen and gone.options == 0 and gone.preferred_live[pref][0] == 0.0, "a conversion to zero is the newest statement, not 'no options'"
+
+
+def test_the_walk_refuses_to_settle_a_position_with_a_filing_it_could_not_read():
+    """THE FOURTH HOME OF THE SAME BUG (2026-10-15). The owner search refused
+    when it could not read; the walk skipped an unfetchable filing without
+    a word and settled the position around the hole. A fetch failure is
+    retryable and raises like one; a document that is not XML is a genuine
+    skip, as before."""
+    import pytest
+    import fle.ledger as L
+    F3 = ('<ownershipDocument><issuer><issuerCik>0000000001</issuerCik></issuer>'
+          '<reportingOwner><reportingOwnerId><rptOwnerCik>0000000009</rptOwnerCik><rptOwnerName>A Founder</rptOwnerName></reportingOwnerId>'
+          '<reportingOwnerRelationship><isOfficer>1</isOfficer><officerTitle>CEO</officerTitle></reportingOwnerRelationship></reportingOwner>'
+          '<nonDerivativeTable><nonDerivativeHolding><securityTitle><value>Common Stock</value></securityTitle>'
+          '<postTransactionAmounts><sharesOwnedFollowingTransaction><value>1000</value></sharesOwnedFollowingTransaction></postTransactionAmounts>'
+          '<ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership></ownershipNature></nonDerivativeHolding></nonDerivativeTable></ownershipDocument>')
+    filings = [{"form": "4", "accessionNumber": "0001-26-000002", "primaryDocument": "y.xml", "filingDate": "2026-02-01"},
+               {"form": "3", "accessionNumber": "0001-26-000001", "primaryDocument": "x.xml", "filingDate": "2026-01-01"}]
+
+    class Client:
+        def __init__(self, broken):
+            self.broken = broken
+        def submissions(self, cik):
+            return {"_filings": filings}
+        def get(self, url, use_cache=True):
+            if "000002" in url:
+                if self.broken == "throttle":
+                    raise RuntimeError("429 for " + url)
+                return "%PDF-1.4 not a form"      # read fine, not XML
+            return F3
+    # owner_cik given: the search is skipped and the walk reads both filings
+    with pytest.raises(RuntimeError, match="could not read 0001-26-000002.*refusing to settle"):
+        L.build_ledger(Client("throttle"), 1, owner_name="A Founder", owner_cik="9")
+    led = L.build_ledger(Client("html"), 1, owner_name="A Founder", owner_cik="9")
+    assert led.filings_read == 1 and led.total == 1000, "a document that is not XML is skipped, as it always was"

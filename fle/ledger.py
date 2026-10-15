@@ -1774,11 +1774,23 @@ def build_ledger(client, issuer_cik: int, owner_name: str | None = None,
     dominant = dominant_letter(client, issuer_cik, todo) if share_classes == 1 else None
     led.dominant = dominant
     the_class = single_class_letter(letters, dominant)   # decided once, before the walk (Bloom)
+    # THE FOURTH HOME OF THE SAME BUG (2026-10-15). The search above refuses
+    # when it could not read; the walk here skipped a filing it could not
+    # fetch without a word, and the row it produced was a position with a
+    # filing missing from its middle, carried as settled. A fetch failure
+    # (throttle, outage) is retryable and must raise like one, so the panel
+    # records an error and the next night walks the company again. A
+    # document that reads fine and is not XML is a genuine skip, as before.
+    unread_walk: list = []
     for i, f in enumerate(todo):
         if on_progress:
             on_progress(led.filings_read + 1, len(todo))
-        root = _parse(client, issuer_cik, f)
+        root = _parse(client, issuer_cik, f, unread_walk)
         if root is None:
+            if unread_walk:
+                raise RuntimeError(
+                    f"the walk could not read {unread_walk[-1]} (SEC throttling?); "
+                    f"refusing to settle a position with a filing missing from it")
             continue
 
         # A filing in their feed that names another company. Rapino is a

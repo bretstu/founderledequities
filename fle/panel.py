@@ -73,6 +73,12 @@ COLUMNS = [
     # THE GRADE (fle/grade.py, 2026-09-17): four checks, filled after the
     # history stage; and the fact the statement check reads
     "lines_stated", "chain", "statement", "classes", "denominator", "proxy", "proxy_date", "proxy_shares",
+    # WHAT A PERSON SHOULD KNOW THAT CHANGES NO NUMBER (2026-10-15): the
+    # note-level flags, which until now reached only the terminal of a
+    # by-hand run. The weekly walk's mail reads the detector's from here
+    # (a preferred with a live balance the register does not count). Not
+    # a site column: ops/build_site_data.py's list decides what ships.
+    "notes",
 ]
 
 
@@ -260,6 +266,7 @@ def run_panel(client, members, checkpoint: str, redo: str = "none",
         # Split out so a sheet can be sorted by what actually needs a human.
         row["problems"] = "|".join(t for l, t in rec.graded if l == "problem")
         row["cautions"] = "|".join(t for l, t in rec.graded if l == "caution")
+        row["notes"] = "|".join(t for l, t in rec.graded if l == "note")
         row.update(ticker=m.ticker,
                    checked_shares="", checked_by="", note="")
         if row.get("remarks"):

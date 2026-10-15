@@ -64,6 +64,7 @@ from .outstanding import shares_outstanding, jumped
 
 
 NOTE, CAUTION, PROBLEM = "note", "caution", "problem"
+PREFERRED_NOTE = "a preferred with a live balance is not counted"   # the detector's words; the weekly mail reads them (fle/cli.py)
 
 
 @dataclass
@@ -492,7 +493,7 @@ def build(client, cik: int, company: str = "", ticker: str = "",
     counted_keys = {class_key(e.security) for e in (exclusions.for_issuer(cik) if exclusions else ()) if getattr(e, "is_counted", False)}
     for t, (bal, ratio) in led.preferred_live.items():
         if bal and class_key(t) not in counted_keys:
-            flag(NOTE, f"a preferred with a live balance is not counted: {bal:,.0f} of {t}"
+            flag(NOTE, f"{PREFERRED_NOTE}: {bal:,.0f} of {t}"
                        + (f", converting at {ratio:g}:1" if ratio else "") + "; a person decides (universe/exclusions.csv, ratio)")
     # A CLASS CARRIED THROUGH A SPLIT IS SAID (2026-09-15): the number is
     # right by the split table, and a person should know which filing it
