@@ -24,6 +24,10 @@ async function boot(){
   if(f)for(const r of parseCSV(f)){if(r.ticker)FOUNDERS[r.ticker.toUpperCase()]={f:(r.founder||"").toLowerCase(),ev:r.evidence||"",src:r.source||""};}
   if(e)EVENTS=mapEvents(parseCSV(e));
   {const el=$("#tg-f");if(el)el.addEventListener("change",()=>{state.ev.f=el.checked;renderActivity();});}   /* the kind chips are drawn by renderActivity and wire themselves */
+  /* THE MOVED SWITCH (2026-10-15): the chip renderActivity draws stays in the
+     markup for the company page; here a switch beside Founders only sets the
+     same state, and each render reads it back */
+  {const m=$("#tg-m");if(m)m.addEventListener("change",()=>{setMoved(m.checked);});}
   document.querySelectorAll("#actwin .win").forEach(c=>c.addEventListener("click",()=>setWin(c.dataset.win)));
   renderActivity();
   /* THE CONFIRMATION IS THE BOX. After the click, the form gives way to a
@@ -54,5 +58,5 @@ async function subscribe(ev){
   return false;
 }
 function openCompany(tk){location.href="/company/"+tk+"/";}
-state.ev={win:"7",f:true,kind:"all",moved:false,sort:{key:null,dir:-1}};
+state.ev={win:"week",f:true,kind:"all",moved:false,sort:{key:null,dir:-1}};   /* the page opens on the week (2026-10-15); 7d left the chips */
 boot();

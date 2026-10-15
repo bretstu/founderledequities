@@ -405,7 +405,14 @@ table.tape{width:100%;border-collapse:collapse;table-layout:fixed}
 .controls .grp .gc{display:flex;gap:6px}
 .controls .grp .chip{margin:0}
 .tablesec.home .controls .g-trade{display:none}
-.tw-kind{width:11%}.tw-dt{width:14%}.tw-td2{width:7%}.tw-tk{width:6%}.tw-co{width:14%}.tw-ceo{width:13%}.tw-v{width:9%}.tw-sh{width:10%}.tw-ch{width:8%}.tw-st{width:8%}   /* KIND took 2 points from DETAIL and COMPANY for the pill (2026-09-29); tape.html holds the same line */
+.tw-kind{width:19%}.tw-td2{width:7%}.tw-co{width:20%}.tw-ceo{width:15%}.tw-v{width:9%}.tw-sh{width:9%}.tw-ch{width:9%}.tw-st{width:8%}.tw-lk{width:4%}   /* eight columns and the filing's link (2026-10-15): one line per row; the detail after the badge, the name after the ticker, each cut with an ellipsis at its column's edge */
+table.tape td.kd .dt{font-family:var(--ui);font-size:var(--fs-xs);color:var(--mut);margin-left:8px}
+table.tape td.kd .dt a{color:inherit}
+table.tape td.co .tk{display:inline-block;min-width:5ch;font-family:var(--mono);font-weight:600;font-size:var(--fs-s);color:var(--ink)}   /* a fixed slot: the names line up whatever the ticker's length (W, ALMU, FWONA) */
+table.tape td.co .nm{font-size:var(--fs-xs);color:var(--mut);margin-left:10px}
+table.tape th.lk,table.tape td.lk{text-align:right;padding-right:10px;overflow:visible;text-overflow:clip}
+table.tape td.lk a{color:var(--faint);display:inline-flex;vertical-align:middle}table.tape td.lk a:hover{color:var(--ink)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 td.tk{font-weight:600;white-space:nowrap}
 table.tape th.sortable{cursor:pointer;user-select:none}table.tape th.sortable:hover{color:var(--ink)}table.tape td.fd{white-space:nowrap}
 table.tape th{font-family:var(--ui);font-size:var(--fs-xs);font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--line)}
@@ -2032,7 +2039,7 @@ function actSorted(rows){
       if(sk==="ch"){const p=evMove(e);return p?p.v:null;}
       if(sk==="st")return (e.po===null||e.po===undefined?null:e.po);
       if(sk==="tk")return e.tk;
-      if(sk==="td")return e.td||e.fd;if(sk==="fd")return e.fd;return null;};
+      if(sk==="td"||sk==="td2")return e.td||e.fd;if(sk==="fd")return e.fd;return null;};
     return [...rows].sort((a,b)=>{
       const va=val(a),vb=val(b),na=va===null||va===undefined||va==="",nb=vb===null||vb===undefined||vb==="";
       if(na&&nb)return 0;if(na)return 1;if(nb)return -1;
@@ -2140,17 +2147,17 @@ function actRow(e){
      day says so here, carrying the old date column's whole tooltip */
   const dfmt=d=>d.slice(5).replace(/^0/,"").replace("-0","-").replace("-","/");
   const tspan=spanDay(e,dfmt).replace(/^(\d+)\/(\d+) to \1\//,"$1/$2\u2013").replace(" to ","\u2013");
+  const lk=e.u?`<a href="${filingPage(e.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="the filing, on EDGAR" aria-label="the filing, on EDGAR"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"></path></svg></a>`:"";
   return `<tr class="dayrow${dim?" dim":""}" onclick="openCompany('${e.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openCompany('${e.tk}')">
-    <td class="kd"><span class="kind ${kcls}" title="${kindNote(e)}">${KIND_WORD[k]}</span></td>
-    <td class="dt" title="${tapeManner(e)}">${detail?(trade?detail:link(detail,"the filing, on EDGAR")):"&mdash;"}</td>
+    <td class="kd"><span class="kind ${kcls}" title="${kindNote(e)}">${KIND_WORD[k]}</span><span class="dt" title="${tapeManner(e)}">${detail?(trade?detail:link(detail,"the filing, on EDGAR")):"&mdash;"}</span></td>
     <td class="td2" title="${tapeManner(e)}; the transaction date${e.tf&&e.tf!==e.td?"s":""}${lagNote(e)}; filed ${shortDay(e.fd)}">${tspan}</td>
-    <td class="tk"><a class="pglink" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a></td>
-    <td class="co"><span class="nm">${coOf(e.tk)}</span></td>
+    <td class="co"><a class="pglink tk" href="/company/${e.tk}/" onclick="event.stopPropagation()" title="this company's own page">${e.tk}</a><span class="nm" title="${coOf(e.tk).replace(/"/g,"&quot;")}">${shortCo(e.tk)}</span></td>
     <td class="ceo"><span class="cn" title="${(e.ceo||coOf(e.tk)).replace(/"/g,"&quot;")}">${e.ceo||coOf(e.tk)}</span>${fMark(e.tk)}${e.fb?`<span class="firstb" title="this person's first open-market purchase on record">first buy</span>`:""}</td>
     <td class="n v">${trade?link(amt,"the filing, on EDGAR"):amt}</td>
     <td class="n sh" title="the shares this filing moved">${shs}</td>
     <td class="n ch" title="what this filing did to the stake, as a share of the stake before it">${change}</td>
     <td class="n st" title="the stake after this filing">${stake}</td>
+    <td class="lk">${lk}</td>
   </tr>`;
 }
 /*@shared*/
@@ -2158,21 +2165,42 @@ function actRow(e){
    column sorts the table by it, a second click reverses, and Kind returns
    the tape's own order (kind groups, the move within). Filed is the day
    EDGAR accepted the form; Traded the day of the transaction. */
+/* EIGHT COLUMNS, EACH WITH ONE JOB (2026-10-15): the detail rides under
+   the badge and the company's short name under its ticker, so a row reads
+   kind, when, who, what, how much; the filing's link closes the row. */
 /*@shared*/
-const TAPE_COLS=[["kind","Kind",""],["dt","Detail",""],["td2","Traded",""],["tk","Ticker",""],["co","Company",""],["ceo","CEO",""],["v","Amount","n"],["sh","Shares","n"],["ch","Of holding","n"],["st","Stake","n"]];
+const TAPE_COLS=[["kind","Kind",""],["td2","Traded",""],["co","Company",""],["ceo","CEO",""],["v","Amount","n"],["sh","Shares","n"],["ch","Of holding","n"],["st","Stake","n"]];
+/* THE COMPANY AS A READER SAYS IT (2026-10-15): the panel carries the SEC's
+   registrant name ("DROPBOX, INC.", "VERISIGN INC/CA"); the tape shows
+   "Dropbox", "Verisign": the state suffix and the corporate suffixes off,
+   an all-capitals name set in title case (a word of two letters or with a
+   digit stays as filed: AI, 3M, C3). The alerts do the same (ops/alerts.py). */
+/*@shared*/
+function shortCo(tk){
+  let n=(coOf(tk)||"").trim();if(!n)return tk;
+  n=n.replace(/\/[A-Z]{2}\/?$/,"").trim();
+  const suf=/[,\s]+(inc\.?|incorporated|corp\.?|corporation|co\.?|company|ltd\.?|limited|plc|l\.?p\.?|n\.?v\.?|s\.?a\.?|holdings?|group)\s*$/i;
+  for(let i=0;i<2;i++)n=n.replace(suf,"").replace(/[\s,]+$/,"");
+  if(n&&n===n.toUpperCase()&&/[A-Z]{3}/.test(n))n=n.split(/(\s+|-)/).map(w=>(w.length<=2||/\d/.test(w))?w:w.charAt(0)+w.slice(1).toLowerCase()).join("");
+  return n||tk;
+}
 /*@shared*/
 function dayLabel(d){
-  /* Today and Yesterday by the reader's clock; any other day by its name */
+  /* ONE SHAPE FOR EVERY DAY (2026-10-15): the name in weight, the rest muted.
+     Today and Yesterday by the reader's clock, then the weekday and the
+     date; any other day its weekday, then the date. */
   const today=new Date().toISOString().slice(0,10);
   const yd=new Date(Date.now()-86400e3).toISOString().slice(0,10);
-  const name=new Date(d+"T00:00:00Z").toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:"UTC"});
-  if(d===today)return `Today <span class="dsub">&middot; ${name}</span>`;
-  if(d===yd)return `Yesterday <span class="dsub">&middot; ${name}</span>`;
-  return name;
+  const x=new Date(d+"T00:00:00Z");
+  const wd=x.toLocaleDateString("en-US",{weekday:"long",timeZone:"UTC"});
+  const md=x.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
+  if(d===today)return `Today <span class="dsub">&middot; ${wd}, ${md}</span>`;
+  if(d===yd)return `Yesterday <span class="dsub">&middot; ${wd}, ${md}</span>`;
+  return `${wd} <span class="dsub">&middot; ${md}</span>`;
 }
 /*@shared*/
 function dayHeadRow(d,n){
-  return `<tr class="dgrp" id="d${d}"><td colspan="${TAPE_COLS.length}"><a href="#d${d}" onclick="event.stopPropagation()" title="a link that lands on this day">${dayLabel(d)}</a><span class="dn">${n} filing${n===1?"":"s"}</span></td></tr>`;
+  return `<tr class="dgrp" id="d${d}"><td colspan="${TAPE_COLS.length+1}"><a href="#d${d}" onclick="event.stopPropagation()" title="a link that lands on this day">${dayLabel(d)}</a><span class="dn">${n} filing${n===1?"":"s"}</span></td></tr>`;
 }
 /*@shared*/
 function tapeHead(){
@@ -2180,15 +2208,16 @@ function tapeHead(){
      state before the page script gives it ev (2026-09-16: reading state.ev at
      load killed /tape/ and /companies/ for a morning) */
   const sv=(state.ev&&state.ev.sort)||{};const sk=sv.key,sd=sv.dir;
-  return '<table class="tape"><colgroup>'+TAPE_COLS.map(c=>`<col class="tw-${c[0]}">`).join("")+'</colgroup><thead><tr>'
-    +TAPE_COLS.map(([k,label,cls])=>`<th class="sortable${cls?" "+cls:""}" data-key="${k}"${k==="fd"?' title="the day EDGAR accepted the form"':k==="td"?' title="the day of the transaction; a span when the form covers several"':""}>${label}<span class="arr">${sk===k?(sd<0?" ↓":" ↑"):""}</span></th>`).join("")
-    +'</tr></thead>';
+  return '<table class="tape"><colgroup>'+TAPE_COLS.map(c=>`<col class="tw-${c[0]}">`).join("")+'<col class="tw-lk"></colgroup><thead><tr>'
+    +TAPE_COLS.map(([k,label,cls])=>`<th class="sortable${cls?" "+cls:""}" data-key="${k}"${k==="td2"?' title="the day of the transaction; a span when the form covers several"':""}>${label}<span class="arr">${sk===k?(sd<0?" ↓":" ↑"):""}</span></th>`).join("")
+    +'<th class="lk"><span class="vh">Filing</span></th></tr></thead>';
 }
 /* no head is built at load: renderActivity calls tapeHead() when it draws */
 /*@shared*/
 function renderActivity(){
   if(!$("#actwrap"))return;
   const f=$("#tg-f");if(f)f.checked=state.ev.f;
+  const m=$("#tg-m");if(m)m.checked=!!state.ev.moved;
   document.querySelectorAll("#actwin .win").forEach(c=>{c.classList.toggle("on",c.dataset.win===state.ev.win);c.classList.remove("dim");});
   const to=new Date(),from=windowStart(state.ev.win==="week"?"week":(+state.ev.win||7));
   const dd=x=>x.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
@@ -2228,7 +2257,7 @@ function renderActivity(){
     :`<div class="dayempty">No filings of this kind in this window.</div>`;
   document.querySelectorAll("#actwrap th.sortable").forEach(th=>th.addEventListener("click",()=>setTapeSort(th.dataset.key)));
   const excerpt=typeof TAPE_LIMIT==="number"&&TAPE_LIMIT>0;
-  $("#actnote").innerHTML=`${shown.length<rows.length?`${shown.length} of `:""}${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${dimN&&!excerpt?` · ${dimN.toLocaleString()} moved the stake by less than 1%, dimmed`:""}`;
+  $("#actnote").innerHTML=`${shown.length<rows.length?`${shown.length} of `:""}${rows.length.toLocaleString()} filing${rows.length===1?"":"s"}${dimN&&!excerpt?` · ${dimN.toLocaleString()} moved the stake by less than 1%`:""}`;
 }
 /*@shared*/
 function setTapeSort(key){

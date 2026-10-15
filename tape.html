@@ -17,27 +17,80 @@
   <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/site.css">
   <style>
-  .tw-kind{width:11%}.tw-dt{width:14%}.tw-td2{width:7%}.tw-tk{width:6%}.tw-co{width:14%}.tw-ceo{width:13%}.tw-v{width:9%}.tw-sh{width:10%}.tw-ch{width:8%}.tw-st{width:8%}   /* the same widths as index.html's tape CSS; keep both in sync */
-  td.tk{font-weight:600;white-space:nowrap}
-  td.dt{font-family:var(--mono);font-size:var(--fs-xs);color:var(--mut);white-space:nowrap;overflow:hidden}
-  td.td2{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);white-space:nowrap;overflow:hidden}
-  td.td2{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);white-space:nowrap}
-    /* THE TAPE AS A PAGE (PLAN.md section 5): the same block the home page
-       carries, with the Monday-tape signup beside it. */
-    .tapepage{max-width:var(--max);margin:0 auto;padding:0 clamp(20px,3.5vw,48px)}   /* the workbench measure, as /companies/ */
-    .tapepage .activitysec{padding:48px 0 40px}
-    /* THE SIGNUP IS A BAND, NOT A COLUMN (2026-09-14): a sidebar took 300px
-       from seven columns and clipped the names. One row under the table's
-       count line, the same band the home page has; the table takes the
-       whole measure. */
-    /* the weather in the header: the same stat blocks, compact, right-aligned */
-    .tapehead{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
-    .tapehead .actstats{margin:0 0 4px;gap:clamp(16px,2.2vw,34px)}
-    .tapehead .hstat .n{font-size:clamp(22px,2vw,27px)}
-    .tapehead .hstat .k{font-size:var(--fs-2xs)}
-    /* the dark band at the foot: the home page's clothes (site.css), fitted */
-    .homecap{margin-top:46px}
-    .tapepage .tapewrap{margin-top:12px}
+    /* THE ACTIVITY PAGE (redesigned 2026-10-15): the same table, made
+       legible. One panel of controls in three labelled groups; the week's
+       counts as one quiet line under the title; the table in its own
+       panel with the days as tinted group rows; eight columns, each with
+       one job (index.html's TAPE_COLS). Every rule is scoped to the page:
+       the company record shares table.tape and keeps its own look. */
+    .tapepage{max-width:var(--max);margin:0 auto;padding:0 clamp(20px,3.5vw,48px)}
+    .tapepage .sbody{background:none;border:0;border-radius:0;padding:0;margin:0}   /* the controls and the table are the panels; nothing wraps them */
+    .tapepage .activitysec{padding:40px 0 4px}
+    .tapehead{display:flex;flex-direction:column;gap:6px}
+    .tapehead h1{font-family:var(--ui);font-weight:700;letter-spacing:-.02em;line-height:1.1;font-size:clamp(30px,3.6vw,38px);margin:0}
+    .tapehead .tapesub{font-size:var(--fs-s);color:var(--faint)}
+    /* the week's counts: the same five numbers, one line, number then word */
+    .tapehead .actstats{display:flex;flex-wrap:wrap;gap:4px 18px;margin:4px 0 0}
+    .tapehead .actstats .hstat{display:inline-flex;align-items:baseline;gap:6px;background:none;border:0;padding:0;border-radius:0}
+    .tapehead .actstats .hstat .n{font-family:var(--ui);font-size:var(--fs-l);font-weight:600;color:var(--ink);line-height:1.2}
+    .tapehead .actstats .hstat .k{font-family:var(--ui);font-size:var(--fs-s);font-weight:400;letter-spacing:0;text-transform:none;color:var(--mut)}
+    /* THE CONTROLS: one panel, three groups, each with its label */
+    .tapectl{display:flex;flex-direction:column;align-items:stretch;gap:12px;margin-top:22px;background:var(--panel);border:1px solid var(--pline);border-radius:var(--radius);padding:12px 14px}
+    .tapectl .grps{display:flex;align-items:center;gap:12px 22px;flex-wrap:wrap}
+    .tapectl .grp{display:flex;align-items:center;gap:10px}
+    .tapectl .grp .lbl{font-family:var(--ui);font-size:var(--fs-2xs);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+    .tapectl .chips,.tapectl .tchips{display:inline-flex;gap:0;flex-wrap:nowrap;border:1px solid var(--pline);border-radius:var(--r-s);background:var(--white);overflow:hidden}
+    .tapectl .chip{margin:0;border:0;border-left:1px solid var(--pline);border-radius:0;background:var(--white);color:var(--ink);font-weight:500;padding:7px 13px;line-height:1.2}
+    .tapectl .chip:first-child{border-left:0}
+    .tapectl .chip:hover{background:var(--slate-l)}
+    .tapectl .chip.on{background:var(--ink);border-color:var(--ink);color:var(--white);font-weight:600}
+    .tapectl .chip.on:hover{background:var(--ink)}
+    .tapectl .tchips .chip small{font-family:var(--mono);font-size:var(--fs-2xs);font-weight:500;color:var(--faint);margin-left:5px}
+    .tapectl .tchips .chip.on small{color:rgba(255,255,255,.72)}
+    /* "Moved the stake" and "Founders only" are the two switches, on the right */
+    .tapectl .tchips .tsep{display:none}
+    .tapectl .tchips .chip.big{display:none}
+    .tapectl .sw{display:flex;align-items:center;gap:22px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--pline)}
+    .tapectl .tg{font-size:var(--fs-s);color:var(--ink);display:inline-flex;align-items:center;gap:8px;cursor:pointer;margin:0}
+    .tapectl .tg input{appearance:none;-webkit-appearance:none;width:34px;height:20px;border-radius:999px;background:#CBD5E1;position:relative;margin:0;cursor:pointer;transition:background .15s}
+    .tapectl .tg input::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--white);transition:left .15s}
+    .tapectl .tg input:checked{background:var(--accent)}
+    .tapectl .tg input:checked::after{left:16px}
+    .tapectl .tg input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .pronote:empty{display:none}
+    /* THE TABLE IN ITS OWN PANEL: the days as tinted group rows inside it */
+    .tapepage .tapewrap{margin-top:18px;border:1px solid var(--pline);border-radius:var(--radius);background:var(--bg);overflow:hidden;overflow-x:auto}
+    .tapepage table.tape{min-width:960px}
+    .tapepage table.tape th{font-size:var(--fs-2xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);padding:12px 12px;border-bottom:1px solid var(--pline);background:var(--panel)}
+    .tapepage table.tape th.sortable:hover{color:var(--accent)}
+    .tapepage table.tape th:first-child{padding-left:16px}
+    .tapepage table.tape th.n,.tapepage table.tape td.n{text-align:right;padding-right:14px}
+    .tapepage table.tape td.st{overflow:visible}
+    .tapepage table.tape td{padding:9px 12px;border-top:1px solid var(--line2);font-size:var(--fs-m);vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tapepage table.tape td:first-child{padding-left:16px}
+    .tapepage table.tape tr.dgrp td{background:var(--slate-l);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 16px;font-family:var(--ui);font-size:var(--fs-s);font-weight:600;color:var(--ink)}
+    .tapepage table.tape tr.dgrp td a{color:inherit}
+    .tapepage table.tape tr.dgrp .dsub{font-weight:400;color:var(--mut)}
+    .tapepage table.tape tr.dgrp .dn{font-family:var(--ui);font-size:var(--fs-s);font-weight:400;color:var(--mut);margin-left:6px}
+    .tapepage table.tape tr.dgrp .dn::before{content:"\00b7\00a0"}
+    .tapepage table.tape tr.dayrow:hover td{background:var(--white)}
+    .tapepage table.tape td.n{font-family:var(--mono);font-size:var(--fs-s)}
+    .tapepage table.tape td.st{font-weight:500}
+    .tapepage table.tape td.sh,.tapepage table.tape td.ch{color:var(--mut)}
+    .tapepage table.tape td.td2{font-family:var(--mono);font-size:var(--fs-xs);color:var(--mut);padding-right:12px}
+    .tapepage table.tape td.ceo .cn{max-width:calc(100% - 28px);font-weight:500}
+    /* ONE TONE PER VERDICT (2026-10-15): green bought, red sold, one grey for
+       the rest. The badge no longer fades for a filing the site judges left
+       the position unchanged; the Of holding column says so in words, the
+       switch and the count under the table carry it, and three greys in one
+       column read as a mistake. */
+    .tapepage .kind.comp,.tapepage .kind.xfer{background:var(--slate-l);color:var(--mut)}
+    .tapepage table.tape tr.dim td.kd .kind{color:var(--mut)}
+    .tapepage table.tape .fm{margin-left:6px;color:var(--faint);font-family:var(--mono);font-size:var(--fs-2xs);font-weight:600}
+    .tapepage .dayempty{padding:28px 16px;color:var(--mut);font-size:var(--fs-m)}
+    /* the note under the table reads as a sentence, in the page's type */
+    .tapepage .actnote{font-family:var(--ui);font-size:var(--fs-s);color:var(--faint);margin-top:12px}
+    .homecap{margin-top:22px}
     .homecap .hs-msg:empty{display:none}
     .homecap .done{background:var(--white);border:1px solid var(--pline);border-radius:var(--r-s);padding:18px 22px;max-width:560px}
     .homecap .done h3{font-family:var(--ui);font-weight:700;font-size:var(--fs-xl);margin:0 0 6px}
@@ -45,50 +98,61 @@
     .tapefoot{border-top:1px solid var(--line);margin-top:48px;padding:16px 0 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:var(--fs-s);color:var(--mut)}
     .tapefoot a{color:var(--mut)}
     .tapefoot .site{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint)}
+    @media(max-width:700px){
+      .tapepage .activitysec{padding:28px 0 24px}
+      .tapectl{padding:12px}
+      .tapectl .grps{flex-direction:column;align-items:stretch;gap:10px}
+      .tapectl .grp{flex-direction:column;align-items:stretch;gap:6px}
+      .tapectl .chips{display:flex}
+      .tapectl .chips .chip{flex:1;text-align:center;padding:10px 0}
+      .tapectl .tchips{display:flex;overflow-x:auto}
+      .tapectl .tchips .chip{flex:0 0 auto;padding:10px 12px}
+      .tapectl .sw{justify-content:space-between}
+    }
   </style>
 </head>
 <body>
 {{TOPNAV}}
 <div class="tapepage">
 <section class="activitysec" id="activity">
-  <!-- THE WEATHER RIDES THE HEADER (2026-09-24): the five counts sit beside
-       the title, compact, so the ledger starts one scroll-line sooner. -->
-  <div class="shead tapehead">
-    <div>
-      <h1 style="font-family:var(--ui);font-weight:700;letter-spacing:-.02em;line-height:1.04;font-size:clamp(38px,5vw,60px);margin:0">Activity</h1>
-      <div class="tapesub" id="tapesub">Founders only · last 7 days · newest day first.</div>
-    </div>
+  <div class="tapehead">
+    <h1>Activity</h1>
+    <div class="tapesub" id="tapesub">Founder-led · this week</div>
+    <!-- THE WEEK'S COUNTS: the same five numbers as before, as one line (actStats) -->
     <div class="actstats" id="actstats"></div>
   </div>
   <div class="sbody">
-    <!-- THE TAPE'S CONTROLS: a window, and founders only. (The paid tier and
-         its Pro note left on 2026-09-23; every window is open.) -->
+    <!-- THE CONTROLS: a window, a kind, two switches. "Week" is Monday to
+         today by filing date; the numbers are days back. The kind chips are
+         drawn by renderActivity with the window's counts. -->
     <div class="tapectl">
-      <span class="chips" id="actwin" role="group" aria-label="window">
-        <button class="chip win" data-win="week" title="filings that reached EDGAR since Monday">Week</button>
-        <button class="chip win" data-win="7" title="filings that reached EDGAR in the last 7 days">7d</button>
-        <button class="chip win" data-win="30">30d</button>
-        <button class="chip win" data-win="90">90d</button>
-        <button class="chip win" data-win="365">12m</button>
-      </span>
-      <span class="toggles">
+      <div class="grps">
+        <div class="grp">
+          <span class="lbl">Window</span>
+          <span class="chips" id="actwin" role="group" aria-label="window">
+            <button class="chip win" data-win="week" title="filings that reached EDGAR since Monday">This week</button>
+            <button class="chip win" data-win="30">30 days</button>
+            <button class="chip win" data-win="90">90 days</button>
+            <button class="chip win" data-win="365">12 months</button>
+          </span>
+        </div>
+        <div class="grp">
+          <span class="lbl">Kind</span>
+          <span class="chips tchips" id="actkinds" role="group" aria-label="kind"></span>
+        </div>
+      </div>
+      <span class="sw toggles">
+        <label class="tg" title="only the rows that moved the stake by at least 1% of what it was"><input type="checkbox" id="tg-m"> Moved the stake 1% or more</label>
         <label class="tg"><input type="checkbox" id="tg-f" checked> Founders only</label>
       </span>
-      <!-- THE KIND CHIPS ARE THE COMPANY PAGE'S (2026-09-15): All · Bought ·
-           Sold · Compensation · Transfers, each with the window's count, and
-           "Moved the stake ≥ 1%"; drawn by the script, on the same row. -->
-      <span class="chips tchips" id="actkinds" role="group" aria-label="kind"></span>
     </div>
     <div class="pronote" id="pronote"></div>
     <div class="tapewrap" id="actwrap"></div>
     <div class="actnote" id="actnote"></div>
   </div>
-  <!-- THE SITE'S ONE ASK (2026-09-24): every page ends in the same dark
-       band with the same promise; the company pages, which ask up top in
-       the white box, are the sole exception. Here the promise is this very
-       page as a subscription. -->
   </section>
 </div>
+  <!-- THE SITE'S ONE ASK: every page ends in the same band with the same promise -->
   <section class="homecap" id="subscribe"><div class="wrap capin">
     <div class="caph">Know within minutes when a founder&rsquo;s stake moves.</div>
     <form class="homesub" id="subform" onsubmit="return subscribe(event)">
@@ -96,7 +160,7 @@
       <button type="submit">Watch the founders &rarr;</button>
     </form>
     <span class="hs-msg" id="submsg"></span>
-    <div class="capfine">An email within minutes of any founder&rsquo;s stake moving more than 1%. Free. No account.</div>
+    <div class="capfine">An email within minutes of any founder&rsquo;s stake moving more than 1%. Free.</div>
   </div></section>
 <div class="tapepage">
   <div class="tapefoot">
