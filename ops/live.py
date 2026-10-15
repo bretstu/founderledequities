@@ -250,7 +250,8 @@ def post_block(u, ev):
         except ValueError:
             before = ""
         text = post_card.post_text(u["tk"], u.get("ceo") or "", founder, kind, ev.get("value") or "",
-                                   ev.get("pct_of_holding") or "", ev.get("pct_after") or "", minutes, pct_before=before)
+                                   ev.get("pct_of_holding") or "", ev.get("pct_after") or "", minutes, pct_before=before,
+                                   when=post_card.trade_days(ev.get("traded_from") or "", ev.get("traded") or ""))
         # THE LINK IS THE CARD (2026-09-18): the page's own OG image is the
         # compact card with this trade on it, so the post is text plus the
         # link and X draws the card; nothing to attach
@@ -275,46 +276,49 @@ def published_event(acc):
 
 
 def sentence(u, r):
-    """The finished line, in the Monday thread's words, from the published event."""
+    """THE MAIL'S FIRST LINE IS THE POST (2026-10-15): the same two lines
+    ops/post_card.post_text writes, the person by name and the company by
+    ticker, so either can be pasted. The caveat for a filing that does not
+    explain the whole change stays, because that post is checked first.
+    This mail goes to LIVE_TO alone, never to a subscriber: the alerts are
+    functions/api/watch/run.js and ops/alerts.py, which this does not touch."""
+    sys.path.insert(0, HERE)
+    import post_card
     code = r.get("code")
     v = None
     try:
         v = float(r.get("value") or 0) if not (r.get("price_flag") or "") else None
     except ValueError:
         v = None
-    amt = f" {money(v)}" if v else ""
-    how = ("on the open market" if code == "P" else
-           "under a pre-set plan" if (r.get("plan") or "") == "plan" else "at their own discretion")
-    verb = "bought" if code == "P" else "sold"
-    mv = ""
-    try:
-        ch = float(r.get("pct_of_holding") or "")
-        if abs(ch) >= 0.05:
-            mag = f"{abs(ch):.0f}%" if abs(ch) >= 10 else f"{abs(ch):.1f}%" if abs(ch) >= 1 else f"{abs(ch):.2f}%"
-            mv = f", {'added ' + mag + ' to' if ch > 0 else 'sold ' + mag + ' of'} their stake"
-    except ValueError:
-        pass
-    after = ""
+    kind = post_card.post_kind(r) if code in ("P", "S") else "sold"
     a = None
     try:
         a = float(r.get("pct_after") or "")
-        after = f" Now owns {a:.3f}%." if a < 1 else f" Now owns {a:.2f}%."
     except ValueError:
         pass
+    before = ""
+    try:
+        h, n, o = float(r.get("holding_after") or 0), float(r.get("net_change") or 0), float(r.get("outstanding") or 0)
+        before = f"{(h - n) / o * 100:.4f}" if o else ""
+    except ValueError:
+        before = ""
+    text = post_card.post_text(u["tk"], u["ceo"], bool(u.get("founder")), kind, v or "",
+                               r.get("pct_of_holding") or "", r.get("pct_after") or "", None, pct_before=before,
+                               when=post_card.trade_days(r.get("traded_from") or "", r.get("traded") or ""))
     # THE FILING DOES NOT EXPLAIN THE WHOLE CHANGE: the per-filing move is
     # blank when the walk could not attribute the day to this sale alone
     # (a share-count restatement, a vehicle change). Then the stakes before
     # and after are said, with the caveat, so the post is checked first.
     caveat = ""
-    if not mv and a is not None and u.get("pct"):
+    if not (r.get("pct_of_holding") or "").strip() and a is not None and u.get("pct"):
         try:
             b = float(u["pct"])
             if b > 0 and abs(a - b) / b >= 0.02:
-                caveat = (f" The same filing restated the holding {'lower' if a < b else 'higher'} than the "
+                caveat = (f"\nThe same filing restated the holding {'lower' if a < b else 'higher'} than the "
                           f"{'sale' if code == 'S' else 'purchase'} explains: {b:.2f}% before, {a:.2f}% after. Read the record before posting.")
         except ValueError:
             pass
-    return f"{u['ceo']} {verb}{amt} of {u['tk']} {how}{mv}.{after}{caveat}\n{SITE}/company/{u['tk']}/"
+    return f"{text}{caveat}\n{SITE}/company/{u['tk']}/"
 
 
 def worth_a_post(u, r):

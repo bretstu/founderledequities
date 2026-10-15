@@ -8,16 +8,32 @@ sys.path.insert(0, os.path.join(ROOT, "ops"))
 import post_card  # noqa: E402
 
 
-def test_the_post_is_three_lines_in_the_sites_words():
-    t = post_card.post_text("SOUN", "Keyvan Mohajer", True, "disc", 868853, -0.76, 4.01, 9)
-    assert t == "DISCRETIONARY SALE\nFounder Keyvan Mohajer sold $869K of $SOUN.\n0.76% of the stake. Now owns 4.01%.\nFiled 9 minutes ago.", "four lines, no blank row"
-    t = post_card.post_text("UPST", "Paul Gu", True, "bought", 1300000, 3.9, 1.3847, None)
-    assert t.startswith("OPEN-MARKET BUY\nFounder Paul Gu bought $1.3M of $UPST.") and "3.9% of the stake. Now owns 1.38%." in t and t.endswith("Filed today.")
-    t = post_card.post_text("RCAT", "Jeffrey Thompson", True, "plan", 1200000, -7.1359, 7.67, 14)
-    assert t.startswith("PLANNED SALE\n") and "7.1% of the stake" in t
-    assert " his " not in t and " her " not in t and " their " not in t, "no pronoun anywhere"
-    t = post_card.post_text("X", "A Hired CEO", False, "bought", 50000, 0.4, 0.05, 3)
-    assert t.startswith("OPEN-MARKET BUY\nCEO A Hired CEO bought $50K of $X.")
+def test_the_post_is_two_lines_the_trade_and_the_stake():
+    """TWO LINES (2026-10-15): the kind's own line and "Filed today" left.
+    The manner is three words in the sentence, the day is the trade's, the
+    second line is the stake before and after; no his or her anywhere."""
+    t = post_card.post_text("AII", "Robert Ritchie", True, "plan", 720000, -1.5, 8.85, None, pct_before=8.98, when="Oct 9\u201313")
+    assert t == "Founder Robert Ritchie sold $720K of $AII on a plan, Oct 9\u201313.\nStake 8.98% \u2192 8.85%.", t
+    t = post_card.post_text("INBX", "Mark Lappe", True, "bought", 848977, 1.0, 6.59, None, pct_before=6.53, when="Oct 14")
+    assert t == "Founder Mark Lappe bought $849K of $INBX on the open market, Oct 14.\nStake 6.53% \u2192 6.59%."
+    t = post_card.post_text("SOUN", "Keyvan Mohajer", True, "disc", 868853, -0.76, 4.01, 9, pct_before=4.0407, when="Sep 15")
+    assert t == "Founder Keyvan Mohajer sold $869K of $SOUN at their own discretion, Sep 15.\nStake 4.04% \u2192 4.01%."
+    assert " his " not in t and " her " not in t, "the filing does not say"
+    assert "PLANNED" not in t and "Filed" not in t and "minutes ago" not in t
+    t = post_card.post_text("X", "A Hired CEO", False, "bought", 50000, 0.4, 0.05, 3, pct_before=0.0498, when="Oct 1")
+    assert t.startswith("CEO A Hired CEO bought $50K of $X on the open market, Oct 1.") and "Stake 0.050%" in t
+    # the arrow would show no change: the move as a share of the holding instead, or unchanged
+    t = post_card.post_text("DBX", "Andrew Houston", True, "plan", 1000000, -0.04, 36.82, None, pct_before=36.8245, when="Oct 12")
+    assert t.endswith("Stake 36.82%, down 0.04% of the holding."), t
+    t = post_card.post_text("UTHR", "Martine Rothblatt", True, "disc", 5200000, 0, 1.56, None, pct_before=1.56, when="Oct 13")
+    assert t.endswith("Stake 1.56%, unchanged."), t
+    # a pre-2023 sale states no plan box: no manner
+    t = post_card.post_text("OLD", "Old Hand", True, "sold", 2000000, -3, 4.0, None, pct_before=4.12, when="Mar 3")
+    assert t.startswith("Founder Old Hand sold $2M of $OLD, Mar 3.")
+    # the day as a post says it
+    assert post_card.trade_days("", "2026-10-14") == "Oct 14" and post_card.trade_days("2026-10-14", "2026-10-14") == "Oct 14"
+    assert post_card.trade_days("2026-10-09", "2026-10-13") == "Oct 9\u201313" and post_card.trade_days("2026-09-29", "2026-10-02") == "Sep 29\u2013Oct 2"
+    assert post_card.trade_days("", "") == ""
 
 
 def test_the_card_draws_at_the_link_card_ratio(tmp_path):
@@ -54,4 +70,4 @@ def test_the_link_card_is_the_post_card(tmp_path):
 
 def test_a_day_the_record_cannot_add_up_still_states_the_stake_before_and_after():
     t = post_card.post_text("AMBA", "Feng-Ming Wang", True, "disc", 394555, "", 1.74, None, pct_before=1.7563)
-    assert "Stake 1.76% \u2192 1.74%." in t and "of the stake" not in t
+    assert t.endswith("Stake 1.76% \u2192 1.74%.") and "of the holding" not in t

@@ -153,28 +153,69 @@ def from_event(tk, out, accession=None, root=ROOT, store=None):
                 e.get("value") or "", e.get("traded") or e.get("filed"), before, after, series)
 
 
-def post_text(tk, ceo, founder, kind, amount, pct_of_holding, pct_after, filed_minutes=None, pct_before=None) -> str:
-    """The three lines, in the site's words, no pronoun anywhere. When the
-    trade's share of the holding is not asserted (a day the record cannot
-    add up: Ambarella, 2026-09-17), the stake before and after still are,
-    and the line says them instead."""
+MANNER = {"bought": "on the open market", "plan": "on a plan", "disc": "at their own discretion", "sold": ""}   # a pre-2023 sale states no plan box
+
+
+def trade_days(traded_from, traded) -> str:
+    """The transaction date as a post says it: "Oct 13", or "Oct 9\u201313" when
+    the form covers several days, "Sep 29\u2013Oct 2" across a month."""
+    def md(iso):
+        try:
+            y, m, d = (iso or "")[:10].split("-")
+            return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][int(m) - 1], int(d)
+        except (ValueError, IndexError):
+            return None
+    a, b = md(traded_from), md(traded)
+    if not b:
+        return ""
+    if not a or a == b:
+        return f"{b[0]} {b[1]}"
+    if a[0] == b[0]:
+        return f"{a[0]} {a[1]}\u2013{b[1]}"
+    return f"{a[0]} {a[1]}\u2013{b[0]} {b[1]}"
+
+
+def post_text(tk, ceo, founder, kind, amount, pct_of_holding, pct_after, filed_minutes=None, pct_before=None, when=None) -> str:
+    """TWO LINES (2026-10-15): who did what, how, and the day; then the stake
+    before and after, which is the fact the site has and other sites do
+    not. The kind's own line and "Filed today" left: the manner is three
+    words inside the sentence, and a post made the hour of the filing says
+    when it was filed by its own timestamp, so the date given is the
+    trade's. When the arrow would show no change the line says the move as
+    a share of the holding instead, or that the holding was unchanged. No
+    his or her anywhere (the filing does not say). `filed_minutes` is kept
+    for the callers and no longer printed."""
     who = ("Founder " if founder else "CEO ") + ceo
     verb = "bought" if kind == "bought" else "sold"
     amt = f" {money(amount)}" if amount else ""
-    line1 = f"{KIND_WORD.get(kind, 'TRADE')}\n{who} {verb}{amt} of ${tk}."
-    mv = ""
-    try:
-        m = abs(float(pct_of_holding)) if pct_of_holding not in (None, "") else None
-        mv = (f"{m:.2f}% of the stake. " if m is not None and m < 1 else f"{m:.1f}% of the stake. " if m is not None else "")
-    except ValueError:
-        pass
+    manner = MANNER.get(kind, "")
+    line1 = f"{who} {verb}{amt} of ${tk}{' ' + manner if manner else ''}{', ' + when if when else ''}."
     f = lambda x: f"{x:.3f}%" if x < 1 else f"{x:.2f}%"  # noqa: E731
-    if not mv and pct_before not in (None, "") and pct_after not in (None, ""):
-        line2 = f"Stake {f(float(pct_before))} \u2192 {f(float(pct_after))}."
+    try:
+        a = float(pct_after) if pct_after not in (None, "") else None
+    except ValueError:
+        a = None
+    try:
+        b = float(pct_before) if pct_before not in (None, "") else None
+    except ValueError:
+        b = None
+    try:
+        m = float(pct_of_holding) if pct_of_holding not in (None, "") else None
+    except ValueError:
+        m = None
+    if a is None:
+        return line1
+    if b is not None and f(b) != f(a):
+        line2 = f"Stake {f(b)} \u2192 {f(a)}."
+    elif m:
+        mag = abs(m)
+        mag_s = f"{mag:.0f}%" if mag >= 10 else f"{mag:.1f}%" if mag >= 1 else f"{mag:.2f}%"
+        line2 = f"Stake {f(a)}, {'up' if m > 0 else 'down'} {mag_s} of the holding."
+    elif m == 0 or b is not None:
+        line2 = f"Stake {f(a)}, unchanged."
     else:
-        line2 = f"{mv}Now owns {f(float(pct_after))}." if pct_after not in (None, "") else mv.strip()
-    line3 = f"Filed {filed_minutes} minutes ago." if filed_minutes is not None else "Filed today."
-    return f"{line1}\n{line2}\n{line3}"
+        line2 = f"Stake {f(a)}."
+    return f"{line1}\n{line2}"
 
 
 if __name__ == "__main__":

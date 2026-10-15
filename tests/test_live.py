@@ -1,6 +1,7 @@
 """The watcher: EDGAR's feed of the latest Form 4s, narrowed to the
 universe's chief executives."""
 import importlib.util
+import os
 import pathlib
 import sys
 
@@ -43,12 +44,23 @@ def test_the_feed_is_narrowed_to_the_ceo(monkeypatch):
     assert live.one_pass(Client(), uni, seen) == ([], []), "nothing is reported twice"
 
 
-def test_the_published_sentence_is_the_threads_wording():
-    u = {"tk": "UPST", "ceo": "Paul Gu"}
-    r = {"code": "P", "value": "1300000", "plan": "discretionary", "pct_of_holding": "3.85", "pct_after": "1.38", "price_flag": ""}
-    assert live.sentence(u, r) == "Paul Gu bought $1.3M of UPST on the open market, added 3.9% to their stake. Now owns 1.38%.\nhttps://founderledequities.com/company/UPST/"
-    r = {"code": "S", "value": "7100000", "plan": "plan", "pct_of_holding": "-23.2", "pct_after": "0.888", "price_flag": ""}
-    assert "sold $7.1M of UPST under a pre-set plan, sold 23% of their stake. Now owns 0.888%." in live.sentence(u, r)
+def test_the_published_sentence_is_the_post():
+    """THE MAIL'S FIRST LINE IS THE POST (2026-10-15): the two lines of
+    ops/post_card.post_text, then the link. This mail goes to LIVE_TO
+    alone; the subscriber alerts (functions/api/watch/run.js, ops/alerts.py)
+    are a different path and do not read this function."""
+    u = {"tk": "UPST", "ceo": "Paul Gu", "founder": True}
+    r = {"code": "P", "value": "1300000", "plan": "discretionary", "pct_of_holding": "3.85", "pct_after": "1.38", "price_flag": "",
+         "holding_after": "1380000", "net_change": "51200", "outstanding": "100000000", "traded": "2026-09-10", "traded_from": ""}
+    assert live.sentence(u, r) == ("Founder Paul Gu bought $1.3M of $UPST on the open market, Sep 10.\nStake 1.33% \u2192 1.38%."
+                                   "\nhttps://founderledequities.com/company/UPST/")
+    r = {"code": "S", "value": "7100000", "plan": "plan", "pct_of_holding": "-23.2", "pct_after": "0.888", "price_flag": "",
+         "holding_after": "888000", "net_change": "-268000", "outstanding": "100000000", "traded": "2026-09-12", "traded_from": "2026-09-10"}
+    t = live.sentence(u, r)
+    assert t.startswith("Founder Paul Gu sold $7.1M of $UPST on a plan, Sep 10\u201312.\nStake 1.16% \u2192 0.888%.")
+    assert "PLANNED SALE" not in t and "Filed today" not in t and "of their stake" not in t
+    src = open(os.path.join(ROOT, "ops", "alerts.py"), encoding="utf-8").read() + open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
+    assert "post_card" not in src and "post_text" not in src and "live.sentence" not in src, "the subscriber alerts never read the post's words"
 
 
 def test_what_is_worth_a_post():
@@ -79,7 +91,7 @@ def test_a_blank_move_is_judged_by_the_stakes_before_and_after():
     r = {"code": "S", "value": "2275611", "plan": "plan", "label": "scheduled sale", "pct_of_holding": "", "pct_after": "4.5825", "price_flag": ""}
     assert live.worth_a_post(u, r).startswith("plan that moved the holding 19.")
     t = live.sentence(u, r)
-    assert "Now owns 4.58%." in t and "The same filing restated the holding lower than the sale explains: 5.72% before, 4.58% after. Read the record before posting." in t
+    assert "Stake 4.58%." in t and "The same filing restated the holding lower than the sale explains: 5.72% before, 4.58% after. Read the record before posting." in t
     small = dict(r, pct_after="5.70")
     assert live.worth_a_post(u, small) == "", "a blank move with the stake barely changed is not a post"
 
