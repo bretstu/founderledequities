@@ -212,18 +212,19 @@ BRANCH="${FLE_BRANCH:-production}"
 # check the key before they take the list; sent after the pages are live
 python3 ops/indexnow.py keyfile public/ || echo "  indexnow: key file not written; the engines are not told"
 wrangler pages deploy public --project-name founderledequities --branch="$BRANCH" --commit-dirty=true
-# ---- then. THE ENGINES ARE TOLD WHAT CHANGED (ops/indexnow.py): Bing and the
-# engines that share its endpoint fetch tonight's changed pages within hours
-# instead of waiting for a crawl budget. Production only; a preview is not
-# the site. A failure is printed and the deploy is unaffected.
-if [ "$BRANCH" = "production" ]; then
-  python3 ops/indexnow.py submit public/sitemap.xml || echo "  indexnow: not told; the site is unaffected"
-fi
 # ---- last. THE WATCHES (PLAN.md 5a): once today's pages are live, the day's
 # open-market buys and discretionary sales go to /api/watch/run, which holds
 # the watches and sends the alerts; the links in them land on pages that
 # already carry the filing. The high-water mark keeps a rerun from posting
 # a filing twice.
 python3 ops/alerts.py || echo "  alerts: failed; the site is unaffected"
+# ---- after the alerts. THE ENGINES ARE TOLD WHAT CHANGED (ops/indexnow.py):
+# Bing and the engines that share its endpoint fetch tonight's changed pages
+# within hours instead of waiting for a crawl budget. After the alerts, so a
+# slow edge can never hold a subscriber's mail. Production only; a preview is
+# not the site. A failure is printed and the deploy is unaffected.
+if [ "$BRANCH" = "production" ]; then
+  python3 ops/indexnow.py submit public/sitemap.xml || echo "  indexnow: not told; the site is unaffected"
+fi
 [ "$BRANCH" != "production" ] && echo "preview: https://${BRANCH}.founderledequities.pages.dev"
 true

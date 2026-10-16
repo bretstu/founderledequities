@@ -137,7 +137,8 @@ def test_the_deploy_writes_the_key_file_before_publishing_and_tells_after():
     key_at = sh.index("ops/indexnow.py keyfile public/")
     deploy_at = sh.index("wrangler pages deploy public")
     tell_at = sh.index("ops/indexnow.py submit public/sitemap.xml")
-    assert key_at < deploy_at < tell_at, "the key file rides in the tree; the engines are told once the pages are live"
+    alerts_at = sh.index("python3 ops/alerts.py")
+    assert key_at < deploy_at < alerts_at < tell_at, "the key file rides in the tree; the alerts go first; the engines are told last"
     assert '[ "$BRANCH" = "production" ]' in sh[deploy_at:tell_at], "a preview is not the site"
     assert "INDEXNOW_KEY" in open(os.path.join(ROOT, ".env.example"), encoding="utf-8").read()
 
