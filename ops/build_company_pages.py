@@ -166,17 +166,17 @@ def page_text(r, price):
         title = f"{ceo} owns {pct:.2f}% of {co} ({tk}) · Founder Led Equities"
         sh = num(r.get("shares")) or 0
         val = f", worth {money(sh * price)} at the latest close" if price and sh else ""
-        desc = (f"{ceo}, CEO of {co}, owns {pct:.2f}% of the company{val}: "
-                f"{sh:,.0f} shares as of {r.get('shares_as_of') or 'the latest filing'}, "
-                f"computed from SEC filings, never estimated. Every trade, every filing linked.")
+        # THE DESCRIPTION IS ONE SENTENCE (2026-10-16): the engines show about
+        # 160 characters under the title and cut the rest mid-word; the share
+        # count and the filing date are on the page, one click away.
+        desc = f"{ceo}, CEO of {co}, owns {pct:.2f}% of the company{val}. From SEC filings, never estimated."
     else:
         # THE QUESTION, VERBATIM. "How much of X does Y own" is what a
         # searcher types; the page carries it as its title and heading, the
         # public facts around it, and the honest partial answer.
         title = f"How much of {co} does {ceo} own? ({tk}) · Founder Led Equities"
-        desc = (f"{ceo} is the chief executive of {co}. The stake this site computes from SEC filings "
-                f"has not settled on a single figure for this company; the price, the market cap and "
-                f"every filing on record are here.")
+        desc = (f"{ceo} is the chief executive of {co}. The filings have not settled on one stake; "
+                f"the price, the market cap and every filing are here.")
     return title, desc[:300]
 
 
