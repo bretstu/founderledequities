@@ -73,11 +73,13 @@ def test_a_submit_posts_the_list_once_and_remembers_only_on_success(tmp_path, mo
 
     def fake_post(k, batch):
         posts.append((k, list(batch)))
-        return (True, 202) if len(posts) > 1 else (False, 403)
+        return (True, 202) if len(posts) > 2 else (False, 403)
 
     monkeypatch.setattr(indexnow, "post", fake_post)
+    monkeypatch.setattr(indexnow, "key_served", lambda k: True)
+    monkeypatch.setattr(indexnow, "RETRY_PAUSE", 0)
     sm = _sitemap(tmp_path)
-    # the endpoint refuses (the key file did not check out): nothing remembered
+    # the endpoint refuses twice (the key file did not check out): nothing remembered
     assert indexnow.submit(sm) == 1
     assert "403" in capsys.readouterr().out and not os.path.exists(indexnow.SENT)
     # it accepts: everything told the first time, the record written
@@ -98,6 +100,7 @@ def test_a_dry_run_sends_nothing(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv("INDEXNOW_KEY", "a3f9c2e1b7d4a3f9c2e1b7d4")
     monkeypatch.setattr(indexnow, "SENT", str(tmp_path / "indexnow-sent.json"))
     monkeypatch.setattr(indexnow, "post", lambda k, b: pytest.fail("a dry run must not post"))
+    monkeypatch.setattr(indexnow, "key_served", lambda k: pytest.fail("a dry run fetches nothing"))
     assert indexnow.submit(_sitemap(tmp_path), dry=True) == 0
     assert "would tell" in capsys.readouterr().out and not os.path.exists(indexnow.SENT)
 
@@ -154,3 +157,59 @@ def test_the_description_under_a_search_result_is_one_sentence():
     title, desc = bcp.page_text(unsettled, 10.0)
     assert title.startswith("How much of Sealed Holdings does Jane Doe own?")
     assert len(desc) <= 160, (len(desc), desc)
+
+
+def test_nothing_is_sent_until_the_site_serves_the_key_file(tmp_path, monkeypatch, capsys):
+    """THE EDGE LAGS THE DEPLOY (2026-10-16): the first live submit got a 403
+    because the endpoint fetched the key file before the edge had it."""
+    monkeypatch.setenv("INDEXNOW_KEY", "a3f9c2e1b7d4a3f9c2e1b7d4")
+    monkeypatch.setattr(indexnow, "SENT", str(tmp_path / "indexnow-sent.json"))
+    monkeypatch.setattr(indexnow, "post", lambda k, b: pytest.fail("not before the key file is served"))
+    monkeypatch.setattr(indexnow, "key_served", lambda k: False)
+    assert indexnow.submit(_sitemap(tmp_path)) == 1
+    assert "not serving" in capsys.readouterr().out and not os.path.exists(indexnow.SENT)
+
+
+def test_the_key_file_is_polled_until_it_answers_with_the_key(monkeypatch):
+    answers = iter([None, "", "a3f9c2e1b7d4a3f9c2e1b7d4\n"])
+
+    class R:
+        def __init__(self, body):
+            self.body = body
+
+        def read(self, n):
+            return self.body.encode()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    def fake_urlopen(url, timeout=0):
+        assert url == "https://founderledequities.com/a3f9c2e1b7d4a3f9c2e1b7d4.txt"
+        a = next(answers)
+        if a is None:
+            raise indexnow.urllib.error.URLError("not yet")
+        return R(a)
+
+    monkeypatch.setattr(indexnow.urllib.request, "urlopen", fake_urlopen)
+    assert indexnow.key_served("a3f9c2e1b7d4a3f9c2e1b7d4", tries=3, pause=0)
+    monkeypatch.setattr(indexnow.urllib.request, "urlopen", lambda url, timeout=0: R("something else"))
+    assert not indexnow.key_served("a3f9c2e1b7d4a3f9c2e1b7d4", tries=2, pause=0)
+
+
+def test_a_403_is_tried_once_more_after_a_pause(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("INDEXNOW_KEY", "a3f9c2e1b7d4a3f9c2e1b7d4")
+    monkeypatch.setattr(indexnow, "SENT", str(tmp_path / "indexnow-sent.json"))
+    monkeypatch.setattr(indexnow, "key_served", lambda k: True)
+    monkeypatch.setattr(indexnow, "RETRY_PAUSE", 0)
+    calls = []
+    monkeypatch.setattr(indexnow, "post", lambda k, b: (calls.append(1), (False, 403) if len(calls) == 1 else (True, 200))[1])
+    assert indexnow.submit(_sitemap(tmp_path)) == 0
+    assert len(calls) == 2 and "told the engines" in capsys.readouterr().out
+    # any other refusal is not retried
+    calls.clear()
+    monkeypatch.setattr(indexnow, "post", lambda k, b: (calls.append(1), (False, 422))[1])
+    assert indexnow.submit(_sitemap(tmp_path, SITEMAP.replace("2026-10-16", "2026-10-17"))) == 1
+    assert len(calls) == 1

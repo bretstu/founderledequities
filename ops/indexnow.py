@@ -29,6 +29,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 
@@ -40,6 +41,7 @@ SENT = os.path.join(ROOT, "weekly", "indexnow-sent.json")
 ENDPOINT = os.environ.get("INDEXNOW_ENDPOINT", "https://api.indexnow.org/indexnow")
 HOST = "founderledequities.com"
 PER_POST = 10000        # the protocol's ceiling per request
+RETRY_PAUSE = 20.0      # seconds before the one retry of a 403
 KEY_SHAPE = re.compile(r"^[A-Fa-f0-9-]{8,128}$")
 
 
@@ -94,6 +96,24 @@ def save_sent(urls):
         json.dump(dict(urls), fh, indent=0, sort_keys=True)
 
 
+def key_served(k, tries=12, pause=5.0):
+    """THE EDGE LAGS THE DEPLOY (2026-10-16): the first submit ran seconds
+    after "Deployment complete" and the endpoint answered 403, its fetch of
+    the key file having beaten the file to the edge. Wait until the site
+    serves the key back (a minute at most) before asking anyone to fetch it."""
+    url = f"https://{HOST}/{k}.txt"
+    for i in range(tries):
+        try:
+            with urllib.request.urlopen(url, timeout=20) as r:
+                if r.read(256).decode("utf-8", "replace").strip() == k:
+                    return True
+        except (urllib.error.URLError, OSError):
+            pass
+        if i + 1 < tries:
+            time.sleep(pause)
+    return False
+
+
 def post(k, batch):
     """one request; True when the endpoint accepted it (200 or 202)"""
     body = json.dumps({"host": HOST, "key": k, "keyLocation": f"https://{HOST}/{k}.txt", "urlList": batch}).encode()
@@ -130,9 +150,17 @@ def submit(sitemap, dry=False):
         for u in todo[:10]:
             print(f"    {u}")
         return 0
+    if not key_served(k):
+        print(f"  indexnow: the site is not serving /{k}.txt yet; {len(todo):,} addresses not told, will retry next deploy")
+        return 1
     for i in range(0, len(todo), PER_POST):
         batch = todo[i:i + PER_POST]
         ok, status = post(k, batch)
+        if not ok and status == 403:
+            # the endpoint's own fetch of the key file can still be a beat
+            # behind ours; one more try after a pause
+            time.sleep(RETRY_PAUSE)
+            ok, status = post(k, batch)
         if not ok:
             print(f"  indexnow: the endpoint answered {status}; {len(batch):,} addresses not told, will retry next deploy")
             return 1
