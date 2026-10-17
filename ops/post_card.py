@@ -61,7 +61,7 @@ def money(v):
     return f"${v:,.0f}"
 
 
-def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_after, series, fonts_dir=None, height=None):
+def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_after, series, fonts_dir=None, height=None, value=None):
     """1200x630, the link-card ratio. Top to bottom: the company and the
     person; a year of closes across the full width, the day marked; the
     newest trade in its colour; the stake before and after, large. No brand
@@ -121,7 +121,8 @@ def draw(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_aft
         if pct_before is not None and pct_after is not None and abs(pct_before - pct_after) > 0.0005 and kind:
             stake = f"{f(pct_before)}  →  {f(pct_after)}"
         elif pct_after is not None:
-            stake = f"Owns {f(pct_after)}"
+            # the company card (2026-10-17): the stake today, and what it is worth
+            stake = f"Owns {f(pct_after)}" + (f"  \u00b7  {money(value)}" if value else "")
         else:
             stake = ""
         d.text((pad, H - 166), stake, font=fonts.disp(72, 700), fill=ACCENT)

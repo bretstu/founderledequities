@@ -162,9 +162,10 @@ def draw_card(out, fonts, tk, co, ceo, founder, pct, value, shares, series, evs,
     """THE LINK CARD IS THE POST CARD (2026-09-18). A card is seen for a
     second in a feed, most often under an X post about a founder move; it
     shows the company, the person, the newest trade in its colour with the
-    amount and the date, the stake before and after as the largest thing
-    on it, and a year of closes as a sparkline with the day marked --
-    every company's card the same way (one tree, 2026-09-23)."""
+    amount and the date, the stake today as the largest thing on it (with
+    its value; the before and after of a trade is the post card's), and a
+    year of closes as a sparkline with the day marked -- every company's
+    card the same way (one tree, 2026-09-23)."""
     import post_card
     latest = None
     if evs:
@@ -172,11 +173,14 @@ def draw_card(out, fonts, tk, co, ceo, founder, pct, value, shares, series, evs,
         if trades:
             latest = max(trades, key=lambda e: (e.get("filed") or "", e.get("d") or ""))
     kind = post_card.post_kind({"code": latest["c"], "plan": latest.get("plan", ""), "label": latest.get("label", ""), "pre_ipo": ""}) if latest else None
+    # THE CARD SAYS WHAT THE PAGE SAYS (2026-10-17): the large figure is the
+    # stake today, the page's own headline, with its dollar value; the newest
+    # trade stays as the coloured line above it. The before and after of a
+    # trade (15.71% to 15.79% on a 2025 Class A buy, under a page that says
+    # 28.44%) belong to the post about that trade, not to the company's card.
     return post_card.draw(out, tk, co, ceo, bool(founder), kind, latest["v"] if latest else None,
                           latest["d"] if latest else None,
-                          latest.get("before") if latest else None,
-                          latest.get("after") if latest and latest.get("after") is not None else pct,
-                          series, fonts_dir=fonts.dir, height=H)
+                          None, pct, series, fonts_dir=fonts.dir, height=H, value=value)
 
 
 def _day(s):

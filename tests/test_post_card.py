@@ -71,3 +71,28 @@ def test_the_link_card_is_the_post_card(tmp_path):
 def test_a_day_the_record_cannot_add_up_still_states_the_stake_before_and_after():
     t = post_card.post_text("AMBA", "Feng-Ming Wang", True, "disc", 394555, "", 1.74, None, pct_before=1.7563)
     assert t.endswith("Stake 1.76% \u2192 1.74%.") and "of the holding" not in t
+
+
+def test_the_company_card_says_the_stake_today_not_the_last_trades_before_and_after(tmp_path, monkeypatch):
+    """THE CARD SAYS WHAT THE PAGE SAYS (2026-10-17): Musk's card read
+    15.71% to 15.79% (a 2025 Class A buy) under a page that says 28.44%."""
+    import company_cards as cc
+    seen = {}
+
+    def spy(out, tk, company, ceo, founder, kind, amount, when, pct_before, pct_after, series, **kw):
+        seen.update(kind=kind, amount=amount, when=when, before=pct_before, after=pct_after, value=kw.get("value"))
+        return out
+
+    monkeypatch.setattr(post_card, "draw", spy)
+    fonts = cc.Fonts(os.path.join(ROOT, "ops", "fonts"))
+    evs = [{"c": "P", "v": 1000053260, "d": "2025-09-12", "filed": "2025-09-15", "before": 15.71, "after": 15.79, "plan": "", "label": ""}]
+    cc.draw_card(str(tmp_path / "x.png"), fonts, "TSLA", "Tesla, Inc.", "Elon Musk", "yes", 28.4412, 426e9, 1123324786, [], evs, "2026-10-15")
+    assert seen["kind"] == "bought" and seen["amount"] == 1000053260 and seen["when"] == "2025-09-12", "the newest trade is still the line"
+    assert seen["before"] is None and seen["after"] == 28.4412, "the large figure is the stake today"
+    assert seen["value"] == 426e9
+    # and the drawer prints it with its value, the before and after only on a post about a trade
+    monkeypatch.undo()
+    from PIL import Image
+    out = tmp_path / "card.png"
+    post_card.draw(str(out), "TSLA", "Tesla, Inc.", "Elon Musk", True, "bought", 1000053260, "2025-09-12", None, 28.4412, [], value=426e9)
+    assert Image.open(out).size == (1200, 630)
