@@ -857,6 +857,20 @@ def card_tags(page: str, tk: str, og_dir: str | None) -> str:
                          f'<meta name="twitter:image" content="{url}">'))
 
 
+def page_card(page: str, kind: str, og_dir: str | None) -> str:
+    """THE PAGE CARDS (2026-10-17): /alerts/ and /tape/ unfurl into cards of
+    their own (ops/og_image.py draws them beside the company cards), with
+    the same hash-versioned URL the company cards carry; without a drawn
+    card the page keeps its plain address."""
+    if not og_dir:
+        return page
+    from company_cards import card_version
+    v = card_version(og_dir, kind)
+    if not v:
+        return page
+    return page.replace(f'founderledequities.com/og/{kind}.png"', f'founderledequities.com/og/{kind}.png?v={v}"')
+
+
 def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hist_p="history.csv",
          og_dir=None, prices_dir=None):
     here = os.path.dirname(os.path.abspath(__file__))
@@ -936,6 +950,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                      .replace("{{TOPNAV}}", extract_topnav(index_html))
                      .replace('href="/site.css"', f'href="/site.css?v={css_v}"')
                      .replace('src="/tape.js"', f'src="/tape.js?v={tape_v}"'))
+        tape_html = page_card(tape_html, "tape", og_dir)
         os.makedirs(os.path.join(out_dir, "tape"), exist_ok=True)
         with open(os.path.join(out_dir, "tape", "index.html"), "w", encoding="utf-8") as fh:
             fh.write(tape_html)
@@ -959,6 +974,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                   .replace("{{TOPNAV}}", extract_topnav(index_html))
                   .replace('href="/site.css"', f'href="/site.css?v={css_v}"')
                   .replace('src="/alerts.js"', f'src="/alerts.js?v={a_v}"'))
+        a_html = page_card(a_html, "alerts", og_dir)
         os.makedirs(os.path.join(out_dir, "alerts"), exist_ok=True)
         with open(os.path.join(out_dir, "alerts", "index.html"), "w", encoding="utf-8") as fh:
             fh.write(a_html)

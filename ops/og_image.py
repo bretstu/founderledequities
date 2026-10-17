@@ -128,6 +128,58 @@ def draw(n, out, fonts_dir):
     return out
 
 
+# THE PAGE CARDS (2026-10-17): the alerts page and the activity page each
+# unfurl into a card of their own, the home card's frame (wordmark, the
+# page's headline, its sentence, a strip of facts) with the page's words.
+# The activity page had declared /og/tape.png since September and nothing
+# drew it, so a shared link to it unfurled as a bare title; the alerts page
+# declared no card at all, so an ad could not land on it. Drawn into the
+# company cards' directory, which the deploy publishes under /og/.
+BLUE_KEY = "blue"   # the first fact takes the accent, as the home card's does
+PAGES = {
+    "alerts": dict(
+        head=("When a founder\u2019s", "stake moves."),
+        line="An email within minutes of the SEC filing. Free.",
+        facts=lambda n: [(f"{n['led']}", "Founders watched", BLUE_KEY),
+                         ("1%", "Of the stake, or more", None),
+                         ("Minutes", "From the filing to your inbox", None),
+                         ("One email", "Per move", None)]),
+    "tape": dict(
+        head=("Who bought.", "Who sold."),
+        line="Every CEO purchase, sale and award this week, from the filings. Founders first.",
+        facts=lambda n: [(f"{n['total']:,}", "US public companies", BLUE_KEY),
+                         (f"{n['led']}", "Founder-led", None),
+                         ("Nightly", "Refreshed from EDGAR", None),
+                         ("Since 2016", "Every trade on record", None)]),
+}
+def draw_page(kind, n, out, fonts_dir):
+    from PIL import Image, ImageDraw
+    from company_cards import Fonts, INK, BLUE, MUT, FAINT, PAPER, PANEL
+    spec = PAGES[kind]
+    W, H = 1200, 630
+    F = Fonts(fonts_dir)
+    disp, ui = F.disp, F.ui
+    im = Image.new("RGB", (W, H), PAPER)
+    d = ImageDraw.Draw(im)
+    d.text((72, 60), "Founder Led Equities", font=disp(30, 700), fill=INK)
+    d.text((W - 72, 68), f"founderledequities.com/{kind}/", font=ui(18, 500), fill=FAINT, anchor="ra")
+    big = disp(72, 700)
+    y = 150
+    d.text((72, y), spec["head"][0], font=big, fill=INK)
+    d.text((72, y + 84), spec["head"][1], font=big, fill=INK)
+    d.text((72, y + 190), spec["line"], font=ui(24, 500), fill=MUT)
+    d.rounded_rectangle((60, 440, W - 60, 552), radius=14, fill=PANEL)
+    x = 84
+    for val, lab, key in spec["facts"](n):
+        d.text((x, 462), val, font=disp(34, 700), fill=BLUE if key == BLUE_KEY else INK)
+        d.text((x, 510), lab.upper(), font=ui(12, 600), fill=MUT)
+        x += max(d.textlength(val, font=disp(34, 700)), d.textlength(lab.upper(), font=ui(12, 600))) + 56
+    d.text((72, 578), "Every number computed from SEC EDGAR, never estimated",
+           font=ui(14, 500), fill=FAINT)
+    im.save(out, "PNG", optimize=True)
+    return out
+
+
 def main(panel_p, sp_p, prices_p, founders_p, out):
     here = os.path.dirname(os.path.abspath(__file__))
     fonts_dir = os.path.join(here, "fonts")
@@ -139,6 +191,15 @@ def main(panel_p, sp_p, prices_p, founders_p, out):
         return 0
     print(f"  og image: {n['above5']} of {n['open']} above 5%; {n['led']} founder-led, "
           f"{money(n['led_value'])}, {n['share']}% of the wealth; {n['total']:,} companies -> {out}")
+    # the page cards ride beside the company cards; a failure keeps the last one
+    og_dir = os.path.join(os.path.dirname(os.path.abspath(out)), "og")
+    os.makedirs(og_dir, exist_ok=True)
+    for kind in PAGES:
+        try:
+            draw_page(kind, n, os.path.join(og_dir, f"{kind}.png"), fonts_dir)
+        except Exception as exc:  # noqa: BLE001
+            print(f"  og image: /{kind}/ card not drawn ({exc.__class__.__name__}: {exc}); keeping the existing one")
+    print(f"  og image: page cards -> {og_dir}/alerts.png, {og_dir}/tape.png")
     return 0
 
 

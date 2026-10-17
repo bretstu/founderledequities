@@ -826,3 +826,34 @@ def test_the_founder_streams_promise_names_the_holding(tmp_path):
         assert "changes a founder" not in t and "stake moves 1%" not in t and "stake moving more than 1%" not in t, f
     assert "Any filing that moves a founder&#8217;s holding by 1% or more." in open(os.path.join(ROOT, "alerts.html"), encoding="utf-8").read()
     assert "any filing that moves a founder\\u2019s holding by 1% or more" in open(os.path.join(ROOT, "functions", "api", "watch", "run.js"), encoding="utf-8").read()
+
+
+def test_the_alerts_and_activity_pages_have_cards_of_their_own(tmp_path):
+    """THE PAGE CARDS (2026-10-17): /alerts/ declared no card and /tape/
+    declared one nothing drew; og_image.py now draws both beside the company
+    cards and the pages carry the versioned address."""
+    import og_image as ogi
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    og_png = tmp_path / "og.png"
+    assert ogi.main(panel, sp, prices, founders, str(og_png)) == 0
+    og = tmp_path / "og"
+    assert sorted(p.name for p in og.iterdir()) == ["alerts.png", "tape.png"]
+    from PIL import Image
+    for name in ("alerts.png", "tape.png"):
+        with Image.open(og / name) as im:
+            assert im.size == (1200, 630)
+    import company_cards as cc
+    va, vt = cc.card_version(str(og), "alerts"), cc.card_version(str(og), "tape")
+    assert len(va) == 10 and len(vt) == 10
+    bcp.main(panel, founders, prices, sp, out, og_dir=str(og))
+    alerts = open(os.path.join(out, "alerts", "index.html"), encoding="utf-8").read()
+    tape = open(os.path.join(out, "tape", "index.html"), encoding="utf-8").read()
+    assert f'<meta property="og:image" content="https://founderledequities.com/og/alerts.png?v={va}">' in alerts
+    assert f'<meta name="twitter:image" content="https://founderledequities.com/og/alerts.png?v={va}">' in alerts
+    assert '<meta name="twitter:card" content="summary_large_image">' in alerts
+    assert 'property="og:title" content="When a founder' in alerts
+    assert f'content="https://founderledequities.com/og/tape.png?v={vt}">' in tape
+    # without the cards the pages keep their plain addresses
+    bcp.main(panel, founders, prices, sp, out)
+    alerts = open(os.path.join(out, "alerts", "index.html"), encoding="utf-8").read()
+    assert 'content="https://founderledequities.com/og/alerts.png">' in alerts
