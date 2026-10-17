@@ -68,16 +68,28 @@ AT_FIRST="${AT//ts,/f.first_ts,}"
 # bookmark, an app, a private window, a link in an AI answer, a browser
 # that strips the referrer), never a source.
 HOST="CASE WHEN ref IS NULL OR ref='' OR ref LIKE '%founderledequities.com%' THEN 'direct' ELSE replace(CASE WHEN instr(substr(ref, instr(ref,'://')+3), '/')>0 THEN substr(substr(ref, instr(ref,'://')+3), 1, instr(substr(ref, instr(ref,'://')+3), '/')-1) ELSE substr(ref, instr(ref,'://')+3) END, 'www.', '') END"
+# THE PATH WITHOUT THE CLICK ID (2026-10-16): an ad click lands with the
+# network's own tag appended (X adds twclid=, Google gclid=, Meta fbclid=),
+# so every visitor from one ad read as a different page. The report cuts
+# the path at the first click id; the site's own ?src= tag, which comes
+# first, is kept, so a campaign's landings group on one row.
+CLICK_IDS="twclid gclid fbclid msclkid dclid ttclid yclid"
+POS=""
+for k in $CLICK_IDS; do
+  POS="$POS CASE WHEN instr(path, '&$k=')>0 THEN instr(path, '&$k=') ELSE 99999 END, CASE WHEN instr(path, '?$k=')>0 THEN instr(path, '?$k=') ELSE 99999 END,"
+done
+CUT="min(${POS%,})"
+P="CASE WHEN $CUT < 99999 THEN substr(path, 1, $CUT - 1) ELSE path END"
 # a visitor's first view in the window, and the source it carried
 FIRST="(SELECT vid, MIN(ts) AS first_ts FROM hits WHERE kind='view' AND $WHERE GROUP BY vid)"
-SOURCE="(SELECT h.vid, $HOST AS src, h.path AS landed FROM hits h JOIN $FIRST f ON f.vid=h.vid AND f.first_ts=h.ts WHERE h.kind='view' AND $WHERE)"
+SOURCE="(SELECT h.vid, $HOST AS src, $P AS landed FROM hits h JOIN $FIRST f ON f.vid=h.vid AND f.first_ts=h.ts WHERE h.kind='view' AND $WHERE)"
 # what a visitor DID: the page's own controls (a sort, a filing opened, a
 # switch, a chip, the watch form), and a filter on the companies page, which
 # is a page address with a query and the most telling thing a reader does
 ACTIONS="kind IN ('click','open','switch','sort')"
 FILTER_OF="CASE WHEN path LIKE '/companies/?%' THEN 'filter ' || replace(substr(path, instr(path,'?')+1), '&', ', ') ELSE '' END"
-DID_ACTS="SELECT vid, ts, path, name || CASE WHEN COALESCE(detail,'')<>'' THEN ' ' || detail ELSE '' END AS did FROM hits WHERE $ACTIONS AND $WHERE"
-DID_ROW="$DID_ACTS UNION ALL SELECT vid, ts, path, $FILTER_OF FROM hits WHERE kind='view' AND path LIKE '/companies/?%' AND $WHERE"
+DID_ACTS="SELECT vid, ts, $P AS path, name || CASE WHEN COALESCE(detail,'')<>'' THEN ' ' || detail ELSE '' END AS did FROM hits WHERE $ACTIONS AND $WHERE"
+DID_ROW="$DID_ACTS UNION ALL SELECT vid, ts, $P AS path, $FILTER_OF FROM hits WHERE kind='view' AND path LIKE '/companies/?%' AND $WHERE"
 
 # THE DATABASE BY NAME (2026-10-14). Asking `wrangler d1 list` for it meant the
 # first run after wrangler refreshed its login printed a notice before the
@@ -131,7 +143,7 @@ if [ "$VISITORS" = "1" ]; then
   R "WITH f AS $FIRST, s AS $SOURCE, p AS (SELECT vid, COUNT(*) AS pages, MIN(country) AS country FROM hits WHERE kind='view' AND $WHERE GROUP BY vid), d AS (SELECT vid, COUNT(*) AS actions FROM ($DID_ROW) GROUP BY vid) SELECT f.vid, substr(f.vid,1,6), p.country, s.src, p.pages, COALESCE(d.actions, 0) FROM f JOIN p ON p.vid=f.vid LEFT JOIN s ON s.vid=f.vid LEFT JOIN d ON d.vid=f.vid WHERE p.pages > 1 OR d.actions > 0 ORDER BY f.first_ts LIMIT 40" | while IFS=$'\t' read -r vid who country src pages actions; do
     echo
     echo "== $who, $country, from $src: $pages pages, $actions actions =="
-    Q "SELECT at, path, action FROM (SELECT ts, $AT AS at, path, $FILTER_OF AS action FROM hits WHERE kind='view' AND vid='$vid' AND $WHERE UNION ALL SELECT ts, $AT AS at, path, did FROM ($DID_ACTS) WHERE vid='$vid') ORDER BY ts"
+    Q "SELECT at, path, action FROM (SELECT ts, $AT AS at, $P AS path, $FILTER_OF AS action FROM hits WHERE kind='view' AND vid='$vid' AND $WHERE UNION ALL SELECT ts, $AT AS at, path, did FROM ($DID_ACTS) WHERE vid='$vid') ORDER BY ts"
   done
   exit 0
 fi
@@ -157,7 +169,7 @@ Q "WITH s AS $SOURCE SELECT src AS came_from, COUNT(*) AS visitors, CASE WHEN CO
 
 # 3. what they looked at
 echo "== what they looked at ($LABEL) =="
-Q "SELECT path, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY path ORDER BY views DESC LIMIT 20"
+Q "SELECT $P AS path, COUNT(DISTINCT vid) AS visitors, COUNT(*) AS views FROM hits WHERE kind='view' AND $WHERE GROUP BY 1 ORDER BY views DESC LIMIT 20"
 
 # 4. how deep, and what they did. One page and gone is a bounce, whoever
 # it was; two or more is a person reading.
