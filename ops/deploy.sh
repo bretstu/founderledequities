@@ -127,7 +127,11 @@ cp -r site-data/. public/
 # accepts no filings at the weekend, so by Saturday the week is complete. The
 # thread (drafts/moves-week.md) and the trajectories (drafts/stakes-month.md)
 # are written for a person to post from (ops/moves.py); nothing is sent.
-if [ "$(date +%u)" = "6" ]; then
+# A QUICK RUN IS JUST A PUBLISH (2026-10-17): the Saturday stage takes half
+# an hour, and a daytime FLE_QUICK=1 deploy on a Saturday sat in it with
+# nothing printed; the weekend stages belong to the nightly, which runs
+# them the same day.
+if [ "$(date +%u)" = "6" ] && [ "${FLE_QUICK:-0}" != "1" ]; then
   # THE PARTNERSHIP REGISTER, GENERATED FROM THE FILINGS (2026-09-15): the four
   # structured facts per chief executive, keep only what is provable, exclude
   # the rest; the delta is printed, written to drafts/, and mailed. Takes
@@ -153,7 +157,7 @@ python3 ops/moves.py today || echo "  drafts: today's moves failed"
 python3 ops/footnote_reads.py --nightly || echo "  footnotes: the reader failed; the register stands"
 python3 ops/footnote_register.py --quiet || echo "  footnotes: the register was not regenerated"
 python3 ops/footnote_review.py --summary || echo "  footnotes: the summary failed"
-if [ "$(date +%u)" = "7" ]; then
+if [ "$(date +%u)" = "7" ] && [ "${FLE_QUICK:-0}" != "1" ]; then
   python3 ops/footnote_review.py --golden || echo "  footnotes: THE GOLDEN SET FAILED; check the prompt before the next reading"
 fi
 

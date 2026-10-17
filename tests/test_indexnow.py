@@ -160,44 +160,15 @@ def test_the_description_under_a_search_result_is_one_sentence():
     assert len(desc) <= 160, (len(desc), desc)
 
 
-def test_an_unconfirmed_key_file_is_said_and_the_list_still_sent(tmp_path, monkeypatch, capsys):
-    """THE EDGE LAGS THE DEPLOY (2026-10-16) and THE POLL SAYS WHO IT IS
-    (2026-10-17): the poll waits for the key file, but when it cannot confirm
-    it the list is sent anyway; the engines fetch the file themselves and a
-    403 gets its one retry."""
+def test_nothing_is_sent_until_the_site_serves_the_key_file(tmp_path, monkeypatch, capsys):
+    """THE EDGE LAGS THE DEPLOY (2026-10-16): the first live submit got a 403
+    because the endpoint fetched the key file before the edge had it."""
     monkeypatch.setenv("INDEXNOW_KEY", "a3f9c2e1b7d4a3f9c2e1b7d4")
     monkeypatch.setattr(indexnow, "SENT", str(tmp_path / "indexnow-sent.json"))
-    monkeypatch.setattr(indexnow, "RETRY_PAUSE", 0)
-    posts = []
-    monkeypatch.setattr(indexnow, "post", lambda k, b: (posts.append(1), (True, 202))[1])
+    monkeypatch.setattr(indexnow, "post", lambda k, b: pytest.fail("not before the key file is served"))
     monkeypatch.setattr(indexnow, "key_served", lambda k: False)
-    assert indexnow.submit(_sitemap(tmp_path)) == 0
-    out = capsys.readouterr().out
-    assert "could not confirm" in out and "told the engines" in out and len(posts) == 1
-
-
-def test_the_key_poll_carries_the_pipelines_user_agent(monkeypatch):
-    seen = {}
-
-    class R:
-        def read(self, n):
-            return b"a3f9c2e1b7d4a3f9c2e1b7d4"
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *a):
-            return False
-
-    def fake_urlopen(req, timeout=0):
-        seen["ua"] = req.get_header("User-agent")
-        seen["url"] = req.full_url
-        return R()
-
-    monkeypatch.setattr(indexnow.urllib.request, "urlopen", fake_urlopen)
-    assert indexnow.key_served("a3f9c2e1b7d4a3f9c2e1b7d4", tries=1, pause=0)
-    assert seen["url"] == "https://founderledequities.com/a3f9c2e1b7d4a3f9c2e1b7d4.txt"
-    assert seen["ua"] and "urllib" not in seen["ua"].lower(), "not Python-urllib, which the edge challenges"
+    assert indexnow.submit(_sitemap(tmp_path)) == 1
+    assert "not serving" in capsys.readouterr().out and not os.path.exists(indexnow.SENT)
 
 
 def test_the_key_file_is_polled_until_it_answers_with_the_key(monkeypatch):
@@ -216,8 +187,8 @@ def test_the_key_file_is_polled_until_it_answers_with_the_key(monkeypatch):
         def __exit__(self, *a):
             return False
 
-    def fake_urlopen(req, timeout=0):
-        assert req.full_url == "https://founderledequities.com/a3f9c2e1b7d4a3f9c2e1b7d4.txt"
+    def fake_urlopen(url, timeout=0):
+        assert url == "https://founderledequities.com/a3f9c2e1b7d4a3f9c2e1b7d4.txt"
         a = next(answers)
         if a is None:
             raise indexnow.urllib.error.URLError("not yet")
@@ -225,7 +196,7 @@ def test_the_key_file_is_polled_until_it_answers_with_the_key(monkeypatch):
 
     monkeypatch.setattr(indexnow.urllib.request, "urlopen", fake_urlopen)
     assert indexnow.key_served("a3f9c2e1b7d4a3f9c2e1b7d4", tries=3, pause=0)
-    monkeypatch.setattr(indexnow.urllib.request, "urlopen", lambda req, timeout=0: R("something else"))
+    monkeypatch.setattr(indexnow.urllib.request, "urlopen", lambda url, timeout=0: R("something else"))
     assert not indexnow.key_served("a3f9c2e1b7d4a3f9c2e1b7d4", tries=2, pause=0)
 
 
