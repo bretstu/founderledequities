@@ -34,7 +34,7 @@ import urllib.error
 import urllib.request
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-from fle import config as _config  # noqa: E402,F401  (loads .env)
+from fle import config as _config  # noqa: E402  (loads .env; the user agent)
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 SENT = os.path.join(ROOT, "weekly", "indexnow-sent.json")
@@ -101,10 +101,15 @@ def key_served(k, tries=12, pause=5.0):
     after "Deployment complete" and the endpoint answered 403, its fetch of
     the key file having beaten the file to the edge. Wait until the site
     serves the key back (a minute at most) before asking anyone to fetch it."""
+    # THE POLL SAYS WHO IT IS (2026-10-17): a bare urllib fetch announces
+    # itself as Python-urllib, which the edge's bot protection challenges, so
+    # the poll read a challenge page for a minute and gave up while the file
+    # was serving all along; the fetch carries the pipeline's own user agent
     url = f"https://{HOST}/{k}.txt"
+    req = urllib.request.Request(url, headers={"User-Agent": _config.DEFAULT_USER_AGENT})
     for i in range(tries):
         try:
-            with urllib.request.urlopen(url, timeout=20) as r:
+            with urllib.request.urlopen(req, timeout=20) as r:
                 if r.read(256).decode("utf-8", "replace").strip() == k:
                     return True
         except (urllib.error.URLError, OSError):
@@ -151,8 +156,10 @@ def submit(sitemap, dry=False):
             print(f"    {u}")
         return 0
     if not key_served(k):
-        print(f"  indexnow: the site is not serving /{k}.txt yet; {len(todo):,} addresses not told, will retry next deploy")
-        return 1
+        # the poll could not confirm the file, but the engines fetch it with
+        # their own crawlers; say so and send anyway, the 403 retry below
+        # covers a key file that truly is not there yet
+        print(f"  indexnow: could not confirm /{k}.txt from here; sending anyway")
     for i in range(0, len(todo), PER_POST):
         batch = todo[i:i + PER_POST]
         ok, status = post(k, batch)
