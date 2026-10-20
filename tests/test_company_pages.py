@@ -688,9 +688,9 @@ def test_one_confirmation_per_address_and_the_watch_is_counted():
     assert 'hit("click","watch",`FOUNDERS:' in al and 'hit("click","watch-confirmed","FOUNDERS")' in al
     kinds = open(os.path.join(ROOT, "functions", "api", "hit.js"), encoding="utf-8").read()
     assert '"click"' in kinds.split("KINDS")[1].split("]")[0]
-    sh = open(os.path.join(ROOT, "ops", "hits.sh"), encoding="utf-8").read()
-    assert 'DB="${FLE_HITS_DB:-fle-hits}"' in sh and "wrangler d1 list" not in sh.split("DB=")[1].split("\n")[0], "the database by name: no listing call to fail on a login notice"
-    assert "probable" not in sh and "PEOPLE=" not in sh, "no classification of visitors: every view counts (2026-10-14)"
+    py = open(os.path.join(ROOT, "ops", "hits.py"), encoding="utf-8").read()
+    assert 'DB = os.environ.get("FLE_HITS_DB", "fle-hits")' in py and "wrangler d1 list" not in py, "the database by name: no listing call to fail on a login notice"
+    assert "probable" not in py and "PEOPLE" not in py, "no classification of visitors: every view counts (2026-10-14)"
 
 
 def test_the_email_is_the_account(tmp_path):
@@ -797,19 +797,20 @@ def test_no_beacon_fires_before_the_token_is_stripped():
             assert m.start() > strip, f"{name}: a beacon fires before the address is cleaned"
 
 
-def test_hits_reads_only_the_windows_days():
-    """D1'S DAILY READ CAP (2026-10-14): the Eastern day is a function of ts,
-    which no index serves; every query read the whole table, a dozen times
-    a run, and a morning of runs spent 91% of the free tier's five million
-    rows, with the sign-in and the alert run behind the same cap. Every
-    window is bounded by the indexed UTC day, a day wide on each side, and
-    the earlier-day question goes through the visitor index."""
-    sh = open(os.path.join(ROOT, "ops", "hits.sh"), encoding="utf-8").read()
-    assert "WHERE=\"day BETWEEN date($START, '-1 day') AND date($END, '+1 day') AND $WHERE\"" in sh
-    assert sh.count('END="') >= 5, "every window names its last day"
-    assert "CREATE INDEX IF NOT EXISTS $IX" in sh and "hits_vid ON hits(vid, kind, day)" in sh and "hits_kind_day ON hits(kind, day)" in sh, "kind plus the day range is what most queries filter on"
-    assert "SELECT DISTINCT vid FROM hits WHERE kind='view' AND $EDAY < $START" not in sh, "the earlier-day question no longer reads every view ever recorded"
-    assert "EXISTS (SELECT 1 FROM hits s WHERE s.vid=v.vid AND s.kind='view' AND s.day < date($START))" in sh
+def test_hits_reads_the_window_once():
+    """D1'S DAILY READ CAP, TWICE (2026-10-14, 2026-10-20): first the Eastern
+    day was computed per row and every query read the whole table; then the
+    report's self-joins (a visitor's first view, its source, the earlier-day
+    check) read rows times rows, and two 30-day visitor reports read a
+    15,000-row table twenty million times. The report now asks D1 for the
+    window's rows and each visitor's first day, two queries bounded by the
+    indexed UTC day, and counts everything itself (tests/test_hits_paths.py
+    runs it against a fake table)."""
+    py = open(os.path.join(ROOT, "ops", "hits.py"), encoding="utf-8").read()
+    assert "WHERE day BETWEEN '{lo}' AND '{hi}'" in py, "bounded by the indexed UTC day"
+    assert "SELECT vid, MIN(day) AS day FROM hits WHERE kind='view' GROUP BY vid" in py
+    assert "JOIN" not in py and "EXISTS" not in py and "GROUP_CONCAT" not in py, "no self-joins in SQL; the counting is local"
+    assert py.count("d1(") == 3, "two queries per run (and the function itself)"
 
 
 
