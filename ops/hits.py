@@ -96,7 +96,7 @@ def window(arg):
     raise SystemExit("usage: ops/hits.sh [today|yesterday|N|YYYY-MM-DD|YYYY-MM-DD..YYYY-MM-DD]  or  ops/hits.sh visitors [window]")
 
 
-def d1(sql):
+def d1(sql, again=True):
     """one query, its rows; a wrangler error is printed and ends the run"""
     out = subprocess.run(["wrangler", "d1", "execute", DB, "--remote", "--json", "--command", sql],
                          capture_output=True, text=True)
@@ -105,7 +105,13 @@ def d1(sql):
     except ValueError:
         raise SystemExit(f"  (query failed: {(out.stderr or out.stdout)[:300]})")
     if not isinstance(res, list):   # wrangler reports an error as an object, not a result list (2026-09-29)
-        raise SystemExit("  (query failed: " + str(res.get("error") or res.get("errors") or res)[:300] + ")")
+        text = str(res.get("error") or res.get("errors") or res)
+        # THE STALE LOGIN (2026-10-21): the first run after a while sends an
+        # expired token, Cloudflare refuses it (code 10000), and wrangler
+        # refreshes the token on the way out; the same query once more works
+        if again and "10000" in text:
+            return d1(sql, again=False)
+        raise SystemExit("  (query failed: " + text[:300] + ")")
     return res[0]["results"]
 
 

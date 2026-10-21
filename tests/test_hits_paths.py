@@ -122,3 +122,32 @@ def test_hits_sh_is_the_entry_point():
     py = open(os.path.join(ROOT, "ops", "hits.py"), encoding="utf-8").read()
     assert 'DB = os.environ.get("FLE_HITS_DB", "fle-hits")' in py and "wrangler d1 list" not in py, "the database by name"
     assert "probable" not in py and "PEOPLE" not in py, "no classification of visitors: every view counts (2026-10-14)"
+
+
+def test_a_stale_login_is_retried_once(monkeypatch):
+    """THE STALE LOGIN (2026-10-21): the first run after a while failed with
+    Cloudflare's code 10000 and the second worked; the query is sent again."""
+    import json as _json
+    import subprocess as _sp
+    calls = []
+
+    class R:
+        def __init__(self, stdout):
+            self.stdout, self.stderr = stdout, ""
+
+    def fake_run(cmd, capture_output=True, text=True):
+        calls.append(cmd)
+        if len(calls) == 1:
+            return R(_json.dumps({"error": {"text": "A request to the Cloudflare API failed.", "code": 10000}}))
+        return R(_json.dumps([{"results": [{"vid": "x", "day": "2026-10-01"}]}]))
+
+    monkeypatch.setattr(_sp, "run", fake_run)
+    assert hits.d1("SELECT 1") == [{"vid": "x", "day": "2026-10-01"}]
+    assert len(calls) == 2
+    # any other error, or a second refusal, ends the run
+    calls.clear()
+    monkeypatch.setattr(_sp, "run", lambda cmd, capture_output=True, text=True: (calls.append(cmd), R(_json.dumps({"error": {"code": 10000}})))[1])
+    import pytest
+    with pytest.raises(SystemExit):
+        hits.d1("SELECT 1")
+    assert len(calls) == 2
