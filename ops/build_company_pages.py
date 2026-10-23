@@ -553,13 +553,35 @@ INDEX_CSS = ("""
 """)
 
 
-def neighbours_html(tk, ranked, sp, k=2):
+def _stake_chip(t, arrow_first=False):
+    ceo, pct = CEOS.get(t, ""), PCTS.get(t)
+    co = display_name(NAMES.get(t) or t)
+    text = (f"{html.escape(ceo)} owns {pct:.2f}% of {html.escape(co)}" if ceo and pct is not None
+            else html.escape(co))
+    return (f'<a href="/company/{html.escape(t)}/">&larr; {text}</a>' if arrow_first
+            else f'<a href="/company/{html.escape(t)}/">{text} &rarr;</a>')
+
+
+def neighbours_html(tk, ranked, sp, k=2, by_value=None, n_led=None):
     """KEEP READING (design v4): a labeled row of chips, each a sentence a
     reader might follow -- the tape, up to two neighbouring founders' own
     stake sentences (the cross-links the old list carried), the founder-led
     screen with its count, and the alerts. Every page gets the row; only
-    the neighbour chips need the ranked list."""
+    the neighbour chips need the ranked list.
+    THE CHAIN (2026-10-23): the stake one rank up and one rank down, every
+    company on the site in one walk a crawler can follow page to page. A
+    hired chief executive's page used to link the same two founders as
+    every other hired page, and the founder chips come only from the
+    founder-led list; the chain reaches every page with a rank.
+    n_led is the site's one founder-led count (the index's); the ranked
+    list is shorter by the founders without a close."""
     chips = ['<a href="/tape/">Founders who bought this week &rarr;</a>']
+    if by_value and tk in by_value:
+        i = by_value.index(tk)
+        if i > 0:
+            chips.append(_stake_chip(by_value[i - 1], arrow_first=True))
+        if i + 1 < len(by_value):
+            chips.append(_stake_chip(by_value[i + 1]))
     if ranked:
         if tk in ranked:
             i = ranked.index(tk)
@@ -567,14 +589,11 @@ def neighbours_html(tk, ranked, sp, k=2):
             cand.sort(key=lambda t: (t not in sp, abs(ranked.index(t) - i)))
         else:
             cand = [t for t in ranked if t != tk]
-        for t in cand[:k]:
-            ceo, pct = CEOS.get(t, ""), PCTS.get(t)
-            co = display_name(NAMES.get(t) or t)
-            if ceo and pct is not None:
-                chips.append(f'<a href="/company/{html.escape(t)}/">{html.escape(ceo)} owns {pct:.2f}% of {html.escape(co)} &rarr;</a>')
-            else:
-                chips.append(f'<a href="/company/{html.escape(t)}/">{html.escape(co)} &rarr;</a>')
-        chips.append(f'<a href="/screens/founder-led/">All {len(ranked):,} founder-led companies &rarr;</a>')
+        # the chain's two neighbours are not repeated as founder chips
+        shown = {c.split('href="/company/')[1].split("/")[0] for c in chips if 'href="/company/' in c}
+        for t in [t for t in cand if t not in shown][:k]:
+            chips.append(_stake_chip(t))
+        chips.append(f'<a href="/screens/founder-led/">All {(n_led if n_led is not None else len(ranked)):,} founder-led companies &rarr;</a>')
     chips.append('<a href="/alerts/">Get an alert when a founder moves &rarr;</a>')
     return f'<div class="cmore"><div class="k">Keep reading</div><div class="chiprow">{"".join(chips)}</div></div>'
 
@@ -787,8 +806,9 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
             js_v = _h.sha256(open(js_p, "rb").read()).hexdigest()[:10]
 
         def companies_page(heading, definition, preset, static_block, title, desc, canonical):
-            # THE PAGE IS THE PAGE (2026-09-18): the heading stays "Every company" on every screen's address;
-            # only the document's title and description name the screen, for search
+            # THE HEADING IS THE TITLE (2026-10-23): a screen's page is headed by the screen's name, the
+            # words its title and description carry, so the page and its search result say the same thing.
+            # It stayed "Every company" from 2026-09-18, which read to the engines as five copies of one page.
             # the line under the heading names the screen (the title's words), in the HTML for a crawler and live for a reader
             # the same words the page script writes, so the line does not change when the script runs
             # the same words screenSentence() writes for the preset, so the line does not change when the script runs
@@ -797,7 +817,7 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
                     "over-10": "CEOs who own at least 10%.",
                     "bought-this-year": "CEOs who last bought on the open market in the last year.",
                     "hired-under-1": "Hired CEOs who own less than 1%."}.get(preset, "Every US public company worth $200M or more, with what its CEO owns.")
-            t = table.replace("{{HEADING}}", "Every company").replace("{{DEF}}", f'<div class="screenline" id="screenline">{html.escape(line)}</div>')
+            t = table.replace("{{HEADING}}", html.escape(heading)).replace("{{DEF}}", f'<div class="screenline" id="screenline">{html.escape(line)}</div>')
             pg = (tpl.replace("{{TABLE}}", t)
                      .replace("{{TOPNAV}}", topnav)
                      .replace("{{INDEX_CSS}}", INDEX_CSS)
@@ -836,6 +856,43 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
         _INDEX_BLOCK = index_html_block
     os.makedirs(os.path.join(out_dir, "companies"), exist_ok=True)
     with open(os.path.join(out_dir, "companies", "index.html"), "w", encoding="utf-8") as fh:
+        fh.write(page)
+
+
+def added_dates(universe_dir):
+    """ticker -> the day the company joined the universe, from the newest
+    universe-<date>.csv beside the S&P list (fle/market_universe); empty
+    when the site runs on the S&P list alone."""
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from fle.market_universe import newest_snapshot
+        snap = newest_snapshot(universe_dir)
+        if not snap:
+            return {}
+        return {(r.get("ticker") or "").upper(): (r.get("added") or "")[:10]
+                for r in csv.DictReader(open(snap[0], encoding="utf-8-sig"))}
+    except Exception:  # noqa: BLE001 - no universe file, no added dates
+        return {}
+
+
+def about_page(rows, founders, root, out_dir, topnav, css_v):
+    """ONE COUNT (2026-10-23): the About page says how many companies the
+    site covers and how many a founder runs with the index's own numbers,
+    the same two the home strip, the chips and the cards say; it used to
+    carry a sentence typed in September ("About 2,100", "Roughly 300")."""
+    tpl_p = os.path.join(root, "about.html")
+    if not os.path.exists(tpl_p):
+        return
+    tpl = open(tpl_p, encoding="utf-8").read()
+    if "{{TOPNAV}}" not in tpl:
+        return
+    n = len(rows)
+    led = sum(1 for r in rows if (founders.get(r["tk"]) or {}).get("f") == "yes")
+    page = (tpl.replace("{{TOPNAV}}", topnav)
+               .replace("{{N_COMPANIES}}", f"{n:,}")
+               .replace("{{N_LED}}", f"{led:,}")
+               .replace('href="/site.css"', f'href="/site.css?v={css_v}"'))
+    with open(os.path.join(out_dir, "about.html"), "w", encoding="utf-8") as fh:
         fh.write(page)
 
 
@@ -996,14 +1053,8 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
             fh.write(s_html)
     topnav = extract_topnav(index_html)
     # THE ABOUT PAGE: a template with the masthead from index.html, written
-    # where the site has always served it (/about.html)
-    about_tpl_p = os.path.join(root, "about.html")
-    if os.path.exists(about_tpl_p) and "{{TOPNAV}}" in open(about_tpl_p, encoding="utf-8").read():
-        about_html = (open(about_tpl_p, encoding="utf-8").read()
-                      .replace("{{TOPNAV}}", topnav)
-                      .replace('href="/site.css"', f'href="/site.css?v={css_v}"'))
-        with open(os.path.join(out_dir, "about.html"), "w", encoding="utf-8") as fh:
-            fh.write(about_html)
+    # where the site has always served it (/about.html), once the index rows
+    # are counted (about_page, below): its two numbers are the site's own
     # THE UNIVERSE AND TERMS PAGES (2026-09-29): static, but they link site.css
     # like every other page now (their own token copies and font faces left
     # with the paper design), so the link is versioned here the same way.
@@ -1069,6 +1120,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                        if num(r.get("shares")) and prices.get((r.get("ticker") or "").upper())),
                       key=lambda r: -(num(r.get("shares")) * prices[(r.get("ticker") or "").upper()]))
     vrank = {(r.get("ticker") or "").upper(): i + 1 for i, r in enumerate(by_value)}
+    by_value = [(r.get("ticker") or "").upper() for r in by_value]
     # the search box's index: ticker, display name, CEO, stake, founder flag,
     # stake value (the ranking key). One small file for 2,000 companies.
     srows = []
@@ -1109,6 +1161,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     scale = (sum(1 for r in sp_rows if num(r.get("pct")) > 5), len(sp_rows)) if sp_rows else None
     urls = []
     lastmods = {}
+    added = added_dates(os.path.dirname(os.path.abspath(sp_p)))
     index_rows = []
     # THE PARTNERSHIP REGISTER (fle/partnerships.py, 2026-09-15): a kept
     # company's page carries a note; an excluded company has left the
@@ -1116,6 +1169,16 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     sys.path.insert(0, os.path.join(root, ""))
     from fle.partnerships import read_register, note_for
     register = read_register(os.path.join(os.path.dirname(os.path.abspath(sp_p)), "partnerships.csv"))   # beside the universe files
+    def _excluded(t):
+        return t in register and register[t]["action"] == "exclude"
+    # ONE COUNT (2026-10-23): the founder-led companies with a page, the
+    # number the index's chip, the home strip and the cards say
+    n_led = sum(1 for r in panel_rows
+                if (founders.get((r.get("ticker") or "").upper()) or {}).get("f") == "yes"
+                and not _excluded((r.get("ticker") or "").upper()))
+    # an excluded company has no page, so it has no place in the chain or the rank
+    by_value = [t for t in by_value if not _excluded(t)]
+    vrank = {t: i + 1 for i, t in enumerate(by_value)}
     n_open = 0
     for r in panel_rows:
         tk = (r.get("ticker") or "").upper()
@@ -1166,7 +1229,11 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                                 "pct": x.get("pct_of_stake") or "", "as_of": (x.get("as_of") or "")[:10],
                                 "accession": x.get("accession") or "", "stale": int(x.get("stale") or 0)}
                                for x in held]
-        lastmods[tk] = (r.get("shares_as_of") or "")[:10]
+        # WHEN THE PAGE LAST CHANGED (2026-10-23): the later of the stake's
+        # date and the day the company joined the universe. A company added
+        # on October 9 whose CEO last filed in 2024 carried a 2024 lastmod,
+        # and the engines took the new page for one they had already seen.
+        lastmods[tk] = max((r.get("shares_as_of") or "")[:10], added.get(tk, ""))
         # WHEN THE PAGE WAS LAST TRUE: dateModified is the newest filing the
         # figure rests on (a crawler reads it; a reader sees the same date on
         # the page), so a page built nightly from a June filing says June,
@@ -1179,7 +1246,13 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
                 {"@type": "ListItem", "position": 3, "name": payload["co"], "item": f"{SITE}/company/{tk}/"}]},
             {"@type": "WebPage", "@id": f"{SITE}/company/{tk}/", "name": title, "description": desc,
              "dateModified": as_of, "isPartOf": {"@type": "WebSite", "name": "Founder Led Equities", "url": f"{SITE}/"},
-             "about": {"@type": "Organization", "name": payload["co"], "tickerSymbol": tk}}]})
+             # THE PERSON (2026-10-23): the queries that reach the site are the
+             # chief executive's name; the page says who the person is and
+             # what they run, in the vocabulary the engines read
+             "about": [{"@type": "Organization", "name": payload["co"], "tickerSymbol": tk}]
+                      + ([{"@type": "Person", "name": payload["ceo"], "jobTitle": "Chief Executive Officer",
+                           "worksFor": {"@type": "Organization", "name": payload["co"], "tickerSymbol": tk}}]
+                         if payload.get("ceo") else [])}]})
         if tk in register and register[tk]["action"] == "keep":
             body += f'<p class="sub structure-note">{html.escape(note_for(register[tk]))}</p>'
         # THE WATCH IS ON THE PAGE BEFORE THE SCRIPT (design v4): the card and
@@ -1197,7 +1270,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
         # other page. Two asks read as pressure.
         page = (template
                 .replace('<div id="cbody"></div>', '<div id="cbody">' + body + '</div>')
-                .replace('<div id="cmore"></div>', '<div id="cmore">' + neighbours_html(tk, ranked, sp) + '</div>')
+                .replace('<div id="cmore"></div>', '<div id="cmore">' + neighbours_html(tk, ranked, sp, by_value=by_value, n_led=n_led) + '</div>')
                 .replace('<div class="cwatchslot" id="cwatchslot"></div>', '<div class="cwatchslot" id="cwatchslot">' + watch_static + '</div>')
                 .replace('</head>', f'<script type="application/ld+json">{crumbs}</script>\n</head>')
                 .replace("{{TITLE}}", html.escape(title))
@@ -1225,6 +1298,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     # real 404 like any company the site does not cover. The register row
     # holds the facts should it ever be asked for.
     companies_index(index_rows, founders, sp, out_dir, topnav, css_v)
+    about_page(index_rows, founders, root, out_dir, topnav, css_v)
     urls.append("https://founderledequities.com/companies/")
     urls.extend(screen_pages(os.path.join(out_dir, "universe.csv"), founders, prices, out_dir, topnav, css_v, index_rows, sp))
     if os.path.exists(os.path.join(out_dir, "alerts", "index.html")):

@@ -1089,7 +1089,12 @@ function mapPanel(recs){
     /* "SC 13G/A 2024-02-13" when the figure is a dated schedule stake,
        not a Section 16 sum -- the row must say so */
     src13:r.stake_source||"",
-  })).filter(r=>r.tk&&r.pct!==null&&r.sh!==null);
+  /* ONE COUNT (2026-10-23): a company whose filings have not settled on a
+     stake is still a company. It used to be dropped here, so the tables
+     and the strip counted 54 fewer than the index and the chips; now it
+     rides with a null stake, sorts last, and prints a blank cell. The
+     screens that ask about the stake itself leave it out (passes). */
+  })).filter(r=>r.tk);
 }
 /*@shared*/
 function mapHistory(recs){
@@ -1437,7 +1442,9 @@ const BUY_EDGES=[[null,1,"lt1"],[1,5,"1to5"],[5,null,"5plus"]];
 /*@shared*/
 function passes(r,f){
   /* ONE RULE (2026-09-21): the same test the build counts with (build_site_data.passes) */
-  if(r.pct===null)return false;
+  /* an unsettled stake answers no question about the stake (2026-10-23):
+     it passes only a screen that asks nothing of it */
+  if(r.pct===null&&((f.min||0)>0||(f.max!==null&&f.max!==undefined)))return false;
   const who=f.who||"all";
   if(who==="founders"&&!r.fd)return false;
   if(who==="hired"&&r.fd)return false;
@@ -1579,7 +1586,7 @@ function renderTable(){
     /* a company with no three-year record sorts below every real change,
        whichever way the column points */
     if(key==="ns"||key==="fd"){va=va?1:0;vb=vb?1:0;}
-    if(key==="r1"||key==="mcap"||key==="val"||key==="lt"||key==="c12"){const na=va===null||va===undefined,nb=vb===null||vb===undefined;
+    if(key==="r1"||key==="mcap"||key==="val"||key==="lt"||key==="c12"||key==="pct"){const na=va===null||va===undefined,nb=vb===null||vb===undefined;
       if(na!==nb)return na?1:-1;if(na)return 0;}
     if(typeof va==="string"||typeof vb==="string")
       return String(va||"").localeCompare(String(vb||""))*dir;
@@ -1595,7 +1602,7 @@ function renderTable(){
      <td class="rk">${String(i+1).padStart(2,"0")}</td>
      <td class="c-co"><div class="tk"><a href="/company/${r.tk}/" onclick="event.stopPropagation()" title="this company's own page">${r.tk}</a></div><div class="nm" title="${r.co.replace(/"/g,"&quot;")}">${r.co}</div></td>
      <td class="ceo h-ceo"><span class="ceow"><span class="cn" title="${r.ceo.replace(/"/g,"&quot;")}">${r.ceo}</span>${r.fd?'<span class="fb yes">FOUNDER</span>':""}</span></td>
-     <td class="n num c-own">${r.units?`<span class="nopr" title="ownership held as exchangeable partnership units, not common stock">units</span>`:r.pct.toFixed(r.pct<1?3:2)+"%"}</td>
+     <td class="n num c-own">${r.units?`<span class="nopr" title="ownership held as exchangeable partnership units, not common stock">units</span>`:r.pct===null?`<span class="nopr" title="the filings have not settled on one stake; the company's page has every filing"></span>`:r.pct.toFixed(r.pct<1?3:2)+"%"}</td>
      <td class="n num">${r.val?money(r.val):""}</td>
      <td class="n num c-mc">${r.mcap?money(r.mcap):""}</td>
      <td class="n num c-r1">${r.r1===null||r.r1===undefined?`<span class="nopr"></span>`:`${r.r1>=0?"+":""}${r.r1.toFixed(1)}%`}</td>

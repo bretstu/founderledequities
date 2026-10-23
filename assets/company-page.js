@@ -683,7 +683,9 @@ async function fetchText(paths){
   }
   hit("view","page");   /* THE PAGE COUNTS ITS OWN VISITORS, like the home page: the same beacon, shared; after the cleaning, so no token is recorded */
   let row=C.row?mapPanel([C.row])[0]:null;
-  if(!row){
+  /* mapPanel keeps an unsettled row now (one count, 2026-10-23); this page
+     draws it as it always has, from the honest empty figures below */
+  if(!row||row.pct===null){
     /* a company whose record could not settle on a figure: the same page,
        the honest empty figures, the filings in the table */
     row={tk:C.tk,co:C.co,ceo:C.ceo,pct:null,sh:null,out:C.out||null,oasof:C.oasof||"",asof:"",conf:"medium",tabled:null};

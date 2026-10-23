@@ -4,6 +4,7 @@ The rules a company page applies -- what a cleaned series excludes, how a
 trade is badged, how money is rounded -- are extracted from index.html at
 build, not copied; these tests hold the extraction to that."""
 import csv
+import pathlib
 import html
 import os
 import re
@@ -810,7 +811,7 @@ def test_hits_reads_the_window_once():
     assert "WHERE day BETWEEN '{lo}' AND '{hi}'" in py, "bounded by the indexed UTC day"
     assert "SELECT vid, MIN(day) AS day FROM hits WHERE kind='view' GROUP BY vid" in py
     assert "JOIN" not in py and "EXISTS" not in py and "GROUP_CONCAT" not in py, "no self-joins in SQL; the counting is local"
-    assert py.count("d1(") == 3, "two queries per run (and the function itself)"
+    assert py.count('d1(f"SELECT') + py.count('d1("SELECT') == 2, "two queries per run (the stale-login retry, 2026-10-21, calls d1 again with the same query)"
 
 
 
@@ -858,3 +859,111 @@ def test_the_alerts_and_activity_pages_have_cards_of_their_own(tmp_path):
     bcp.main(panel, founders, prices, sp, out)
     alerts = open(os.path.join(out, "alerts", "index.html"), encoding="utf-8").read()
     assert 'content="https://founderledequities.com/og/alerts.png">' in alerts
+
+
+def _fixture_with_an_unsettled_company(tmp_path):
+    """The fixture plus a founder-led company whose filings have not settled
+    (no stake, no share count), and a universe file beside the S&P list that
+    says when each company joined."""
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    with open(panel, "a", newline="") as fh:
+        csv.writer(fh).writerow(["NEWCO", "777", "New Co", "Ada Lovelace", "", "", "5000000",
+                                 "", "low", ""])
+    open(founders, "w").write('ticker,founder,evidence,source\nTSLA,yes,"co-founded the Company",DEF 14A\n'
+                              'NEWCO,yes,"founded the Company",DEF 14A\n')
+    (tmp_path / "universe-2026-10-09.csv").write_text(
+        "cik,ticker,company,added\n1318605,TSLA,Tesla,2026-06-01\n999,SEALD,Sealed Co,2026-10-09\n777,NEWCO,New Co,2026-10-09\n")
+    return panel, founders, prices, sp, out
+
+
+def test_one_count_everywhere(tmp_path):
+    """ONE COUNT (2026-10-23): a company whose filings have not settled on a
+    stake is still a company. The index, the chips, the screens, the About
+    page, the company pages' founder-led link, the OG numbers and the home
+    strip all count the companies with a page; the stake questions are
+    answered over the rows that have one."""
+    import og_image as ogi
+    import stamp_static as st
+    panel, founders, prices, sp, out = _fixture_with_an_unsettled_company(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    index = open(os.path.join(out, "companies", "index.html"), encoding="utf-8").read()
+    assert "3 US public companies worth $200M or more" in index and "Founder-led<b>2</b>" in index
+    about = open(os.path.join(out, "about.html"), encoding="utf-8").read()
+    assert "3 companies are covered. 2 of them are run by a founder" in about and "{{N_" not in about
+    assert "About 2,100" not in open(os.path.join(ROOT, "about.html"), encoding="utf-8").read()
+    tsla = open(os.path.join(out, "company", "TSLA", "index.html"), encoding="utf-8").read()
+    assert "All 2 founder-led companies" in tsla, "the page's link says the index's count, not the priced founders'"
+    n = ogi.numbers(panel, sp, prices, founders)
+    assert (n["total"], n["open"], n["led"], n["above5"]) == (3, 3, 2, 2)
+    # the home strip and the descriptions say the same numbers
+    st.OPEN_TOP = 0
+    events = tmp_path / "events.csv"
+    events.write_text("ticker,code,label,traded,filed,value,plan,pre_ipo,pct_of_holding,ceo\n", encoding="utf-8")
+    home = tmp_path / "index.html"
+    home.write_text(open(os.path.join(ROOT, "index.html"), encoding="utf-8").read(), encoding="utf-8")
+    st.main(panel, sp, prices, founders, str(home), str(events))
+    page = home.read_text(encoding="utf-8")
+    assert '<div class="n hl">2</div><div class="k">Founder-led companies</div>' in page
+    assert '<div class="n">3</div><div class="k">Companies, computed nightly</div>' in page
+    assert '<span id="lednum">2</span>' in page
+    assert 'content="CEO ownership for 3 US public companies' in page and "2,000+" not in page
+    # the page's own rule, in its script: the row stays, sorts last, prints no stake
+    src = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
+    assert "})).filter(r=>r.tk);" in src and "r.pct!==null&&r.sh!==null" not in src
+    assert 'if(r.pct===null&&((f.min||0)>0||(f.max!==null&&f.max!==undefined)))return false;' in src
+    assert 'key==="pct"){const na=' in src
+    assert 'r.pct===null?`<span class="nopr"' in src
+    bsd = open(os.path.join(ROOT, "ops", "build_site_data.py"), encoding="utf-8").read()
+    assert 'if pct is None and (f.get("min", 0) > 0 or f.get("max") is not None):' in bsd, "the build counts by the page's rule"
+    cp = open(os.path.join(ROOT, "assets", "company-page.js"), encoding="utf-8").read()
+    assert "if(!row||row.pct===null){" in cp, "a company page without a settled stake draws its honest empty figures as before"
+
+
+def test_a_screen_is_headed_by_its_name(tmp_path):
+    """THE HEADING IS THE TITLE (2026-10-23): a screen's H1 is the screen's
+    name; the Companies page keeps "Every company"."""
+    panel, founders, prices, sp, out = _fixture(tmp_path)
+    os.makedirs(out, exist_ok=True)
+    (pathlib.Path(out) / "universe.csv").write_text("ticker,company,ceo,pct,shares,never_sold,lt_code,lt_traded,pct_12m_ago,last_disc,last_buy\n"
+                                      "TSLA,Tesla,Elon Musk,28.44,1120000000,1,P,2026-08-01,15.8,,2026-08-01\n")
+    bcp.main(panel, founders, prices, sp, out)
+    led = open(os.path.join(out, "screens", "founder-led", "index.html"), encoding="utf-8").read()
+    assert ">Founder-led companies</h1>" in led and "<title>Founder-led companies · Founder Led Equities</title>" in led
+    assert "Companies whose CEO founded them, by the company" in led, "the definition stays under the heading"
+    ten = open(os.path.join(out, "screens", "own-more-than-10-percent", "index.html"), encoding="utf-8").read()
+    assert ">CEOs who own more than 10% of their company</h1>" in ten
+    index = open(os.path.join(out, "companies", "index.html"), encoding="utf-8").read()
+    assert ">Every company</h1>" in index
+
+
+def test_the_sitemap_says_when_the_page_changed_not_only_when_the_ceo_filed(tmp_path):
+    """LASTMOD (2026-10-23): the later of the stake's date and the day the
+    company joined the universe. SEALD's CEO filed in June and the company
+    joined on October 9: its page is new in October."""
+    panel, founders, prices, sp, out = _fixture_with_an_unsettled_company(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    sm = open(os.path.join(out, "sitemap.xml"), encoding="utf-8").read()
+    assert "<loc>https://founderledequities.com/company/SEALD/</loc><lastmod>2026-10-09</lastmod>" in sm
+    assert "<loc>https://founderledequities.com/company/TSLA/</loc><lastmod>2026-07-06</lastmod>" in sm, "a filing after the join date wins"
+    assert "<loc>https://founderledequities.com/company/NEWCO/</loc><lastmod>2026-10-09</lastmod>" in sm, "no stake date: the join date"
+    assert bcp.added_dates(str(tmp_path / "nowhere")) == {}, "no universe file, no added dates, no error"
+
+
+def test_every_company_page_links_the_stake_one_rank_up_and_one_down(tmp_path):
+    """THE CHAIN (2026-10-23): a crawler can walk every ranked page from any
+    other; the two neighbours are not repeated as founder chips; the CEO is
+    a Person in the page's structured data."""
+    panel, founders, prices, sp, out = _fixture_with_an_unsettled_company(tmp_path)
+    bcp.main(panel, founders, prices, sp, out)
+    tsla = open(os.path.join(out, "company", "TSLA", "index.html"), encoding="utf-8").read()
+    seald = open(os.path.join(out, "company", "SEALD", "index.html"), encoding="utf-8").read()
+    newco = open(os.path.join(out, "company", "NEWCO", "index.html"), encoding="utf-8").read()
+    # TSLA is #1 by value, SEALD #2; NEWCO has no rank (no shares, no close)
+    assert '<a href="/company/SEALD/">Jane Doe owns 41.20% of Sealed &rarr;</a>' in tsla
+    assert "&larr; " not in tsla.split('class="chiprow"')[1].split("</div>")[0], "the first-ranked page has no page above it"
+    assert '<a href="/company/TSLA/">&larr; Elon Musk owns 28.44% of Tesla</a>' in seald
+    assert seald.count('href="/company/TSLA/"') == 1, "a neighbour in the chain is not repeated as a founder chip"
+    assert "&larr; " not in newco, "no rank, no chain; the founder chips still lead somewhere"
+    assert '"@type": "Person", "name": "Elon Musk", "jobTitle": "Chief Executive Officer"' in tsla
+    assert '"worksFor": {"@type": "Organization", "name": "Tesla, Inc.", "tickerSymbol": "TSLA"}' in tsla
+    assert '"@type": "Organization", "name": "Tesla, Inc.", "tickerSymbol": "TSLA"}' in tsla

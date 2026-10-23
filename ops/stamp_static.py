@@ -241,6 +241,9 @@ def main(panel_p, sp_p, prices_p, founders_p, index_out, events_p="events.csv"):
     page = page.replace('<div class="stakecards" id="stakecards"></div>',
                         f'<div class="stakecards" id="stakecards">{"".join(cards)}</div>', 1)
     page = page.replace('<span id="lednum"></span>', f'<span id="lednum">{n["led"]}</span>', 1)
+    # ONE COUNT (2026-10-23): the descriptions say the number the strip says.
+    # The template keeps "2,000+", a floor that stays true in the source.
+    page = page.replace("2,000+ US public companies", f'{n["open"]:,} US public companies')
     with open(index_out, "w", encoding="utf-8") as fh:
         fh.write(page)
     print(f"  stamped: {n['above5']} of {n['open']} in the strip, {len(rows5) if wrows else 0} week rows ({days}d window), "

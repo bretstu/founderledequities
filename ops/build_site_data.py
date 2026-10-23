@@ -521,7 +521,11 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
     def passes(r, f):
         t = r["ticker"]
         pct = _num(r.get("pct"))
-        if pct is None or (r.get("operating_partnership") or "").lower() == "true":
+        if (r.get("operating_partnership") or "").lower() == "true":
+            return False
+        # an unsettled stake answers no question about the stake (2026-10-23):
+        # it passes only a screen that asks nothing of it, as the page's passes()
+        if pct is None and (f.get("min", 0) > 0 or f.get("max") is not None):
             return False
         who = f.get("who", "all")
         if who == "founders" and t not in founder_yes:
@@ -530,9 +534,9 @@ def main(panel_p, hist_p, events_p, founders_p, sp_p, out_dir,
             return False
         if f.get("sp") and t not in sp:
             return False
-        if pct < f.get("min", 0):
+        if pct is not None and pct < f.get("min", 0):
             return False
-        if f.get("max") is not None and pct >= f["max"]:
+        if pct is not None and f.get("max") is not None and pct >= f["max"]:
             return False
         want = f.get("sold", "any")
         if want != "any":

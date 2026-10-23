@@ -40,27 +40,40 @@ def numbers(panel_p, sp_p, prices_p, founders_p):
         pass
     # THE HERO'S OWN STRIP, BY THE HERO'S OWN RULES: everything over every
     # company, so the card says exactly what a visitor then sees.
+    # the register's exclusions leave the count the day they are decided,
+    # as they leave the site's lists (build_site_data) and the index
+    drop = set()
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from fle.partnerships import excluded as _excluded
+        drop = set(_excluded(os.path.join(os.path.dirname(os.path.abspath(sp_p)), "partnerships.csv")))
+    except Exception:  # noqa: BLE001 - no register, no change
+        pass
     total = open_n = above5 = led = 0
     led_value = all_value = 0.0
     for r in csv.DictReader(open(panel_p, encoding="utf-8-sig")):
         t = (r.get("ticker") or "").upper()
-        # WHAT THE PAGE COUNTS. Its list keeps a company only when it has a
-        # measured stake and a share count (mapPanel's filter); 35 of the
-        # 2,135 do not, and the hero says 2,100. A stamp that counted every
-        # row said 2,135 for the first second and 2,100 after.
-        try:
-            pct = float(r.get("pct") or "")
-            sh = float(r.get("shares") or 0)
-        except ValueError:
+        if not t or t in drop:
             continue
+        # ONE COUNT (2026-10-23): every company with a page is counted, settled
+        # stake or not, the rule the page's mapPanel keeps now; so the card,
+        # the strip, the index and the chips all say the same number. The
+        # stake questions (above 5%, what the founders hold) are answered
+        # over the rows that have a stake and a share count.
         total += 1
         open_n += 1
+        if t in founders:
+            led += 1
+        try:
+            pct = float(r.get("pct") or "")
+            sh = float(r.get("shares") or "")
+        except ValueError:
+            continue
         if pct > 5:
             above5 += 1
         val = sh * prices[t] if t in prices else 0.0
         all_value += val
         if t in founders:
-            led += 1
             led_value += val
     return dict(total=total, open=open_n, above5=above5, led=led,
                 led_value=led_value, share=round(100 * led_value / all_value) if all_value else 0)
