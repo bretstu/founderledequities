@@ -9,14 +9,14 @@
   <meta property="og:site_name" content="Founder Led Equities">
   <meta property="og:url" content="https://founderledequities.com">
   <meta property="og:title" content="Founder Led Equities: what every CEO owns of the company they run">
-  <meta property="og:description" content="The stake every CEO of 2,000+ US public companies holds, computed from the filings they signed. Who bought, who sold, and where every stake is heading. The S&P 500 is open to everyone.">
+  <meta property="og:description" content="The stake every CEO of 2,000+ US public companies holds, computed from the filings they signed. Who bought, who sold, and where every stake is heading.">
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:image" content="https://founderledequities.com/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="How many CEOs own more than 5% of the company they run, computed from SEC filings">
   <meta name="twitter:image" content="https://founderledequities.com/og.png">
-  <meta name="description" content="CEO ownership for 2,000+ US public companies, computed from SEC filings, never estimated. Who bought, who sold, and where every stake is heading. S&P 500 current stakes are open.">
+  <meta name="description" content="CEO ownership for 2,000+ US public companies, computed from SEC filings, never estimated. Who bought, who sold, and where every stake is heading.">
   <!-- THE MARK (2026-09-23): the stake wedge, cut at 28.44 percent -- the
        flagship page's number. Google reads the home page's icon for every
        result the site ever ranks for; the SVG is the mark, the 96px PNG is
@@ -655,6 +655,57 @@ table.tape tr.dgrp a{color:var(--ink);text-decoration:none}
 table.tape tr.dgrp a:hover{color:var(--accent)}
 table.tape tr.dgrp .dsub{color:var(--faint);font-weight:500}
 table.tape tr.dgrp .dn{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);margin-left:12px}
+/* ---- PHONES (2026-11-22) ----
+   One block for every page. Before it, a 390px screen scrolled sideways on
+   the home page, the company page, Activity, Companies and Alerts: the email
+   forms kept a fixed-width field beside a button that could not shrink, the
+   four hero tiles kept a 200px minimum, and the nav wrapped to three ragged
+   rows. Nothing here changes a desktop layout. */
+@media(max-width:700px){
+  /* the bar: the name and the search on one row, the links on the next;
+     it scrolls away with the page instead of holding a fifth of the screen */
+  .top{position:static}
+  .topin{gap:8px 12px;padding-top:12px;padding-bottom:10px}
+  .topin::before{content:"";order:2;flex-basis:100%;height:0}
+  .logo{order:0;font-size:var(--fs-l)}
+  .topnav{display:contents}
+  .topnav .navsearch{order:1;flex:1 1 120px;min-width:0;margin-right:0}
+  .topnav .navsearch input{width:100%;max-width:none}
+  .topnav>a,.topnav>.navme{order:3;font-size:var(--fs-s);font-weight:600}
+  .topnav>a{color:var(--mut)}
+  .navmenu{left:auto;right:0}
+  [id]{scroll-margin-top:16px}
+  /* the hero keeps the page's gutter; its four figures sit two by two */
+  .hero .wrap.heroin{padding-left:20px;padding-right:20px}
+  .herostats{align-self:stretch;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .herostats .hstat{min-width:0;padding:14px 10px}
+  .hskey{display:none}
+  /* a week's move: the date and the ticker on one line, the sentence under them */
+  .fwrow{flex-wrap:wrap;gap:2px 12px;padding:12px 0}
+  .fwrow .fwtxt{flex-basis:100%}
+  /* every email form: the field takes the row, the button the next if it must */
+  /* (the doubled class outranks a page's own .way .homesub, which loads later) */
+  body .homesub.homesub{flex:1 1 100%;flex-wrap:wrap;min-width:0}
+  body .homesub.homesub input{flex:1 1 180px;width:auto;min-width:0}
+  body .homesub.homesub button{flex:1 1 auto}
+  .homecap .wrap.capin{padding:20px 18px}
+  /* a caption wraps rather than running off the screen */
+  .screenline{white-space:normal;overflow:visible}
+  .screenchips{gap:8px}
+}
+/* THE A-TO-Z ON A PHONE: 2,900 names in one column was a 99,000px page. The
+   letters stay; a letter's list opens when its letter is tapped. Every link
+   is still in the HTML for a crawler. */
+@supports selector(:has(*)){
+  @media(max-width:700px){
+    .cidx section{margin-top:0}
+    .cidx section h2,.cidx section ul{display:none}
+    .cidx section:has(h2:target) h2,.cidx section:has(h2:target) ul{display:block}
+    .cidx ul{columns:1}
+    .cidx .letters{display:flex;flex-wrap:wrap;gap:4px 2px;letter-spacing:0}
+    .cidx .letters a{display:inline-block;min-width:32px;padding:8px 0;text-align:center;border:1px solid var(--pline);border-radius:var(--r-s);background:var(--white);color:var(--ink)}
+  }
+}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Founder Led Equities","url":"https://founderledequities.com/","logo":"https://founderledequities.com/og.png","sameAs":["https://x.com/FounderLedEq"]},{"@type":"WebSite","name":"Founder Led Equities","url":"https://founderledequities.com/","description":"What every CEO owns of the company they run, computed from SEC filings."}]}</script>
 </head>
@@ -673,7 +724,7 @@ table.tape tr.dgrp .dn{font-family:var(--mono);font-size:var(--fs-xs);color:var(
     <a href="/tape/">Activity</a>
     <a href="/companies/">Companies</a>
     <a href="/alerts/">Alerts</a>
-    <a href="about.html">About</a>
+    <a href="/about">About</a>
     <!-- THE ACCOUNT IN THE NAV (2026-10-14): signed out, Sign in; signed in,
          the address with a menu: Your watches, Sign out. fleNav() redraws
          it from the store; the page scripts call it when the store changes -->
@@ -763,7 +814,7 @@ table.tape tr.dgrp .dn{font-family:var(--mono);font-size:var(--fs-xs);color:var(
 <footer><div class="wrap row">
   <div><b class="fname">Founder Led Equities</b>
    &nbsp;·&nbsp; Computed from SEC EDGAR. Not investment advice.
-   &nbsp;·&nbsp; <a href="about.html">About &amp; method</a>
+   &nbsp;·&nbsp; <a href="/about">About &amp; method</a>
    &nbsp;·&nbsp; <a href="/companies/" title="one page per company, every company">Every company page</a>
    &nbsp;·&nbsp; <a href="/screens/founder-led/" title="founder-led, no discretionary sale since 2016, own more than 10%, bought this year, hired under 1%">The screens</a></div>
 </div></footer>

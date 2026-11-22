@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Activity · Founder Led Equities</title>
+  <title>CEO and founder stock purchases and sales this week · Founder Led Equities</title>
   <meta name="description" content="Every purchase, sale and compensation filing by the chief executive of a US public company worth $200M or more, this week: who bought, who cut a stake, who sold on a plan. Founders first. Computed from the filings, never estimated.">
   <link rel="canonical" href="https://founderledequities.com/tape/">
-  <meta property="og:title" content="Activity · Founder Led Equities">
+  <meta property="og:title" content="CEO and founder stock purchases and sales this week · Founder Led Equities">
   <meta property="og:description" content="Who bought, who cut a stake, who sold on a plan. Founders first.">
   <meta property="og:image" content="https://founderledequities.com/og/tape.png">
   <meta property="og:image:width" content="1200">
@@ -108,6 +108,12 @@
       .tapectl .tchips{display:flex;overflow-x:auto}
       .tapectl .tchips .chip{flex:0 0 auto;padding:10px 12px}
       .tapectl .sw{justify-content:space-between}
+      /* a group never pushes the panel wider than the screen (2026-11-22) */
+      .tapectl .grps,.tapectl .grp,.tapectl .sw{min-width:0;max-width:100%}
+      .tapectl .chips,.tapectl .tchips{max-width:100%}
+      .tapectl .chips{overflow-x:auto}
+      .tapectl .chips .chip{flex:1 0 auto;padding:10px 10px;white-space:nowrap}
+      .tapectl .sw{gap:10px 16px}
     }
   </style>
 </head>
@@ -164,7 +170,7 @@
   </div></section>
 <div class="tapepage">
   <div class="tapefoot">
-    <span><a href="/about.html">About</a> · <a href="mailto:corrections@founderledequities.com">Corrections</a> · <a href="mailto:hello@founderledequities.com">Ideas</a> · Nothing here is investment advice · Every figure links to the filing</span>
+    <span><a href="/about">About</a> · <a href="mailto:corrections@founderledequities.com">Corrections</a> · <a href="mailto:hello@founderledequities.com">Ideas</a> · Nothing here is investment advice · Every figure links to the filing</span>
     <span class="site">founderledequities.com</span>
   </div>
 </div>

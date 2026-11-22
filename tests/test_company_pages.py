@@ -160,7 +160,7 @@ def test_one_page_per_company_with_the_seal_respected(tmp_path):
 def test_the_nav_on_a_page_points_home():
     idx = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
     nav = bcp.extract_topnav(idx)
-    assert 'href="/tape/"' in nav and 'href="/companies/"' in nav and 'href="/about.html"' in nav and "#board" not in nav and "#perfsec" not in nav
+    assert 'href="/tape/"' in nav and 'href="/companies/"' in nav and 'href="/about"' in nav and "#board" not in nav and "#perfsec" not in nav
     assert "devtog" not in nav and "gopro" not in nav and "openPro()" not in nav, "no dev toggle and no Join on a static page"
     assert 'id="navq"' in nav and 'src="/search.js"' in nav, "the search box rides on every built page (2026-09-23)"
 
