@@ -97,10 +97,10 @@ def money(v):
 
 
 def draw(n, out, fonts_dir):
-    from PIL import Image, ImageDraw, ImageFont
+    from PIL import Image, ImageDraw
     W, H = 1200, 630
     # design b (2026-09-29): the company cards' palette and faces
-    from company_cards import Fonts, INK, BLUE, MUT, FAINT, LINE, PAPER, PANEL
+    from company_cards import Fonts, INK, BLUE, MUT, FAINT, PAPER, PANEL
     F = Fonts(fonts_dir)
     disp, ui, mono = F.disp, F.ui, F.mono
 

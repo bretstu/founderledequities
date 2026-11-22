@@ -32,9 +32,3 @@ up with yesterday's data -- staleness, never downtime.
   holding moves (`refresh.log` says why). Yesterday's site stays live.
 - `--force` overrides the gate once you've checked a change by hand.
 - Serving is decoupled from building: a dead box costs freshness only.
-
-## What this does NOT cover yet
-
-- Payments and accounts (Stripe) -- see the plan in the project notes.
-- Real gating: today every CSV is public and ?pro=1 unlocks the preview.
-  Fine for the validation phase; must change the day money changes hands.

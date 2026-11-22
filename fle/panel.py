@@ -19,10 +19,8 @@ you want.
 from __future__ import annotations
 
 import csv
-import re
 import json
 import os
-from dataclasses import asdict
 
 from .ownership import Ownership, build
 

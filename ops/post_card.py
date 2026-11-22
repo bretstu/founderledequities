@@ -16,7 +16,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-from company_cards import Fonts, read_series, compact, INK, MUT, FAINT, LINE, PAPER, PANEL, BUY, SELL, ACCENT, ACCENT_L  # noqa: E402
+from company_cards import Fonts, read_series, INK, MUT, FAINT, LINE, PAPER, PANEL, BUY, SELL, ACCENT, ACCENT_L  # noqa: E402
 
 W, H = 1200, 630
 KIND_WORD = {"disc": "DISCRETIONARY SALE", "plan": "PLANNED SALE", "bought": "OPEN-MARKET BUY", "sold": "SALE (plan not stated)"}
