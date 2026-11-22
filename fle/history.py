@@ -51,13 +51,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-import copy
 
-from .ledger import (SECTION16, Group, _merge_same_day, _parse, _rows, groups_total, settlements_only_in_table_ii, apply_exclusions,
-                     displace_amended, retired_classes, letters_seen,
-                     class_letters,
-                     is_share_class, issuer_of, match_class, names_another_letter, dominant_letter, single_class_letter, SINGLE_CLASS, COUNTED_NOTE,
-                     vehicle_keys, is_anonymous, base_of)
+from .ledger import (Group, _parse, _rows, groups_total, settlements_only_in_table_ii, apply_exclusions, displace_amended, retired_classes,
+                     letters_seen, class_letters, is_share_class,
+                     issuer_of,
+                     match_class, names_another_letter, dominant_letter, single_class_letter, SINGLE_CLASS, COUNTED_NOTE, vehicle_keys, is_anonymous,
+                     base_of)
 
 
 @dataclass

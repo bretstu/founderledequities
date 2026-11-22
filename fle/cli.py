@@ -111,8 +111,8 @@ def _why_no_cert(client, cik: int) -> None:
     out of it. Any of those can be the one that broke, and the verdict alone
     says nothing about which.
     """
-    from .identity import (PERIODIC_FORMS, _pick_exhibits, _read_certification,
-                           extract_names_from_certification, _plain_text)
+    from .identity import (PERIODIC_FORMS, _pick_exhibits, extract_names_from_certification,
+                           _plain_text)
 
     subs = client.submissions(cik)
     filings = [f for f in subs.get("_filings", []) if f.get("form") in PERIODIC_FORMS]
@@ -622,10 +622,6 @@ def cmd_history(args) -> int:
     is reported per company as `matches_panel`, because a series that ends
     somewhere else means one of the two is wrong.
     """
-    from .history import build_history
-    from .series import denominator_series
-    from .ledger import build_ledger
-    from .splits import fetch_splits
 
     if not args.splits:
         print("  note: --splits is off. Share counts stay in the basis of "
@@ -2682,7 +2678,6 @@ def cmd_insiders(args) -> int:
     differently, the person genuinely has no filings, or the search did not
     reach them -- and seeing the candidates tells them apart in a glance.
     """
-    import xml.etree.ElementTree as ET
     from .ledger import SECTION16, _owners, _parse
     from .names import names_match
 

@@ -22,6 +22,10 @@ else shows.
 
 ## How the owner and the assistant work together
 
+*Superseded 2026-11-22: work now happens directly in the git repository
+(branches and pull requests), not in zips. The steps below are kept for the
+deploy and walk commands they name. See CLAUDE.md.*
+
 The owner runs everything on his own Ubuntu machine; the assistant never
 touches it directly. The loop:
 

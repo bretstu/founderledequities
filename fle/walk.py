@@ -26,7 +26,6 @@ boundary, and the parent never holds more than one company's rows at a time.
 """
 from __future__ import annotations
 
-import os
 
 _CLIENT = None
 _EXCL = None
@@ -36,7 +35,6 @@ def _init(user_agent: str | None, rate_per_worker: float, exclusions: str | None
           cache_dir: str | None) -> None:
     """Runs once in each worker process: one client, one exclusions table."""
     global _CLIENT, _EXCL
-    from .config import SETTINGS
     from .edgar import EdgarClient
     from .exclusions import read_exclusions
     _CLIENT = EdgarClient(user_agent=user_agent, cache_dir=cache_dir)

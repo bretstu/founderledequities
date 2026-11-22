@@ -419,7 +419,6 @@ def build_snapshot(client, api_key: str | None, entry: float = 1e9,
     checkpoint as it is made; a rerun on the same date skips those
     registrants and continues. An hour of fetching should never be lost
     to a stray Ctrl+C -- it was, once, at 6,525 of 8,004."""
-    import json
     import os
     snapshot = snapshot or dt.date.today().isoformat()
     prior = prior or {}

@@ -25,7 +25,6 @@ unfurlers' caches need to notice a new picture.
 """
 import csv
 import hashlib
-import math
 import os
 import sys
 

@@ -20,7 +20,6 @@ its placeholder, so the harness and the sample paint are unchanged.
 import csv
 import html
 import os
-import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

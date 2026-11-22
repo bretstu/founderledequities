@@ -1,3 +1,8 @@
+*Archived 2026-11-22. Written in August 2026 for the S&P 500 panel on a Windows
+machine, before the site, the paid tier's removal and the Linux box. The exit
+codes and the anchor gate are still how `refresh` behaves; the paths, the file
+list and "Before going live" are not. See ops/OPERATIONS.md.*
+
 # Running the site
 
 ## Nightly
