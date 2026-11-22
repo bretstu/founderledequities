@@ -8,7 +8,7 @@ For each of about 2,100 companies (those whose chief executive holds the busines
 
 - Company pages: https://founderledequities.com/company/{TICKER}/ — the current stake, the record, the filings. The title of each page is the fact ("Jensen Huang owns 3.37% of Nvidia (NVDA)"). The index of every page: https://founderledequities.com/companies/
 - This week's tape: https://founderledequities.com/tape/ — the week's purchases and sales by chief executives, founders first, with kind, amount and stake after.
-- The method: https://founderledequities.com/about.html — how the stake is computed, what counts as a trade, who is a founder, the confidence marks.
+- The method: https://founderledequities.com/about — how the stake is computed, what counts as a trade, who is a founder, the confidence marks.
 - The sitemap: https://founderledequities.com/sitemap.xml
 
 ## How to cite a figure

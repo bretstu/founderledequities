@@ -99,7 +99,7 @@ def extract_topnav(index_html: str) -> str:
     nav = m.group(1)
     # links become absolute, back to the home page's sections; the search
     # box and its /search.js ride along, the same on every built page
-    nav = nav.replace('href="#', 'href="/#').replace('href="about.html"', 'href="/about.html"')
+    nav = nav.replace('href="#', 'href="/#')
     nav = nav.replace("onclick=\"window.scrollTo({top:0,behavior:'smooth'})\"", "onclick=\"location.href='/'\"")
     nav = nav.replace("onkeydown=\"if(event.key==='Enter')window.scrollTo({top:0,behavior:'smooth'})\"",
                       "onkeydown=\"if(event.key==='Enter')location.href='/'\"")
@@ -823,8 +823,8 @@ def companies_index(rows, founders, sp, out_dir, topnav, css_v):
                      .replace("{{INDEX_CSS}}", INDEX_CSS)
                      .replace("{{INDEX}}", static_block)
                      .replace('href="/site.css"', f'href=\"/site.css?v={css_v}\"'.replace('\\"', '"'))
-                     .replace("<title>Every company · Founder Led Equities</title>", f"<title>{html.escape(title)} · Founder Led Equities</title>")
-                     .replace('<meta property="og:title" content="Every company · Founder Led Equities">', f'<meta property="og:title" content="{html.escape(title)} · Founder Led Equities">')
+                     .replace("<title>CEO ownership of every US public company · Founder Led Equities</title>", f"<title>{html.escape(title)} · Founder Led Equities</title>")
+                     .replace('<meta property="og:title" content="CEO ownership of every US public company · Founder Led Equities">', f'<meta property="og:title" content="{html.escape(title)} · Founder Led Equities">')
                      .replace('<link rel="canonical" href="https://founderledequities.com/companies/">', f'<link rel="canonical" href="{canonical}">'))
             if desc:
                 pg = re.sub(r'<meta name="description" content="[^"]*">', f'<meta name="description" content="{html.escape(desc[:300])}">', pg, count=1)
@@ -1306,7 +1306,7 @@ def main(panel_p, founders_p, prices_p, sp_p, out_dir, events_p="events.csv", hi
     with open(os.path.join(out_dir, "sitemap.xml"), "w", encoding="utf-8") as fh:
         fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
         today = datetime.date.today().isoformat()
-        for u in [f"{SITE}/", f"{SITE}/tape/", f"{SITE}/about.html"] + urls:
+        for u in [f"{SITE}/", f"{SITE}/tape/", f"{SITE}/about"] + urls:
             m = re.search(r"/company/([A-Z0-9.\-]+)/$", u)
             lm = (lastmods.get(m.group(1)) if m else "") or today
             fh.write(f"  <url><loc>{html.escape(u)}</loc><lastmod>{lm}</lastmod></url>\n")
