@@ -99,6 +99,9 @@ cp index.html about.html public/   # the about template is replaced by its built
 # no third-party round trips before the type renders, and no invisible
 # text while a font is on its way (font-display: swap).
 mkdir -p public/fonts && cp fonts/*.woff2 public/fonts/
+# the favicons live in icons/ and in git (2026-11-22); until then the only
+# copy sat in site-data/, which is a build folder and not tracked
+cp icons/* public/
 [ -f terms.html ] && cp terms.html public/
 # /letter/* went to /alerts/ on 2026-09-29 (the letter left the site; its indexed addresses still land somewhere)
 [ -f _redirects ] && cp _redirects public/
@@ -196,8 +199,8 @@ if grep -l 'DATA_V="dev"' public/*.js public/*.html 2>/dev/null | grep -q .; the
 fi
 
 [ -s prices.csv ] && cp prices.csv public/
-# perf.csv is published by build_site_data, cut to the chart's cohort; the
-# full file (every company's closes) stays on disk for the 3-year returns.
+# perf.csv is not published (no page fetches it; the stale September copy
+# left the site 2026-11-22); it stays on disk for the 3-year returns.
 # ---- 3. sanity before the world sees it ----
 # the root universe.csv is the whole panel with every number: the file
 # exists, has every company, and the top rows carry their stakes.

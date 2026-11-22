@@ -445,7 +445,8 @@ const P=runPage();
 
   // ---- the trust layer ----
   const idx=require("fs").readFileSync("index.html","utf8");
-  assert((idx.match(/about\.html/g)||[]).length>=2,
+  // the links went from about.html to /about on 2026-11-22
+  assert((idx.match(/href="\/about"/g)||[]).length>=2,
     "the About page is reachable from the nav and the footer");
   const about=require("fs").readFileSync("about.html","utf8");
   // THE ABOUT PAGE, FROM FIRST PRINCIPLES (2026-09-14): what a reader must find there

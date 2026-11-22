@@ -20,6 +20,7 @@ ops/        the nightly and the deploy: site data, page builder, alerts, cards
 functions/  Cloudflare Pages functions: /api/watch, /api/subscribe, /api/hit
 *.html      page templates          assets/*.js   each page's own script
 universe/   tracked inputs: the company list, the exclusions register
+fonts/      the site's type         icons/        the favicons
 tests/      pytest                  _harness.js   render checks (needs the data files)
 notes/      product, plan, method, what was tried and abandoned
 ```
