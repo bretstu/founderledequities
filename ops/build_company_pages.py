@@ -87,6 +87,11 @@ def extract_style(index_html: str) -> str:
     if not blocks:
         raise SystemExit("no <style> in index.html")
     css = "\n".join(b.strip() for b in blocks)
+    # the comments are the source's history; a visitor's browser has no use
+    # for them (they were over a third of the file)
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    css = re.sub(r"[ \t]+\n", "\n", css)
+    css = re.sub(r"\n{2,}", "\n", css).strip() + "\n"
     if ":root{" not in css:
         raise SystemExit("index.html's stylesheet has no :root block; refusing to publish a site.css without the tokens")
     return css
@@ -213,16 +218,6 @@ def poss(name: str) -> str:
     return name + ("'" if name.lower().endswith("s") else "'s")
 
 
-def compact(n: float) -> str:
-    """1,120,000,000 -> 1.12B; 17,074,104 -> 17.1M; the page's own rule."""
-    a = abs(n)
-    for div, suf in ((1e12, "T"), (1e9, "B"), (1e6, "M"), (1e3, "K")):
-        if a >= div:
-            v = n / div
-            return f"{v:.2f}{suf}" if v < 10 else f"{v:.1f}{suf}" if v < 100 else f"{v:.0f}{suf}"
-    return f"{int(n):,}"
-
-
 UNCHANGED = {"exercise and sell", "convert and sell", "sale, position unchanged", "purchase, position unchanged"}
 
 
@@ -272,22 +267,6 @@ def load_summaries(events_p, hist_p):
     except OSError:
         pass
     return ev, hist
-
-
-def founder_quote(founder) -> str:
-    """The proxy's own sentence, trimmed to whole sentences: public on every
-    page (the badge's receipt): the words behind the founder verdict."""
-    ev = (founder or {}).get("ev") or ""
-    ev = " ".join(ev.split())
-    if len(ev) < 40:
-        return ""
-    i = ev.find(". ")
-    if 0 < i < len(ev) - 60 and not ev[0].isupper():
-        ev = ev[i + 2:]
-    j = ev.rfind(".")
-    if j > 40:
-        ev = ev[:j + 1]
-    return html.escape(ev[:400])
 
 
 def kicker_mcap(r, price) -> str:
@@ -544,10 +523,10 @@ INDEX_CSS = ("""
 .sstatic .fb{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;background:var(--ink);color:var(--bg);padding:1px 5px;border-radius:2px;vertical-align:middle;margin-left:8px}
 
 .cidx{padding:32px 0 60px}.cidx h1{font-family:var(--ui);font-size:clamp(28px,4vw,44px);font-weight:650;letter-spacing:-.02em;margin:0 0 8px}
-.cidx .sub{color:var(--mut);margin-bottom:18px}.cidx .letters{font-family:var(--mono);font-size:var(--fs-s);display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}.cidx .letters a{color:var(--blue);text-decoration:none}
+.cidx .sub{color:var(--mut);margin-bottom:18px}.cidx .letters{font-family:var(--mono);font-size:var(--fs-s);display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}.cidx .letters a{color:var(--accent);text-decoration:none}
 .cidx section{margin-top:22px}.cidx h2{font-family:var(--mono);font-size:var(--fs-s);color:var(--faint);letter-spacing:.14em;margin:0 0 8px}
 .cidx ul{list-style:none;margin:0;padding:0;columns:3;column-gap:32px}.cidx li{break-inside:avoid;padding:4px 0;font-size:13.5px}
-.cidx li a{font-family:var(--mono);font-weight:600;color:var(--blue);text-decoration:none}.cidx .co{color:var(--ink)}.cidx .ceo{color:var(--mut)}
+.cidx li a{font-family:var(--mono);font-weight:600;color:var(--accent);text-decoration:none}.cidx .co{color:var(--ink)}.cidx .ceo{color:var(--mut)}
 .cidx .seal{font-family:var(--mono);font-size:10px;color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:1px 5px;margin-left:4px}
 @media(max-width:900px){.cidx ul{columns:2}}@media(max-width:560px){.cidx ul{columns:1}}
 """)

@@ -740,12 +740,6 @@ def _doc_url(cik: int, acc: str, primary: str) -> str:
             f"{acc.replace('-', '')}/{name}")
 
 
-class _Unread(Exception):
-    """A filing that could not be FETCHED, as opposed to one that was read
-    and did not parse. The chooser counts these: a search that could not
-    read its filings must not conclude that the person is absent."""
-
-
 _DATE = re.compile(r"<transactionDate>\s*<value>\s*(\d{4}-\d{2}-\d{2})")
 
 

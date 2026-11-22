@@ -24,7 +24,7 @@ from .ledger import build_ledger, is_partnership_unit
 from .outstanding import shares_outstanding, jumped
 from .exclusions import read_exclusions
 from .ownership import build, PREFERRED_NOTE
-from .panel import run_panel, write_csv, summarise, COLUMNS as PANEL_COLUMNS
+from .panel import run_panel, write_csv, summarise
 from .universe import (fetch_members, write_universe, read_universe,
                        default_name)
 
@@ -609,19 +609,6 @@ def cmd_panel(args) -> int:
 
 # ------------------------------------------------------------ insiders
 
-
-
-def _filings_for(client, issuer_cik: int, owner_cik: str):
-    """That person's filings for this issuer, newest first."""
-    from .ledger import SECTION16
-    subs = client.submissions(issuer_cik)
-    theirs = client.submissions(int(owner_cik)) if owner_cik else {}
-    accs = {f.get("accessionNumber") for f in theirs.get("_filings", [])}
-    out = [f for f in subs.get("_filings", [])
-           if f.get("form") in SECTION16
-           and (not accs or f.get("accessionNumber") in accs)]
-    out.sort(key=lambda f: (f.get("filingDate") or ""), reverse=True)
-    return out
 
 
 

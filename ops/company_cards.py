@@ -46,28 +46,6 @@ SELL, ACCENT, ACCENT_L = "#DC2626", "#4F46E5", "#EEF2FF"
 MOVING = {"P", "S"}
 
 
-def compact(n):
-    n = float(n or 0)
-    a = abs(n)
-    if a >= 1e9:
-        return f"{n/1e9:.2f}B"
-    if a >= 1e6:
-        return f"{n/1e6:.1f}M"
-    if a >= 1e3:
-        return f"{n/1e3:.0f}K"
-    return f"{n:.0f}"
-
-
-def dollars(v):
-    if abs(v - round(v)) < 1e-9 and v >= 1:
-        return f"${v:,.0f}"
-    if v >= 100:
-        return f"${v:.0f}"
-    if v >= 10:
-        return f"${v:.1f}"
-    return f"${v:.2f}"
-
-
 def load_inputs(panel_p, sp_p, prices_p, founders_p, events_p):
     sp = {r["ticker"].upper() for r in csv.DictReader(open(sp_p, encoding="utf-8-sig"))}
     if OPEN_ALL:   # THE SEAL IS OFF (2026-09-18): every card shows its stake
@@ -181,11 +159,6 @@ def draw_card(out, fonts, tk, co, ceo, founder, pct, value, shares, series, evs,
     return post_card.draw(out, tk, co, ceo, bool(founder), kind, latest["v"] if latest else None,
                           latest["d"] if latest else None,
                           None, pct, series, fonts_dir=fonts.dir, height=H, value=value)
-
-
-def _day(s):
-    y, m, dd = int(s[:4]), int(s[5:7]), int(s[8:10])
-    return y * 372 + (m - 1) * 31 + dd     # ordinal enough for a scale
 
 
 def main(panel_p, sp_p, prices_p, founders_p, events_p, store, out_dir, only=None):

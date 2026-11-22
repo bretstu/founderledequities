@@ -300,13 +300,6 @@ class EdgarClient:
         data = self.get_json(f"{SEC_BASE}/files/company_tickers.json")
         return {row["ticker"].upper(): int(row["cik_str"]) for row in data.values()}
 
-    def resolve_cik(self, ticker: str) -> int:
-        mapping = self.ticker_map()
-        key = ticker.upper().strip()
-        if key not in mapping:
-            raise KeyError(f"No CIK found for ticker {ticker!r}")
-        return mapping[key]
-
     def submissions(self, cik: int) -> dict:
         """Filing history. Only `recent` is inlined; older sits in extra files."""
         url = f"{SEC_DATA}/submissions/CIK{cik:010d}.json"
@@ -356,9 +349,6 @@ class EdgarClient:
                 f"{len(failed)} history file(s) unavailable ({failed[0][:80]})")
         data["_filings"] = rows
         return data
-
-    def company_facts(self, cik: int) -> dict:
-        return self.get_json(f"{SEC_DATA}/api/xbrl/companyfacts/CIK{cik:010d}.json")
 
     # ------------------------------------------------------------ document
 

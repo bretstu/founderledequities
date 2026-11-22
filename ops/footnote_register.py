@@ -37,10 +37,6 @@ READS = os.path.join(ROOT, "universe", "footnote-reads.csv")
 REVIEWED = os.path.join(ROOT, "universe", "footnote-reviewed.csv")
 
 
-def _id(key: str) -> str:
-    return "|".join(key.split("|")[:3])
-
-
 def main(argv):
     dry = "--dry-run" in argv
     reg_p = os.path.join(ROOT, DEFAULT)

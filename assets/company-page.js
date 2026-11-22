@@ -249,7 +249,7 @@ function stakeChart(pts,evs){
   const lastO=ms[ms.length-1];
   const lyO=Y(lastO.pct)-9<pad.t+12?Y(lastO.pct)+16:Y(lastO.pct)-9;
   out+=`<text class="endlbl" x="${(X(lastO.d)-6).toFixed(1)}" y="${lyO.toFixed(1)}" text-anchor="end" font-family="var(--ui)" font-size="11.5" font-weight="700" fill="var(--accent)">${fmt(lastO.pct)}</text>`;
-  out+=`<g class="xh" style="display:none"><line y1="${pad.t}" y2="${h-pad.b}" stroke="var(--ink)" stroke-opacity="0.35" stroke-dasharray="2 3"/><circle r="3.5" fill="var(--blue)"/><rect rx="3" fill="var(--ink)"/><text font-family="var(--ui)" font-size="10.5" font-weight="500" fill="#fff"></text><text font-family="var(--ui)" font-size="10.5" font-weight="500" fill="#fff"></text></g></svg>`;
+  out+=`<g class="xh" style="display:none"><line y1="${pad.t}" y2="${h-pad.b}" stroke="var(--ink)" stroke-opacity="0.35" stroke-dasharray="2 3"/><circle r="3.5" fill="var(--accent)"/><rect rx="3" fill="var(--ink)"/><text font-family="var(--ui)" font-size="10.5" font-weight="500" fill="#fff"></text><text font-family="var(--ui)" font-size="10.5" font-weight="500" fill="#fff"></text></g></svg>`;
   return out;
 }
 /* THE CROSSHAIR. One handler for both charts: the cursor's x becomes a
@@ -562,20 +562,9 @@ function factSentence(r){
   const stake=`${r.pct!==null&&r.pct!==undefined?(r.pct<1?r.pct.toFixed(3):r.pct.toFixed(2))+"%":"an unstated share"} of ${co}`;
   return `${ceo} owns ${stake} (${r.tk})${asof?` as of the ${asof} filing`:""}, ${who}. Since 2016: ${buys} open-market buy${buys===1?"":"s"}, ${sells} sale${sells===1?"":"s"} that moved the stake.\n${location.origin}/company/${r.tk}/`;
 }
-async function copyFact(r){
-  const t=factSentence(r),m=$("#factmsg");
-  try{await navigator.clipboard.writeText(t);if(m)m.textContent="Copied.";}
-  catch(e){if(m)m.textContent=t;}
-}
 /* whyBlock left the page (2026-09-24): the badge asserts, the record earns
    the trust; the proxy evidence stays in founders.csv and the export. */
 
-function reportBlock(r){
-  const subj=encodeURIComponent(`${r.tk}: a figure looks wrong`);
-  const body=encodeURIComponent(`Company: ${r.co} (${r.tk})\nWhat I see: \nWhat I think it should be: \nWhere I checked: \n\nPage: https://founderledequities.com/company/${r.tk}/`);
-  return `Computed from SEC EDGAR, never estimated. Prices are the ${PRICES_ASOF||"latest"} close.
-    If a number looks wrong, <a href="mailto:hello@founderledequities.com?subject=${subj}&body=${body}">say so</a>; every figure links to the filing it came from.`;
-}
 
 /* HOW THE STAKE IS HELD (2026-09-25): the same fixed fixture on every
    page. C.held arrives display-ready from the bake (verbatim vehicle text,
