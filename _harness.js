@@ -115,8 +115,8 @@ const P=runPage();
     "every section is a stamp anchor: the page is real HTML before any script");
   assert(idxsrc.includes('<a class="exit" href="/tape/">The full tape &rarr;</a>')&&idxsrc.includes('<a class="exit" href="/companies/">All companies &rarr;</a>'),
     "both previews exit the same way: heading left, the full page right");
-  assert(idxsrc.includes('id="homesub"')&&idxsrc.includes("/api/subscribe")&&idxsrc.includes("within minutes of any founder")&&idxsrc.includes("more than 1%")&&idxsrc.includes("Watch the founders"),
-    "one ask: an email within minutes of a founder's stake moving more than 1%");
+  assert(idxsrc.includes('id="homesub"')&&idxsrc.includes("/api/subscribe")&&idxsrc.includes("within minutes of any filing")&&idxsrc.includes("1% or more")&&idxsrc.includes("Watch the founders"),
+    "one ask: an email within minutes of any filing that moves a founder's holding 1% or more");
   assert(idxsrc.includes('nothing is guessed'),"the method strip carries the honesty line (reworded 2026-09-29: the page says so; no company is excluded for a footnote)");
   assert(idxsrc.includes('if($("#tbody")){renderStatus();loadData();}'),
     "the stamped home page loads no CSVs: the machinery boots only where its anchors exist");
